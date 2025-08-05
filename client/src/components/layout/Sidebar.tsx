@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
-  Box,
+  Puzzle,
   MessageSquare,
   Bug,
   Lightbulb,
@@ -10,9 +10,14 @@ import {
   Settings,
   ChevronDown,
   ChevronRight,
-  Star
+  Star,
+  Menu,
+  X,
+  FileText,
+  Users
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 
 interface NavItem {
   label: string
@@ -30,14 +35,14 @@ const navigation: NavItem[] = [
   {
     label: 'Widgets',
     href: '/widgets',
-    icon: Box
+    icon: Puzzle
   },
   {
     label: 'Feedback & Roadmap',
     href: '/feedback',
     icon: MessageSquare,
     children: [
-      { label: 'Responses', href: '/feedback/responses', icon: MessageSquare },
+      { label: 'Responses', href: '/feedback/responses', icon: FileText },
       { label: 'Reviews', href: '/feedback/reviews', icon: Star },
       { label: 'Bug Reports', href: '/feedback/bugs', icon: Bug },
       { label: 'Feature Requests', href: '/feedback/features', icon: Lightbulb },
@@ -49,9 +54,9 @@ const navigation: NavItem[] = [
     href: '/settings',
     icon: Settings,
     children: [
-      { label: 'Account Settings', href: '/settings/account', icon: Settings },
+      { label: 'Account Settings', href: '/settings/account', icon: Users },
       { label: 'Project Settings', href: '/settings/project', icon: Settings },
-      { label: 'Roadmap Settings', href: '/settings/roadmap', icon: Settings }
+      { label: 'Roadmap Settings', href: '/settings/roadmap', icon: Map }
     ]
   }
 ]
@@ -59,6 +64,7 @@ const navigation: NavItem[] = [
 export function Sidebar() {
   const location = useLocation()
   const [expandedItems, setExpandedItems] = useState<string[]>(['Feedback & Roadmap', 'Settings'])
+  const [collapsed, setCollapsed] = useState(false)
 
   const toggleExpanded = (label: string) => {
     setExpandedItems(prev =>
@@ -89,16 +95,22 @@ export function Sidebar() {
             'flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors',
             'hover:bg-accent hover:text-accent-foreground',
             active && 'bg-primary/10 text-primary',
-            level > 0 && 'pl-10'
+            level > 0 && !collapsed && 'pl-10',
+            collapsed && 'justify-center'
           )}
+          title={collapsed ? item.label : undefined}
         >
-          <item.icon className="h-4 w-4" />
-          <span className="flex-1">{item.label}</span>
-          {hasChildren && (
-            isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />
+          <item.icon className={cn("h-4 w-4", collapsed && "h-5 w-5")} />
+          {!collapsed && (
+            <>
+              <span className="flex-1">{item.label}</span>
+              {hasChildren && (
+                isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />
+              )}
+            </>
           )}
         </Link>
-        {hasChildren && isExpanded && (
+        {hasChildren && isExpanded && !collapsed && (
           <div className="mt-1 space-y-1">
             {item.children.map(child => renderNavItem(child, level + 1))}
           </div>
@@ -108,40 +120,78 @@ export function Sidebar() {
   }
 
   return (
-    <div className="w-64 bg-card border-r border-border flex flex-col">
-      <div className="p-6">
-        <h1 className="text-2xl font-bold text-primary">reflect</h1>
+    <div className={cn(
+      "bg-card border-r border-border flex flex-col transition-all duration-300",
+      collapsed ? "w-16" : "w-64"
+    )}>
+      <div className={cn("p-6 flex items-center", collapsed && "p-4 justify-center")}>
+        {collapsed ? (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setCollapsed(false)}
+            className="h-8 w-8"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        ) : (
+          <div className="flex items-center justify-between w-full">
+            <span className="text-xl font-bold text-primary tracking-tight">Reflect</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setCollapsed(true)}
+              className="h-8 w-8"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+        )}
       </div>
 
-      <div className="px-3 mb-4">
-        <div className="bg-secondary/50 rounded-md px-3 py-2">
-          <select className="w-full bg-transparent text-sm font-medium outline-none">
-            <option>webapp</option>
-          </select>
+      {!collapsed && (
+        <div className="px-3 mb-4">
+          <div className="bg-secondary/50 rounded-md px-3 py-2">
+            <select className="w-full bg-transparent text-sm font-medium outline-none">
+              <option>webapp</option>
+            </select>
+          </div>
         </div>
-      </div>
+      )}
 
       <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
         {navigation.map(item => renderNavItem(item))}
       </nav>
 
-      <div className="p-3 border-t border-border">
-        <button className="w-full bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors">
-          Upgrade Now
-        </button>
-      </div>
+      {!collapsed && (
+        <div className="p-3 border-t border-border">
+          <button className="w-full bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors">
+            Upgrade Now
+          </button>
+        </div>
+      )}
 
       <div className="p-3 border-t border-border">
-        <div className="flex items-center gap-3">
-          <img
-            src="https://api.dicebear.com/7.x/avataaars/svg?seed=john"
-            alt="User avatar"
-            className="h-8 w-8 rounded-full"
-          />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">john.doe@example.com</p>
+        {collapsed ? (
+          <div className="flex justify-center">
+            <img
+              src="https://api.dicebear.com/7.x/avataaars/svg?seed=john"
+              alt="User avatar"
+              className="h-8 w-8 rounded-full"
+            />
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center gap-3">
+            <img
+              src="https://api.dicebear.com/7.x/avataaars/svg?seed=john"
+              alt="User avatar"
+              className="h-8 w-8 rounded-full"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">john.doe@example.com</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -33,7 +33,7 @@ export function Header() {
 
   return (
     <header className="h-16 bg-card border-b border-border px-6 flex items-center justify-between">
-      <h2 className="text-xl font-semibold">{title}</h2>
+      <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
       
       <button
         onClick={() => setIsDark(!isDark)}
