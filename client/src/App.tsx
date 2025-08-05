@@ -6,6 +6,8 @@ import { Widgets } from '@/pages/Widgets'
 import { WidgetCreate } from '@/pages/WidgetCreate'
 import { Responses } from '@/pages/Responses'
 import { Reviews } from '@/pages/Reviews'
+import { BugReports } from '@/pages/BugReports'
+import { FeatureRequests } from '@/pages/FeatureRequests'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,8 +30,8 @@ function App() {
             <Route path="widgets/new" element={<WidgetCreate />} />
             <Route path="feedback/responses" element={<Responses />} />
             <Route path="feedback/reviews" element={<Reviews />} />
-            <Route path="feedback/bugs" element={<div>Bug Reports Page (TODO)</div>} />
-            <Route path="feedback/features" element={<div>Feature Requests Page (TODO)</div>} />
+            <Route path="feedback/bugs" element={<BugReports />} />
+            <Route path="feedback/features" element={<FeatureRequests />} />
             <Route path="roadmap" element={<div>Roadmap Page (TODO)</div>} />
             <Route path="settings/account" element={<div>Account Settings Page (TODO)</div>} />
             <Route path="settings/project" element={<div>Project Settings Page (TODO)</div>} />

@@ -123,6 +123,13 @@ class ApiService {
     return this.request<Feedback[]>('/reviews')
   }
 
+  // Feature Requests
+  async upvoteFeature(featureId: string): Promise<void> {
+    await this.request(`/features/${featureId}/upvote`, {
+      method: 'POST'
+    })
+  }
+
   // Roadmap
   async getRoadmap(projectId: string): Promise<Roadmap> {
     return this.request<Roadmap>(`/roadmaps/${projectId}`)
