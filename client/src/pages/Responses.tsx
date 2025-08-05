@@ -103,14 +103,12 @@ export function Responses() {
             
             <Select value={submissionType} onValueChange={setSubmissionType}>
               <SelectTrigger>
-                <SelectValue placeholder="Submission type" />
+                <SelectValue placeholder="Survey type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="survey">Survey</SelectItem>
-                <SelectItem value="bug">Bug Report</SelectItem>
-                <SelectItem value="feature">Feature Request</SelectItem>
-                <SelectItem value="review">Review</SelectItem>
+                <SelectItem value="nps">NPS</SelectItem>
+                <SelectItem value="csat">CSAT</SelectItem>
               </SelectContent>
             </Select>
             
