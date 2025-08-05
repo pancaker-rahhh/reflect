@@ -93,7 +93,7 @@ export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChar
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -118,7 +118,7 @@ export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChar
         </ResponsiveContainer>
       </div>
       
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-6">
         {distribution.map((item) => (
           <div key={item.name} className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 rounded-lg" style={{ backgroundColor: `${item.color}15` }}>

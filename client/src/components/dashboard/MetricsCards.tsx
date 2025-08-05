@@ -70,18 +70,18 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
   ]
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
       {cards.map((card) => (
-        <Card key={card.title}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card key={card.title} className="hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">{card.title}</CardTitle>
-            <card.icon className={cn('h-4 w-4', card.color)} />
+            <card.icon className={cn('h-5 w-5', card.color)} />
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-2">
             <div className="text-3xl font-bold tracking-tight">
               <AnimatedNumber value={card.value} decimals={card.decimals} />
             </div>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground mt-2">
               <span className={cn(
                 'inline-flex items-center',
                 card.change > 0 ? 'text-green-600' : card.change < 0 ? 'text-red-600' : 'text-gray-600'

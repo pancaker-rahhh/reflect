@@ -56,7 +56,7 @@ export function NPSDistributionChart({ feedback }: NPSDistributionChartProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6 text-sm">
           <div className="flex items-center gap-2">

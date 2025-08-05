@@ -27,23 +27,23 @@ export function RecentActivityTable({ activities }: RecentActivityTableProps) {
       <table className="w-full">
         <thead>
           <tr className="border-b bg-muted/50">
-            <th className="p-3 text-left text-sm font-semibold text-muted-foreground">Type</th>
-            <th className="p-3 text-left text-sm font-semibold text-muted-foreground">Summary</th>
-            <th className="p-3 text-left text-sm font-semibold text-muted-foreground">Submitted By</th>
-            <th className="p-3 text-left text-sm font-semibold text-muted-foreground">Date</th>
+            <th className="px-4 py-3.5 text-left text-sm font-semibold text-muted-foreground">Type</th>
+            <th className="px-4 py-3.5 text-left text-sm font-semibold text-muted-foreground">Summary</th>
+            <th className="px-4 py-3.5 text-left text-sm font-semibold text-muted-foreground">Submitted By</th>
+            <th className="px-4 py-3.5 text-left text-sm font-semibold text-muted-foreground">Date</th>
           </tr>
         </thead>
         <tbody>
           {activities.map((activity) => (
-            <tr key={activity.id} className="border-b hover:bg-muted/50">
-              <td className="p-3">
+            <tr key={activity.id} className="border-b hover:bg-muted/30 transition-colors">
+              <td className="px-4 py-4">
                 <Badge variant={typeConfig[activity.type].variant}>
                   {typeConfig[activity.type].label}
                 </Badge>
               </td>
-              <td className="p-3 text-sm font-medium">{activity.summary}</td>
-              <td className="p-3 text-sm text-muted-foreground">{activity.submittedBy}</td>
-              <td className="p-3 text-sm text-muted-foreground">
+              <td className="px-4 py-4 text-sm font-medium">{activity.summary}</td>
+              <td className="px-4 py-4 text-sm text-muted-foreground">{activity.submittedBy}</td>
+              <td className="px-4 py-4 text-sm text-muted-foreground">
                 {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
               </td>
             </tr>

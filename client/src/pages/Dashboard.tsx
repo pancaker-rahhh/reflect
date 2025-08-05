@@ -29,8 +29,8 @@ export function Dashboard() {
   })
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-8">
+      <div className="flex items-center justify-between mb-2">
         <p className="text-base text-muted-foreground">
           Summary for webapp for all time
         </p>
@@ -38,18 +38,18 @@ export function Dashboard() {
       </div>
 
       {metricsLoading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-32" />
+            <Skeleton key={i} className="h-36" />
           ))}
         </div>
       ) : (
         metrics && <MetricsCards metrics={metrics} />
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-8 lg:grid-cols-2 mt-10">
         <div>
-          <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
+          <h2 className="text-xl font-semibold mb-6">Recent Activity</h2>
           {activityLoading ? (
             <Skeleton className="h-96" />
           ) : (
@@ -57,9 +57,9 @@ export function Dashboard() {
           )}
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-8">
           <div>
-            <h2 className="text-xl font-semibold mb-4">NPS Distribution</h2>
+            <h2 className="text-xl font-semibold mb-6">NPS Distribution</h2>
             {feedbackLoading ? (
               <Skeleton className="h-80" />
             ) : (
@@ -68,7 +68,7 @@ export function Dashboard() {
           </div>
 
           <div>
-            <h2 className="text-xl font-semibold mb-4">Feedback Distribution</h2>
+            <h2 className="text-xl font-semibold mb-6">Feedback Distribution</h2>
             {feedbackLoading ? (
               <Skeleton className="h-96" />
             ) : (
