@@ -1,0 +1,202 @@
+export interface User {
+  id: string
+  email: string
+  name: string
+  avatar?: string
+  role: 'admin' | 'user'
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface Workspace {
+  id: string
+  name: string
+  slug: string
+  ownerId: string
+  members: WorkspaceMember[]
+  subscription: Subscription
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface WorkspaceMember {
+  userId: string
+  role: 'owner' | 'admin' | 'member'
+  joinedAt: Date
+}
+
+export interface Subscription {
+  plan: 'free' | 'pro'
+  status: 'active' | 'canceled' | 'past_due'
+  currentPeriodEnd: Date
+  projectLimit: number
+  widgetLimit: number
+  responseLimit: number
+}
+
+export interface Project {
+  id: string
+  workspaceId: string
+  name: string
+  displayName: string
+  logoUrl?: string
+  mainWebsiteUrl?: string
+  description?: string
+  publicReviewsEnabled: boolean
+  publicReviewsSlug?: string
+  allowNewReviews: boolean
+  reviewSortOrder: 'newest' | 'oldest' | 'highest' | 'lowest'
+  seoTitleSuffix?: string
+  seoMetaDescription?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface Widget {
+  id: string
+  projectId: string
+  name: string
+  isActive: boolean
+  modules: {
+    feedback: boolean
+    reviews: boolean
+    bugReporting: boolean
+    featureRequests: boolean
+  }
+  primaryType: 'nps' | 'csat' | 'ces' | 'custom'
+  content: {
+    headerTitle: string
+    mainQuestion: string
+    submitButtonText: string
+    thankYouTitle: string
+    thankYouMessage: string
+  }
+  appearance: {
+    theme: 'default' | 'midnight' | 'minimal-light' | 'minimal-dark'
+    position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left' | 'center'
+    colors: {
+      primary: string
+      headerGradientEnd?: string
+      background: string
+      text: string
+      buttonColor: string
+      buttonTextColor: string
+    }
+    showBranding: boolean
+  }
+  behavior: {
+    triggerType: 'immediate' | 'delay' | 'exit-intent' | 'scroll'
+    triggerDelay?: number
+    urlTargeting: {
+      includeUrls: string[]
+      excludeUrls: string[]
+    }
+    deviceTypes: {
+      desktop: boolean
+      mobile: boolean
+      tablet: boolean
+    }
+  }
+  createdAt: Date
+  updatedAt: Date
+}
+
+export type FeedbackType = 'survey' | 'review' | 'bug' | 'feature'
+
+export interface BaseFeedback {
+  id: string
+  projectId: string
+  widgetId: string
+  type: FeedbackType
+  userEmail?: string
+  userName?: string
+  userId?: string
+  metadata?: Record<string, any>
+  createdAt: Date
+}
+
+export interface SurveyResponse extends BaseFeedback {
+  type: 'survey'
+  surveyType: 'nps' | 'csat' | 'ces' | 'custom'
+  score: number
+  comment?: string
+}
+
+export interface Review extends BaseFeedback {
+  type: 'review'
+  rating: number
+  title: string
+  content: string
+  isPublished: boolean
+  publishedAt?: Date
+}
+
+export interface BugReport extends BaseFeedback {
+  type: 'bug'
+  title: string
+  description: string
+  severity: 'low' | 'medium' | 'high' | 'critical'
+  status: 'new' | 'investigating' | 'confirmed' | 'resolved' | 'wont-fix'
+  browser?: string
+  os?: string
+  url?: string
+  screenshot?: string
+}
+
+export interface FeatureRequest extends BaseFeedback {
+  type: 'feature'
+  title: string
+  description: string
+  status: 'new' | 'under-review' | 'planned' | 'in-progress' | 'completed' | 'declined'
+  upvotes: number
+  roadmapColumnId?: string
+}
+
+export type Feedback = SurveyResponse | Review | BugReport | FeatureRequest
+
+export interface RoadmapColumn {
+  id: string
+  roadmapId: string
+  name: string
+  status: 'new' | 'in-progress' | 'planned' | 'under-review'
+  color: string
+  order: number
+}
+
+export interface Roadmap {
+  id: string
+  projectId: string
+  name: string
+  isPublic: boolean
+  subdomain: string
+  logoUrl?: string
+  columns: RoadmapColumn[]
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface DashboardMetrics {
+  totalFeedback: number
+  feedbackChange: number
+  averageRating: number
+  ratingChange: number
+  newBugReports: number
+  bugReportsChange: number
+  newFeatureRequests: number
+  featureRequestsChange: number
+}
+
+export interface RecentActivity {
+  id: string
+  type: FeedbackType
+  summary: string
+  submittedBy: string
+  timestamp: Date
+}
+
+export interface NotificationSettings {
+  newSurveyResponses: boolean
+  newReviews: boolean
+  newBugReports: boolean
+  newFeatureRequests: boolean
+}
