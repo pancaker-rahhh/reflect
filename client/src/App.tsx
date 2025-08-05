@@ -4,6 +4,8 @@ import { AppLayout } from '@/components/layout/AppLayout'
 import { Dashboard } from '@/pages/Dashboard'
 import { Widgets } from '@/pages/Widgets'
 import { WidgetCreate } from '@/pages/WidgetCreate'
+import { Responses } from '@/pages/Responses'
+import { Reviews } from '@/pages/Reviews'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,8 +26,8 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="widgets" element={<Widgets />} />
             <Route path="widgets/new" element={<WidgetCreate />} />
-            <Route path="feedback/responses" element={<div>Responses Page (TODO)</div>} />
-            <Route path="feedback/reviews" element={<div>Reviews Page (TODO)</div>} />
+            <Route path="feedback/responses" element={<Responses />} />
+            <Route path="feedback/reviews" element={<Reviews />} />
             <Route path="feedback/bugs" element={<div>Bug Reports Page (TODO)</div>} />
             <Route path="feedback/features" element={<div>Feature Requests Page (TODO)</div>} />
             <Route path="roadmap" element={<div>Roadmap Page (TODO)</div>} />
