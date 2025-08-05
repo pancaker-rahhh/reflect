@@ -211,7 +211,7 @@ export function RoadmapPage() {
   }
 
   const publicUrl = roadmap.isPublic && roadmap.subdomain 
-    ? `https://${roadmap.subdomain}.feedbask.com/roadmap`
+    ? `https://${roadmap.subdomain}.reflect.com/roadmap`
     : null
 
   return (

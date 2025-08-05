@@ -1,20 +1,30 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ErrorBoundary } from '@/components/common/ErrorBoundary'
+import { SkipLink } from '@/components/common/SkipLink'
+import { PageLoading } from '@/components/common/LoadingSpinner'
+import { TooltipProvider } from '@/components/ui/tooltip'
+
+// Eagerly load core components
 import { AppLayout } from '@/components/layout/AppLayout'
 import { AccountSettingsLayout } from '@/components/layout/SettingsLayout'
 import { Dashboard } from '@/pages/Dashboard'
-import { Widgets } from '@/pages/Widgets'
-import { WidgetCreate } from '@/pages/WidgetCreate'
-import { Responses } from '@/pages/Responses'
-import { Reviews } from '@/pages/Reviews'
-import { BugReports } from '@/pages/BugReports'
-import { FeatureRequests } from '@/pages/FeatureRequests'
-import { RoadmapPage } from '@/pages/Roadmap'
-import { AccountSettings } from '@/pages/settings/AccountSettings'
-import { NotificationSettings } from '@/pages/settings/NotificationSettings'
-import { BillingSettings } from '@/pages/settings/BillingSettings'
-import { ProjectSettings } from '@/pages/settings/ProjectSettings'
-import { RoadmapSettings } from '@/pages/settings/RoadmapSettings'
+
+// Lazy load secondary pages
+const Widgets = lazy(() => import('@/pages/Widgets').then(m => ({ default: m.Widgets })))
+const WidgetCreate = lazy(() => import('@/pages/WidgetCreate').then(m => ({ default: m.WidgetCreate })))
+const Responses = lazy(() => import('@/pages/Responses').then(m => ({ default: m.Responses })))
+const Reviews = lazy(() => import('@/pages/Reviews').then(m => ({ default: m.Reviews })))
+const BugReports = lazy(() => import('@/pages/BugReports').then(m => ({ default: m.BugReports })))
+const FeatureRequests = lazy(() => import('@/pages/FeatureRequests').then(m => ({ default: m.FeatureRequests })))
+const RoadmapPage = lazy(() => import('@/pages/Roadmap').then(m => ({ default: m.RoadmapPage })))
+const AccountSettings = lazy(() => import('@/pages/settings/AccountSettings').then(m => ({ default: m.AccountSettings })))
+const NotificationSettings = lazy(() => import('@/pages/settings/NotificationSettings').then(m => ({ default: m.NotificationSettings })))
+const BillingSettings = lazy(() => import('@/pages/settings/BillingSettings').then(m => ({ default: m.BillingSettings })))
+const ProjectSettings = lazy(() => import('@/pages/settings/ProjectSettings').then(m => ({ default: m.ProjectSettings })))
+const RoadmapSettings = lazy(() => import('@/pages/settings/RoadmapSettings').then(m => ({ default: m.RoadmapSettings })))
+const NotFound = lazy(() => import('@/pages/NotFound').then(m => ({ default: m.NotFound })))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,33 +35,42 @@ const queryClient = new QueryClient({
   }
 })
 
+
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<AppLayout />}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="widgets" element={<Widgets />} />
-            <Route path="widgets/new" element={<WidgetCreate />} />
-            <Route path="feedback/responses" element={<Responses />} />
-            <Route path="feedback/reviews" element={<Reviews />} />
-            <Route path="feedback/bugs" element={<BugReports />} />
-            <Route path="feedback/features" element={<FeatureRequests />} />
-            <Route path="roadmap" element={<RoadmapPage />} />
-            <Route path="settings/*" element={<AccountSettingsLayout />}>
-              <Route index element={<Navigate to="account" replace />} />
-              <Route path="account" element={<AccountSettings />} />
-              <Route path="notifications" element={<NotificationSettings />} />
-              <Route path="billing" element={<BillingSettings />} />
-            </Route>
-            <Route path="settings/project" element={<ProjectSettings />} />
-            <Route path="settings/roadmap" element={<RoadmapSettings />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <BrowserRouter>
+            <SkipLink />
+            <Suspense fallback={<PageLoading />}>
+              <Routes>
+                <Route path="/" element={<AppLayout />}>
+                  <Route index element={<Navigate to="/dashboard" replace />} />
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="widgets" element={<Widgets />} />
+                  <Route path="widgets/new" element={<WidgetCreate />} />
+                  <Route path="feedback/responses" element={<Responses />} />
+                  <Route path="feedback/reviews" element={<Reviews />} />
+                  <Route path="feedback/bugs" element={<BugReports />} />
+                  <Route path="feedback/features" element={<FeatureRequests />} />
+                  <Route path="roadmap" element={<RoadmapPage />} />
+                  <Route path="settings/*" element={<AccountSettingsLayout />}>
+                    <Route index element={<Navigate to="account" replace />} />
+                    <Route path="account" element={<AccountSettings />} />
+                    <Route path="notifications" element={<NotificationSettings />} />
+                    <Route path="billing" element={<BillingSettings />} />
+                  </Route>
+                  <Route path="settings/project" element={<ProjectSettings />} />
+                  <Route path="settings/roadmap" element={<RoadmapSettings />} />
+                </Route>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   )
 }
 
