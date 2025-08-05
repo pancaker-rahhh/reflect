@@ -1,4 +1,5 @@
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
+import { MessageSquare, Bug, Lightbulb, Star } from 'lucide-react'
 import type { Feedback } from '@/types'
 
 interface FeedbackDistributionChartProps {
@@ -10,28 +11,32 @@ export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChar
     {
       name: 'Surveys',
       value: feedback.filter(f => f.type === 'survey').length,
-      color: '#3b82f6' // blue
+      color: '#3b82f6',
+      icon: MessageSquare
     },
     {
-      name: 'Bugs',
+      name: 'Bug Reports',
       value: feedback.filter(f => f.type === 'bug').length,
-      color: '#ef4444' // red
+      color: '#dc2626',
+      icon: Bug
     },
     {
-      name: 'Features',
+      name: 'Feature Requests',
       value: feedback.filter(f => f.type === 'feature').length,
-      color: '#8b5cf6' // purple
+      color: '#8b5cf6',
+      icon: Lightbulb
     },
     {
       name: 'Reviews',
       value: feedback.filter(f => f.type === 'review').length,
-      color: '#10b981' // green
+      color: '#10b981',
+      icon: Star
     }
   ].filter(item => item.value > 0)
 
   if (distribution.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-48 bg-muted/30 rounded-lg">
+      <div className="flex flex-col items-center justify-center h-64 bg-muted/10 rounded-lg border border-dashed">
         <p className="text-base text-muted-foreground font-medium">No feedback data available</p>
       </div>
     )
@@ -39,6 +44,25 @@ export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChar
 
   const total = distribution.reduce((sum, item) => sum + item.value, 0)
 
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0]
+      return (
+        <div className="bg-popover text-popover-foreground border rounded-lg shadow-lg p-3">
+          <p className="font-semibold">{data.name}</p>
+          <p className="text-sm">
+            <span className="font-medium">{data.value}</span> items
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {((data.value / total) * 100).toFixed(1)}% of total
+          </p>
+        </div>
+      )
+    }
+    return null
+  }
+
+  const RADIAN = Math.PI / 180
   const renderCustomizedLabel = ({
     cx,
     cy,
@@ -47,9 +71,11 @@ export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChar
     outerRadius,
     percent
   }: any) => {
+    if (percent < 0.05) return null // Don't show label if less than 5%
+    
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5
-    const x = cx + radius * Math.cos(-midAngle * Math.PI / 180)
-    const y = cy + radius * Math.sin(-midAngle * Math.PI / 180)
+    const x = cx + radius * Math.cos(-midAngle * RADIAN)
+    const y = cy + radius * Math.sin(-midAngle * RADIAN)
 
     return (
       <text
@@ -58,7 +84,8 @@ export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChar
         fill="white"
         textAnchor={x > cx ? 'start' : 'end'}
         dominantBaseline="central"
-        className="text-xs font-medium"
+        className="text-sm font-semibold"
+        style={{ userSelect: 'none' }}
       >
         {`${(percent * 100).toFixed(0)}%`}
       </text>
@@ -66,46 +93,44 @@ export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChar
   }
 
   return (
-    <div className="h-48">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={distribution}
-            cx="50%"
-            cy="50%"
-            labelLine={false}
-            label={renderCustomizedLabel}
-            outerRadius={70}
-            fill="#8884d8"
-            dataKey="value"
-          >
-            {distribution.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-          <Tooltip
-            contentStyle={{
-              backgroundColor: 'hsl(var(--background))',
-              border: '1px solid hsl(var(--border))',
-              borderRadius: '6px'
-            }}
-            formatter={(value: number) => [
-              `${value} (${((value / total) * 100).toFixed(1)}%)`,
-              'Count'
-            ]}
-          />
-          <Legend
-            verticalAlign="bottom"
-            height={36}
-            iconType="circle"
-            formatter={(value, entry: any) => (
-              <span className="text-sm text-muted-foreground">
-                {value}: {entry.payload.value}
-              </span>
-            )}
-          />
-        </PieChart>
-      </ResponsiveContainer>
+    <div className="space-y-4">
+      <div className="h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={distribution}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              label={renderCustomizedLabel}
+              outerRadius={90}
+              fill="#8884d8"
+              dataKey="value"
+              animationBegin={0}
+              animationDuration={800}
+            >
+              {distribution.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+      
+      <div className="grid grid-cols-2 gap-4">
+        {distribution.map((item) => (
+          <div key={item.name} className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg" style={{ backgroundColor: `${item.color}15` }}>
+              <item.icon className="w-5 h-5" style={{ color: item.color }} />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium">{item.name}</p>
+              <p className="text-2xl font-bold">{item.value}</p>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

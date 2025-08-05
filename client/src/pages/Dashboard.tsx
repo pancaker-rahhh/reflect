@@ -61,7 +61,7 @@ export function Dashboard() {
           <div>
             <h2 className="text-xl font-semibold mb-4">NPS Distribution</h2>
             {feedbackLoading ? (
-              <Skeleton className="h-48" />
+              <Skeleton className="h-80" />
             ) : (
               feedback && <NPSDistributionChart feedback={feedback} />
             )}
@@ -70,7 +70,7 @@ export function Dashboard() {
           <div>
             <h2 className="text-xl font-semibold mb-4">Feedback Distribution</h2>
             {feedbackLoading ? (
-              <Skeleton className="h-48" />
+              <Skeleton className="h-96" />
             ) : (
               feedback && <FeedbackDistributionChart feedback={feedback} />
             )}
