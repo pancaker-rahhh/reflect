@@ -24,7 +24,7 @@ export function TimeRangeFilter({ value, onChange }: TimeRangeFilterProps) {
           size="sm"
           onClick={() => onChange(option.value)}
           className={cn(
-            'h-8 px-3',
+            'h-8 px-3 text-sm',
             value === option.value
               ? 'bg-background text-foreground shadow-sm'
               : 'hover:bg-transparent hover:text-foreground'

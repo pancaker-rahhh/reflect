@@ -13,8 +13,8 @@ export function NPSDistributionChart({ feedback }: NPSDistributionChartProps) {
   if (npsSurveys.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-48 bg-muted/30 rounded-lg">
-        <p className="text-muted-foreground text-sm">No NPS data available</p>
-        <p className="text-muted-foreground text-xs mt-1">
+        <p className="text-base text-muted-foreground font-medium">No NPS data available</p>
+        <p className="text-sm text-muted-foreground mt-1">
           Start collecting NPS feedback to see distribution
         </p>
       </div>

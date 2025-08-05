@@ -17,7 +17,7 @@ export function RecentActivityTable({ activities }: RecentActivityTableProps) {
   if (activities.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <p className="text-muted-foreground">No recent activity</p>
+        <p className="text-base text-muted-foreground">No recent activity</p>
       </div>
     )
   }
@@ -27,10 +27,10 @@ export function RecentActivityTable({ activities }: RecentActivityTableProps) {
       <table className="w-full">
         <thead>
           <tr className="border-b bg-muted/50">
-            <th className="p-3 text-left text-sm font-medium">Type</th>
-            <th className="p-3 text-left text-sm font-medium">Summary</th>
-            <th className="p-3 text-left text-sm font-medium">Submitted By</th>
-            <th className="p-3 text-left text-sm font-medium">Date</th>
+            <th className="p-3 text-left text-sm font-semibold text-muted-foreground">Type</th>
+            <th className="p-3 text-left text-sm font-semibold text-muted-foreground">Summary</th>
+            <th className="p-3 text-left text-sm font-semibold text-muted-foreground">Submitted By</th>
+            <th className="p-3 text-left text-sm font-semibold text-muted-foreground">Date</th>
           </tr>
         </thead>
         <tbody>
@@ -41,9 +41,9 @@ export function RecentActivityTable({ activities }: RecentActivityTableProps) {
                   {typeConfig[activity.type].label}
                 </Badge>
               </td>
-              <td className="p-3 font-medium">{activity.summary}</td>
-              <td className="p-3 text-muted-foreground">{activity.submittedBy}</td>
-              <td className="p-3 text-muted-foreground">
+              <td className="p-3 text-sm font-medium">{activity.summary}</td>
+              <td className="p-3 text-sm text-muted-foreground">{activity.submittedBy}</td>
+              <td className="p-3 text-sm text-muted-foreground">
                 {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
               </td>
             </tr>

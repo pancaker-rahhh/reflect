@@ -32,7 +32,7 @@ export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChar
   if (distribution.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-48 bg-muted/30 rounded-lg">
-        <p className="text-muted-foreground text-sm">No feedback data available</p>
+        <p className="text-base text-muted-foreground font-medium">No feedback data available</p>
       </div>
     )
   }

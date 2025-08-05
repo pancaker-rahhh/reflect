@@ -136,7 +136,7 @@ export function Sidebar() {
           </Button>
         ) : (
           <div className="flex items-center justify-between w-full">
-            <h1 className="text-2xl font-bold text-primary">Reflect</h1>
+            <span className="text-xl font-bold text-primary tracking-tight">Reflect</span>
             <Button
               variant="ghost"
               size="icon"

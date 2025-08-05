@@ -31,7 +31,7 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           Summary for webapp for all time
         </p>
         <TimeRangeFilter value={timeRange} onChange={setTimeRange} />
@@ -49,7 +49,7 @@ export function Dashboard() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div>
-          <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
+          <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
           {activityLoading ? (
             <Skeleton className="h-96" />
           ) : (
@@ -59,7 +59,7 @@ export function Dashboard() {
 
         <div className="space-y-6">
           <div>
-            <h3 className="text-lg font-semibold mb-4">NPS Distribution</h3>
+            <h2 className="text-xl font-semibold mb-4">NPS Distribution</h2>
             {feedbackLoading ? (
               <Skeleton className="h-48" />
             ) : (
@@ -68,7 +68,7 @@ export function Dashboard() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-4">Feedback Distribution</h3>
+            <h2 className="text-xl font-semibold mb-4">Feedback Distribution</h2>
             {feedbackLoading ? (
               <Skeleton className="h-48" />
             ) : (
