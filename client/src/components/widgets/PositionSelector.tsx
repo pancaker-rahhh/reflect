@@ -10,7 +10,6 @@ const positions = [
   { value: 'top-right', label: 'Top Right', className: 'top-2 right-2' },
   { value: 'bottom-left', label: 'Bottom Left', className: 'bottom-2 left-2' },
   { value: 'bottom-right', label: 'Bottom Right', className: 'bottom-2 right-2' },
-  { value: 'center', label: 'Center', className: 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' },
 ]
 
 export function PositionSelector({ value, onChange }: PositionSelectorProps) {
