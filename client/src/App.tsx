@@ -9,6 +9,7 @@ import { Responses } from '@/pages/Responses'
 import { Reviews } from '@/pages/Reviews'
 import { BugReports } from '@/pages/BugReports'
 import { FeatureRequests } from '@/pages/FeatureRequests'
+import { RoadmapPage } from '@/pages/Roadmap'
 import { AccountSettings } from '@/pages/settings/AccountSettings'
 import { NotificationSettings } from '@/pages/settings/NotificationSettings'
 import { BillingSettings } from '@/pages/settings/BillingSettings'
@@ -38,7 +39,7 @@ function App() {
             <Route path="feedback/reviews" element={<Reviews />} />
             <Route path="feedback/bugs" element={<BugReports />} />
             <Route path="feedback/features" element={<FeatureRequests />} />
-            <Route path="roadmap" element={<div>Roadmap Page (TODO)</div>} />
+            <Route path="roadmap" element={<RoadmapPage />} />
             <Route path="settings/*" element={<AccountSettingsLayout />}>
               <Route index element={<Navigate to="account" replace />} />
               <Route path="account" element={<AccountSettings />} />
