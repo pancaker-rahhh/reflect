@@ -111,7 +111,7 @@ export function RoadmapSettings() {
   }
 
   const publicRoadmapUrl = formData.subdomain 
-    ? `https://${formData.subdomain}.feedbask.com/roadmap`
+    ? `https://${formData.subdomain}.reflect.com/roadmap`
     : ''
 
   const handleFileSelect = async (file: File) => {
@@ -302,7 +302,7 @@ export function RoadmapSettings() {
                 className="w-full sm:max-w-md"
               />
               <span className="text-sm text-muted-foreground whitespace-nowrap">
-                .feedbask.com/roadmap
+                .reflect.com/roadmap
               </span>
             </div>
             <p className="text-sm text-muted-foreground">

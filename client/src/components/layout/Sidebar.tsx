@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
@@ -11,13 +11,10 @@ import {
   ChevronDown,
   ChevronRight,
   Star,
-  Menu,
-  X,
   FileText,
   Users
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 
 interface NavItem {
   label: string
@@ -64,7 +61,8 @@ const navigation: NavItem[] = [
 export function Sidebar() {
   const location = useLocation()
   const [expandedItems, setExpandedItems] = useState<string[]>(['Feedback & Roadmap', 'Settings'])
-  const [collapsed, setCollapsed] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const collapseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const toggleExpanded = (label: string) => {
     setExpandedItems(prev =>
@@ -74,13 +72,27 @@ export function Sidebar() {
     )
   }
 
+  const handleMouseEnter = () => {
+    if (collapseTimeoutRef.current) {
+      clearTimeout(collapseTimeoutRef.current)
+      collapseTimeoutRef.current = null
+    }
+    setIsExpanded(true)
+  }
+
+  const handleMouseLeave = () => {
+    collapseTimeoutRef.current = setTimeout(() => {
+      setIsExpanded(false)
+    }, 300) // 300ms delay before collapsing
+  }
+
   const isActive = (href: string) => {
     return location.pathname === href || location.pathname.startsWith(href + '/')
   }
 
   const renderNavItem = (item: NavItem, level = 0) => {
     const hasChildren = item.children && item.children.length > 0
-    const isExpanded = expandedItems.includes(item.label)
+    const isItemExpanded = expandedItems.includes(item.label)
     const active = isActive(item.href)
 
     return (
@@ -92,26 +104,31 @@ export function Sidebar() {
             toggleExpanded(item.label)
           } : undefined}
           className={cn(
-            'flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors',
+            'flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200',
             'hover:bg-accent hover:text-accent-foreground',
             active && 'bg-primary/10 text-primary',
-            level > 0 && !collapsed && 'pl-10',
-            collapsed && 'justify-center'
+            level > 0 && isExpanded && 'pl-10',
+            !isExpanded && 'justify-center px-3'
           )}
-          title={collapsed ? item.label : undefined}
+          title={!isExpanded ? item.label : undefined}
         >
-          <item.icon className={cn("h-4 w-4", collapsed && "h-5 w-5")} />
-          {!collapsed && (
-            <>
-              <span className="flex-1">{item.label}</span>
-              {hasChildren && (
-                isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />
-              )}
-            </>
-          )}
+          <div className="flex items-center justify-center w-4 h-4 flex-shrink-0">
+            <item.icon className="h-4 w-4" />
+          </div>
+          <div className={cn(
+            "flex items-center justify-between flex-1 min-w-0 transition-all duration-200",
+            !isExpanded && "opacity-0 w-0 overflow-hidden"
+          )}>
+            <span className="truncate">{item.label}</span>
+            {hasChildren && (
+              <div className="flex-shrink-0 ml-2">
+                {isItemExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              </div>
+            )}
+          </div>
         </Link>
-        {hasChildren && isExpanded && !collapsed && (
-          <div className="mt-1 space-y-1">
+        {hasChildren && isItemExpanded && isExpanded && (
+          <div className="mt-1 space-y-1 overflow-hidden">
             {item.children.map(child => renderNavItem(child, level + 1))}
           </div>
         )}
@@ -120,36 +137,27 @@ export function Sidebar() {
   }
 
   return (
-    <div className={cn(
-      "bg-card border-r border-border flex flex-col transition-all duration-300",
-      collapsed ? "w-16" : "w-64"
-    )}>
-      <div className={cn("p-6 flex items-center", collapsed && "p-4 justify-center")}>
-        {collapsed ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setCollapsed(false)}
-            className="h-8 w-8"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
+    <div 
+      className={cn(
+        "bg-card border-r border-border flex flex-col transition-all duration-300 ease-in-out overflow-hidden",
+        isExpanded ? "w-64" : "w-16"
+      )}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div className={cn("p-6 flex items-center", !isExpanded && "p-4 justify-center")}>
+        {!isExpanded ? (
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <span className="text-primary-foreground font-bold text-sm">R</span>
+          </div>
         ) : (
-          <div className="flex items-center justify-between w-full">
+          <div className="flex items-center w-full">
             <span className="text-xl font-bold text-primary tracking-tight">Reflect</span>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setCollapsed(true)}
-              className="h-8 w-8"
-            >
-              <X className="h-5 w-5" />
-            </Button>
           </div>
         )}
       </div>
 
-      {!collapsed && (
+      {isExpanded && (
         <div className="px-3 mb-4">
           <div className="bg-secondary/50 rounded-md px-3 py-2">
             <select className="w-full bg-transparent text-sm font-medium outline-none">
@@ -163,7 +171,7 @@ export function Sidebar() {
         {navigation.map(item => renderNavItem(item))}
       </nav>
 
-      {!collapsed && (
+      {isExpanded && (
         <div className="p-3 border-t border-border">
           <button className="w-full bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors">
             Upgrade Now
@@ -172,12 +180,13 @@ export function Sidebar() {
       )}
 
       <div className="p-3 border-t border-border">
-        {collapsed ? (
+        {!isExpanded ? (
           <div className="flex justify-center">
             <img
               src="https://api.dicebear.com/7.x/avataaars/svg?seed=john"
               alt="User avatar"
               className="h-8 w-8 rounded-full"
+              title="john.doe@example.com"
             />
           </div>
         ) : (

@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
+import { MainContent } from '@/components/common/SkipLink'
 
 export function AppLayout() {
   return (
@@ -8,11 +9,13 @@ export function AppLayout() {
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
-        <main className="flex-1 overflow-y-auto p-8 lg:p-10">
-          <div className="max-w-7xl mx-auto">
-            <Outlet />
+        <MainContent>
+          <div className="h-full overflow-y-auto p-8 lg:p-10">
+            <div className="max-w-7xl mx-auto">
+              <Outlet />
+            </div>
           </div>
-        </main>
+        </MainContent>
       </div>
     </div>
   )

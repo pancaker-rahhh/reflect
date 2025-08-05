@@ -72,7 +72,7 @@ export function ProjectSettings() {
   }
 
   const publicReviewsUrl = formData.publicReviewsSlug 
-    ? `https://${formData.publicReviewsSlug}.feedbask.com`
+    ? `https://${formData.publicReviewsSlug}.reflect.com`
     : ''
 
   if (isLoading) {

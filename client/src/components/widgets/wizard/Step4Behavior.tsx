@@ -164,7 +164,7 @@ export function Step4Behavior({ form }: Step4BehaviorProps) {
                 Identify users to track their feedback history and provide personalized experiences.
               </p>
               <pre className="bg-background rounded p-3 text-xs overflow-x-auto">
-{`window.feedbaskIdentify = {
+{`window.reflectIdentify = {
   userId: 'user123',
   email: 'user@example.com',
   name: 'John Doe'
