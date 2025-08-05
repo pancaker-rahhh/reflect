@@ -30,7 +30,7 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           Summary for webapp for all time
         </p>
