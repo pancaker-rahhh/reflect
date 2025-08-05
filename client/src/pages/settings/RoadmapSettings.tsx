@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/services/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { MapPin, Save, Plus, Trash2, ExternalLink, Copy, Upload, Link, Palette } from 'lucide-react'
+import { MapPin, Save, Plus, Trash2, ExternalLink, Copy, Upload, Link, Palette, X, Image } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Roadmap, RoadmapColumn } from '@/types'
 
@@ -23,7 +23,11 @@ export function RoadmapSettings() {
   const [formData, setFormData] = useState<Partial<Roadmap>>({})
   const [columns, setColumns] = useState<RoadmapColumn[]>([])
   const [isEdited, setIsEdited] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
   
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
   
   const { data: projects } = useQuery({
@@ -109,6 +113,81 @@ export function RoadmapSettings() {
   const publicRoadmapUrl = formData.subdomain 
     ? `https://${formData.subdomain}.feedbask.com/roadmap`
     : ''
+
+  const handleFileSelect = async (file: File) => {
+    setUploadError(null)
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Please upload an image file')
+      return
+    }
+    
+    // Validate file size (2MB limit)
+    if (file.size > 2 * 1024 * 1024) {
+      setUploadError('File size must be less than 2MB')
+      return
+    }
+    
+    setIsUploading(true)
+    
+    try {
+      // In a real application, you would upload to a cloud storage service
+      // For this example, we'll convert to base64 data URL
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string
+        handleInputChange('logoUrl', dataUrl)
+        setIsUploading(false)
+      }
+      reader.onerror = () => {
+        setUploadError('Failed to read file')
+        setIsUploading(false)
+      }
+      reader.readAsDataURL(file)
+    } catch (error) {
+      setUploadError('Failed to upload image')
+      setIsUploading(false)
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+    
+    const files = e.dataTransfer.files
+    if (files.length > 0) {
+      handleFileSelect(files[0])
+    }
+  }
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files && files.length > 0) {
+      handleFileSelect(files[0])
+    }
+  }
+
+  const clearLogo = () => {
+    handleInputChange('logoUrl', '')
+    setUploadError(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
 
   if (isLoading) {
     return (
@@ -235,15 +314,27 @@ export function RoadmapSettings() {
             <Label>Roadmap Logo</Label>
             <div className="space-y-4">
               {formData.logoUrl && (
-                <div className="flex items-center gap-4 p-3 border rounded-lg">
-                  <img 
-                    src={formData.logoUrl} 
-                    alt="Current logo" 
-                    className="w-12 h-12 object-contain bg-muted rounded"
-                  />
-                  <div className="flex-1">
+                <div className="flex items-center gap-4 p-3 border rounded-lg bg-muted/30">
+                  <div className="relative group">
+                    <img 
+                      src={formData.logoUrl} 
+                      alt="Current logo" 
+                      className="w-16 h-16 object-contain bg-background rounded border"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="absolute -top-2 -right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={clearLogo}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium">Current Logo</p>
-                    <p className="text-xs text-muted-foreground truncate">{formData.logoUrl}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {formData.logoUrl.startsWith('data:') ? 'Uploaded image' : formData.logoUrl}
+                    </p>
                   </div>
                 </div>
               )}
@@ -251,25 +342,72 @@ export function RoadmapSettings() {
               <div className="flex flex-col sm:flex-row gap-2">
                 <Input
                   placeholder="https://example.com/logo.png"
-                  value={formData.logoUrl || ''}
+                  value={formData.logoUrl?.startsWith('data:') ? '' : formData.logoUrl || ''}
                   onChange={(e) => handleInputChange('logoUrl', e.target.value)}
                   className="flex-1"
+                  disabled={formData.logoUrl?.startsWith('data:')}
                 />
-                <Button variant="outline" disabled>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileInputChange}
+                  className="hidden"
+                />
+                <Button 
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                >
+                  {isUploading ? (
+                    <>
+                      <Upload className="mr-2 h-4 w-4 animate-pulse" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload
+                    </>
+                  )}
                 </Button>
               </div>
               
-              <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
-                <div className="text-center">
-                  <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">
-                    Drag and drop your logo here, or click to browse
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    PNG, JPG up to 2MB
-                  </p>
+              {uploadError && (
+                <p className="text-sm text-destructive">{uploadError}</p>
+              )}
+              
+              <div 
+                className={cn(
+                  "border-2 border-dashed rounded-lg p-6 transition-colors cursor-pointer",
+                  isDragging 
+                    ? "border-primary bg-primary/5" 
+                    : "border-muted-foreground/25 hover:border-muted-foreground/50"
+                )}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <div className="text-center pointer-events-none">
+                  {isDragging ? (
+                    <>
+                      <Image className="mx-auto h-8 w-8 text-primary mb-2" />
+                      <p className="text-sm font-medium text-primary">
+                        Drop your image here
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        Drag and drop your logo here, or click to browse
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        PNG, JPG, GIF up to 2MB
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
