@@ -1,0 +1,52 @@
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - api
+      - web
+    networks:
+      - reflect
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file: .env
+    volumes:
+      - ./api/server:/app/server
+    networks:
+      - reflect
+
+  web:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    networks:
+      - reflect
+
+  postgres:
+    container_name: postgres
+    image: postgres:16.4-bookworm
+    ports:
+      - '5432:${POSTGRES_PORT}'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file: .env
+    networks:
+      - reflect
+
+volumes:
+  postgres_data:
+
+networks:
+  reflect:
