@@ -2,6 +2,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Dashboard } from '@/pages/Dashboard'
+import { Widgets } from '@/pages/Widgets'
+import { WidgetCreate } from '@/pages/WidgetCreate'
+import { Responses } from '@/pages/Responses'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,9 +23,9 @@ function App() {
           <Route path="/" element={<AppLayout />}>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
-            <Route path="widgets" element={<div>Widgets Page (TODO)</div>} />
-            <Route path="widgets/new" element={<div>Create Widget Page (TODO)</div>} />
-            <Route path="feedback/responses" element={<div>Responses Page (TODO)</div>} />
+            <Route path="widgets" element={<Widgets />} />
+            <Route path="widgets/new" element={<WidgetCreate />} />
+            <Route path="feedback/responses" element={<Responses />} />
             <Route path="feedback/reviews" element={<div>Reviews Page (TODO)</div>} />
             <Route path="feedback/bugs" element={<div>Bug Reports Page (TODO)</div>} />
             <Route path="feedback/features" element={<div>Feature Requests Page (TODO)</div>} />
