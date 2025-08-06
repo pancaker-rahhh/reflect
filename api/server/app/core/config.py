@@ -1,38 +1,91 @@
 from functools import lru_cache
-from pydantic import ConfigDict
+from typing import List, Optional, Any
+from pydantic import ConfigDict, field_validator
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    APP_NAME: str = 'API Service'
+    # Application
+    APP_NAME: str = 'Feedbask API'
     APP_VERSION: str = '0.1.0'
     DEBUG: bool = False
-    ENV: str = ''
-
-    API_PREFIX: str = ''
-
-    CORS_ORIGINS: list[str] = ['*']
-    CORS_HEADERS: list[str] = ['*']
-
-    SUPABASE_URL: str = ''
-    SUPABASE_SERVICE_KEY: str = ''
-    SUPABASE_JWT_SECRET: str = ''
-    SUPABASE_ANON_KEY: str = ''
-
-    POSTGRES_DB: str = ''
-    POSTGRES_USER: str = ''
-    POSTGRES_PASSWORD: str = ''
-    POSTGRES_HOST: str = ''
-    POSTGRES_PORT: str = ''
-
-    LLM_URL: str = ''
-    LLM_MODEL: str = ''
-    LLM_PROVIDER: str = ''
-
-    ONESIGNAL_APP_ID: str = ''
-    ONESIGNAL_REST_API_KEY: str = ''
-
+    ENV: str = 'development'
+    API_PREFIX: str = '/api/v1'
+    
+    # Database
+    POSTGRES_DB: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_HOST: str = 'localhost'
+    POSTGRES_PORT: int = 5432
+    DATABASE_URL: Optional[str] = None
+    DATABASE_POOL_SIZE: int = 20
+    DATABASE_MAX_OVERFLOW: int = 0
+    
+    # Supabase (Auth Only)
+    SUPABASE_URL: str
+    SUPABASE_ANON_KEY: str
+    SUPABASE_SERVICE_KEY: str
+    SUPABASE_JWT_SECRET: Optional[str] = None
+    
+    # Security
+    SECRET_KEY: str
+    ALGORITHM: str = 'HS256'
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    
+    # CORS
+    CORS_ORIGINS: List[str] = ['http://localhost:3000', 'http://localhost:5173']
+    CORS_HEADERS: List[str] = ['*']
+    
+    # Task Backend
+    TASK_BACKEND: str = 'fastapi'
+    
+    # Logging
+    LOG_LEVEL: str = 'INFO'
+    
+    # Optional: Monitoring
+    AXIOM_TOKEN: Optional[str] = None
+    AXIOM_DATASET: Optional[str] = None
+    POSTHOG_API_KEY: Optional[str] = None
+    POSTHOG_HOST: str = 'https://app.posthog.com'
+    SENTRY_DSN: Optional[str] = None
+    
     model_config = ConfigDict(env_file='.env', case_sensitive=True, extra='ignore')
+    
+    @field_validator('CORS_ORIGINS', mode='before')
+    @classmethod
+    def parse_cors_origins(cls, v: Any) -> List[str]:
+        if isinstance(v, str):
+            return [origin.strip() for origin in v.split(',')]
+        elif isinstance(v, list):
+            return v
+        return []
+    
+    @field_validator('CORS_HEADERS', mode='before')
+    @classmethod
+    def parse_cors_headers(cls, v: Any) -> List[str]:
+        if isinstance(v, str):
+            if v == '*':
+                return ['*']
+            return [header.strip() for header in v.split(',')]
+        elif isinstance(v, list):
+            return v
+        return ['*']
+    
+    @field_validator('DATABASE_URL', mode='before')
+    @classmethod
+    def construct_database_url(cls, v: Optional[str], values) -> str:
+        if v:
+            return v
+        user = values.data.get('POSTGRES_USER')
+        password = values.data.get('POSTGRES_PASSWORD')
+        host = values.data.get('POSTGRES_HOST')
+        port = values.data.get('POSTGRES_PORT')
+        db = values.data.get('POSTGRES_DB')
+        
+        if all([user, password, host, port, db]):
+            return f'postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}'
+        return ''
 
 
 @lru_cache()
