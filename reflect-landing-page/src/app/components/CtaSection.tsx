@@ -74,7 +74,7 @@ const CtaSection = () => {
                                             <Bug className="text-red-500 mt-1 flex-shrink-0" size={20}/>
                                             <div>
                                                 <h4 className="font-semibold text-gray-800">Report a Bug</h4>
-                                                <p className="text-sm text-gray-600">Let us know if something isn't working.</p>
+                                                <p className="text-sm text-gray-600">Let us know if something isn&apos;t working.</p>
                                             </div>
                                         </div>
                                         {/* Item 4 */}

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Bug, BarChart, FileText, Lightbulb, GitMerge, Star, Play, ChevronLeft, ChevronRight, Check } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const features = [
   {

@@ -83,26 +83,27 @@ const VideoSection = () => {
               <motion.button 
                 className="h-24 w-24 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white group-hover:bg-white/20 focus:outline-none focus:ring-4 focus:ring-white/50"
                 initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
+                animate={{ 
+                  scale: [1, 1.03],
+                  opacity: 1 
+                }}
                 transition={{ 
                   delay: 0.8,
                   type: "spring",
                   stiffness: 300,
-                  damping: 20
+                  damping: 20,
+                  scale: {
+                    duration: 1,
+                    repeat: Infinity,
+                    repeatType: "reverse",
+                    ease: "easeInOut"
+                  }
                 }}
                 whileHover={{ 
                   scale: 1.15,
                   backgroundColor: "rgba(255, 255, 255, 0.25)"
                 }}
                 whileTap={{ scale: 0.95 }}
-                animate={{
-                  scale: [1, 1.05, 1],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
               >
                 <motion.div
                   animate={{ x: [0, 2, 0] }}

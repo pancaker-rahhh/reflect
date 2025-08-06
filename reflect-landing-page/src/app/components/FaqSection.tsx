@@ -89,7 +89,7 @@ const FaqSection = () => {
                   transition={{ duration: 0.6, delay: 0.5 }}
                   viewport={{ once: true }}
                 >
-                    All the answers to start collecting your feedback today. Can't find the answer you're looking for? Reach out to our customer support team.
+                    All the answers to start collecting your feedback today. Can&apos;t find the answer you&apos;re looking for? Reach out to our customer support team.
                 </motion.p>
                 <motion.a
                     href="#"

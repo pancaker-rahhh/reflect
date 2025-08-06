@@ -36,20 +36,10 @@ const itemVariants = {
   hidden: { opacity: 0, y: 30 },
   visible: { 
     opacity: 1, 
-    y: 0,
-    transition: { duration: 0.6, ease: "easeOut" }
+    y: 0
   }
 };
 
-const cardVariants = {
-  hidden: { opacity: 0, scale: 0.8, rotate: -5 },
-  visible: { 
-    opacity: 1, 
-    scale: 1, 
-    rotate: 0,
-    transition: { duration: 0.6, ease: "easeOut" }
-  }
-};
 
 const BeforeAfterSection = () => {
   return (
@@ -68,6 +58,7 @@ const BeforeAfterSection = () => {
           <motion.h2 
             className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl"
             variants={itemVariants}
+            transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             Stop guessing, start <motion.span 
               className="text-purple-600"
@@ -82,6 +73,7 @@ const BeforeAfterSection = () => {
           <motion.p 
             className="mt-6 text-lg leading-8 text-gray-600"
             variants={itemVariants}
+            transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             Move from scattered feedback and blind decisions to a clear, centralized hub of user insights. See the difference Reflect makes.
           </motion.p>

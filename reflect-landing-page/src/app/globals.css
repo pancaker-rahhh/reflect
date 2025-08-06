@@ -208,6 +208,19 @@ html {
   }
 }
 
+/* Grid Background Pattern */
+.bg-grid-white\/\[0\.02\] {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+.bg-grid-white\/\[0\.05\] {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+.bg-grid-white\/\[0\.1\] {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+}
+
 /* Mobile performance optimizations */
 @media (max-width: 768px) {
   .animate-float,
