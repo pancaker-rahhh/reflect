@@ -11,37 +11,26 @@ from app.repositories.base import BaseRepository
 class ProjectRepository(BaseRepository[Project]):
     def __init__(self):
         super().__init__(Project)
-    
+
     async def get_by_workspace_and_slug(
-        self, 
-        db: AsyncSession, 
-        workspace_id: UUID, 
-        slug: str
+        self, db: AsyncSession, workspace_id: UUID, slug: str
     ) -> Optional[Project]:
         stmt = select(Project).where(
-            and_(
-                Project.workspace_id == workspace_id,
-                Project.slug == slug
-            )
+            and_(Project.workspace_id == workspace_id, Project.slug == slug)
         )
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
-    
+
     async def get_by_workspace(
-        self, 
-        db: AsyncSession, 
-        workspace_id: UUID,
-        skip: int = 0,
-        limit: int = 100
+        self, db: AsyncSession, workspace_id: UUID, skip: int = 0, limit: int = 100
     ) -> List[Project]:
         return await self.get_multi(
-            db, 
-            workspace_id=workspace_id,
-            skip=skip,
-            limit=limit
+            db, workspace_id=workspace_id, skip=skip, limit=limit
         )
-    
-    async def get_with_widgets(self, db: AsyncSession, project_id: UUID) -> Optional[Project]:
+
+    async def get_with_widgets(
+        self, db: AsyncSession, project_id: UUID
+    ) -> Optional[Project]:
         stmt = (
             select(Project)
             .options(selectinload(Project.widgets))

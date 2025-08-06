@@ -9,6 +9,7 @@ from alembic import context
 
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 from app.core.config import get_settings
@@ -24,7 +25,7 @@ config = context.config
 settings = get_settings()
 
 # Set the database URL from settings
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL.replace("+asyncpg", ""))
+config.set_main_option('sqlalchemy.url', settings.DATABASE_URL.replace('+asyncpg', ''))
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -38,12 +39,12 @@ target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
-    url = config.get_main_option("sqlalchemy.url")
+    url = config.get_main_option('sqlalchemy.url')
     context.configure(
         url=url,
         target_metadata=target_metadata,
         literal_binds=True,
-        dialect_opts={"paramstyle": "named"},
+        dialect_opts={'paramstyle': 'named'},
     )
 
     with context.begin_transaction():
@@ -59,11 +60,11 @@ def do_run_migrations(connection: Connection) -> None:
 
 async def run_async_migrations() -> None:
     configuration = config.get_section(config.config_ini_section)
-    configuration["sqlalchemy.url"] = settings.DATABASE_URL
-    
+    configuration['sqlalchemy.url'] = settings.DATABASE_URL
+
     connectable = async_engine_from_config(
         configuration,
-        prefix="sqlalchemy.",
+        prefix='sqlalchemy.',
         poolclass=pool.NullPool,
     )
 

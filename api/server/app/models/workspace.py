@@ -13,39 +13,39 @@ if TYPE_CHECKING:
 
 
 class Workspace(BaseModel):
-    __tablename__ = "workspaces"
-    
+    __tablename__ = 'workspaces'
+
     # One-to-one relationship with User
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey('users.id', ondelete='CASCADE'),
         unique=True,
         nullable=False,
-        index=True
+        index=True,
     )
-    
+
     # Workspace details
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    slug: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
+    slug: Mapped[str] = mapped_column(
+        String(100), unique=True, nullable=False, index=True
+    )
     description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    
+
     # Settings stored as JSON for flexibility
     settings: Mapped[dict] = mapped_column(JSON, default=dict)
-    
+
     # Relationships
-    user: Mapped["User"] = relationship("User", back_populates="workspace")
-    projects: Mapped[List["Project"]] = relationship(
-        "Project",
-        back_populates="workspace",
-        cascade="all, delete-orphan"
+    user: Mapped['User'] = relationship('User', back_populates='workspace')
+    projects: Mapped[List['Project']] = relationship(
+        'Project', back_populates='workspace', cascade='all, delete-orphan'
     )
-    
+
     def generate_slug(self, name: str) -> str:
         """Generate URL-friendly slug from name"""
         slug = re.sub(r'[^\w\s-]', '', name.lower())
         slug = re.sub(r'[-\s]+', '-', slug)
         return slug[:100]
-    
+
     def __init__(self, **kwargs):
         if 'slug' not in kwargs and 'name' in kwargs:
             kwargs['slug'] = self.generate_slug(kwargs['name'])
