@@ -3,21 +3,21 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: reflect_postgres
+    container_name: reflect_dev_postgres
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-reflect_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-reflect_pass}
-      POSTGRES_DB: ${POSTGRES_DB:-reflect_db}
+      POSTGRES_USER: ${POSTGRES_USER:-reflect_dev_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-reflect_dev_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-reflect_dev_db}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-reflect_user}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-reflect_dev_user}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
 volumes:
   postgres_data:
-    name: reflect_postgres_data
+    name: reflect_dev_postgres_data

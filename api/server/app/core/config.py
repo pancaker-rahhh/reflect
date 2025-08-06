@@ -13,9 +13,9 @@ class Settings(BaseSettings):
     API_PREFIX: str = '/api/v1'
     
     # Database
-    POSTGRES_DB: str = "reflect_db"
-    POSTGRES_USER: str = "reflect_user"
-    POSTGRES_PASSWORD: str = "reflect_pass"
+    POSTGRES_DB: str = "reflect_dev_db"
+    POSTGRES_USER: str = "reflect_dev_user"
+    POSTGRES_PASSWORD: str = "reflect_dev_pass"
     POSTGRES_HOST: str = 'localhost'
     POSTGRES_PORT: int = 5432
     DATABASE_URL: Optional[str] = None
