@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Bug, BarChart, FileText, Lightbulb, GitMerge, Star, Play, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const features = [
   {
@@ -80,16 +81,48 @@ const PlatformSection = () => {
   const activeFeature = features[activeIndex];
 
   return (
-    <div className="bg-white py-24 sm:py-32">
+    <motion.div 
+      className="bg-white py-24 sm:py-32"
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      transition={{ duration: 0.8 }}
+      viewport={{ once: true }}
+    >
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            One platform to handle your feedback
-          </h2>
-          <p className="mt-4 text-base leading-7 text-gray-600">
+        <motion.div 
+          className="mx-auto max-w-3xl text-center"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+        >
+          <motion.h2 
+            className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            viewport={{ once: true }}
+          >
+            One platform to handle your <motion.span
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent"
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, delay: 0.4 }}
+              viewport={{ once: true }}
+            >
+              feedback
+            </motion.span>
+          </motion.h2>
+          <motion.p 
+            className="mt-4 text-base leading-7 text-gray-600"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            viewport={{ once: true }}
+          >
             Explore our key features through real screenshots of the platform. See how Reflect can streamline your entire feedback lifecycle.
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         <div className="mt-16 overflow-x-auto pb-4">
             <div className="flex justify-center space-x-2 sm:space-x-4">
@@ -164,7 +197,7 @@ const PlatformSection = () => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
