@@ -2,6 +2,14 @@ from app.models.base import BaseModel, BaseModelWithoutSoftDelete, TimeStampMixi
 from app.models.user import User
 from app.models.workspace import Workspace
 from app.models.project import Project
+from app.models.widget import Widget
+from app.models.feedback import (
+    Feedback, 
+    SurveyFeedback, 
+    ReviewFeedback, 
+    BugReportFeedback, 
+    FeatureRequestFeedback
+)
 
 __all__ = [
     "BaseModel",
@@ -11,4 +19,10 @@ __all__ = [
     "User",
     "Workspace",
     "Project",
+    "Widget",
+    "Feedback",
+    "SurveyFeedback",
+    "ReviewFeedback", 
+    "BugReportFeedback",
+    "FeatureRequestFeedback",
 ]

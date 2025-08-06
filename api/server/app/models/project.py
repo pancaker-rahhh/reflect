@@ -47,6 +47,7 @@ class Project(BaseModel):
     
     # Relationships
     workspace: Mapped["Workspace"] = relationship("Workspace", back_populates="projects")
+    widgets = relationship("Widget", back_populates="project")
     
     def generate_slug(self, name: str) -> str:
         """Generate URL-friendly slug from name"""
