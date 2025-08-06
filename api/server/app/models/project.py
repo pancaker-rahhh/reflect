@@ -1,8 +1,9 @@
-from typing import TYPE_CHECKING
-from sqlalchemy import Column, String, Boolean, ForeignKey, JSON
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from typing import TYPE_CHECKING, Optional
+from sqlalchemy import String, Boolean, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID, JSON
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 import re
+import uuid
 
 from app.models.base import BaseModel
 
@@ -14,7 +15,7 @@ class Project(BaseModel):
     __tablename__ = "projects"
     
     # Foreign key to workspace
-    workspace_id = Column(
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("workspaces.id", ondelete="CASCADE"),
         nullable=False,
@@ -22,30 +23,30 @@ class Project(BaseModel):
     )
     
     # Project identification
-    name = Column(String(255), nullable=False)
-    display_name = Column(String(255), nullable=False)
-    slug = Column(String(100), nullable=False, index=True)
-    description = Column(String, nullable=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    display_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    slug: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     
     # Branding
-    logo_url = Column(String, nullable=True)
-    main_website_url = Column(String, nullable=True)
+    logo_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    main_website_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     
     # Public review page settings
-    public_reviews_enabled = Column(Boolean, default=False)
-    public_reviews_url = Column(String(100), nullable=True)
-    allow_new_review_submissions = Column(Boolean, default=True)
-    default_review_sort_order = Column(String(20), default="newest")
+    public_reviews_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    public_reviews_url: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    allow_new_review_submissions: Mapped[bool] = mapped_column(Boolean, default=True)
+    default_review_sort_order: Mapped[str] = mapped_column(String(20), default="newest")
     
     # SEO settings
-    seo_page_title_suffix = Column(String(100), nullable=True)
-    seo_meta_description = Column(String(160), nullable=True)
+    seo_page_title_suffix: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    seo_meta_description: Mapped[Optional[str]] = mapped_column(String(160), nullable=True)
     
     # Additional settings as JSON
-    settings = Column(JSON, default=dict)
+    settings: Mapped[dict] = mapped_column(JSON, default=dict)
     
     # Relationships
-    workspace: "Workspace" = relationship("Workspace", back_populates="projects")
+    workspace: Mapped["Workspace"] = relationship("Workspace", back_populates="projects")
     
     def generate_slug(self, name: str) -> str:
         """Generate URL-friendly slug from name"""

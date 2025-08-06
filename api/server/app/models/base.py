@@ -2,18 +2,18 @@ import uuid
 from datetime import datetime
 from typing import Any, Optional
 
-from sqlalchemy import Column, DateTime, Boolean, func
+from sqlalchemy import DateTime, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import Query
+from sqlalchemy.orm import Query, Mapped, mapped_column
 
 from app.db import Base
 
 
 class TimeStampMixin:
     @declared_attr
-    def created_at(cls) -> Column:
-        return Column(
+    def created_at(cls) -> Mapped[datetime]:
+        return mapped_column(
             DateTime(timezone=True),
             nullable=False,
             server_default=func.now(),
@@ -21,8 +21,8 @@ class TimeStampMixin:
         )
     
     @declared_attr
-    def updated_at(cls) -> Column:
-        return Column(
+    def updated_at(cls) -> Mapped[datetime]:
+        return mapped_column(
             DateTime(timezone=True),
             nullable=False,
             server_default=func.now(),
@@ -33,8 +33,8 @@ class TimeStampMixin:
 
 class SoftDeleteMixin:
     @declared_attr
-    def deleted_at(cls) -> Column:
-        return Column(
+    def deleted_at(cls) -> Mapped[Optional[datetime]]:
+        return mapped_column(
             DateTime(timezone=True),
             nullable=True,
             index=True
@@ -58,7 +58,7 @@ class SoftDeleteMixin:
 class BaseModel(Base, TimeStampMixin, SoftDeleteMixin):
     __abstract__ = True
     
-    id = Column(
+    id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4,
@@ -89,7 +89,7 @@ class BaseModel(Base, TimeStampMixin, SoftDeleteMixin):
 class BaseModelWithoutSoftDelete(Base, TimeStampMixin):
     __abstract__ = True
     
-    id = Column(
+    id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4,

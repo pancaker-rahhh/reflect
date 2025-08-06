@@ -1,8 +1,9 @@
-from typing import List, TYPE_CHECKING
-from sqlalchemy import Column, String, ForeignKey, JSON
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from typing import List, TYPE_CHECKING, Optional
+from sqlalchemy import String, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID, JSON
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 import re
+import uuid
 
 from app.models.base import BaseModel
 
@@ -15,7 +16,7 @@ class Workspace(BaseModel):
     __tablename__ = "workspaces"
     
     # One-to-one relationship with User
-    user_id = Column(
+    user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="CASCADE"),
         unique=True,
@@ -24,16 +25,16 @@ class Workspace(BaseModel):
     )
     
     # Workspace details
-    name = Column(String(255), nullable=False)
-    slug = Column(String(100), unique=True, nullable=False, index=True)
-    description = Column(String, nullable=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    slug: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
+    description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     
     # Settings stored as JSON for flexibility
-    settings = Column(JSON, default=dict)
+    settings: Mapped[dict] = mapped_column(JSON, default=dict)
     
     # Relationships
-    user: "User" = relationship("User", back_populates="workspace")
-    projects: List["Project"] = relationship(
+    user: Mapped["User"] = relationship("User", back_populates="workspace")
+    projects: Mapped[List["Project"]] = relationship(
         "Project",
         back_populates="workspace",
         cascade="all, delete-orphan"

@@ -1,7 +1,9 @@
 from typing import Optional, TYPE_CHECKING
-from sqlalchemy import Column, String, DateTime
+from datetime import datetime
+import uuid
+from sqlalchemy import String, DateTime as DateTimeColumn
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.models.base import BaseModel
 
@@ -12,25 +14,25 @@ if TYPE_CHECKING:
 class User(BaseModel):
     __tablename__ = "users"
     
-    # ID synced from Supabase Auth
-    id = Column(UUID(as_uuid=True), primary_key=True, nullable=False)
+    # ID synced from Supabase Auth (override the BaseModel id)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, nullable=False)
     
     # Basic info from Supabase
-    email = Column(String(255), unique=True, nullable=False, index=True)
-    name = Column(String(255), nullable=True)
-    avatar_url = Column(String, nullable=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
+    name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    avatar_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     
     # Additional profile fields
-    company_name = Column(String(255), nullable=True)
-    phone = Column(String(50), nullable=True)
-    timezone = Column(String(50), default="UTC")
+    company_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    timezone: Mapped[str] = mapped_column(String(50), default="UTC")
     
     # Verification and login tracking
-    email_verified_at = Column(DateTime(timezone=True), nullable=True)
-    last_login_at = Column(DateTime(timezone=True), nullable=True)
+    email_verified_at: Mapped[Optional[datetime]] = mapped_column(DateTimeColumn(timezone=True), nullable=True)
+    last_login_at: Mapped[Optional[datetime]] = mapped_column(DateTimeColumn(timezone=True), nullable=True)
     
     # Relationships
-    workspace: Optional["Workspace"] = relationship(
+    workspace: Mapped[Optional["Workspace"]] = relationship(
         "Workspace",
         back_populates="user",
         uselist=False,
