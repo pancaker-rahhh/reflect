@@ -1,29 +1,48 @@
-import os
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from typing import AsyncGenerator
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
 
-DB_USER = os.getenv('POSTGRES_USER')
-DB_PASSWORD = os.getenv('POSTGRES_PASSWORD')
-DB_NAME = os.getenv('POSTGRES_DB')
-DB_HOST = os.getenv('POSTGRES_HOST')
-DB_PORT = os.getenv('POSTGRES_PORT')
+from app.core.config import get_settings
 
-DATABASE_URL = f'postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+settings = get_settings()
 
 engine = create_async_engine(
-    DATABASE_URL,
-    echo=False,
-    pool_size=20,
-    max_overflow=0
+    settings.DATABASE_URL,
+    echo=settings.DEBUG,
+    pool_size=settings.DATABASE_POOL_SIZE,
+    max_overflow=settings.DATABASE_MAX_OVERFLOW,
+    pool_pre_ping=True,
+    pool_recycle=3600,
 )
 
-AsyncSessionLocal = sessionmaker(
+AsyncSessionLocal = async_sessionmaker(
     bind=engine,
     class_=AsyncSession,
-    expire_on_commit=False
+    expire_on_commit=False,
+    autocommit=False,
+    autoflush=False,
 )
 
+Base = declarative_base()
 
-async def get_db():
+
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:
-        yield session
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            await session.close()
+
+
+async def init_db() -> None:
+    async with engine.begin() as conn:
+        from app.models import base  # noqa
+        await conn.run_sync(Base.metadata.create_all)
+
+
+async def close_db() -> None:
+    await engine.dispose()
