@@ -1,12 +1,17 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from app.core.config import get_settings
+from app.core.logging import setup_logging
+from app.core.middleware import CorrelationIDMiddleware, RequestLoggingMiddleware
 from app.db import engine
+from app.router.api_router import api_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    setup_logging()
     yield
     await engine.dispose()
 
@@ -24,6 +29,7 @@ def create_application() -> FastAPI:
         lifespan=lifespan,
     )
 
+    # Add middleware in correct order (bottom to top execution)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins_list,
@@ -31,10 +37,20 @@ def create_application() -> FastAPI:
         allow_methods=['*'],
         allow_headers=settings.cors_headers_list,
     )
+    app.add_middleware(RequestLoggingMiddleware)
+    app.add_middleware(CorrelationIDMiddleware)
+
+    # Include API router
+    app.include_router(api_router)
 
     @app.get('/')
     async def root():
-        return {'message': 'Hello World'}
+        return {
+            'name': settings.APP_NAME,
+            'version': settings.APP_VERSION,
+            'docs': f'{settings.API_PREFIX}/docs',
+            'health': f'{settings.API_PREFIX}/health',
+        }
 
     return app
 
