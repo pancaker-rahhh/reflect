@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Union
 from pydantic import ConfigDict, field_validator
 from pydantic_settings import BaseSettings
 
@@ -34,8 +34,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     # CORS
-    CORS_ORIGINS: List[str] = ['http://localhost:3000', 'http://localhost:5173']
-    CORS_HEADERS: List[str] = ['*']
+    CORS_ORIGINS: str = 'http://localhost:3000,http://localhost:5173'
+    CORS_HEADERS: str = '*'
     
     # Task Backend
     TASK_BACKEND: str = 'fastapi'
@@ -52,27 +52,17 @@ class Settings(BaseSettings):
     
     model_config = ConfigDict(env_file='.env', case_sensitive=True, extra='ignore')
     
-    @field_validator('CORS_ORIGINS', mode='before')
-    @classmethod
-    def parse_cors_origins(cls, v: Any) -> List[str]:
-        if isinstance(v, str):
-            if not v or v.strip() == '':
-                return []
-            return [origin.strip() for origin in v.split(',') if origin.strip()]
-        elif isinstance(v, list):
-            return v
-        return []
+    @property
+    def cors_origins_list(self) -> List[str]:
+        if not self.CORS_ORIGINS or self.CORS_ORIGINS.strip() == '':
+            return []
+        return [origin.strip() for origin in self.CORS_ORIGINS.split(',') if origin.strip()]
     
-    @field_validator('CORS_HEADERS', mode='before')
-    @classmethod
-    def parse_cors_headers(cls, v: Any) -> List[str]:
-        if isinstance(v, str):
-            if not v or v.strip() == '' or v == '*':
-                return ['*']
-            return [header.strip() for header in v.split(',') if header.strip()]
-        elif isinstance(v, list):
-            return v
-        return ['*']
+    @property
+    def cors_headers_list(self) -> List[str]:
+        if not self.CORS_HEADERS or self.CORS_HEADERS.strip() == '' or self.CORS_HEADERS == '*':
+            return ['*']
+        return [header.strip() for header in self.CORS_HEADERS.split(',') if header.strip()]
     
     @field_validator('DATABASE_URL', mode='before')
     @classmethod
