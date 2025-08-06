@@ -1,0 +1,80 @@
+from typing import TypeVar, Generic, Type, Optional, List, Dict, Any
+from uuid import UUID
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, update, delete, func
+from sqlalchemy.orm import selectinload
+
+from app.models.base import BaseModel
+
+ModelType = TypeVar("ModelType", bound=BaseModel)
+
+
+class BaseRepository(Generic[ModelType]):
+    def __init__(self, model: Type[ModelType]):
+        self.model = model
+    
+    async def get(self, db: AsyncSession, id: UUID) -> Optional[ModelType]:
+        stmt = select(self.model).where(self.model.id == id)
+        result = await db.execute(stmt)
+        return result.scalar_one_or_none()
+    
+    async def get_multi(
+        self, 
+        db: AsyncSession, 
+        skip: int = 0, 
+        limit: int = 100,
+        **filters
+    ) -> List[ModelType]:
+        stmt = select(self.model)
+        
+        for key, value in filters.items():
+            if hasattr(self.model, key) and value is not None:
+                stmt = stmt.where(getattr(self.model, key) == value)
+        
+        stmt = stmt.offset(skip).limit(limit)
+        result = await db.execute(stmt)
+        return result.scalars().all()
+    
+    async def count(self, db: AsyncSession, **filters) -> int:
+        stmt = select(func.count(self.model.id))
+        
+        for key, value in filters.items():
+            if hasattr(self.model, key) and value is not None:
+                stmt = stmt.where(getattr(self.model, key) == value)
+        
+        result = await db.execute(stmt)
+        return result.scalar()
+    
+    async def create(self, db: AsyncSession, **obj_data) -> ModelType:
+        db_obj = self.model(**obj_data)
+        db.add(db_obj)
+        await db.commit()
+        await db.refresh(db_obj)
+        return db_obj
+    
+    async def update(
+        self, 
+        db: AsyncSession, 
+        id: UUID, 
+        **update_data
+    ) -> Optional[ModelType]:
+        stmt = (
+            update(self.model)
+            .where(self.model.id == id)
+            .values(**update_data)
+            .returning(self.model)
+        )
+        result = await db.execute(stmt)
+        await db.commit()
+        return result.scalar_one_or_none()
+    
+    async def delete(self, db: AsyncSession, id: UUID) -> bool:
+        stmt = delete(self.model).where(self.model.id == id)
+        result = await db.execute(stmt)
+        await db.commit()
+        return result.rowcount > 0
+    
+    async def soft_delete(self, db: AsyncSession, id: UUID) -> Optional[ModelType]:
+        if hasattr(self.model, 'deleted_at'):
+            return await self.update(db, id, deleted_at=func.now())
+        return None
