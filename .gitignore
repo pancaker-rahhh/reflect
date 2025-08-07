@@ -62,7 +62,7 @@ cover/
 __pypackages__/
 
 # Environments
-.env
+.env*
 .venv
 env/
 venv/
