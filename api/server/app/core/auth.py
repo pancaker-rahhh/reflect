@@ -1,17 +1,12 @@
 import jwt
 from typing import Optional
-from fastapi import HTTPException, Depends
+from fastapi import Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from api.server.app.core.exceptions import AuthenticationError
 from app.core.config import get_settings
 from app.schemas.auth import TokenData
 from app.db import get_db
-
-
-class AuthenticationError(HTTPException):
-    def __init__(self, detail: str = 'Authentication failed'):
-        super().__init__(status_code=401, detail=detail)
 
 
 class SupabaseAuth:
