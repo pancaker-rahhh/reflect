@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import List, Optional
-from pydantic import ConfigDict, field_validator
-from pydantic_settings import BaseSettings
+from pydantic import field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     POSTHOG_HOST: str = 'https://app.posthog.com'
     SENTRY_DSN: Optional[str] = None
 
-    model_config = ConfigDict(env_file='.env', case_sensitive=True, extra='ignore')
+    model_config = SettingsConfigDict(env_file='.env', case_sensitive=True, extra='ignore')
 
     @property
     def cors_origins_list(self) -> List[str]:
