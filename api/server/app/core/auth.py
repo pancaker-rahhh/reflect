@@ -9,7 +9,7 @@ from app.schemas.auth import TokenData
 from app.db import get_db
 
 
-class SupabaseAuth:
+class Auth:
     def __init__(self):
         self.settings = get_settings()
         self.security = HTTPBearer(auto_error=False)
@@ -71,7 +71,7 @@ class SupabaseAuth:
         return user
 
 
-auth = SupabaseAuth()
+auth = Auth()
 
 
 async def get_current_user_optional(
