@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 from uuid import uuid4
 import enum
 
-from app.models.base import BaseModel
+from api.server.app.models.base_model import BaseModel
 
 
 class WidgetType(str, enum.Enum):

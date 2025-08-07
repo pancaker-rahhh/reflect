@@ -4,8 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
 
-from app.models.project import Project
-from app.repositories.base import BaseRepository
+from api.server.app.models.project_model import Project
+from api.server.app.repositories.base_repository import BaseRepository
 
 
 class ProjectRepository(BaseRepository[Project]):

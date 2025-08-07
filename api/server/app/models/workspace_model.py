@@ -5,11 +5,11 @@ from sqlalchemy.orm import relationship, Mapped, mapped_column
 import re
 import uuid
 
-from app.models.base import BaseModel
+from api.server.app.models.base_model import BaseModel
 
 if TYPE_CHECKING:
-    from app.models.user import User
-    from app.models.project import Project
+    from api.server.app.models.user_model import User
+    from api.server.app.models.project_model import Project
 
 
 class Workspace(BaseModel):

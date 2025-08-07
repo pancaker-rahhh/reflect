@@ -1,14 +1,14 @@
-from app.models.base import (
+from api.server.app.models.base_model import (
     BaseModel,
     BaseModelWithoutSoftDelete,
     TimeStampMixin,
     SoftDeleteMixin,
 )
-from app.models.user import User
-from app.models.workspace import Workspace
-from app.models.project import Project
-from app.models.widget import Widget
-from app.models.feedback import (
+from api.server.app.models.user_model import User
+from api.server.app.models.workspace_model import Workspace
+from api.server.app.models.project_model import Project
+from api.server.app.models.widget_model import Widget
+from api.server.app.models.feedback_model import (
     Feedback,
     SurveyFeedback,
     ReviewFeedback,

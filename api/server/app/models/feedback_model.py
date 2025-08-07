@@ -12,7 +12,7 @@ from sqlalchemy.orm import relationship, Mapped, mapped_column
 import enum
 import uuid
 
-from app.models.base import BaseModel
+from api.server.app.models.base_model import BaseModel
 
 
 class FeedbackType(str, enum.Enum):

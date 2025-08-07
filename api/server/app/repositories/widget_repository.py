@@ -3,8 +3,8 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from app.models.widget import Widget, WidgetStatus
-from app.repositories.base import BaseRepository
+from api.server.app.models.widget_model import Widget, WidgetStatus
+from api.server.app.repositories.base_repository import BaseRepository
 
 
 class WidgetRepository(BaseRepository[Widget]):
