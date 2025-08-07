@@ -19,19 +19,16 @@ class User(BaseModel):
         UUID(as_uuid=True), primary_key=True, nullable=False
     )
 
-    # Basic info from Supabase
     email: Mapped[str] = mapped_column(
         String(255), unique=True, nullable=False, index=True
     )
     name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     avatar_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
-    # Additional profile fields
     company_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     timezone: Mapped[str] = mapped_column(String(50), default='UTC')
 
-    # Verification and login tracking
     email_verified_at: Mapped[Optional[datetime]] = mapped_column(
         DateTimeColumn(timezone=True), nullable=True
     )
@@ -39,7 +36,6 @@ class User(BaseModel):
         DateTimeColumn(timezone=True), nullable=True
     )
 
-    # Relationships
     workspace: Mapped[Optional['Workspace']] = relationship(
         'Workspace', back_populates='user', uselist=False, cascade='all, delete-orphan'
     )

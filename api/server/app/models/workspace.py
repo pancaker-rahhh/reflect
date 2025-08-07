@@ -24,7 +24,6 @@ class Workspace(BaseModel):
         index=True,
     )
 
-    # Workspace details
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     slug: Mapped[str] = mapped_column(
         String(100), unique=True, nullable=False, index=True
@@ -34,7 +33,6 @@ class Workspace(BaseModel):
     # Settings stored as JSON for flexibility
     settings: Mapped[dict] = mapped_column(JSON, default=dict)
 
-    # Relationships
     user: Mapped['User'] = relationship('User', back_populates='workspace')
     projects: Mapped[List['Project']] = relationship(
         'Project', back_populates='workspace', cascade='all, delete-orphan'

@@ -14,7 +14,6 @@ if TYPE_CHECKING:
 class Project(BaseModel):
     __tablename__ = 'projects'
 
-    # Foreign key to workspace
     workspace_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey('workspaces.id', ondelete='CASCADE'),
@@ -22,17 +21,14 @@ class Project(BaseModel):
         index=True,
     )
 
-    # Project identification
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     display_name: Mapped[str] = mapped_column(String(255), nullable=False)
     slug: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
     description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
-    # Branding
     logo_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     main_website_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
-    # Public review page settings
     public_reviews_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     public_reviews_url: Mapped[Optional[str]] = mapped_column(
         String(100), nullable=True
@@ -40,7 +36,6 @@ class Project(BaseModel):
     allow_new_review_submissions: Mapped[bool] = mapped_column(Boolean, default=True)
     default_review_sort_order: Mapped[str] = mapped_column(String(20), default='newest')
 
-    # SEO settings
     seo_page_title_suffix: Mapped[Optional[str]] = mapped_column(
         String(100), nullable=True
     )
@@ -48,10 +43,8 @@ class Project(BaseModel):
         String(160), nullable=True
     )
 
-    # Additional settings as JSON
     settings: Mapped[dict] = mapped_column(JSON, default=dict)
-
-    # Relationships
+    
     workspace: Mapped['Workspace'] = relationship(
         'Workspace', back_populates='projects'
     )
