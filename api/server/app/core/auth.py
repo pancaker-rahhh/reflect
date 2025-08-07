@@ -19,7 +19,7 @@ class Auth:
             payload = jwt.decode(
                 token,
                 self.settings.SUPABASE_JWT_SECRET,
-                algorithms=['HS256'],
+                algorithms=[self.settings.ALGORITHM],
                 audience='authenticated',
                 options={'verify_exp': True},
             )
