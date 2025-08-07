@@ -28,7 +28,7 @@ class BaseRepository(Generic[ModelType]):
 
         stmt = stmt.offset(skip).limit(limit)
         result = await db.execute(stmt)
-        return result.scalars().all()
+        return list(result.scalars().all())
 
     async def count(self, db: AsyncSession, **filters) -> int:
         stmt = select(func.count(self.model.id))
@@ -38,7 +38,8 @@ class BaseRepository(Generic[ModelType]):
                 stmt = stmt.where(getattr(self.model, key) == value)
 
         result = await db.execute(stmt)
-        return result.scalar()
+        count = result.scalar()
+        return count or 0
 
     async def create(self, db: AsyncSession, **obj_data) -> ModelType:
         db_obj = self.model(**obj_data)
