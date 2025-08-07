@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     SUPABASE_URL: str = ''
     SUPABASE_ANON_KEY: str = ''
     SUPABASE_SERVICE_KEY: str = ''
-    SUPABASE_JWT_SECRET: Optional[str] = None
+    SUPABASE_JWT_SECRET: str = ''
 
     # Security
     SECRET_KEY: str = 'dev-secret-key-change-in-production'
