@@ -42,8 +42,8 @@ class SupabaseAuth:
 
         except jwt.ExpiredSignatureError:
             raise AuthenticationError('Token has expired')
-        except jwt.InvalidTokenError:
-            raise AuthenticationError('Invalid token')
+        except jwt.PyJWTError as e:
+            raise AuthenticationError(f'Invalid token: {e}')
         except Exception as e:
             raise AuthenticationError(f'Token validation failed: {str(e)}')
 
