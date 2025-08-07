@@ -9,6 +9,7 @@ import type {
   NotificationSettings,
   Roadmap
 } from '@/types'
+import { supabase } from '../lib/supabase'
 
 const API_BASE_URL = '/api'
 
@@ -17,13 +18,23 @@ class ApiService {
     endpoint: string,
     options?: RequestInit
   ): Promise<T> {
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
+
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
         ...options?.headers
       }
     })
+
+    if (response.status === 401) {
+      await supabase.auth.signOut()
+      window.location.href = '/login'
+      throw new Error('Unauthorized')
+    }
 
     if (!response.ok) {
       throw new Error(`API Error: ${response.statusText}`)

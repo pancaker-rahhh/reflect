@@ -5,11 +5,16 @@ import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { SkipLink } from '@/components/common/SkipLink'
 import { PageLoading } from '@/components/common/LoadingSpinner'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { AuthProvider } from '@/contexts/AuthContext'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 // Eagerly load core components
 import { AppLayout } from '@/components/layout/AppLayout'
 import { AccountSettingsLayout } from '@/components/layout/SettingsLayout'
 import { Dashboard } from '@/pages/Dashboard'
+import { Login } from '@/pages/auth/Login'
+import { AuthCallback } from '@/pages/auth/AuthCallback'
+import { VerifyOtp } from '@/pages/auth/VerifyOtp'
 
 // Lazy load secondary pages
 const Widgets = lazy(() => import('@/pages/Widgets').then(m => ({ default: m.Widgets })))
@@ -42,31 +47,43 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <BrowserRouter>
-            <SkipLink />
-            <Suspense fallback={<PageLoading />}>
-              <Routes>
-                <Route path="/" element={<AppLayout />}>
-                  <Route index element={<Navigate to="/dashboard" replace />} />
-                  <Route path="dashboard" element={<Dashboard />} />
-                  <Route path="widgets" element={<Widgets />} />
-                  <Route path="widgets/new" element={<WidgetCreate />} />
-                  <Route path="feedback/responses" element={<Responses />} />
-                  <Route path="feedback/reviews" element={<Reviews />} />
-                  <Route path="feedback/bugs" element={<BugReports />} />
-                  <Route path="feedback/features" element={<FeatureRequests />} />
-                  <Route path="roadmap" element={<RoadmapPage />} />
-                  <Route path="settings/*" element={<AccountSettingsLayout />}>
-                    <Route index element={<Navigate to="account" replace />} />
-                    <Route path="account" element={<AccountSettings />} />
-                    <Route path="notifications" element={<NotificationSettings />} />
-                    <Route path="billing" element={<BillingSettings />} />
+            <AuthProvider>
+              <SkipLink />
+              <Suspense fallback={<PageLoading />}>
+                <Routes>
+                  {/* Public routes */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/auth/verify-otp" element={<VerifyOtp />} />
+                  <Route path="/auth/callback" element={<AuthCallback />} />
+                  
+                  {/* Protected routes */}
+                  <Route path="/" element={
+                    <ProtectedRoute>
+                      <AppLayout />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<Navigate to="/dashboard" replace />} />
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="widgets" element={<Widgets />} />
+                    <Route path="widgets/new" element={<WidgetCreate />} />
+                    <Route path="feedback/responses" element={<Responses />} />
+                    <Route path="feedback/reviews" element={<Reviews />} />
+                    <Route path="feedback/bugs" element={<BugReports />} />
+                    <Route path="feedback/features" element={<FeatureRequests />} />
+                    <Route path="roadmap" element={<RoadmapPage />} />
+                    <Route path="settings/*" element={<AccountSettingsLayout />}>
+                      <Route index element={<Navigate to="account" replace />} />
+                      <Route path="account" element={<AccountSettings />} />
+                      <Route path="notifications" element={<NotificationSettings />} />
+                      <Route path="billing" element={<BillingSettings />} />
+                    </Route>
+                    <Route path="settings/project" element={<ProjectSettings />} />
+                    <Route path="settings/roadmap" element={<RoadmapSettings />} />
                   </Route>
-                  <Route path="settings/project" element={<ProjectSettings />} />
-                  <Route path="settings/roadmap" element={<RoadmapSettings />} />
-                </Route>
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>
