@@ -36,7 +36,7 @@ services:
 
   postgres:
     container_name: postgres
-    image: postgres:16.4-bookworm
+    image: postgres:16-alpine
     ports:
       - '5432:${POSTGRES_PORT}'
     volumes:
