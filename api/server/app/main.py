@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.exception_handlers import authentication_error_handler, general_error_handler
 from app.core.exceptions import AuthenticationError
-from app.core.config import get_settings
+from api.server.app.core.settings import get_settings
 from app.core.logging import setup_logging
 from app.core.middleware import CorrelationIDMiddleware, RequestLoggingMiddleware
 from app.db import engine

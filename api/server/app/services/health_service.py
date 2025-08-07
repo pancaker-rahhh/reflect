@@ -1,4 +1,4 @@
-from app.core.config import get_settings
+from api.server.app.core.settings import get_settings
 from app.schemas.health import HealthCheckResponse
 
 
