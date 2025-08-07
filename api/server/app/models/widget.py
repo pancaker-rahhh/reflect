@@ -34,7 +34,6 @@ class WidgetStatus(str, enum.Enum):
 class Widget(BaseModel):
     __tablename__ = 'widgets'
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     project_id = Column(UUID(as_uuid=True), ForeignKey('projects.id'), nullable=False)
 
     name = Column(String(255), nullable=False)
@@ -56,6 +55,6 @@ class Widget(BaseModel):
     feedback = relationship('Feedback', back_populates='widget')
 
     def __init__(self, **kwargs):
+        if 'public_key' not in kwargs or not kwargs.get('public_key'):
+            kwargs['public_key'] = f'widget_{str(uuid4()).replace("-", "")[:16]}'
         super().__init__(**kwargs)
-        if not self.public_key:
-            self.public_key = f'widget_{str(uuid4()).replace("-", "")[:16]}'

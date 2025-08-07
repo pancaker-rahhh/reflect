@@ -8,9 +8,9 @@ from sqlalchemy import (
     Enum as SQLEnum,
 )
 from sqlalchemy.dialects.postgresql import UUID, JSONB, INET
-from sqlalchemy.orm import relationship
-from uuid import uuid4
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 import enum
+import uuid
 
 from app.models.base import BaseModel
 
@@ -44,7 +44,6 @@ class FeedbackPriority(str, enum.Enum):
 class Feedback(BaseModel):
     __tablename__ = 'feedback'
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     widget_id = Column(UUID(as_uuid=True), ForeignKey('widgets.id'), nullable=False)
     project_id = Column(UUID(as_uuid=True), ForeignKey('projects.id'), nullable=False)
 
@@ -95,7 +94,7 @@ class Feedback(BaseModel):
 class SurveyFeedback(Feedback):
     __tablename__ = 'survey_feedback'
 
-    id = Column(UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True)
     survey_type = Column(String(50))
     score = Column(Integer)
     response_data = Column(JSONB, default=dict)
@@ -106,7 +105,7 @@ class SurveyFeedback(Feedback):
 class ReviewFeedback(Feedback):
     __tablename__ = 'review_feedback'
 
-    id = Column(UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True)
     overall_rating = Column(Integer)
     review_categories = Column(JSONB, default=dict)
     is_published = Column(Boolean, default=False)
@@ -120,7 +119,7 @@ class ReviewFeedback(Feedback):
 class BugReportFeedback(Feedback):
     __tablename__ = 'bug_report_feedback'
 
-    id = Column(UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True)
     severity_level = Column(SQLEnum(FeedbackPriority), default=FeedbackPriority.MEDIUM)
     steps_to_reproduce = Column(Text)
     expected_behavior = Column(Text)
@@ -134,7 +133,7 @@ class BugReportFeedback(Feedback):
 class FeatureRequestFeedback(Feedback):
     __tablename__ = 'feature_request_feedback'
 
-    id = Column(UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True)
     use_case = Column(Text)
     business_value = Column(Text)
     upvotes_count = Column(Integer, default=0)
