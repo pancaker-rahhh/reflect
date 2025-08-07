@@ -1,7 +1,8 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from app.core.exception_handlers import authentication_error_handler, general_error_handler
+from app.core.exceptions import AuthenticationError
 from app.core.config import get_settings
 from app.core.logging import setup_logging
 from app.core.middleware import CorrelationIDMiddleware, RequestLoggingMiddleware
@@ -40,7 +41,9 @@ def create_application() -> FastAPI:
     app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(CorrelationIDMiddleware)
 
-    # Include API router
+    app.add_exception_handler(AuthenticationError, authentication_error_handler)
+    app.add_exception_handler(Exception, general_error_handler)
+
     app.include_router(api_router)
 
     @app.get('/')
