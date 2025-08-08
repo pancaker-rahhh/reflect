@@ -1,6 +1,12 @@
 from fastapi import APIRouter
 
-from app.router.v1 import project_router, health_router, workspace_router, widget_router
+from app.router.v1 import (
+    project_router,
+    health_router,
+    workspace_router,
+    widget_router,
+    public_router,
+)
 
 api_router = APIRouter(prefix='/api/v1')
 api_router.include_router(health_router.health_router)
@@ -15,4 +21,7 @@ api_router.include_router(
 )
 api_router.include_router(
     widget_router.widgets_router, prefix='/widgets', tags=['Widgets']
+)
+api_router.include_router(
+    public_router.public_router, prefix='/public', tags=['Public']
 )

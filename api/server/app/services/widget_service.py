@@ -87,5 +87,17 @@ class WidgetService:
                 db, id=widget_id, status=WidgetStatus.INACTIVE, is_active=False
             )
 
+    async def get_public_widget_by_key(
+        self, db: AsyncSession, public_key: str
+    ) -> Widget:
+        widget = await self.repository.get_by_public_key(db, public_key=public_key)
+
+        if not widget or not widget.is_active or widget.status != WidgetStatus.ACTIVE:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail='Active widget not found for this key.',
+            )
+        return widget
+
 
 widget_service = WidgetService()
