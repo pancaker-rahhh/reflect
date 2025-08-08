@@ -1,7 +1,6 @@
 from typing import Optional
 from fastapi import BackgroundTasks
-
-from api.server.app.core.settings import get_settings
+from app.core.settings import get_settings
 from app.services.tasks.base import TaskExecutor
 from app.services.tasks.executors.fastapi_executor import FastAPIExecutor
 from app.core.logging import get_logger
@@ -9,7 +8,7 @@ from app.core.logging import get_logger
 logger = get_logger(__name__)
 
 
-def get_task_executor(
+def task_executor_factory(
     background_tasks: Optional[BackgroundTasks] = None,
 ) -> TaskExecutor:
     settings = get_settings()
