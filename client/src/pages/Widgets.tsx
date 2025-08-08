@@ -1,37 +1,61 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Search } from 'lucide-react'
-import { api } from '@/services/api'
+import { widgetApi } from '@/services/widgetApi'
+import { useAppContext } from '@/context/AppContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { WidgetCard } from '@/components/widgets/WidgetCard'
 import { LanguageSupportBanner } from '@/components/widgets/LanguageSupportBanner'
 import { FreeTierAlert } from '@/components/widgets/FreeTierAlert'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { Widget } from '@/types'
+import { PageLoading } from '@/components/common/LoadingSpinner'
 
 export function Widgets() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [searchQuery, setSearchQuery] = useState('')
+  const { currentProject, isLoading: isContextLoading } = useAppContext()
 
-  const { data: widgets, isLoading } = useQuery({
-    queryKey: ['widgets'],
-    queryFn: () => api.getWidgets()
+  const { data: widgets, isLoading: isLoadingWidgets } = useQuery({
+    queryKey: ['widgets', currentProject?.id],
+    queryFn: () => widgetApi.getByProject(currentProject!.id),
+    enabled: !!currentProject,
   })
 
-  const filteredWidgets = widgets?.filter(widget =>
-    widget.name.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || []
+  const deleteMutation = useMutation({
+    mutationFn: (widgetId: string) => widgetApi.delete(widgetId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['widgets', currentProject?.id] })
+    },
+    onError: (error) => {
+      console.error('Failed to delete widget:', error)
+      alert(`Error: ${error.message}`)
+    },
+  })
+
+  const filteredWidgets =
+    widgets?.filter((widget) => widget.name.toLowerCase().includes(searchQuery.toLowerCase())) || []
 
   const handleCreateWidget = () => {
     navigate('/widgets/new')
   }
 
-  const handleDeleteWidget = async (widgetId: string) => {
-    // In a real app, you'd show a confirmation dialog first
-    await api.deleteWidget(widgetId)
-    // Refetch widgets after deletion
+  const handleDeleteWidget = (widgetId: string) => {
+    if (window.confirm('Are you sure you want to delete this widget?')) {
+      deleteMutation.mutate(widgetId)
+    }
+  }
+
+  const isLoading = isContextLoading || isLoadingWidgets
+
+  if (isLoading) {
+    return <PageLoading />
+  }
+
+  if (!currentProject) {
+    return <div className="text-center p-8">Please select a project to view widgets.</div>
   }
 
   return (
@@ -39,21 +63,16 @@ export function Widgets() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Your widgets</h1>
         <p className="text-muted-foreground mt-2">
-          Create and manage feedback widgets for your applications
+          Create and manage feedback widgets for project: <strong>{currentProject.name}</strong>
         </p>
       </div>
 
-      <Button 
-        onClick={handleCreateWidget}
-        size="lg"
-        className="gap-2"
-      >
+      <Button onClick={handleCreateWidget} size="lg" className="gap-2">
         <Plus className="h-5 w-5" />
         Create Widget
       </Button>
 
       <LanguageSupportBanner />
-      
       <FreeTierAlert />
 
       <div className="relative">
@@ -67,7 +86,7 @@ export function Widgets() {
         />
       </div>
 
-      {isLoading ? (
+      {isLoadingWidgets ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(3)].map((_, i) => (
             <Skeleton key={i} className="h-48" />
@@ -90,12 +109,12 @@ export function Widgets() {
   )
 }
 
-function EmptyState({ 
-  searchQuery, 
-  onCreateWidget 
-}: { 
+function EmptyState({
+  searchQuery,
+  onCreateWidget,
+}: {
   searchQuery: string
-  onCreateWidget: () => void 
+  onCreateWidget: () => void
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -106,10 +125,9 @@ function EmptyState({
         {searchQuery ? 'No widgets found' : 'No widgets yet'}
       </h3>
       <p className="text-muted-foreground mb-6 max-w-sm">
-        {searchQuery 
+        {searchQuery
           ? `No widgets match "${searchQuery}". Try a different search term.`
-          : 'Get started by creating your first widget to collect feedback from your users.'
-        }
+          : 'Get started by creating your first widget to collect feedback from your users.'}
       </p>
       {!searchQuery && (
         <Button onClick={onCreateWidget} className="gap-2">
