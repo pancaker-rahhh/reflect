@@ -15,7 +15,6 @@ router = APIRouter()
     '/',
     response_model=WorkspaceRead,
     status_code=status.HTTP_201_CREATED,
-    summary='Create a workspace',
 )
 async def create_workspace(
     workspace_in: WorkspaceCreate,
@@ -23,10 +22,6 @@ async def create_workspace(
     current_user: User = Depends(get_current_user),
     service: WorkspaceService = Depends(lambda: workspace_service),
 ) -> Any:
-    """
-    Create a new workspace for the authenticated user.
-    Each user can only have one workspace.
-    """
     workspace = await service.create_workspace(
         db, user=current_user, workspace_in=workspace_in
     )
@@ -34,15 +29,13 @@ async def create_workspace(
 
 
 @router.get(
-    '/me', response_model=WorkspaceRead, summary="Get the current user's workspace"
+    '/me',
+    response_model=WorkspaceRead,
 )
 async def get_my_workspace(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
     service: WorkspaceService = Depends(lambda: workspace_service),
 ) -> Any:
-    """
-    Retrieve the workspace associated with the currently authenticated user.
-    """
     workspace = await service.get_workspace_by_user(db, user=current_user)
     return workspace
