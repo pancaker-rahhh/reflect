@@ -2,7 +2,7 @@ from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-from api.server.app.core.settings import get_settings
+from app.core.settings import get_settings
 
 settings = get_settings()
 
@@ -40,7 +40,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 async def init_db() -> None:
     async with engine.begin() as conn:
-        from api.server.app.models import base_model  # noqa
+        from app.models import base_model  # noqa
 
         await conn.run_sync(Base.metadata.create_all)
 

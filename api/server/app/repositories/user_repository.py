@@ -3,8 +3,8 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from api.server.app.models.user_model import User
-from api.server.app.repositories.base_repository import BaseRepository
+from app.models.user_model import User
+from app.repositories.base_repository import BaseRepository
 
 
 class UserRepository(BaseRepository[User]):

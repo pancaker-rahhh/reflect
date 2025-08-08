@@ -1,13 +1,13 @@
-from api.server.app.core.settings import get_settings
-from api.server.app.schemas.health_schema import HealthCheckResponse
+from app.core.settings import get_settings
+from app.schemas.health_schema import HealthCheckResponse
 
 
 class HealthService:
     def get_health_status(self) -> HealthCheckResponse:
         settings = get_settings()
-        
+
         return HealthCheckResponse(
-            status="healthy",
+            status='healthy',
             service=settings.APP_NAME,
             version=settings.APP_VERSION,
         )

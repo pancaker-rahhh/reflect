@@ -2,11 +2,10 @@ from typing import Optional, List, Tuple
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, func
-from sqlalchemy.orm import selectinload
 from datetime import datetime
 
-from api.server.app.models.project_model import Project
-from api.server.app.repositories.base_repository import BaseRepository
+from app.models.project_model import Project
+from app.repositories.base_repository import BaseRepository
 
 
 class ProjectRepository(BaseRepository[Project]):
@@ -21,17 +20,15 @@ class ProjectRepository(BaseRepository[Project]):
     async def get_by_workspace_and_slug(
         self, db: AsyncSession, workspace_id: UUID, slug: str
     ) -> Optional[Project]:
-
         stmt = select(Project).where(
             and_(Project.workspace_id == workspace_id, Project.slug == slug)
         )
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
-    
+
     async def get_multi_by_workspace(
         self, db: AsyncSession, *, workspace_id: UUID, skip: int = 0, limit: int = 100
     ) -> Tuple[List[Project], int]:
-
         stmt = (
             select(Project)
             .where(Project.workspace_id == workspace_id, Project.deleted_at.is_(None))
@@ -45,13 +42,13 @@ class ProjectRepository(BaseRepository[Project]):
             .select_from(Project)
             .where(Project.workspace_id == workspace_id, Project.deleted_at.is_(None))
         )
-        
+
         items_result = await db.execute(stmt)
         total_result = await db.execute(count_stmt)
-        
+
         items = list(items_result.scalars().all())
         total = total_result.scalar_one()
-        
+
         return items, total
 
     async def soft_delete(self, db: AsyncSession, project: Project) -> Project:
@@ -60,5 +57,6 @@ class ProjectRepository(BaseRepository[Project]):
         await db.flush()
         await db.refresh(project)
         return project
+
 
 project_repository = ProjectRepository()

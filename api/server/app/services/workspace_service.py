@@ -7,7 +7,7 @@ from app.repositories.workspace_repository import (
     workspace_repository,
     WorkspaceRepository,
 )
-from app.schemas.workspace import WorkspaceCreate
+from app.schemas.workspace_schema import WorkspaceCreate
 
 
 class WorkspaceService:

@@ -5,10 +5,10 @@ from sqlalchemy import String, DateTime as DateTimeColumn
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from api.server.app.models.base_model import BaseModel
+from app.models.base_model import BaseModel
 
 if TYPE_CHECKING:
-    from api.server.app.models.workspace_model import Workspace
+    from app.models.workspace_model import Workspace
 
 
 class User(BaseModel):

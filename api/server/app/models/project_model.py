@@ -6,7 +6,7 @@ import re
 import uuid
 from datetime import datetime
 
-from api.server.app.models.base_model import BaseModel
+from app.models.base_model import BaseModel
 
 if TYPE_CHECKING:
     from app.models.workspace_model import Workspace
