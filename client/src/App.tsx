@@ -12,64 +12,66 @@ import { AccountSettingsLayout } from '@/components/layout/SettingsLayout'
 import { Dashboard } from '@/pages/Dashboard'
 
 // Lazy load secondary pages
-const Widgets = lazy(() => import('@/pages/Widgets').then(m => ({ default: m.Widgets })))
-const WidgetCreate = lazy(() => import('@/pages/WidgetCreate').then(m => ({ default: m.WidgetCreate })))
-const Responses = lazy(() => import('@/pages/Responses').then(m => ({ default: m.Responses })))
-const Reviews = lazy(() => import('@/pages/Reviews').then(m => ({ default: m.Reviews })))
-const BugReports = lazy(() => import('@/pages/BugReports').then(m => ({ default: m.BugReports })))
-const FeatureRequests = lazy(() => import('@/pages/FeatureRequests').then(m => ({ default: m.FeatureRequests })))
-const RoadmapPage = lazy(() => import('@/pages/Roadmap').then(m => ({ default: m.RoadmapPage })))
-const AccountSettings = lazy(() => import('@/pages/settings/AccountSettings').then(m => ({ default: m.AccountSettings })))
-const NotificationSettings = lazy(() => import('@/pages/settings/NotificationSettings').then(m => ({ default: m.NotificationSettings })))
-const BillingSettings = lazy(() => import('@/pages/settings/BillingSettings').then(m => ({ default: m.BillingSettings })))
-const ProjectSettings = lazy(() => import('@/pages/settings/ProjectSettings').then(m => ({ default: m.ProjectSettings })))
-const RoadmapSettings = lazy(() => import('@/pages/settings/RoadmapSettings').then(m => ({ default: m.RoadmapSettings })))
-const NotFound = lazy(() => import('@/pages/NotFound').then(m => ({ default: m.NotFound })))
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1
-    }
-  }
-})
-
+const Widgets = lazy(() => import('@/pages/Widgets').then((m) => ({ default: m.Widgets })))
+const WidgetCreate = lazy(() =>
+  import('@/pages/WidgetCreate').then((m) => ({ default: m.WidgetCreate }))
+)
+const Responses = lazy(() => import('@/pages/Responses').then((m) => ({ default: m.Responses })))
+const Reviews = lazy(() => import('@/pages/Reviews').then((m) => ({ default: m.Reviews })))
+const BugReports = lazy(() => import('@/pages/BugReports').then((m) => ({ default: m.BugReports })))
+const FeatureRequests = lazy(() =>
+  import('@/pages/FeatureRequests').then((m) => ({ default: m.FeatureRequests }))
+)
+const RoadmapPage = lazy(() => import('@/pages/Roadmap').then((m) => ({ default: m.RoadmapPage })))
+const AccountSettings = lazy(() =>
+  import('@/pages/settings/AccountSettings').then((m) => ({ default: m.AccountSettings }))
+)
+const NotificationSettings = lazy(() =>
+  import('@/pages/settings/NotificationSettings').then((m) => ({ default: m.NotificationSettings }))
+)
+const BillingSettings = lazy(() =>
+  import('@/pages/settings/BillingSettings').then((m) => ({ default: m.BillingSettings }))
+)
+const ProjectSettings = lazy(() =>
+  import('@/pages/settings/ProjectSettings').then((m) => ({ default: m.ProjectSettings }))
+)
+const RoadmapSettings = lazy(() =>
+  import('@/pages/settings/RoadmapSettings').then((m) => ({ default: m.RoadmapSettings }))
+)
+const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m.NotFound })))
 
 function App() {
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <BrowserRouter>
-            <SkipLink />
-            <Suspense fallback={<PageLoading />}>
-              <Routes>
-                <Route path="/" element={<AppLayout />}>
-                  <Route index element={<Navigate to="/dashboard" replace />} />
-                  <Route path="dashboard" element={<Dashboard />} />
-                  <Route path="widgets" element={<Widgets />} />
-                  <Route path="widgets/new" element={<WidgetCreate />} />
-                  <Route path="feedback/responses" element={<Responses />} />
-                  <Route path="feedback/reviews" element={<Reviews />} />
-                  <Route path="feedback/bugs" element={<BugReports />} />
-                  <Route path="feedback/features" element={<FeatureRequests />} />
-                  <Route path="roadmap" element={<RoadmapPage />} />
-                  <Route path="settings/*" element={<AccountSettingsLayout />}>
-                    <Route index element={<Navigate to="account" replace />} />
-                    <Route path="account" element={<AccountSettings />} />
-                    <Route path="notifications" element={<NotificationSettings />} />
-                    <Route path="billing" element={<BillingSettings />} />
-                  </Route>
-                  <Route path="settings/project" element={<ProjectSettings />} />
-                  <Route path="settings/roadmap" element={<RoadmapSettings />} />
+      <TooltipProvider>
+        <BrowserRouter>
+          <SkipLink />
+          <Suspense fallback={<PageLoading />}>
+            <Routes>
+              <Route path="/" element={<AppLayout />}>
+                <Route index element={<Navigate to="/dashboard" replace />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="widgets" element={<Widgets />} />
+                <Route path="widgets/new" element={<WidgetCreate />} />
+                <Route path="feedback/responses" element={<Responses />} />
+                <Route path="feedback/reviews" element={<Reviews />} />
+                <Route path="feedback/bugs" element={<BugReports />} />
+                <Route path="feedback/features" element={<FeatureRequests />} />
+                <Route path="roadmap" element={<RoadmapPage />} />
+                <Route path="settings/*" element={<AccountSettingsLayout />}>
+                  <Route index element={<Navigate to="account" replace />} />
+                  <Route path="account" element={<AccountSettings />} />
+                  <Route path="notifications" element={<NotificationSettings />} />
+                  <Route path="billing" element={<BillingSettings />} />
                 </Route>
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
+                <Route path="settings/project" element={<ProjectSettings />} />
+                <Route path="settings/roadmap" element={<RoadmapSettings />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </TooltipProvider>
     </ErrorBoundary>
   )
 }
