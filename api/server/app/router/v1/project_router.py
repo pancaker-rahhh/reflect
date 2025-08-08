@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, status, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from app.core.auth import get_current_user
-from app.models.user import User
-from app.schemas.project import (
+from app.models.user_model import User
+from app.schemas.project_schema import (
     ProjectCreate,
     ProjectUpdate,
     ProjectRead,

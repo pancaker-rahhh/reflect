@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from app.core.auth import get_current_user
-from app.models.user import User
-from app.schemas.workspace import WorkspaceCreate, WorkspaceRead
+from app.models.user_model import User
+from app.schemas.workspace_schema import WorkspaceCreate, WorkspaceRead
 from app.services.workspace_service import workspace_service, WorkspaceService
 
 router = APIRouter()

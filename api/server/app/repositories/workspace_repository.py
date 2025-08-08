@@ -4,8 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from api.server.app.models.workspace_model import Workspace
-from api.server.app.repositories.base_repository import BaseRepository
+from app.models.workspace_model import Workspace
+from app.repositories.base_repository import BaseRepository
 
 
 class WorkspaceRepository(BaseRepository[Workspace]):

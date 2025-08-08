@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from uuid import UUID
 from datetime import datetime
-from app.models.widget import WidgetType, WidgetPosition, WidgetStatus
+from app.models.widget_model import WidgetType, WidgetPosition, WidgetStatus
 
 
 class TargetingRule(BaseModel):
