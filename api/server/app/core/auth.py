@@ -1,88 +1,92 @@
-import logging
-from typing import Optional
-from uuid import UUID
 import jwt
-from app.core.exceptions import AuthorizationError
-from app.core.config import get_settings
-from fastapi import Depends, HTTPException, Security, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from supabase import Client, create_client
-
-logger = logging.getLogger(__name__)
-
-
-settings = get_settings()
-supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
-security = HTTPBearer()
+from typing import Optional
+from fastapi import Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.ext.asyncio import AsyncSession
+from api.server.app.core.exceptions import AuthenticationError
+from api.server.app.core.settings import get_settings
+from api.server.app.schemas.auth_schema import TokenData
+from app.db import get_db
 
 
-def verify_jwt_token(token: str) -> dict:
-    try:
-        return jwt.decode(
-            token,
-            settings.SUPABASE_JWT_SECRET,
-            algorithms=['HS256'],
-            audience='authenticated',
-            issuer=f'{settings.SUPABASE_URL}/auth/v1',
-        )
-    except jwt.PyJWTError as e:
-        raise AuthorizationError(f'Invalid or expired token: {e}', 401)
+class Auth:
+    def __init__(self):
+        self.settings = get_settings()
+        self.security = HTTPBearer(auto_error=False)
+
+    def validate_jwt_token(self, token: str) -> TokenData:
+        try:
+            payload = jwt.decode(
+                token,
+                self.settings.SUPABASE_JWT_SECRET,
+                algorithms=[self.settings.ALGORITHM],
+                audience='authenticated',
+                options={'verify_exp': True},
+            )
+
+            user_id = payload.get('sub')
+            email = payload.get('email')
+
+            if not user_id or not email:
+                raise AuthenticationError('Invalid token claims')
+
+            return TokenData(
+                user_id=user_id,
+                email=email,
+                role=payload.get('role'),
+                exp=payload.get('exp'),
+                iat=payload.get('iat'),
+                iss=payload.get('iss'),
+                aud=payload.get('aud'),
+            )
+
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationError('Token has expired')
+        except jwt.PyJWTError as e:
+            raise AuthenticationError(f'Invalid token: {e}')
+        except Exception as e:
+            raise AuthenticationError(f'Token validation failed: {str(e)}')
+
+    async def sync_user_to_db(self, token_data: TokenData, db: AsyncSession):
+        from api.server.app.models.user_model import User
+        from sqlalchemy import select
+
+        stmt = select(User).where(User.id == token_data.user_id)
+        result = await db.execute(stmt)
+        user = result.scalar_one_or_none()
+
+        if not user:
+            user = User(id=token_data.user_id, email=token_data.email)
+            db.add(user)
+            await db.commit()
+            await db.refresh(user)
+
+        return user
+
+    async def verify_and_get_user(
+        self, credentials: HTTPAuthorizationCredentials, db: AsyncSession
+    ):
+        token_data = self.validate_jwt_token(credentials.credentials)
+        user = await self.sync_user_to_db(token_data, db)
+        return user
 
 
-def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Security(security),
-) -> dict:
-    try:
-        token = credentials.credentials
-        verify_jwt_token(token)
-        user_response = supabase.auth.get_user(token)
-
-        if user_response.user is None:
-            raise AuthorizationError('User not found in Supabase', 404)
-
-        user = user_response.user
-        return {
-            'id': str(user.id),
-            'email': user.email,
-            'user_metadata': user.user_metadata or {},
-            'app_metadata': user.app_metadata or {},
-        }
-    except AuthorizationError as e:
-        raise HTTPException(status_code=e.status_code, detail=e.error)
-    except Exception as e:
-        logger.error(f'An unexpected authentication failure occurred: {str(e)}')
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='An unexpected authentication failure occurred',
-        )
+auth = Auth()
 
 
-def get_current_user_id(current_user: dict = Depends(get_current_user)) -> UUID:
-    try:
-        return UUID(current_user['id'])
-    except (ValueError, TypeError, KeyError):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Invalid user ID format in token',
-        )
-
-
-def get_current_user_optional(
-    credentials: Optional[HTTPAuthorizationCredentials] = Security(security),
-) -> Optional[dict]:
-    if credentials is None:
+async def get_current_user_optional(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(auth.security),
+    db: AsyncSession = Depends(get_db),
+):
+    if not credentials:
         return None
-    try:
-        return get_current_user(credentials)
-    except HTTPException:
-        return None
+    return await auth.verify_and_get_user(credentials, db)
 
 
-def require_admin(current_user: dict = Security(get_current_user)) -> dict:
-    app_metadata = current_user.get('app_metadata', {})
-
-    if app_metadata.get('role') != 'admin':
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail='Admin access required'
-        )
-    return current_user
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(auth.security),
+    db: AsyncSession = Depends(get_db),
+):
+    if not credentials:
+        raise AuthenticationError('Authentication required')
+    return await auth.verify_and_get_user(credentials, db)
