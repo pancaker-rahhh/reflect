@@ -28,11 +28,8 @@ class Project(BaseModel):
     slug: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
     description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
-<<<<<<< HEAD:api/server/app/models/project_model.py
-=======
     deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
->>>>>>> ed4fd5c (build project backend api calls):api/server/app/models/project.py
     logo_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     main_website_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
@@ -51,11 +48,6 @@ class Project(BaseModel):
     )
 
     settings: Mapped[dict] = mapped_column(JSON, default=dict)
-<<<<<<< HEAD:api/server/app/models/project_model.py
-    
-=======
-
->>>>>>> ed4fd5c (build project backend api calls):api/server/app/models/project.py
     workspace: Mapped['Workspace'] = relationship(
         'Workspace', back_populates='projects'
     )

@@ -1,11 +1,14 @@
-from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 
-from app.models.user import User
-from app.models.workspace import Workspace
-from app.repositories.workspace import workspace_repository, WorkspaceRepository
+from app.models.user_model import User
+from app.models.workspace_model import Workspace
+from app.repositories.workspace_repository import (
+    workspace_repository,
+    WorkspaceRepository,
+)
 from app.schemas.workspace import WorkspaceCreate
+
 
 class WorkspaceService:
     def __init__(self, repository: WorkspaceRepository = workspace_repository):
@@ -32,5 +35,6 @@ class WorkspaceService:
         workspace_data['user_id'] = user.id
 
         return await self.repository.create(db, **workspace_data)
+
 
 workspace_service = WorkspaceService()
