@@ -1,9 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 
-from app.models.user import User
-from app.models.workspace import Workspace
-from app.repositories.workspace import workspace_repository, WorkspaceRepository
+from app.models.user_model import User
+from app.models.workspace_model import Workspace
+from app.repositories.workspace_repository import (
+    workspace_repository,
+    WorkspaceRepository,
+)
 from app.schemas.workspace import WorkspaceCreate
 
 

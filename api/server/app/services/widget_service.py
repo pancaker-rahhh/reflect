@@ -3,9 +3,9 @@ from uuid import UUID, uuid4
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.user import User
-from app.models.widget import Widget, WidgetStatus
-from app.repositories.widget import widget_repository, WidgetRepository
+from app.models.user_model import User
+from app.models.widget_model import Widget, WidgetStatus
+from app.repositories.widget_repository import widget_repository, WidgetRepository
 from app.schemas.widget import WidgetCreate, WidgetUpdate
 from app.services.project_service import project_service, ProjectService
 
