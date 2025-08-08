@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class Workspace(BaseModel):
     __tablename__ = 'workspaces'
 
-    # One-to-one relationship with User
+    # TODO - many to many relationship with User, but it is 1-1 for now (needs admin to add users)
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey('users.id', ondelete='CASCADE'),
