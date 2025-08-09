@@ -12,6 +12,7 @@ from app.repositories.workspace_repository import workspace_repository
 from app.schemas.user_schema import UserProfileUpdateRequest, UserProfileResponse, UserDeleteResponse
 from app.core.logging import get_logger
 from app.schemas.auth_schema import TokenData
+from app.services.supabase_service import supabase_service
 
 logger = get_logger(__name__)
 
@@ -43,6 +44,9 @@ class UserService:
         
         if not updated_user:
             return None
+        
+        # Update user metadata in Supabase as well
+        await self._sync_user_to_supabase(user_id, update_dict)
             
         stmt = select(User).where(User.id == user_id).options(selectinload(User.workspace))
         result = await db.execute(stmt)
@@ -88,6 +92,35 @@ class UserService:
             logger.info(f"Created workspace {workspace.id} for user {user.id}")
         
         return user
+    
+    async def _sync_user_to_supabase(self, user_id: UUID, update_data: dict) -> None:
+        """
+        Sync user profile updates to Supabase user metadata.
+        This ensures both systems stay in sync when profile is updated.
+        """
+        # Prepare metadata for Supabase - only include fields that are user-facing
+        supabase_metadata = {}
+        
+        if 'name' in update_data:
+            supabase_metadata['full_name'] = update_data['name']
+            supabase_metadata['name'] = update_data['name']
+        
+        if 'avatar_url' in update_data:
+            supabase_metadata['avatar_url'] = update_data['avatar_url']
+            
+        if 'phone' in update_data:
+            supabase_metadata['phone'] = update_data['phone']
+        
+        if supabase_metadata:
+            success = await supabase_service.update_user_metadata(
+                str(user_id), 
+                supabase_metadata
+            )
+            
+            if success:
+                logger.info(f"Successfully synced user {user_id} updates to Supabase")
+            else:
+                logger.warning(f"Failed to sync user {user_id} updates to Supabase")
     
     # TODO: Implement webhook for user sync and workspace creation in prod
     # This is a stopgap for local development
