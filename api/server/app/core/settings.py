@@ -50,7 +50,9 @@ class Settings(BaseSettings):
     POSTHOG_HOST: str = 'https://app.posthog.com'
     SENTRY_DSN: Optional[str] = None
 
-    model_config = SettingsConfigDict(env_file='.env', case_sensitive=True, extra='ignore')
+    model_config = SettingsConfigDict(
+        env_file='.env', case_sensitive=True, extra='ignore'
+    )
 
     @property
     def cors_origins_list(self) -> List[str]:

@@ -5,7 +5,7 @@ import httpx
 import asyncio
 from contextlib import asynccontextmanager
 
-from api.server.app.core.settings import get_settings
+from app.core.settings import get_settings
 
 
 class CorrelationIDProcessor:
@@ -134,12 +134,12 @@ def setup_logging():
 
 @asynccontextmanager
 async def correlation_id_context(correlation_id: str):
-    token = structlog.contextvars.bind_contextvars(correlation_id=correlation_id)
+    tokens = structlog.contextvars.bind_contextvars(correlation_id=correlation_id)
     try:
         yield
     finally:
-        structlog.contextvars.unbind_contextvars(token)
+        structlog.contextvars.reset_contextvars(**tokens)
 
 
-def get_logger(name: str = None):
+def get_logger(name: str | None = None):
     return structlog.get_logger(name)

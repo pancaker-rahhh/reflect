@@ -9,14 +9,14 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from api.server.app.core.settings import get_settings
+from app.core.settings import get_settings
 from app.db import Base
 
 # Import all models to ensure they're registered with Base.metadata
-from api.server.app.models.base_model import BaseModel  # noqa
-from api.server.app.models.user_model import User  # noqa
-from api.server.app.models.workspace_model import Workspace  # noqa
-from api.server.app.models.project_model import Project  # noqa
+from app.models.base_model import BaseModel  # noqa
+from app.models.user_model import User  # noqa
+from app.models.workspace_model import Workspace  # noqa
+from app.models.project_model import Project  # noqa
 
 config = context.config
 settings = get_settings()
@@ -56,7 +56,7 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_async_migrations() -> None:
-    configuration = config.get_section(config.config_ini_section)
+    configuration = config.get_section(config.config_ini_section) or {}
     configuration['sqlalchemy.url'] = settings.DATABASE_URL
 
     connectable = async_engine_from_config(

@@ -3,9 +3,9 @@ from typing import Optional
 from fastapi import Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
-from api.server.app.core.exceptions import AuthenticationError
-from api.server.app.core.settings import get_settings
-from api.server.app.schemas.auth_schema import TokenData
+from app.core.exceptions import AuthenticationError
+from app.core.settings import get_settings
+from app.schemas.auth_schema import TokenData
 from app.db import get_db
 
 
@@ -30,10 +30,17 @@ class Auth:
             if not user_id or not email:
                 raise AuthenticationError('Invalid token claims')
 
+            # Extract user metadata from token
+            user_metadata = payload.get('user_metadata', {})
+            app_metadata = payload.get('app_metadata', {})
+
             return TokenData(
                 user_id=user_id,
                 email=email,
-                role=payload.get('role'),
+                name=user_metadata.get('full_name') or user_metadata.get('name'),
+                avatar_url=user_metadata.get('avatar_url'),
+                phone=user_metadata.get('phone'),
+                role=app_metadata.get('role') or payload.get('role'),
                 exp=payload.get('exp'),
                 iat=payload.get('iat'),
                 iss=payload.get('iss'),
@@ -48,7 +55,7 @@ class Auth:
             raise AuthenticationError(f'Token validation failed: {str(e)}')
 
     async def sync_user_to_db(self, token_data: TokenData, db: AsyncSession):
-        from api.server.app.models.user_model import User
+        from app.models.user_model import User
         from sqlalchemy import select
 
         stmt = select(User).where(User.id == token_data.user_id)
