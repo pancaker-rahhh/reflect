@@ -44,7 +44,7 @@ class Project(BaseModel):
     )
 
     settings: Mapped[dict] = mapped_column(JSON, default=dict)
-    
+
     workspace: Mapped['Workspace'] = relationship(
         'Workspace', back_populates='projects'
     )

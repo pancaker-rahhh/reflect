@@ -11,46 +11,46 @@ class SupabaseService:
         self.settings = get_settings()
         self.base_url = self.settings.SUPABASE_URL
         self.service_key = self.settings.SUPABASE_SERVICE_KEY
-        
+
         if not self.base_url or not self.service_key:
-            logger.warning("Supabase configuration incomplete. User updates to Supabase will be skipped.")
-    
+            logger.warning(
+                'Supabase configuration incomplete. User updates to Supabase will be skipped.'
+            )
+
     async def update_user_metadata(
-        self, 
-        user_id: str, 
-        user_metadata: Dict[str, Any]
+        self, user_id: str, user_metadata: Dict[str, Any]
     ) -> bool:
         if not self.base_url or not self.service_key:
-            logger.warning("Supabase not configured, skipping user metadata update")
+            logger.warning('Supabase not configured, skipping user metadata update')
             return False
-        
-        url = f"{self.base_url}/auth/v1/admin/users/{user_id}"
+
+        url = f'{self.base_url}/auth/v1/admin/users/{user_id}'
         headers = {
-            "Authorization": f"Bearer {self.service_key}",
-            "Content-Type": "application/json",
-            "apikey": self.service_key
+            'Authorization': f'Bearer {self.service_key}',
+            'Content-Type': 'application/json',
+            'apikey': self.service_key,
         }
-        
-        payload = {
-            "user_metadata": user_metadata
-        }
-        
+
+        payload = {'user_metadata': user_metadata}
+
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.put(url, json=payload, headers=headers)
-                
+
                 if response.status_code == 200:
-                    logger.info(f"Successfully updated user metadata for user {user_id}")
+                    logger.info(
+                        f'Successfully updated user metadata for user {user_id}'
+                    )
                     return True
                 else:
                     logger.error(
-                        f"Failed to update user metadata for user {user_id}: "
-                        f"{response.status_code} - {response.text}"
+                        f'Failed to update user metadata for user {user_id}: '
+                        f'{response.status_code} - {response.text}'
                     )
                     return False
-                    
+
         except Exception as e:
-            logger.error(f"Error updating user metadata for user {user_id}: {str(e)}")
+            logger.error(f'Error updating user metadata for user {user_id}: {str(e)}')
             return False
 
 

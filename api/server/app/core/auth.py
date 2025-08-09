@@ -33,7 +33,7 @@ class Auth:
             # Extract user metadata from token
             user_metadata = payload.get('user_metadata', {})
             app_metadata = payload.get('app_metadata', {})
-            
+
             return TokenData(
                 user_id=user_id,
                 email=email,

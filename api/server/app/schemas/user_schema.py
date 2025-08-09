@@ -33,20 +33,6 @@ class UserProfileResponse(BaseModel):
 
     class Config:
         from_attributes = True
-        json_schema_extra = {
-            'example': {
-                'id': '123e4567-e89b-12d3-a456-426614174000',
-                'email': 'user@example.com',
-                'name': 'John Doe',
-                'company_name': 'Acme Corp',
-                'timezone': 'America/New_York',
-                'workspace': {
-                    'id': '456e7890-e89b-12d3-a456-426614174111',
-                    'name': 'My Workspace',
-                    'slug': 'my-workspace'
-                }
-            }
-        }
 
 
 class UserProfileUpdateRequest(BaseModel):
@@ -64,14 +50,7 @@ class UserProfileUpdateRequest(BaseModel):
         return v
 
     class Config:
-        json_schema_extra = {
-            'example': {
-                'name': 'John Doe',
-                'company_name': 'Acme Corp',
-                'phone': '+1234567890',
-                'timezone': 'America/New_York'
-            }
-        }
+        pass
 
 
 class UserDeleteResponse(BaseModel):
@@ -82,10 +61,4 @@ class UserDeleteResponse(BaseModel):
     )
 
     class Config:
-        json_schema_extra = {
-            'example': {
-                'message': 'User account has been soft deleted',
-                'deleted_at': '2024-01-01T00:00:00Z',
-                'gdpr_note': 'Your data will be retained for 30 days before permanent deletion'
-            }
-        }
+        pass

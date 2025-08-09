@@ -1,7 +1,10 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.exception_handlers import authentication_error_handler, general_error_handler
+from app.core.exception_handlers import (
+    authentication_error_handler,
+    general_error_handler,
+)
 from app.core.exceptions import AuthenticationError
 from app.core.settings import get_settings
 from app.core.logging import setup_logging
