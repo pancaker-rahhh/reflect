@@ -22,13 +22,9 @@ export abstract class BaseApiService {
   protected readonly baseUrl: string;
 
   constructor() {
-    // For now, hardcode to localhost:8000 - can be made configurable later
     this.baseUrl = 'http://localhost:8000/api/v1';
   }
 
-  /**
-   * Get authorization headers with current session token
-   */
   protected async getAuthHeaders(): Promise<Record<string, string>> {
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
@@ -39,9 +35,6 @@ export abstract class BaseApiService {
     };
   }
 
-  /**
-   * Make authenticated HTTP request
-   */
   protected async request<T>(
     endpoint: string,
     options: RequestInit = {}
@@ -58,14 +51,12 @@ export abstract class BaseApiService {
         },
       });
 
-      // Handle authentication errors
       if (response.status === 401) {
         await supabase.auth.signOut();
         window.location.href = '/login';
         throw new ApiException('Authentication required', 401);
       }
 
-      // Handle other HTTP errors
       if (!response.ok) {
         let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         let errorDetails;
@@ -75,13 +66,11 @@ export abstract class BaseApiService {
           errorMessage = errorData.message || errorData.detail || errorMessage;
           errorDetails = errorData;
         } catch {
-          // If response is not JSON, use status text
         }
 
         throw new ApiException(errorMessage, response.status, errorDetails);
       }
 
-      // Handle empty responses (like 204 No Content)
       if (response.status === 204 || response.headers.get('content-length') === '0') {
         return {} as T;
       }
@@ -92,7 +81,6 @@ export abstract class BaseApiService {
         throw error;
       }
 
-      // Handle network errors
       if (error instanceof TypeError && error.message.includes('fetch')) {
         throw new ApiException('Network error - please check your connection', 0, error);
       }
@@ -101,16 +89,10 @@ export abstract class BaseApiService {
     }
   }
 
-  /**
-   * GET request
-   */
   protected async get<T>(endpoint: string): Promise<T> {
     return this.request<T>(endpoint, { method: 'GET' });
   }
 
-  /**
-   * POST request
-   */
   protected async post<T>(endpoint: string, data?: any): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'POST',
@@ -118,9 +100,6 @@ export abstract class BaseApiService {
     });
   }
 
-  /**
-   * PUT request
-   */
   protected async put<T>(endpoint: string, data?: any): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PUT',
@@ -128,9 +107,6 @@ export abstract class BaseApiService {
     });
   }
 
-  /**
-   * PATCH request
-   */
   protected async patch<T>(endpoint: string, data?: any): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PATCH',
@@ -138,9 +114,6 @@ export abstract class BaseApiService {
     });
   }
 
-  /**
-   * DELETE request
-   */
   protected async delete<T>(endpoint: string): Promise<T> {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
