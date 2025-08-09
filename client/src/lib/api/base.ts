@@ -49,9 +49,6 @@ export abstract class BaseApiService {
     const url = `${this.baseUrl}${endpoint}`;
     const headers = await this.getAuthHeaders();
 
-    console.log(`🌐 API Request: ${options.method || 'GET'} ${url}`);
-    console.log('📋 Headers:', headers);
-
     try {
       const response = await fetch(url, {
         ...options,
@@ -60,8 +57,6 @@ export abstract class BaseApiService {
           ...options.headers,
         },
       });
-
-      console.log(`📡 API Response: ${response.status} ${response.statusText}`);
 
       // Handle authentication errors
       if (response.status === 401) {
@@ -93,19 +88,15 @@ export abstract class BaseApiService {
 
       return await response.json();
     } catch (error) {
-      console.error('🚨 API Request Error:', error);
-      
       if (error instanceof ApiException) {
         throw error;
       }
 
       // Handle network errors
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        console.error('🌐 Network Error - Backend might be unreachable:', error);
         throw new ApiException('Network error - please check your connection', 0, error);
       }
 
-      console.error('🔥 Unexpected API Error:', error);
       throw new ApiException('An unexpected error occurred', 500, error);
     }
   }

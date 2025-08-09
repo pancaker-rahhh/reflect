@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import { api } from '../lib/api';
 
 interface AuthContextType {
   user: User | null;
@@ -38,12 +37,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // Sync user to backend when they sign in
+      // Sync user to backend when they sign in (but not on initial session load)
+      // TODO: part of the stop gap user sync solution, will implement webhook for prod
       if (event === 'SIGNED_IN' && session) {
         console.log('🚀 Starting user sync to backend...');
+        console.log('🎫 Using session token:', session.access_token ? 'Present' : 'Missing');
         setSyncing(true);
         try {
-          const result = await api.syncUser();
+          // Make direct API call with known session
+          const response = await fetch('http://localhost:8000/api/v1/users/sync', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+
+          const result = await response.json();
           console.log('✅ User synced to backend successfully:', result);
         } catch (error) {
           console.error('❌ Failed to sync user to backend:', error);
