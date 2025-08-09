@@ -4,7 +4,6 @@ from sqlalchemy.dialects.postgresql import UUID, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 import re
 import uuid
-
 from api.server.app.models.base_model import BaseModel
 
 if TYPE_CHECKING:

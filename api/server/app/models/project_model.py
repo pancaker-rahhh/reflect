@@ -44,11 +44,12 @@ class Project(BaseModel):
     )
 
     settings: Mapped[dict] = mapped_column(JSON, default=dict)
-    
+
     workspace: Mapped['Workspace'] = relationship(
         'Workspace', back_populates='projects'
     )
     widgets = relationship('Widget', back_populates='project')
+    forms = relationship('FeedbackForm', back_populates='project')
 
     def generate_slug(self, name: str) -> str:
         """Generate URL-friendly slug from name"""

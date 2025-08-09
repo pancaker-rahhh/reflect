@@ -46,6 +46,7 @@ class Feedback(BaseModel):
 
     widget_id = Column(UUID(as_uuid=True), ForeignKey('widgets.id'), nullable=False)
     project_id = Column(UUID(as_uuid=True), ForeignKey('projects.id'), nullable=False)
+    form_id = Column(UUID(as_uuid=True), ForeignKey('feedback_forms.id'), nullable=True)
 
     feedback_type = Column(SQLEnum(FeedbackType), nullable=False)
     status = Column(SQLEnum(FeedbackStatus), default=FeedbackStatus.NEW)
@@ -82,6 +83,7 @@ class Feedback(BaseModel):
 
     widget = relationship('Widget', back_populates='feedback')
     project = relationship('Project')
+    form = relationship('FeedbackForm', back_populates='feedback_items')
     assigned_to = relationship('User', foreign_keys=[assigned_to_user_id])
     resolved_by = relationship('User', foreign_keys=[resolved_by_user_id])
 
@@ -94,7 +96,9 @@ class Feedback(BaseModel):
 class SurveyFeedback(Feedback):
     __tablename__ = 'survey_feedback'
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
+    )
     survey_type = Column(String(50))
     score = Column(Integer)
     response_data = Column(JSONB, default=dict)
@@ -105,7 +109,9 @@ class SurveyFeedback(Feedback):
 class ReviewFeedback(Feedback):
     __tablename__ = 'review_feedback'
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
+    )
     overall_rating = Column(Integer)
     review_categories = Column(JSONB, default=dict)
     is_published = Column(Boolean, default=False)
@@ -119,7 +125,9 @@ class ReviewFeedback(Feedback):
 class BugReportFeedback(Feedback):
     __tablename__ = 'bug_report_feedback'
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
+    )
     severity_level = Column(SQLEnum(FeedbackPriority), default=FeedbackPriority.MEDIUM)
     steps_to_reproduce = Column(Text)
     expected_behavior = Column(Text)
@@ -133,7 +141,9 @@ class BugReportFeedback(Feedback):
 class FeatureRequestFeedback(Feedback):
     __tablename__ = 'feature_request_feedback'
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
+    )
     use_case = Column(Text)
     business_value = Column(Text)
     upvotes_count = Column(Integer, default=0)
