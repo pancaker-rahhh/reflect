@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '@/services/api'
+import { api, type UserProfileUpdateRequest } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,20 +16,24 @@ export function AccountSettings() {
   
   const { data: user, isLoading } = useQuery({
     queryKey: ['user'],
-    queryFn: () => api.getCurrentUser(),
-    onSuccess: (data) => {
-      setName(data.name)
-    }
+    queryFn: () => api.getCurrentUser()
   })
 
+  // Set name when user data is loaded
+  useEffect(() => {
+    if (user?.name) {
+      setName(user.name)
+    }
+  }, [user?.name])
+
   const updateProfileMutation = useMutation({
-    mutationFn: (data: { name: string }) => api.updateUserProfile(data),
+    mutationFn: (data: UserProfileUpdateRequest) => api.updateUserProfile(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user'] })
       setIsEdited(false)
     },
-    onError: () => {
-      console.error('Failed to update profile')
+    onError: (error) => {
+      console.error('Failed to update profile:', error)
     }
   })
 
