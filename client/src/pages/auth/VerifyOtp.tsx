@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AlertCircle, ArrowLeft, Shield } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { SyncLoader } from '../../components/auth/SyncLoader';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Alert, AlertDescription } from '../../components/ui/alert';
@@ -19,7 +20,7 @@ type OtpFormData = z.infer<typeof otpSchema>;
 export function VerifyOtp() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, loading, verifyOtp, signInWithEmail } = useAuth();
+  const { user, loading, syncing, verifyOtp, signInWithEmail } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isResending, setIsResending] = useState(false);
@@ -44,15 +45,11 @@ export function VerifyOtp() {
     }
   }, [email, navigate]);
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+  if (loading || syncing) {
+    return <SyncLoader />;
   }
 
-  if (user) {
+  if (user && !syncing) {
     return <Navigate to={from} replace />;
   }
 
@@ -68,9 +65,8 @@ export function VerifyOtp() {
 
     if (error) {
       setError(error.message);
-    } else {
-      navigate(from, { replace: true });
     }
+    // Navigation will happen automatically via useEffect when sync completes
 
     setIsSubmitting(false);
   };

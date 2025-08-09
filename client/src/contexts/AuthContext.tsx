@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import { api } from '../services/api';
+import { api } from '../lib/api';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  syncing: boolean;
   signInWithEmail: (email: string) => Promise<{ error: AuthError | null }>;
   signInWithGoogle: () => Promise<{ error: AuthError | null }>;
   verifyOtp: (email: string, token: string) => Promise<{ error: AuthError | null }>;
@@ -19,6 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -30,18 +32,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔐 Auth state change:', event, session?.user?.id);
+      
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
 
       // Sync user to backend when they sign in
       if (event === 'SIGNED_IN' && session) {
+        console.log('🚀 Starting user sync to backend...');
+        setSyncing(true);
         try {
-          await api.syncUser();
-          console.log('User synced to backend successfully');
+          const result = await api.syncUser();
+          console.log('✅ User synced to backend successfully:', result);
         } catch (error) {
-          console.error('Failed to sync user to backend:', error);
+          console.error('❌ Failed to sync user to backend:', error);
           // Don't block login flow if sync fails
+        } finally {
+          setSyncing(false);
+          console.log('🏁 Sync process completed');
         }
       }
     });
@@ -91,6 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     session,
     loading,
+    syncing,
     signInWithEmail,
     signInWithGoogle,
     verifyOtp,
