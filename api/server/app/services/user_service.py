@@ -98,11 +98,42 @@ class UserService:
         user_exist = await user_repository.get(db, UUID(token_data.user_id))
         
         if user_exist:
-            logger.info(f"User {token_data.user_id} already exists, skipping sync")
+            # Update existing user with latest token data
+            update_data = {}
+            current_time = datetime.now(timezone.utc)
+            
+            # Update name if it's provided and different
+            if token_data.name and token_data.name != user_exist.name:
+                update_data['name'] = token_data.name
+                
+            # Update avatar_url if it's provided and different  
+            if token_data.avatar_url and token_data.avatar_url != user_exist.avatar_url:
+                update_data['avatar_url'] = token_data.avatar_url
+                
+            # Update phone if it's provided and different
+            if token_data.phone and token_data.phone != user_exist.phone:
+                update_data['phone'] = token_data.phone
+            
+            # Always update sync and login timestamps
+            update_data.update({
+                'last_synced_at': current_time,
+                'last_login_at': current_time,
+                'updated_at': current_time
+            })
+            
+            if len(update_data) > 3:  # More than just timestamps updated
+                await user_repository.update(db, UUID(token_data.user_id), **update_data)
+                logger.info(f"Updated user {token_data.user_id} with latest token data")
+            else:
+                await user_repository.update(db, UUID(token_data.user_id), **update_data)
+                logger.info(f"Updated timestamps for user {token_data.user_id}")
         else:
             user_data = {
                 'id': UUID(token_data.user_id),
                 'email': token_data.email,
+                'name': token_data.name,
+                'avatar_url': token_data.avatar_url,
+                'phone': token_data.phone,
                 'last_synced_at': datetime.now(timezone.utc),
                 'last_login_at': datetime.now(timezone.utc)
             }

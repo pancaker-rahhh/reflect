@@ -30,10 +30,17 @@ class Auth:
             if not user_id or not email:
                 raise AuthenticationError('Invalid token claims')
 
+            # Extract user metadata from token
+            user_metadata = payload.get('user_metadata', {})
+            app_metadata = payload.get('app_metadata', {})
+            
             return TokenData(
                 user_id=user_id,
                 email=email,
-                role=payload.get('role'),
+                name=user_metadata.get('full_name') or user_metadata.get('name'),
+                avatar_url=user_metadata.get('avatar_url'),
+                phone=user_metadata.get('phone'),
+                role=app_metadata.get('role') or payload.get('role'),
                 exp=payload.get('exp'),
                 iat=payload.get('iat'),
                 iss=payload.get('iss'),

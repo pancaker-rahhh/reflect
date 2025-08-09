@@ -23,8 +23,11 @@ export function AccountSettings() {
   useEffect(() => {
     if (user?.name) {
       setName(user.name)
+    } else if (user) {
+      // If user exists but has no name, initialize with empty string
+      setName('')
     }
-  }, [user?.name])
+  }, [user])
 
   const updateProfileMutation = useMutation({
     mutationFn: (data: UserProfileUpdateRequest) => api.updateUserProfile(data),

@@ -6,6 +6,9 @@ from datetime import datetime
 class TokenData(BaseModel):
     user_id: str
     email: str
+    name: Optional[str] = None
+    avatar_url: Optional[str] = None
+    phone: Optional[str] = None
     role: Optional[str] = None
     exp: int
     iat: int
