@@ -4,18 +4,10 @@ import logging
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
-
-<<<<<<< HEAD
-from app.models.user import User
-from app.models.project import Project
-from app.repositories.project import project_repository, ProjectRepository
-from app.schemas.project import (
-=======
 from app.models.user_model import User
 from app.models.project_model import Project
 from app.repositories.project_repository import project_repository, ProjectRepository
 from app.schemas.project_schema import (
->>>>>>> 1f07fb5 (change from api.server to app. and change files names (causing import errors))
     ProjectCreate,
     ProjectUpdate,
     ProjectSettings,

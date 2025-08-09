@@ -1,12 +1,18 @@
 from fastapi import APIRouter
-from app.router.v1.health_router import health_router
-from app.router.v1.feedback_router import feedback_router
-from app.router.v1.form_router import form_router
-from app.router.v1 import project_router, workspace_router, widget_router, public_router
+
+from app.router.v1 import (
+    project_router,
+    health_router,
+    workspace_router,
+    widget_router,
+    public_router,
+    form_router,
+    feedback_router,
+)
 
 api_router = APIRouter(prefix='/api/v1')
-
-api_router.include_router(health_router)
+api_router.include_router(health_router.health_router)
+api_router.include_router(project_router.router, prefix='/projects', tags=['Projects'])
 api_router.include_router(feedback_router)
 api_router.include_router(form_router)
 api_router.include_router(project_router.router, prefix='/projects', tags=['Projects'])
