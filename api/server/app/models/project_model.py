@@ -1,14 +1,16 @@
 from typing import TYPE_CHECKING, Optional
-from sqlalchemy import String, Boolean, ForeignKey
+from sqlalchemy import String, Boolean, ForeignKey, UniqueConstraint, DateTime
 from sqlalchemy.dialects.postgresql import UUID, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 import re
 import uuid
+from datetime import datetime
 
 from api.server.app.models.base_model import BaseModel
 
 if TYPE_CHECKING:
-    from api.server.app.models.workspace_model import Workspace
+    from app.models.workspace_model import Workspace
+    from app.models.widget_model import Widget
 
 
 class Project(BaseModel):
@@ -25,6 +27,8 @@ class Project(BaseModel):
     display_name: Mapped[str] = mapped_column(String(255), nullable=False)
     slug: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
     description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     logo_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     main_website_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
@@ -51,10 +55,14 @@ class Project(BaseModel):
     widgets = relationship('Widget', back_populates='project')
     forms = relationship('FeedbackForm', back_populates='project')
 
+    workspace: Mapped['Workspace'] = relationship(
+        'Workspace', back_populates='projects'
+    )
+    widgets: Mapped[list['Widget']] = relationship('Widget', back_populates='project')
+
     def generate_slug(self, name: str) -> str:
-        """Generate URL-friendly slug from name"""
         slug = re.sub(r'[^\w\s-]', '', name.lower())
-        slug = re.sub(r'[-\s]+', '-', slug)
+        slug = re.sub(r'[-\s]+', '-', slug).strip('-')
         return slug[:100]
 
     def __init__(self, **kwargs):
@@ -64,5 +72,7 @@ class Project(BaseModel):
             kwargs['slug'] = self.generate_slug(kwargs['name'])
         super().__init__(**kwargs)
 
-    # Unique constraint on workspace_id + slug
-    __table_args__ = {'extend_existing': True}
+    __table_args__ = (
+        UniqueConstraint('workspace_id', 'slug', name='uq_project_workspace_slug'),
+        {'extend_existing': True},
+    )
