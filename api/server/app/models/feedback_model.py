@@ -46,6 +46,7 @@ class Feedback(BaseModel):
 
     widget_id = Column(UUID(as_uuid=True), ForeignKey('widgets.id'), nullable=False)
     project_id = Column(UUID(as_uuid=True), ForeignKey('projects.id'), nullable=False)
+    form_id = Column(UUID(as_uuid=True), ForeignKey('feedback_forms.id'), nullable=True)
 
     feedback_type = Column(SQLEnum(FeedbackType), nullable=False)
     status = Column(SQLEnum(FeedbackStatus), default=FeedbackStatus.NEW)
@@ -82,6 +83,7 @@ class Feedback(BaseModel):
 
     widget = relationship('Widget', back_populates='feedback')
     project = relationship('Project')
+    form = relationship('FeedbackForm', back_populates='feedback_items')
     assigned_to = relationship('User', foreign_keys=[assigned_to_user_id])
     resolved_by = relationship('User', foreign_keys=[resolved_by_user_id])
 

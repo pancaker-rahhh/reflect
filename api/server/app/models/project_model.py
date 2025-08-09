@@ -10,7 +10,6 @@ from app.models.base_model import BaseModel
 
 if TYPE_CHECKING:
     from app.models.workspace_model import Workspace
-    from app.models.widget_model import Widget
 
 
 class Project(BaseModel):
@@ -48,10 +47,12 @@ class Project(BaseModel):
     )
 
     settings: Mapped[dict] = mapped_column(JSON, default=dict)
+
     workspace: Mapped['Workspace'] = relationship(
         'Workspace', back_populates='projects'
     )
-    widgets: Mapped[list['Widget']] = relationship('Widget', back_populates='project')
+    widgets = relationship('Widget', back_populates='project')
+    forms = relationship('FeedbackForm', back_populates='project')
 
     def generate_slug(self, name: str) -> str:
         slug = re.sub(r'[^\w\s-]', '', name.lower())

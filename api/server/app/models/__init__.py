@@ -8,6 +8,7 @@ from app.models.user_model import User
 from app.models.workspace_model import Workspace
 from app.models.project_model import Project
 from app.models.widget_model import Widget
+from app.models.form_model import FeedbackForm
 from app.models.feedback_model import (
     Feedback,
     SurveyFeedback,
@@ -25,6 +26,7 @@ __all__ = [
     'Workspace',
     'Project',
     'Widget',
+    'FeedbackForm',
     'Feedback',
     'SurveyFeedback',
     'ReviewFeedback',
