@@ -11,7 +11,7 @@ import type {
 } from '@/types'
 import { supabase } from '../lib/supabase'
 
-const API_BASE_URL = '/api'
+const API_BASE_URL = '/api/v1'
 
 class ApiService {
   private async request<T>(
@@ -45,7 +45,13 @@ class ApiService {
 
   // Auth
   async getCurrentUser(): Promise<User> {
-    return this.request<User>('/auth/me')
+    return this.request<User>('/users/me')
+  }
+
+  async syncUser(): Promise<User> {
+    return this.request<User>('/users/sync', {
+      method: 'POST'
+    })
   }
 
   // Workspaces
@@ -166,7 +172,7 @@ class ApiService {
   }
 
   async updateUserProfile(data: { name: string }): Promise<User> {
-    return this.request<User>('/auth/me', {
+    return this.request<User>('/users/me', {
       method: 'PUT',
       body: JSON.stringify(data)
     })

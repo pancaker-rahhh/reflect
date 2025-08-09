@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.auth import get_current_user
+from app.core.auth import get_current_user, auth
 from app.db import get_db
 from app.models.user_model import User
 from app.services.user_service import user_service
@@ -84,3 +85,34 @@ async def delete_current_user_account(
         )
     
     return deletion_response
+
+
+@user_router.post(
+    "/sync",
+    response_model=UserProfileResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Sync user from Supabase",
+    description="Syncs user data from JWT token to local database. Call this after login."
+)
+async def sync_user_from_supabase(
+    credentials: HTTPAuthorizationCredentials = Depends(auth.security),
+    db: AsyncSession = Depends(get_db)
+) -> UserProfileResponse:
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+    
+    try:
+        token_data = auth.validate_jwt_token(credentials.credentials)
+        
+        synced_user = await user_service.sync_user_from_token(token_data, db)
+        
+        return synced_user
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to sync user: {str(e)}"
+        )

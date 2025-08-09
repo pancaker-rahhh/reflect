@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { api } from '../services/api';
 
 interface AuthContextType {
   user: User | null;
@@ -28,10 +29,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      // Sync user to backend when they sign in
+      if (event === 'SIGNED_IN' && session) {
+        try {
+          await api.syncUser();
+          console.log('User synced to backend successfully');
+        } catch (error) {
+          console.error('Failed to sync user to backend:', error);
+          // Don't block login flow if sync fails
+        }
+      }
     });
 
     return () => subscription.unsubscribe();

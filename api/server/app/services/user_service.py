@@ -11,6 +11,7 @@ from app.repositories.user_repository import user_repository
 from app.repositories.workspace_repository import workspace_repository
 from app.schemas.user_schema import UserProfileUpdateRequest, UserProfileResponse, UserDeleteResponse
 from app.core.logging import get_logger
+from app.schemas.auth_schema import TokenData
 
 logger = get_logger(__name__)
 
@@ -87,6 +88,42 @@ class UserService:
             logger.info(f"Created workspace {workspace.id} for user {user.id}")
         
         return user
+    
+    # TODO: Implement webhook for user sync and workspace creation in prod
+    # This is a stopgap for local development
+    async def sync_user_from_token(
+        self, token_data: TokenData, db: AsyncSession
+    ) -> UserProfileResponse:
+        
+        user_exist = await user_repository.get(db, UUID(token_data.user_id))
+        
+        if user_exist:
+            logger.info(f"User {token_data.user_id} already exists, skipping sync")
+        else:
+            user_data = {
+                'id': UUID(token_data.user_id),
+                'email': token_data.email,
+                'last_synced_at': datetime.now(timezone.utc),
+                'last_login_at': datetime.now(timezone.utc)
+            }
+            user = await user_repository.create(db, **user_data)
+            logger.info(f"Created new user {token_data.user_id} from token sync")
+
+            workspace_name = user.name or user.email.split('@')[0]
+            workspace = Workspace(
+                user_id=user.id,
+                name=f"{workspace_name}'s Workspace",
+                description=f"Personal workspace for {user.email}"
+            )
+            db.add(workspace)
+            await db.commit()
+            await db.refresh(workspace)
+            logger.info(f"Created workspace {workspace.id} for new user {user.id}")
+
+        profile = await self.get_user_profile(UUID(token_data.user_id), db)
+        if not profile:
+            raise ValueError(f"Failed to get user profile after sync for user {token_data.user_id}")
+        return profile
 
 
 user_service = UserService()
