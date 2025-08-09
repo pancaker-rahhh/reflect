@@ -10,8 +10,9 @@ import type {
   Roadmap
 } from '@/types'
 import { supabase } from '../lib/supabase'
+import { mockData } from '@/mocks/data'
 
-const API_BASE_URL = '/api/v1'
+const API_BASE_URL = 'http://localhost:8000/api/v1'
 
 class ApiService {
   private async request<T>(
@@ -54,7 +55,7 @@ class ApiService {
     })
   }
 
-  // Workspaces
+  // Workspaces - REAL API CALLS
   async getWorkspaces(): Promise<Workspace[]> {
     return this.request<Workspace[]>('/workspaces')
   }
@@ -63,112 +64,89 @@ class ApiService {
     return this.request<Workspace>(`/workspaces/${id}`)
   }
 
-  // Projects
+  // Projects - MOCKED (not implemented in backend yet)
   async getProjects(): Promise<Project[]> {
-    return this.request<Project[]>('/projects')
+    return new Promise(resolve => setTimeout(() => resolve(mockData.projects), 500))
   }
 
   async getProject(id: string): Promise<Project> {
-    return this.request<Project>(`/projects/${id}`)
+    return new Promise(resolve => setTimeout(() => 
+      resolve(mockData.projects.find(p => p.id === id) || mockData.projects[0]), 500))
   }
 
   async updateProject(id: string, data: Partial<Project>): Promise<Project> {
-    return this.request<Project>(`/projects/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data)
-    })
+    return new Promise(resolve => setTimeout(() => 
+      resolve({ ...mockData.projects[0], ...data }), 500))
   }
 
   async deleteProject(id: string): Promise<void> {
-    await this.request(`/projects/${id}`, {
-      method: 'DELETE'
-    })
+    return new Promise(resolve => setTimeout(() => resolve(), 500))
   }
 
-  // Widgets
+  // Widgets - MOCKED (not implemented in backend yet)
   async getWidgets(): Promise<Widget[]> {
-    return this.request<Widget[]>('/widgets')
+    return new Promise(resolve => setTimeout(() => resolve(mockData.widgets), 500))
   }
 
   async createWidget(widget: Omit<Widget, 'id' | 'createdAt' | 'updatedAt'>): Promise<Widget> {
-    return this.request<Widget>('/widgets', {
-      method: 'POST',
-      body: JSON.stringify(widget)
-    })
+    return new Promise(resolve => setTimeout(() => 
+      resolve({ ...widget, id: Date.now().toString(), createdAt: new Date(), updatedAt: new Date() }), 500))
   }
 
   async updateWidget(id: string, data: Partial<Widget>): Promise<Widget> {
-    return this.request<Widget>(`/widgets/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data)
-    })
+    return new Promise(resolve => setTimeout(() => 
+      resolve({ ...mockData.widgets[0], ...data }), 500))
   }
 
   async deleteWidget(id: string): Promise<void> {
-    await this.request(`/widgets/${id}`, {
-      method: 'DELETE'
-    })
+    return new Promise(resolve => setTimeout(() => resolve(), 500))
   }
 
-  // Dashboard
+  // Dashboard - MOCKED (not implemented in backend yet)
   async getDashboardMetrics(): Promise<DashboardMetrics> {
-    return this.request<DashboardMetrics>('/dashboard/metrics')
+    return new Promise(resolve => setTimeout(() => resolve(mockData.dashboardMetrics), 500))
   }
 
   async getRecentActivity(): Promise<RecentActivity[]> {
-    return this.request<RecentActivity[]>('/dashboard/activity')
+    return new Promise(resolve => setTimeout(() => resolve(mockData.recentActivity), 500))
   }
 
-  // Feedback
+  // Feedback - MOCKED (not implemented in backend yet)
   async getFeedback(filters?: {
     type?: string
     startDate?: Date
     endDate?: Date
     score?: number
   }): Promise<Feedback[]> {
-    const params = new URLSearchParams()
-    if (filters?.type) params.append('type', filters.type)
-    if (filters?.startDate) params.append('startDate', filters.startDate.toISOString())
-    if (filters?.endDate) params.append('endDate', filters.endDate.toISOString())
-    if (filters?.score) params.append('score', filters.score.toString())
-
-    return this.request<Feedback[]>(`/feedback?${params.toString()}`)
+    return new Promise(resolve => setTimeout(() => resolve(mockData.feedback), 500))
   }
 
-  // Reviews
+  // Reviews - MOCKED (not implemented in backend yet)
   async getReviews(): Promise<Feedback[]> {
-    return this.request<Feedback[]>('/reviews')
+    return new Promise(resolve => setTimeout(() => resolve(mockData.feedback.filter(f => f.type === 'review')), 500))
   }
 
-  // Feature Requests
+  // Feature Requests - MOCKED (not implemented in backend yet)
   async upvoteFeature(featureId: string): Promise<void> {
-    await this.request(`/features/${featureId}/upvote`, {
-      method: 'POST'
-    })
+    return new Promise(resolve => setTimeout(() => resolve(), 500))
   }
 
-  // Roadmap
+  // Roadmap - MOCKED (not implemented in backend yet)
   async getRoadmap(projectId: string): Promise<Roadmap> {
-    return this.request<Roadmap>(`/roadmaps/${projectId}`)
+    return new Promise(resolve => setTimeout(() => resolve(mockData.roadmaps[0]), 500))
   }
 
   async updateRoadmap(id: string, data: Partial<Roadmap>): Promise<Roadmap> {
-    return this.request<Roadmap>(`/roadmaps/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data)
-    })
+    return new Promise(resolve => setTimeout(() => resolve({ ...mockData.roadmaps[0], ...data }), 500))
   }
 
-  // Settings
+  // Settings - MOCKED (not implemented in backend yet)
   async getNotificationSettings(): Promise<NotificationSettings> {
-    return this.request<NotificationSettings>('/settings/notifications')
+    return new Promise(resolve => setTimeout(() => resolve(mockData.notificationSettings), 500))
   }
 
   async updateNotificationSettings(settings: NotificationSettings): Promise<NotificationSettings> {
-    return this.request<NotificationSettings>('/settings/notifications', {
-      method: 'PUT',
-      body: JSON.stringify(settings)
-    })
+    return new Promise(resolve => setTimeout(() => resolve(settings), 500))
   }
 
   async updateUserProfile(data: { name: string }): Promise<User> {
