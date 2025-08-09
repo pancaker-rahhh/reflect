@@ -1,20 +1,15 @@
 import jwt
 from typing import Optional
-from fastapi import HTTPException, Depends
+from fastapi import Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.core.config import get_settings
-from app.schemas.auth import TokenData
+from api.server.app.core.exceptions import AuthenticationError
+from api.server.app.core.settings import get_settings
+from api.server.app.schemas.auth_schema import TokenData
 from app.db import get_db
 
 
-class AuthenticationError(HTTPException):
-    def __init__(self, detail: str = 'Authentication failed'):
-        super().__init__(status_code=401, detail=detail)
-
-
-class SupabaseAuth:
+class Auth:
     def __init__(self):
         self.settings = get_settings()
         self.security = HTTPBearer(auto_error=False)
@@ -24,7 +19,7 @@ class SupabaseAuth:
             payload = jwt.decode(
                 token,
                 self.settings.SUPABASE_JWT_SECRET,
-                algorithms=['HS256'],
+                algorithms=[self.settings.ALGORITHM],
                 audience='authenticated',
                 options={'verify_exp': True},
             )
@@ -47,13 +42,13 @@ class SupabaseAuth:
 
         except jwt.ExpiredSignatureError:
             raise AuthenticationError('Token has expired')
-        except jwt.InvalidTokenError:
-            raise AuthenticationError('Invalid token')
+        except jwt.PyJWTError as e:
+            raise AuthenticationError(f'Invalid token: {e}')
         except Exception as e:
             raise AuthenticationError(f'Token validation failed: {str(e)}')
 
     async def sync_user_to_db(self, token_data: TokenData, db: AsyncSession):
-        from app.models.user import User
+        from api.server.app.models.user_model import User
         from sqlalchemy import select
 
         stmt = select(User).where(User.id == token_data.user_id)
@@ -76,7 +71,7 @@ class SupabaseAuth:
         return user
 
 
-auth = SupabaseAuth()
+auth = Auth()
 
 
 async def get_current_user_optional(

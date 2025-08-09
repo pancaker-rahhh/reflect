@@ -1,7 +1,6 @@
 import uuid
 from datetime import datetime
 from typing import Any, Optional
-
 from sqlalchemy import DateTime, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
@@ -42,7 +41,6 @@ class SoftDeleteMixin:
 
     def soft_delete(self) -> None:
         self.deleted_at = datetime.utcnow()
-
     def restore(self) -> None:
         self.deleted_at = None
 

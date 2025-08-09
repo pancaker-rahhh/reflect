@@ -5,7 +5,7 @@ import httpx
 import asyncio
 from contextlib import asynccontextmanager
 
-from app.core.config import get_settings
+from api.server.app.core.settings import get_settings
 
 
 class CorrelationIDProcessor:

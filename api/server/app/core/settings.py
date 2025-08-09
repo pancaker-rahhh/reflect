@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import List, Optional
-from pydantic import ConfigDict, field_validator
-from pydantic_settings import BaseSettings
+from pydantic import field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = 'reflect_dev_pass'
     POSTGRES_HOST: str = 'localhost'
     POSTGRES_PORT: int = 5432
-    DATABASE_URL: Optional[str] = None
+    DATABASE_URL: str = ''
     DATABASE_POOL_SIZE: int = 20
     DATABASE_MAX_OVERFLOW: int = 0
 
@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     SUPABASE_URL: str = ''
     SUPABASE_ANON_KEY: str = ''
     SUPABASE_SERVICE_KEY: str = ''
-    SUPABASE_JWT_SECRET: Optional[str] = None
+    SUPABASE_JWT_SECRET: str = ''
 
     # Security
     SECRET_KEY: str = 'dev-secret-key-change-in-production'
@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     POSTHOG_HOST: str = 'https://app.posthog.com'
     SENTRY_DSN: Optional[str] = None
 
-    model_config = ConfigDict(env_file='.env', case_sensitive=True, extra='ignore')
+    model_config = SettingsConfigDict(env_file='.env', case_sensitive=True, extra='ignore')
 
     @property
     def cors_origins_list(self) -> List[str]:

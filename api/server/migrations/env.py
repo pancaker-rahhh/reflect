@@ -1,25 +1,22 @@
 import asyncio
 from logging.config import fileConfig
-
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
-
 from alembic import context
-
 import sys
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from app.core.config import get_settings
+from api.server.app.core.settings import get_settings
 from app.db import Base
 
 # Import all models to ensure they're registered with Base.metadata
-from app.models.base import BaseModel  # noqa
-from app.models.user import User  # noqa
-from app.models.workspace import Workspace  # noqa
-from app.models.project import Project  # noqa
+from api.server.app.models.base_model import BaseModel  # noqa
+from api.server.app.models.user_model import User  # noqa
+from api.server.app.models.workspace_model import Workspace  # noqa
+from api.server.app.models.project_model import Project  # noqa
 
 config = context.config
 settings = get_settings()

@@ -1,5 +1,5 @@
-from app.core.config import get_settings
-from app.schemas.health import HealthCheckResponse
+from api.server.app.core.settings import get_settings
+from api.server.app.schemas.health_schema import HealthCheckResponse
 
 
 class HealthService:

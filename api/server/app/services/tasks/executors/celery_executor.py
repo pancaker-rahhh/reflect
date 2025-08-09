@@ -1,5 +1,4 @@
 from typing import Any, Dict, Callable
-
 from app.services.tasks.base import TaskExecutor, TaskPriority
 from app.core.logging import get_logger
 

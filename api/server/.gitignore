@@ -2,6 +2,16 @@
 .env
 .env.local
 .env.production
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# packaging applications
+__pypackages__/
+
+# PyPI configuration file
+.pypirc
 
 # Python
 __pycache__/
@@ -55,3 +65,9 @@ Thumbs.db
 
 # Project specific
 !/migrations/versions/.gitkeep
+
+# Ruff stuff:
+.ruff_cache/
+
+# Cython debug symbols
+cython_debug/
