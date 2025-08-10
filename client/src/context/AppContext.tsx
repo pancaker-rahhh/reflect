@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback, type ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { workspaceApi } from '@/services/workspaceApi'
-import { projectApi } from '@/services/projectApi'
+import { workspaceApi } from '@/lib/api'
+import { projectApi } from '@/services(mock)/projectApi'
 import type { Workspace, Project } from '@/types'
 
 interface AppContextType {

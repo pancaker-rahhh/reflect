@@ -9,7 +9,7 @@ import { Step1Basics } from '@/components/widgets/wizard/Step1Basics'
 import { Step2Content } from '@/components/widgets/wizard/Step2Content'
 import { Step3Appearance } from '@/components/widgets/wizard/Step3Appearance'
 import { Step4Behavior } from '@/components/widgets/wizard/Step4Behavior'
-import { widgetApi } from '@/services/widgetApi'
+import { widgetApi } from '@/services(mock)/widgetApi'
 import { useAppContext } from '@/context/AppContext'
 import { PageLoading } from '@/components/common/LoadingSpinner'
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { api } from '@/services/api'
+import { api } from '@/services(mock)/api'
 import { MetricsCards } from '@/components/dashboard/MetricsCards'
 import { TimeRangeFilter } from '@/components/dashboard/TimeRangeFilter'
 import { RecentActivityTable } from '@/components/dashboard/RecentActivityTable'

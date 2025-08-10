@@ -1,41 +1,43 @@
-import { BaseApiService } from './base';
-import type { Workspace, User } from '@/types';
+import { apiClient } from '../client'
+import type { Workspace, User } from '@/types'
 
 export interface WorkspaceCreateRequest {
-  name: string;
-  description?: string;
+  name: string
+  description?: string
 }
 
 export interface WorkspaceUpdateRequest {
-  name?: string;
-  description?: string;
-  settings?: Record<string, any>;
+  name?: string
+  description?: string
+  settings?: Record<string, any>
 }
 
-export class WorkspaceApiService extends BaseApiService {
-  async getWorkspaces(): Promise<Workspace[]> {
-    return this.get<Workspace[]>('/workspaces');
-  }
+export const workspaceApi = {
+  getWorkspaces(): Promise<Workspace[]> {
+    return apiClient.get<Workspace[]>('/workspaces')
+  },
 
-  async getWorkspace(id: string): Promise<Workspace> {
-    return this.get<Workspace>(`/workspaces/${id}`);
-  }
+  getWorkspace(id: string): Promise<Workspace> {
+    return apiClient.get<Workspace>(`/workspaces/${id}`)
+  },
 
-  async createWorkspace(data: WorkspaceCreateRequest): Promise<Workspace> {
-    return this.post<Workspace>('/workspaces', data);
-  }
+  getMyWorkspace(): Promise<Workspace> {
+    return apiClient.get<Workspace>('/workspaces/me')
+  },
 
-  async updateWorkspace(id: string, data: WorkspaceUpdateRequest): Promise<Workspace> {
-    return this.put<Workspace>(`/workspaces/${id}`, data);
-  }
+  createWorkspace(data: WorkspaceCreateRequest): Promise<Workspace> {
+    return apiClient.post<Workspace>('/workspaces', data)
+  },
 
-  async deleteWorkspace(id: string): Promise<void> {
-    return this.delete<void>(`/workspaces/${id}`);
-  }
+  updateWorkspace(id: string, data: WorkspaceUpdateRequest): Promise<Workspace> {
+    return apiClient.put<Workspace>(`/workspaces/${id}`, data)
+  },
 
-  async switchWorkspace(workspaceId: string): Promise<User> {
-    return this.put<User>('/users/current-workspace', { workspace_id: workspaceId });
+  deleteWorkspace(id: string): Promise<void> {
+    return apiClient.delete<void>(`/workspaces/${id}`)
+  },
+
+  switchWorkspace(workspaceId: string): Promise<User> {
+    return apiClient.put<User>('/users/current-workspace', { workspace_id: workspaceId })
   }
 }
-
-export const workspaceApi = new WorkspaceApiService();
