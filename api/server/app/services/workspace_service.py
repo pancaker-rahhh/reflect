@@ -25,16 +25,10 @@ class WorkspaceService:
     async def create_workspace(
         self, db: AsyncSession, user: User, workspace_in: WorkspaceCreate
     ) -> Workspace:
-        existing_workspace = await self.repository.get_by_user_id(db, user_id=user.id)
-        if existing_workspace:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-            )
-
         workspace_data = workspace_in.model_dump()
-        workspace_data['user_id'] = user.id
-
-        return await self.repository.create(db, **workspace_data)
+        return await self.repository.create_workspace(
+            db, user_id=user.id, **workspace_data
+        )
 
 
 workspace_service = WorkspaceService()
