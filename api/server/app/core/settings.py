@@ -42,6 +42,7 @@ class Settings(BaseSettings):
 
     # Logging
     LOG_LEVEL: str = 'INFO'
+    LOG_SQL: bool = False  # Set to True to log SQL queries
 
     # Optional: Monitoring
     AXIOM_TOKEN: Optional[str] = None
