@@ -1,4 +1,4 @@
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import type { Feedback, SurveyResponse } from '@/types'
 
 interface NPSDistributionChartProps {
@@ -34,11 +34,10 @@ export function NPSDistributionChart({ feedback }: NPSDistributionChartProps) {
   }
 
   const detractors = npsSurveys.filter(s => s.score <= 6).length
-  const passives = npsSurveys.filter(s => s.score >= 7 && s.score <= 8).length
   const promoters = npsSurveys.filter(s => s.score >= 9).length
   const npsScore = Math.round(((promoters - detractors) / npsSurveys.length) * 100)
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; payload: { percentage: string } }>; label?: string }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-popover text-popover-foreground border rounded-lg shadow-lg p-3">

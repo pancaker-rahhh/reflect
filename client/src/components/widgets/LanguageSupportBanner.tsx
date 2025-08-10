@@ -14,7 +14,7 @@ export function LanguageSupportBanner() {
           <div className="flex-1">
             <h3 className="font-semibold text-lg mb-2">Multi-Language Support</h3>
             <p className="text-sm text-muted-foreground mb-3">
-              Collect feedback in your users' preferred language. Our widgets support automatic translations
+              Collect feedback in your users&apos; preferred language. Our widgets support automatic translations
               for a global audience.
             </p>
             <div className="flex items-center gap-4 flex-wrap">
