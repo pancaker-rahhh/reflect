@@ -16,9 +16,7 @@ public_router = APIRouter()
 )
 async def get_public_widget_config(
     widget_public_key: str = Path(
-        min_length=1,
-        max_length=255,
-        regex="^[a-zA-Z0-9_-]+$"
+        min_length=1, max_length=255, regex='^[a-zA-Z0-9_-]+$'
     ),
     db: AsyncSession = Depends(get_db),
     service: WidgetService = Depends(lambda: widget_service),
@@ -26,8 +24,7 @@ async def get_public_widget_config(
     # Additional validation: ensure public_key contains only safe characters
     if not re.match(r'^[a-zA-Z0-9_-]+$', widget_public_key):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid public key format"
+            status_code=status.HTTP_400_BAD_REQUEST, detail='Invalid public key format'
         )
 
     widget = await service.get_public_widget_by_key(db, public_key=widget_public_key)

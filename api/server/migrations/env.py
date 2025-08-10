@@ -15,8 +15,6 @@ from app.models.project_model import Project  # noqa
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from app.core.settings import get_settings
-from app.db import Base
 
 # Import all models to ensure they're registered with Base.metadata
 from app.models.base_model import BaseModel  # noqa

@@ -51,9 +51,9 @@ async def update_current_user_profile(
     if hasattr(update_data, 'id') or hasattr(update_data, 'email'):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail='Cannot modify protected fields'
+            detail='Cannot modify protected fields',
         )
-    
+
     updated_profile = await user_service.update_user_profile(user.id, update_data, db)
 
     if not updated_profile:

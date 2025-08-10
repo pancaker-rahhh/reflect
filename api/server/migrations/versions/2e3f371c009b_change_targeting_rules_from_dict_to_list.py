@@ -5,11 +5,10 @@ Revises: 9dc669cd84cf
 Create Date: 2025-08-08 12:50:43.589104
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = '2e3f371c009b'
@@ -28,7 +27,7 @@ def upgrade() -> None:
         SET targeting_rules = '[]'::jsonb 
         WHERE targeting_rules IS NULL
     """)
-    
+
     op.execute("""
         UPDATE widgets 
         SET targeting_rules = 

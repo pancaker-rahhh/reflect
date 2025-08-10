@@ -7,7 +7,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.models.user_model import User
-from app.models.workspace_model import Workspace
 from app.repositories.user_repository import user_repository
 from app.repositories.workspace_repository import workspace_repository
 from app.schemas.user_schema import (
@@ -65,8 +64,11 @@ class UserService:
 
         async with db.begin_nested():
             from sqlalchemy.orm import selectinload
-            stmt = select(User).where(User.id == user_id).options(
-                selectinload(User.workspace)
+
+            stmt = (
+                select(User)
+                .where(User.id == user_id)
+                .options(selectinload(User.workspace))
             )
             result = await db.execute(stmt)
             user = result.scalar_one_or_none()
@@ -89,7 +91,7 @@ class UserService:
             workspace_name = user.name or user.email.split('@')[0]
             workspace_create = WorkspaceCreate(
                 name=f"{workspace_name}'s Workspace",
-                description=f'Personal workspace for {user.email}'
+                description=f'Personal workspace for {user.email}',
             )
             workspace = await workspace_repository.create_workspace(
                 db, user_id=user.id, **workspace_create.model_dump()
@@ -139,7 +141,9 @@ class UserService:
             logger.debug(f'User {token_data.user_id} already exists, returning profile')
             profile = await self.get_user_profile(UUID(token_data.user_id), db)
             if not profile:
-                raise ValueError(f'Failed to get profile for existing user {token_data.user_id}')
+                raise ValueError(
+                    f'Failed to get profile for existing user {token_data.user_id}'
+                )
             return profile
 
         user_data = {
@@ -157,7 +161,7 @@ class UserService:
         workspace_name = user.name or user.email.split('@')[0]
         workspace_create = WorkspaceCreate(
             name=f"{workspace_name}'s Workspace",
-            description=f'Personal workspace for {user.email}'
+            description=f'Personal workspace for {user.email}',
         )
         workspace = await workspace_repository.create_workspace(
             db, user_id=user.id, **workspace_create.model_dump()
@@ -166,7 +170,9 @@ class UserService:
 
         profile = await self.get_user_profile(UUID(token_data.user_id), db)
         if not profile:
-            raise ValueError(f'Failed to get user profile after creation for user {token_data.user_id}')
+            raise ValueError(
+                f'Failed to get user profile after creation for user {token_data.user_id}'
+            )
         return profile
 
 

@@ -32,13 +32,15 @@ class Auth:
 
             user_metadata = payload.get('user_metadata', {})
             app_metadata = payload.get('app_metadata', {})
-            
+
             if not isinstance(user_metadata, dict):
                 user_metadata = {}
             if not isinstance(app_metadata, dict):
                 app_metadata = {}
 
-            def safe_get_string(data: Dict[str, Any], key: str, max_length: int = 255) -> Optional[str]:
+            def safe_get_string(
+                data: Dict[str, Any], key: str, max_length: int = 255
+            ) -> Optional[str]:
                 value = data.get(key)
                 if value is None:
                     return None
@@ -49,7 +51,8 @@ class Auth:
             return TokenData(
                 user_id=user_id,
                 email=email,
-                name=safe_get_string(user_metadata, 'full_name') or safe_get_string(user_metadata, 'name'),
+                name=safe_get_string(user_metadata, 'full_name')
+                or safe_get_string(user_metadata, 'name'),
                 avatar_url=safe_get_string(user_metadata, 'avatar_url', 500),
                 phone=safe_get_string(user_metadata, 'phone', 50),
                 role=safe_get_string(app_metadata, 'role', 50) or payload.get('role'),
