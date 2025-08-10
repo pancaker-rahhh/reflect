@@ -1,7 +1,7 @@
 import { supabase } from './supabase'
 import { createApiError, handleApiError } from './errors'
 
-const API_BASE_URL = '/api/v1'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
 interface RequestConfig {
   timeout?: number
@@ -57,6 +57,12 @@ async function request<T>(
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
 
+      // Debug logging in development
+      if (import.meta.env.DEV) {
+        console.log(`🌐 API Request: ${fetchOptions.method || 'GET'} ${API_BASE_URL}${endpoint}`)
+        console.log(`🎫 Token present: ${token ? 'Yes' : 'No'}`)
+      }
+
       const headers = new Headers(fetchOptions.headers)
       headers.set('Content-Type', 'application/json')
       if (token) {
@@ -84,6 +90,13 @@ async function request<T>(
       if (!response.ok) {
         const errorData = await response.json().catch(() => null)
         const detail = errorData?.detail || `Request failed with status ${response.status}`
+        
+        // Debug logging in development
+        if (import.meta.env.DEV) {
+          console.error(`❌ API Error: ${response.status} ${response.statusText}`)
+          console.error(`❌ Error details:`, errorData)
+        }
+        
         throw createApiError(detail, response.status, errorData)
       }
 
@@ -91,7 +104,14 @@ async function request<T>(
         return null as T
       }
 
-      return response.json()
+      const result = await response.json()
+      
+      // Debug logging in development
+      if (import.meta.env.DEV) {
+        console.log(`✅ API Success: ${response.status}`, result)
+      }
+      
+      return result
     } catch (error) {
       const apiError = handleApiError(error)
       
