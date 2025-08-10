@@ -1,5 +1,5 @@
 import jwt
-from typing import Optional
+from typing import Optional, Dict, Any
 from fastapi import Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -30,17 +30,29 @@ class Auth:
             if not user_id or not email:
                 raise AuthenticationError('Invalid token claims')
 
-            # Extract user metadata from token
             user_metadata = payload.get('user_metadata', {})
             app_metadata = payload.get('app_metadata', {})
+            
+            if not isinstance(user_metadata, dict):
+                user_metadata = {}
+            if not isinstance(app_metadata, dict):
+                app_metadata = {}
+
+            def safe_get_string(data: Dict[str, Any], key: str, max_length: int = 255) -> Optional[str]:
+                value = data.get(key)
+                if value is None:
+                    return None
+                if not isinstance(value, str):
+                    return None
+                return value[:max_length] if len(value) > max_length else value
 
             return TokenData(
                 user_id=user_id,
                 email=email,
-                name=user_metadata.get('full_name') or user_metadata.get('name'),
-                avatar_url=user_metadata.get('avatar_url'),
-                phone=user_metadata.get('phone'),
-                role=app_metadata.get('role') or payload.get('role'),
+                name=safe_get_string(user_metadata, 'full_name') or safe_get_string(user_metadata, 'name'),
+                avatar_url=safe_get_string(user_metadata, 'avatar_url', 500),
+                phone=safe_get_string(user_metadata, 'phone', 50),
+                role=safe_get_string(app_metadata, 'role', 50) or payload.get('role'),
                 exp=payload.get('exp'),
                 iat=payload.get('iat'),
                 iss=payload.get('iss'),
@@ -49,10 +61,10 @@ class Auth:
 
         except jwt.ExpiredSignatureError:
             raise AuthenticationError('Token has expired')
-        except jwt.PyJWTError as e:
-            raise AuthenticationError(f'Invalid token: {e}')
-        except Exception as e:
-            raise AuthenticationError(f'Token validation failed: {str(e)}')
+        except jwt.PyJWTError:
+            raise AuthenticationError('Invalid token')
+        except Exception:
+            raise AuthenticationError('Token validation failed')
 
     async def sync_user_to_db(self, token_data: TokenData, db: AsyncSession):
         from app.models.user_model import User
