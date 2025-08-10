@@ -134,11 +134,12 @@ def setup_logging():
 
 @asynccontextmanager
 async def correlation_id_context(correlation_id: str):
-    tokens = structlog.contextvars.bind_contextvars(correlation_id=correlation_id)
+    structlog.contextvars.bind_contextvars(correlation_id=correlation_id)
     try:
         yield
     finally:
-        structlog.contextvars.reset_contextvars(**tokens)
+        # Clear the correlation_id from context to prevent pollution
+        structlog.contextvars.unbind_contextvars('correlation_id')
 
 
 def get_logger(name: str | None = None):
