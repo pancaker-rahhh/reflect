@@ -11,7 +11,7 @@ from app.schemas.form_schema import (
     FeedbackFormResponse,
 )
 from app.services.form_service import feedback_form_service
-from api.server.app.core.exceptions import NotFoundError
+from app.core.exceptions import NotFoundError
 
 
 form_router = APIRouter(prefix='/forms', tags=['forms'])

@@ -15,6 +15,8 @@ from app.schemas.project_schema import (
     ProjectSettingsUpdate,
 )
 from app.services.project_service import project_service, ProjectService
+from app.schemas.roadmap_schema import RoadmapRead
+from app.services.roadmap_service import roadmap_service, RoadmapService
 
 router = APIRouter()
 
@@ -130,3 +132,19 @@ async def delete_project(
 ):
     await service.delete_project(db, user=current_user, project_id=project_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get(
+    '/{project_id}/roadmap',
+    response_model=RoadmapRead,
+    tags=['Roadmap'],
+)
+async def get_project_roadmap(
+    project_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    service: RoadmapService = Depends(lambda: roadmap_service),
+) -> Any:
+    return await service.get_or_create_roadmap(
+        db, user=current_user, project_id=project_id
+    )

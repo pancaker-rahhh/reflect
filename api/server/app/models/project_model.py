@@ -10,7 +10,7 @@ from app.models.base_model import BaseModel
 
 if TYPE_CHECKING:
     from app.models.workspace_model import Workspace
-    from app.models.widget_model import Widget
+    from app.models.roadmap_model import Roadmap
 
 
 class Project(BaseModel):
@@ -55,10 +55,9 @@ class Project(BaseModel):
     widgets = relationship('Widget', back_populates='project')
     forms = relationship('FeedbackForm', back_populates='project')
 
-    workspace: Mapped['Workspace'] = relationship(
-        'Workspace', back_populates='projects'
+    roadmap: Mapped['Roadmap'] = relationship(
+        'Roadmap', back_populates='project', cascade='all, delete-orphan', uselist=False
     )
-    widgets: Mapped[list['Widget']] = relationship('Widget', back_populates='project')
 
     def generate_slug(self, name: str) -> str:
         slug = re.sub(r'[^\w\s-]', '', name.lower())

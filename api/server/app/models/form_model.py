@@ -4,7 +4,7 @@ from sqlalchemy import String, Boolean, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from api.server.app.models.base_model import BaseModel
+from app.models.base_model import BaseModel
 
 
 class FeedbackForm(BaseModel):
