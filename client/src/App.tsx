@@ -17,29 +17,42 @@ import { AuthCallback } from '@/pages/auth/AuthCallback'
 import { VerifyOtp } from '@/pages/auth/VerifyOtp'
 
 // Lazy load secondary pages
-const Widgets = lazy(() => import('@/pages/Widgets').then(m => ({ default: m.Widgets })))
-const WidgetCreate = lazy(() => import('@/pages/WidgetCreate').then(m => ({ default: m.WidgetCreate })))
-const Responses = lazy(() => import('@/pages/Responses').then(m => ({ default: m.Responses })))
-const Reviews = lazy(() => import('@/pages/Reviews').then(m => ({ default: m.Reviews })))
-const BugReports = lazy(() => import('@/pages/BugReports').then(m => ({ default: m.BugReports })))
-const FeatureRequests = lazy(() => import('@/pages/FeatureRequests').then(m => ({ default: m.FeatureRequests })))
-const RoadmapPage = lazy(() => import('@/pages/Roadmap').then(m => ({ default: m.RoadmapPage })))
-const AccountSettings = lazy(() => import('@/pages/settings/AccountSettings').then(m => ({ default: m.AccountSettings })))
-const NotificationSettings = lazy(() => import('@/pages/settings/NotificationSettings').then(m => ({ default: m.NotificationSettings })))
-const BillingSettings = lazy(() => import('@/pages/settings/BillingSettings').then(m => ({ default: m.BillingSettings })))
-const ProjectSettings = lazy(() => import('@/pages/settings/ProjectSettings').then(m => ({ default: m.ProjectSettings })))
-const RoadmapSettings = lazy(() => import('@/pages/settings/RoadmapSettings').then(m => ({ default: m.RoadmapSettings })))
-const NotFound = lazy(() => import('@/pages/NotFound').then(m => ({ default: m.NotFound })))
+const Widgets = lazy(() => import('@/pages/Widgets').then((m) => ({ default: m.Widgets })))
+const WidgetCreate = lazy(() =>
+  import('@/pages/WidgetCreate').then((m) => ({ default: m.WidgetCreate }))
+)
+const Responses = lazy(() => import('@/pages/Responses').then((m) => ({ default: m.Responses })))
+const Reviews = lazy(() => import('@/pages/Reviews').then((m) => ({ default: m.Reviews })))
+const BugReports = lazy(() => import('@/pages/BugReports').then((m) => ({ default: m.BugReports })))
+const FeatureRequests = lazy(() =>
+  import('@/pages/FeatureRequests').then((m) => ({ default: m.FeatureRequests }))
+)
+const RoadmapPage = lazy(() => import('@/pages/Roadmap').then((m) => ({ default: m.RoadmapPage })))
+const AccountSettings = lazy(() =>
+  import('@/pages/settings/AccountSettings').then((m) => ({ default: m.AccountSettings }))
+)
+const NotificationSettings = lazy(() =>
+  import('@/pages/settings/NotificationSettings').then((m) => ({ default: m.NotificationSettings }))
+)
+const BillingSettings = lazy(() =>
+  import('@/pages/settings/BillingSettings').then((m) => ({ default: m.BillingSettings }))
+)
+const ProjectSettings = lazy(() =>
+  import('@/pages/settings/ProjectSettings').then((m) => ({ default: m.ProjectSettings }))
+)
+const RoadmapSettings = lazy(() =>
+  import('@/pages/settings/RoadmapSettings').then((m) => ({ default: m.RoadmapSettings }))
+)
+const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m.NotFound })))
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1
-    }
-  }
+      staleTime: 1000 * 60 * 5,
+      retry: 1,
+    },
+  },
 })
-
 
 function App() {
   return (

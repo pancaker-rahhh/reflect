@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Search, RotateCcw, ExternalLink, TrendingUp, Star } from 'lucide-react'
-import { api } from '@/services/api'
+import { api } from '@/services(mock)/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'

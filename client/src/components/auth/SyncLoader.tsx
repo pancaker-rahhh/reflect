@@ -66,7 +66,7 @@ export function SyncLoader() {
         {/* Fun fact or tip */}
         <div className="max-w-md mx-auto">
           <p className="text-sm text-gray-500 italic animate-fade-in" style={{ animationDelay: '2s' }}>
-            💡 Tip: Use keyboard shortcuts to navigate faster once you're in!
+            💡 Tip: Use keyboard shortcuts to navigate faster once you&apos;re in!
           </p>
         </div>
       </div>

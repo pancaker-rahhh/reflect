@@ -1,7 +1,7 @@
 from typing import List, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, BackgroundTasks, Query, status
-from api.server.app.core.exceptions import NotFoundError
+from app.core.exceptions import NotFoundError
 from app.db import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.feedback_schema import (

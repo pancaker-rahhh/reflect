@@ -24,3 +24,25 @@ npm run dev
 - TanStack Query
 - Zustand
 - MSW for API mocking
+
+## Linting Commands
+
+```bash
+# Navigate to client directory
+cd /home/indira/Documents/github/reflect/client
+
+# 1. Run linter (check only)
+npm run lint
+
+# 2. Auto-fix what can be fixed
+npx eslint . --fix
+
+# 3. Run Prettier to format code
+npx prettier --write .
+
+# 4. TypeScript type checking
+npx tsc --noEmit
+
+# 5. Run all together
+npm run lint && npx prettier --write . && npx tsc --noEmit
+```

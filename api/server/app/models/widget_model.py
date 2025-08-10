@@ -43,7 +43,7 @@ class Widget(BaseModel):
 
     configuration = Column(JSONB, default=dict)
     theme_configuration = Column(JSONB, default=dict)
-    targeting_rules = Column(JSONB, default=dict)
+    targeting_rules = Column(JSONB, default=list)
 
     embed_code = Column(Text)
     public_key = Column(String(255), unique=True, index=True)

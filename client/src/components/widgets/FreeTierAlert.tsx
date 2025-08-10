@@ -2,7 +2,7 @@ import { AlertCircle, Zap } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
-import { api } from '@/services/api'
+import { api } from '@/services(mock)/api'
 
 export function FreeTierAlert() {
   const { data: workspaces } = useQuery({

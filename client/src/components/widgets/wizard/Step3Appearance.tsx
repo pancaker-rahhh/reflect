@@ -136,7 +136,7 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
                   <FormLabel className="text-base">
-                    Show "Powered by" branding
+                    Show &quot;Powered by&quot; branding
                   </FormLabel>
                   <FormDescription>
                     Pro plan required to remove branding

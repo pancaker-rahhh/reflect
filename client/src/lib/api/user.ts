@@ -1,36 +1,34 @@
-import { BaseApiService } from './base';
-import type { User } from '@/types';
+import { apiClient } from '../client'
+import type { User } from '@/types'
 
 export interface UserProfileUpdateRequest {
-  name?: string;
-  company_name?: string;
-  phone?: string;
-  timezone?: string;
-  avatar_url?: string;
+  name?: string
+  company_name?: string
+  phone?: string
+  timezone?: string
+  avatar_url?: string
 }
 
 export interface UserDeleteResponse {
-  message: string;
-  deleted_at: string;
-  gdpr_note: string;
+  message: string
+  deleted_at: string
+  gdpr_note: string
 }
 
-export class UserApiService extends BaseApiService {
-  async getCurrentUser(): Promise<User> {
-    return this.get<User>('/users/me');
-  }
+export const userApi = {
+  getCurrentUser(): Promise<User> {
+    return apiClient.get<User>('/users/me')
+  },
 
-  async syncUser(): Promise<User> {
-    return this.post<User>('/users/sync');
-  }
+  syncUser(): Promise<User> {
+    return apiClient.post<User>('/users/sync')
+  },
 
-  async updateProfile(data: UserProfileUpdateRequest): Promise<User> {
-    return this.put<User>('/users/me', data);
-  }
+  updateProfile(data: UserProfileUpdateRequest): Promise<User> {
+    return apiClient.put<User>('/users/me', data)
+  },
 
-  async deleteAccount(): Promise<UserDeleteResponse> {
-    return this.delete<UserDeleteResponse>('/users/me');
+  deleteAccount(): Promise<UserDeleteResponse> {
+    return apiClient.delete<UserDeleteResponse>('/users/me')
   }
 }
-
-export const userApi = new UserApiService();

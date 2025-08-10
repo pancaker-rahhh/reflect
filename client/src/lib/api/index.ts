@@ -1,32 +1,52 @@
-// Export base classes and types
-export { BaseApiService, ApiException } from './base';
-export type { ApiError } from './base';
+// Export API modules
+export { userApi, type UserProfileUpdateRequest, type UserDeleteResponse } from './user'
+export { workspaceApi, type WorkspaceCreateRequest, type WorkspaceUpdateRequest } from './workspace'
+export { projectApi, type PaginatedProjects, type ProjectCreateRequest, type ProjectUpdateRequest } from './project'
+export { widgetApi, type WidgetCreateRequest, type WidgetUpdateRequest } from './widget'
 
-// Export service instances
-export { userApi } from './user';
-export { workspaceApi } from './workspace';
-export type { 
-  UserProfileUpdateRequest, 
-  UserDeleteResponse 
-} from './user';
-export type { 
-  WorkspaceCreateRequest, 
-  WorkspaceUpdateRequest 
-} from './workspace';
+// Re-export client and error handling for advanced usage
+export { apiClient } from '../client'
+export { ApiException, errorSanitizer, type ApiError } from '../errors'
 
-// Import for internal use
-import { userApi } from './user';
-import { workspaceApi } from './workspace';
+// Import APIs for convenience exports
+import { userApi } from './user'
+import { workspaceApi } from './workspace'
+import { projectApi } from './project'
+import { widgetApi } from './widget'
+import type { UserProfileUpdateRequest } from './user'
+import type { WorkspaceCreateRequest } from './workspace'
+import type { ProjectCreateRequest } from './project'
+import type { WidgetCreateRequest } from './widget'
 
-// Main API object for backward compatibility and convenience
+// Convenience API object for backward compatibility
 export const api = {
-  users: userApi,
-  workspaces: workspaceApi,
-  
-  // Convenience methods for common operations
+  // User APIs
   getCurrentUser: () => userApi.getCurrentUser(),
   syncUser: () => userApi.syncUser(),
-  updateUserProfile: (data: any) => userApi.updateProfile(data),
+  updateUserProfile: (data: UserProfileUpdateRequest) => userApi.updateProfile(data),
+  deleteAccount: () => userApi.deleteAccount(),
+  
+  // Workspace APIs  
   getWorkspaces: () => workspaceApi.getWorkspaces(),
   getWorkspace: (id: string) => workspaceApi.getWorkspace(id),
-};
+  getMyWorkspace: () => workspaceApi.getMyWorkspace(),
+  createWorkspace: (data: WorkspaceCreateRequest) => workspaceApi.createWorkspace(data),
+  updateWorkspace: (id: string, data: any) => workspaceApi.updateWorkspace(id, data),
+  deleteWorkspace: (id: string) => workspaceApi.deleteWorkspace(id),
+
+  // Project APIs
+  getProjectsByWorkspace: (workspaceId: string) => projectApi.getByWorkspace(workspaceId),
+  getProject: (id: string) => projectApi.getProject(id),
+  createProject: (data: ProjectCreateRequest) => projectApi.createProject(data),
+  updateProject: (id: string, data: any) => projectApi.updateProject(id, data),
+  deleteProject: (id: string) => projectApi.deleteProject(id),
+
+  // Widget APIs
+  getWidgetsByProject: (projectId: string) => widgetApi.getByProject(projectId),
+  getWidget: (id: string) => widgetApi.getWidget(id),
+  createWidget: (data: WidgetCreateRequest) => widgetApi.createWidget(data),
+  updateWidget: (id: string, data: any) => widgetApi.updateWidget(id, data),
+  deleteWidget: (id: string) => widgetApi.deleteWidget(id),
+  activateWidget: (id: string) => widgetApi.activate(id),
+  deactivateWidget: (id: string) => widgetApi.deactivate(id),
+}

@@ -1,5 +1,5 @@
 from typing import List, TYPE_CHECKING, Optional
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import String, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 import re
@@ -14,12 +14,13 @@ if TYPE_CHECKING:
 
 class Workspace(BaseModel):
     __tablename__ = 'workspaces'
+    __table_args__ = (
+        UniqueConstraint('user_id', 'name', name='uq_workspace_user_name'),
+    )
 
-    # TODO - many to many relationship with User, but it is 1-1 for now (needs admin to add users)
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey('users.id', ondelete='CASCADE'),
-        unique=True,
         nullable=False,
         index=True,
     )

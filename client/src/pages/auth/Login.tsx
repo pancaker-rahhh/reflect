@@ -3,8 +3,9 @@ import { useLocation, Navigate, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Mail, AlertCircle, CheckCircle } from 'lucide-react';
+import { Mail, AlertCircle, CheckCircle, Shield } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useRateLimit } from '../../hooks/useRateLimit';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Alert, AlertDescription } from '../../components/ui/alert';
@@ -22,6 +23,12 @@ export function Login() {
   const { user, loading, signInWithEmail, signInWithGoogle } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  
+  const rateLimit = useRateLimit('login', {
+    maxAttempts: 3,
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    blockDurationMs: 5 * 60 * 1000, // 5 minutes
+  });
 
   const from = location.state?.from?.pathname || '/dashboard';
 
@@ -46,15 +53,21 @@ export function Login() {
   }
 
   const onSubmit = async (data: LoginFormData) => {
+    if (!rateLimit.canAttempt) {
+      return;
+    }
+
     setIsSubmitting(true);
     setMessage(null);
 
     const { error } = await signInWithEmail(data.email);
 
     if (error) {
+      rateLimit.recordAttempt(false);
       setMessage({ type: 'error', text: error.message });
       setIsSubmitting(false);
     } else {
+      rateLimit.recordAttempt(true);
       navigate('/auth/verify-otp', { 
         state: { 
           email: data.email, 
@@ -65,13 +78,20 @@ export function Login() {
   };
 
   const handleGoogleSignIn = async () => {
+    if (!rateLimit.canAttempt) {
+      return;
+    }
+
     setIsSubmitting(true);
     setMessage(null);
 
     const { error } = await signInWithGoogle();
 
     if (error) {
+      rateLimit.recordAttempt(false);
       setMessage({ type: 'error', text: error.message });
+    } else {
+      rateLimit.recordAttempt(true);
     }
 
     setIsSubmitting(false);
@@ -87,7 +107,23 @@ export function Login() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {message && (
+          {rateLimit.isBlocked && (
+            <Alert variant="destructive">
+              <Shield className="h-4 w-4" />
+              <AlertDescription>{rateLimit.getBlockMessage()}</AlertDescription>
+            </Alert>
+          )}
+          
+          {!rateLimit.isBlocked && rateLimit.getWarningMessage() && (
+            <Alert variant="default" className="border-yellow-200 bg-yellow-50">
+              <AlertCircle className="h-4 w-4 text-yellow-600" />
+              <AlertDescription className="text-yellow-800">
+                {rateLimit.getWarningMessage()}
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {message && !rateLimit.isBlocked && (
             <Alert variant={message.type === 'error' ? 'destructive' : 'default'}>
               {message.type === 'error' ? (
                 <AlertCircle className="h-4 w-4" />
