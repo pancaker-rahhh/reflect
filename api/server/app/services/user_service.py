@@ -1,3 +1,4 @@
+import asyncio
 from typing import Optional
 from uuid import UUID
 from datetime import datetime, timezone
@@ -51,31 +52,41 @@ class UserService:
         if not updated_user:
             return None
 
-        # Update user metadata in Supabase as well
-        await self._sync_user_to_supabase(user_id, update_dict)
+        # Update user metadata in Supabase as well (non-blocking)
+        asyncio.create_task(self._sync_user_to_supabase(user_id, update_dict))
 
-        stmt = (
-            select(User).where(User.id == user_id).options(selectinload(User.workspace))
-        )
-        result = await db.execute(stmt)
-        user = result.scalar_one_or_none()
+        # Refresh the user object with workspace relationship to avoid N+1 query
+        await db.refresh(updated_user, ['workspace'])
 
-        return UserProfileResponse.model_validate(user)
+        return UserProfileResponse.model_validate(updated_user)
 
     async def soft_delete_user(
         self, user_id: UUID, db: AsyncSession
     ) -> Optional[UserDeleteResponse]:
         deleted_at = datetime.now(timezone.utc)
 
-        user = await user_repository.soft_delete(db, user_id)
+        async with db.begin_nested():  # Start savepoint for atomic operation
+            # First, get user with all relationships
+            from sqlalchemy.orm import selectinload
+            stmt = select(User).where(User.id == user_id).options(
+                selectinload(User.workspace)
+            )
+            result = await db.execute(stmt)
+            user = result.scalar_one_or_none()
 
-        if not user:
-            return None
+            if not user:
+                await db.rollback()
+                return None
 
-        if user.workspace:
-            await workspace_repository.soft_delete(db, user.workspace.id)
+            # Delete workspace and all its related data
+            if user.workspace:
+                # This will cascade to projects, widgets, forms, etc. based on FK relationships
+                await workspace_repository.soft_delete(db, user.workspace.id)
 
-        logger.info(f'User {user_id} soft deleted at {deleted_at}')
+            # Finally, soft delete the user
+            await user_repository.soft_delete(db, user_id)
+
+            logger.info(f'User {user_id} and related data soft deleted at {deleted_at}')
 
         return UserDeleteResponse(deleted_at=deleted_at)
 
@@ -104,10 +115,6 @@ class UserService:
         return user
 
     async def _sync_user_to_supabase(self, user_id: UUID, update_data: dict) -> None:
-        """
-        Sync user profile updates to Supabase user metadata.
-        This ensures both systems stay in sync when profile is updated.
-        """
         # Prepare metadata for Supabase - only include fields that are user-facing
         supabase_metadata = {}
 
@@ -139,70 +146,39 @@ class UserService:
         user_exist = await user_repository.get(db, UUID(token_data.user_id))
 
         if user_exist:
-            # Update existing user with latest token data
-            update_data = {}
-            current_time = datetime.now(timezone.utc)
+            # User already exists, just return their profile
+            logger.debug(f'User {token_data.user_id} already exists, returning profile')
+            profile = await self.get_user_profile(UUID(token_data.user_id), db)
+            if not profile:
+                raise ValueError(f'Failed to get profile for existing user {token_data.user_id}')
+            return profile
 
-            # Update name if it's provided and different
-            if token_data.name and token_data.name != user_exist.name:
-                update_data['name'] = token_data.name
+        user_data = {
+            'id': UUID(token_data.user_id),
+            'email': token_data.email,
+            'name': token_data.name,
+            'avatar_url': token_data.avatar_url,
+            'phone': token_data.phone,
+            'last_synced_at': datetime.now(timezone.utc),
+            'last_login_at': datetime.now(timezone.utc),
+        }
+        user = await user_repository.create(db, **user_data)
+        logger.info(f'Created new user {token_data.user_id} from token sync')
 
-            # Update avatar_url if it's provided and different
-            if token_data.avatar_url and token_data.avatar_url != user_exist.avatar_url:
-                update_data['avatar_url'] = token_data.avatar_url
-
-            # Update phone if it's provided and different
-            if token_data.phone and token_data.phone != user_exist.phone:
-                update_data['phone'] = token_data.phone
-
-            # Always update sync and login timestamps
-            update_data.update(
-                {
-                    'last_synced_at': current_time,
-                    'last_login_at': current_time,
-                    'updated_at': current_time,
-                }
-            )
-
-            if len(update_data) > 3:  # More than just timestamps updated
-                await user_repository.update(
-                    db, UUID(token_data.user_id), **update_data
-                )
-                logger.info(f'Updated user {token_data.user_id} with latest token data')
-            else:
-                await user_repository.update(
-                    db, UUID(token_data.user_id), **update_data
-                )
-                logger.info(f'Updated timestamps for user {token_data.user_id}')
-        else:
-            user_data = {
-                'id': UUID(token_data.user_id),
-                'email': token_data.email,
-                'name': token_data.name,
-                'avatar_url': token_data.avatar_url,
-                'phone': token_data.phone,
-                'last_synced_at': datetime.now(timezone.utc),
-                'last_login_at': datetime.now(timezone.utc),
-            }
-            user = await user_repository.create(db, **user_data)
-            logger.info(f'Created new user {token_data.user_id} from token sync')
-
-            workspace_name = user.name or user.email.split('@')[0]
-            workspace = Workspace(
-                user_id=user.id,
-                name=f"{workspace_name}'s Workspace",
-                description=f'Personal workspace for {user.email}',
-            )
-            db.add(workspace)
-            await db.commit()
-            await db.refresh(workspace)
-            logger.info(f'Created workspace {workspace.id} for new user {user.id}')
+        workspace_name = user.name or user.email.split('@')[0]
+        workspace = Workspace(
+            user_id=user.id,
+            name=f"{workspace_name}'s Workspace",
+            description=f'Personal workspace for {user.email}',
+        )
+        db.add(workspace)
+        await db.commit()
+        await db.refresh(workspace)
+        logger.info(f'Created workspace {workspace.id} for new user {user.id}')
 
         profile = await self.get_user_profile(UUID(token_data.user_id), db)
         if not profile:
-            raise ValueError(
-                f'Failed to get user profile after sync for user {token_data.user_id}'
-            )
+            raise ValueError(f'Failed to get user profile after creation for user {token_data.user_id}')
         return profile
 
 
