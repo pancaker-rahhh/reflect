@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useMemo, useCallback, type ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { workspaceApi } from '@/services/workspaceApi'
 import { projectApi } from '@/services/projectApi'
@@ -16,6 +16,10 @@ const AppContext = createContext<AppContextType | undefined>(undefined)
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [currentProject, setCurrentProject] = useState<Project | null>(null)
+
+  const handleSetCurrentProject = useCallback((project: Project | null) => {
+    setCurrentProject(project)
+  }, [])
 
   const { data: workspace, isLoading: isLoadingWorkspace } = useQuery({
     queryKey: ['workspace'],
@@ -36,13 +40,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [projects, currentProject])
 
-  const value = {
-    workspace: workspace || null,
-    projects,
-    currentProject,
-    setCurrentProject,
-    isLoading: isLoadingWorkspace || isLoadingProjects,
-  }
+  const value = useMemo(
+    () => ({
+      workspace: workspace || null,
+      projects,
+      currentProject,
+      setCurrentProject: handleSetCurrentProject,
+      isLoading: isLoadingWorkspace || isLoadingProjects,
+    }),
+    [workspace, projects, currentProject, handleSetCurrentProject, isLoadingWorkspace, isLoadingProjects]
+  )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
 }
