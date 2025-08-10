@@ -7,11 +7,4 @@ class HealthCheckResponse(BaseModel):
     version: str = Field(...)
 
     class Config:
-        json_schema_extra = {
-            'description': 'Provides health status information about the service.',
-            'example': {
-                'status': 'healthy',
-                'service': 'Reflect API',
-                'version': '0.1.0',
-            },
-        }
+        pass

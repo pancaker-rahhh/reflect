@@ -1,3 +1,7 @@
+# Environment variables
+.env
+.env.local
+.env.production
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -42,6 +46,9 @@ htmlcov/
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
 # Database
 *.db

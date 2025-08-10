@@ -9,12 +9,14 @@ from app.router.v1 import (
     form_router,
     feedback_router,
     roadmap_router,
+    user_router,
 )
 
 api_router = APIRouter(prefix='/api/v1')
 api_router.include_router(health_router.health_router)
 api_router.include_router(feedback_router.feedback_router)
 api_router.include_router(form_router.form_router)
+api_router.include_router(user_router.user_router)
 api_router.include_router(project_router.router, prefix='/projects', tags=['Projects'])
 api_router.include_router(
     workspace_router.router, prefix='/workspaces', tags=['Workspaces']

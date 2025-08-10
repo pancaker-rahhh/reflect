@@ -2,7 +2,7 @@ from typing import Optional, TYPE_CHECKING
 from datetime import datetime
 import uuid
 from sqlalchemy import String, DateTime as DateTimeColumn
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.models.base_model import BaseModel
@@ -33,6 +33,13 @@ class User(BaseModel):
         DateTimeColumn(timezone=True), nullable=True
     )
     last_login_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTimeColumn(timezone=True), nullable=True
+    )
+
+    # Supabase metadata fields
+    user_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
+    app_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
+    last_synced_at: Mapped[Optional[datetime]] = mapped_column(
         DateTimeColumn(timezone=True), nullable=True
     )
 
