@@ -3,6 +3,7 @@ from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user, auth
+from app.core.logging import get_logger
 from app.db import get_db
 from app.models.user_model import User
 from app.services.user_service import user_service
@@ -11,6 +12,8 @@ from app.schemas.user_schema import (
     UserProfileUpdateRequest,
     UserDeleteResponse,
 )
+
+logger = get_logger(__name__)
 
 user_router = APIRouter(
     prefix='/users',
@@ -42,6 +45,15 @@ async def update_current_user_profile(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> UserProfileResponse:
+    # Authorization: Users can only update their own profile
+    # The get_current_user dependency ensures they're authenticated
+    # Additional check: validate that sensitive fields aren't being modified
+    if hasattr(update_data, 'id') or hasattr(update_data, 'email'):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='Cannot modify protected fields'
+        )
+    
     updated_profile = await user_service.update_user_profile(user.id, update_data, db)
 
     if not updated_profile:
@@ -88,7 +100,8 @@ async def sync_user_from_supabase(
         return synced_user
 
     except Exception as e:
+        logger.error(f'User sync failed: {str(e)}')
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f'Failed to sync user: {str(e)}',
+            detail='Failed to sync user',
         )
