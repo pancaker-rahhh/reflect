@@ -1,14 +1,21 @@
 from typing import List, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, BackgroundTasks, Query, status
-from app.core.exceptions import NotFoundError
 from app.db import get_db
+from app.core.auth import get_current_token_data
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.feedback_schema import (
     FeedbackUpdate,
     FeedbackResponsePayload,
     FeedbackCreatePayload,
+    FeedbackCommentCreate,
+    FeedbackCommentResponse,
+    FeedbackVoteCreate,
+    FeedbackVoteResponse,
+    FeedbackVoteCounts,
 )
+from fastapi import HTTPException
+from app.schemas.auth_schema import TokenData
 from app.services.feedback_service import feedback_service
 # from app.services.tasks.executors.fastapi_executor import FastAPIExecutor
 # from app.services.tasks.base_executor import TaskPriority
@@ -38,7 +45,7 @@ async def get_feedback(
 ) -> FeedbackResponsePayload:
     result = await feedback_service.get_feedback(db, feedback_id)
     if not result:
-        raise NotFoundError(detail='Feedback not found')
+        raise HTTPException(status_code=404, detail='Feedback not found')
     return result
 
 
@@ -61,7 +68,7 @@ async def update_feedback(
 ) -> FeedbackResponsePayload:
     result = await feedback_service.update_feedback(db, feedback_id, payload)
     if not result:
-        raise NotFoundError(detail='Feedback not found')
+        raise HTTPException(status_code=404,detail='Feedback not found')
     return result
 
 
@@ -71,5 +78,75 @@ async def delete_feedback(
 ) -> None:
     deleted = await feedback_service.delete_feedback(db, feedback_id)
     if not deleted:
-        raise NotFoundError(detail='Feedback not found')
+        raise HTTPException(status_code=404,detail='Feedback not found')
     return None
+
+
+# Comment endpoints
+@feedback_router.post('/{feedback_id}/comments', response_model=FeedbackCommentResponse, status_code=status.HTTP_201_CREATED)
+async def add_comment(
+    feedback_id: UUID,
+    comment_data: FeedbackCommentCreate,
+    current_user: TokenData = Depends(get_current_token_data),
+    db: AsyncSession = Depends(get_db),
+) -> FeedbackCommentResponse:
+    comment = await feedback_service.add_comment(
+        db, feedback_id, UUID(current_user.user_id), comment_data.comment_text
+    )
+    return FeedbackCommentResponse.model_validate(comment)
+
+
+@feedback_router.get('/{feedback_id}/comments', response_model=List[FeedbackCommentResponse])
+async def get_comments(
+    feedback_id: UUID,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=50, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+) -> List[FeedbackCommentResponse]:
+    comments = await feedback_service.get_comments(db, feedback_id, skip, limit)
+    return [FeedbackCommentResponse.model_validate(c) for c in comments]
+
+
+# Vote endpoints
+@feedback_router.post('/{feedback_id}/vote', response_model=FeedbackVoteResponse, status_code=status.HTTP_201_CREATED)
+async def vote_feedback(
+    feedback_id: UUID,
+    vote_data: FeedbackVoteCreate,
+    current_user: TokenData = Depends(get_current_token_data),
+    db: AsyncSession = Depends(get_db),
+) -> FeedbackVoteResponse:
+    vote = await feedback_service.vote_feedback(
+        db, feedback_id, vote_data.vote_type, UUID(current_user.user_id)
+    )
+    return FeedbackVoteResponse.model_validate(vote)
+
+
+@feedback_router.delete('/{feedback_id}/vote', status_code=status.HTTP_204_NO_CONTENT)
+async def remove_vote(
+    feedback_id: UUID,
+    current_user: TokenData = Depends(get_current_token_data),
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    removed = await feedback_service.remove_vote(db, feedback_id, UUID(current_user.user_id))
+    if not removed:
+        raise HTTPException(status_code=404,detail='Vote not found')
+    return None
+
+
+@feedback_router.get('/{feedback_id}/votes', response_model=FeedbackVoteCounts)
+async def get_vote_counts(
+    feedback_id: UUID,
+    db: AsyncSession = Depends(get_db),
+) -> FeedbackVoteCounts:
+    counts = await feedback_service.get_vote_counts(db, feedback_id)
+    return FeedbackVoteCounts(**counts)
+
+
+@feedback_router.get('/{feedback_id}/vote/me', response_model=Optional[FeedbackVoteResponse])
+async def get_my_vote(
+    feedback_id: UUID,
+    current_user: TokenData = Depends(get_current_token_data),
+    db: AsyncSession = Depends(get_db),
+) -> Optional[FeedbackVoteResponse]:
+    vote = await feedback_service.get_user_vote(db, feedback_id, UUID(current_user.user_id))
+    return FeedbackVoteResponse.model_validate(vote) if vote else None

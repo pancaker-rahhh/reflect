@@ -3,7 +3,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
-from app.models.roadmap_model import Roadmap, RoadmapColumn, RoadmapFeature
+from app.models.roadmap_model import Roadmap, RoadmapColumn, RoadmapFeature, RoadmapItemAssignment
 from app.repositories.base_repository import BaseRepository
 
 
@@ -62,3 +62,32 @@ class RoadmapRepository(BaseRepository[Roadmap]):
 
 
 roadmap_repository = RoadmapRepository()
+
+
+class RoadmapAssignmentRepository(BaseRepository[RoadmapItemAssignment]):
+    def __init__(self):
+        super().__init__(RoadmapItemAssignment)
+
+    async def get_by_feature(
+        self, db: AsyncSession, feature_id: UUID
+    ) -> list[RoadmapItemAssignment]:
+        stmt = (
+            select(RoadmapItemAssignment)
+            .where(RoadmapItemAssignment.roadmap_feature_id == feature_id)
+            .options(selectinload(RoadmapItemAssignment.user))
+        )
+        result = await db.execute(stmt)
+        return list(result.scalars().all())
+
+    async def get_by_feature_and_user(
+        self, db: AsyncSession, feature_id: UUID, user_id: UUID
+    ) -> Optional[RoadmapItemAssignment]:
+        stmt = select(RoadmapItemAssignment).where(
+            RoadmapItemAssignment.roadmap_feature_id == feature_id,
+            RoadmapItemAssignment.user_id == user_id
+        )
+        result = await db.execute(stmt)
+        return result.scalar_one_or_none()
+
+
+roadmap_assignment_repository = RoadmapAssignmentRepository()

@@ -8,19 +8,10 @@ import sys
 from pathlib import Path
 from app.core.settings import get_settings
 from app.db import Base
-from app.models.base_model import BaseModel  # noqa
-from app.models.user_model import User  # noqa
-from app.models.workspace_model import Workspace  # noqa
-from app.models.project_model import Project  # noqa
-
 sys.path.append(str(Path(__file__).parent.parent))
 
-
 # Import all models to ensure they're registered with Base.metadata
-from app.models.base_model import BaseModel  # noqa
-from app.models.user_model import User  # noqa
-from app.models.workspace_model import Workspace  # noqa
-from app.models.project_model import Project  # noqa
+from app.models import *  # noqa
 
 config = context.config
 settings = get_settings()

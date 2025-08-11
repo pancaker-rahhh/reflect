@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 class TokenData(BaseModel):
-    user_id: str
+    sub: str
     email: str
     name: Optional[str] = None
     avatar_url: Optional[str] = None
@@ -14,6 +14,10 @@ class TokenData(BaseModel):
     iat: int
     iss: str
     aud: str
+    
+    @property
+    def user_id(self) -> str:
+        return self.sub
 
 
 class AuthUser(BaseModel):

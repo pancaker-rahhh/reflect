@@ -4,17 +4,14 @@ from uuid import UUID
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload
 
 from app.models.user_model import User
 from app.repositories.user_repository import user_repository
-from app.repositories.workspace_repository import workspace_repository
 from app.schemas.user_schema import (
     UserProfileUpdateRequest,
     UserProfileResponse,
     UserDeleteResponse,
 )
-from app.schemas.workspace_schema import WorkspaceCreate
 from app.core.logging import get_logger
 from app.schemas.auth_schema import TokenData
 from app.services.supabase_service import supabase_service
@@ -26,9 +23,7 @@ class UserService:
     async def get_user_profile(
         self, user_id: UUID, db: AsyncSession
     ) -> Optional[UserProfileResponse]:
-        stmt = (
-            select(User).where(User.id == user_id).options(selectinload(User.workspace))
-        )
+        stmt = select(User).where(User.id == user_id)
         result = await db.execute(stmt)
         user = result.scalar_one_or_none()
 
@@ -53,7 +48,7 @@ class UserService:
             return None
 
         asyncio.create_task(self._sync_user_to_supabase(user_id, update_dict))
-        await db.refresh(updated_user, ['workspace'])
+        await db.refresh(updated_user)
 
         return UserProfileResponse.model_validate(updated_user)
 
@@ -62,52 +57,15 @@ class UserService:
     ) -> Optional[UserDeleteResponse]:
         deleted_at = datetime.now(timezone.utc)
 
-        async with db.begin_nested():
-            from sqlalchemy.orm import selectinload
+        user = await user_repository.get(db, user_id)
+        if not user:
+            return None
 
-            stmt = (
-                select(User)
-                .where(User.id == user_id)
-                .options(selectinload(User.workspace))
-            )
-            result = await db.execute(stmt)
-            user = result.scalar_one_or_none()
-
-            if not user:
-                await db.rollback()
-                return None
-
-            if user.workspace:
-                await workspace_repository.soft_delete(db, user.workspace.id)
-
-            await user_repository.soft_delete(db, user_id)
-
-            logger.info(f'User {user_id} and related data soft deleted at {deleted_at}')
+        await user_repository.soft_delete(db, user_id)
+        logger.info(f'User {user_id} soft deleted at {deleted_at}')
 
         return UserDeleteResponse(deleted_at=deleted_at)
 
-    async def ensure_user_has_workspace(self, user: User, db: AsyncSession) -> User:
-        if not user.workspace:
-            workspace_name = user.name or user.email.split('@')[0]
-            workspace_create = WorkspaceCreate(
-                name=f"{workspace_name}'s Workspace",
-                description=f'Personal workspace for {user.email}',
-            )
-            workspace = await workspace_repository.create_workspace(
-                db, user_id=user.id, **workspace_create.model_dump()
-            )
-
-            stmt = (
-                select(User)
-                .where(User.id == user.id)
-                .options(selectinload(User.workspace))
-            )
-            result = await db.execute(stmt)
-            user = result.scalar_one()
-
-            logger.info(f'Created workspace {workspace.id} for user {user.id}')
-
-        return user
 
     async def _sync_user_to_supabase(self, user_id: UUID, update_data: dict) -> None:
         supabase_metadata = {}
@@ -155,18 +113,8 @@ class UserService:
             'last_synced_at': datetime.now(timezone.utc),
             'last_login_at': datetime.now(timezone.utc),
         }
-        user = await user_repository.create(db, **user_data)
+        await user_repository.create(db, **user_data)
         logger.info(f'Created new user {token_data.user_id} from token sync')
-
-        workspace_name = user.name or user.email.split('@')[0]
-        workspace_create = WorkspaceCreate(
-            name=f"{workspace_name}'s Workspace",
-            description=f'Personal workspace for {user.email}',
-        )
-        workspace = await workspace_repository.create_workspace(
-            db, user_id=user.id, **workspace_create.model_dump()
-        )
-        logger.info(f'Created workspace {workspace.id} for new user {user.id}')
 
         profile = await self.get_user_profile(UUID(token_data.user_id), db)
         if not profile:

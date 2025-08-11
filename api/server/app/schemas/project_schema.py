@@ -14,7 +14,7 @@ class ProjectBase(BaseModel):
 
 
 class ProjectCreate(ProjectBase):
-    workspace_id: UUID
+    organization_id: UUID
 
 
 class ProjectUpdate(BaseModel):
@@ -25,7 +25,7 @@ class ProjectUpdate(BaseModel):
 
 class ProjectRead(ProjectBase):
     id: UUID
-    workspace_id: UUID
+    organization_id: UUID
     slug: str
     created_at: datetime
     updated_at: datetime

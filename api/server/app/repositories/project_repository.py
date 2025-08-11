@@ -17,21 +17,21 @@ class ProjectRepository(BaseRepository[Project]):
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_by_workspace_and_slug(
-        self, db: AsyncSession, workspace_id: UUID, slug: str
+    async def get_by_organization_and_slug(
+        self, db: AsyncSession, organization_id: UUID, slug: str
     ) -> Optional[Project]:
         stmt = select(Project).where(
-            and_(Project.workspace_id == workspace_id, Project.slug == slug)
+            and_(Project.organization_id == organization_id, Project.slug == slug, Project.deleted_at.is_(None))
         )
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_multi_by_workspace(
-        self, db: AsyncSession, *, workspace_id: UUID, skip: int = 0, limit: int = 100
+    async def get_multi_by_organization(
+        self, db: AsyncSession, *, organization_id: UUID, skip: int = 0, limit: int = 100
     ) -> Tuple[List[Project], int]:
         stmt = (
             select(Project)
-            .where(Project.workspace_id == workspace_id, Project.deleted_at.is_(None))
+            .where(Project.organization_id == organization_id, Project.deleted_at.is_(None))
             .offset(skip)
             .limit(limit)
             .order_by(Project.created_at.desc())
@@ -40,7 +40,7 @@ class ProjectRepository(BaseRepository[Project]):
         count_stmt = (
             select(func.count())
             .select_from(Project)
-            .where(Project.workspace_id == workspace_id, Project.deleted_at.is_(None))
+            .where(Project.organization_id == organization_id, Project.deleted_at.is_(None))
         )
 
         items_result = await db.execute(stmt)
@@ -51,7 +51,11 @@ class ProjectRepository(BaseRepository[Project]):
 
         return items, total
 
-    async def soft_delete(self, db: AsyncSession, project: Project) -> Project:
+    async def soft_delete(self, db: AsyncSession, id: UUID) -> Optional[Project]:
+        project = await self.get(db, id)
+        if not project:
+            return None
+        
         project.deleted_at = datetime.now()
         db.add(project)
         await db.flush()

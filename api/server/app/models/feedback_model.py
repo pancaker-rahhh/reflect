@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional
 from sqlalchemy import (
     Column,
     String,
@@ -6,6 +7,7 @@ from sqlalchemy import (
     Boolean,
     ForeignKey,
     Enum as SQLEnum,
+    DateTime as DateTimeColumn,
 )
 from sqlalchemy.dialects.postgresql import UUID, JSONB, INET
 from sqlalchemy.orm import relationship, Mapped, mapped_column
@@ -13,6 +15,9 @@ import enum
 import uuid
 
 from app.models.base_model import BaseModel
+
+if TYPE_CHECKING:
+    pass
 
 
 class FeedbackType(str, enum.Enum):
@@ -75,7 +80,7 @@ class Feedback(BaseModel):
     assigned_to_user_id = Column(
         UUID(as_uuid=True), ForeignKey('users.id'), nullable=True
     )
-    resolved_at = Column
+    resolved_at = Column(DateTimeColumn, nullable=True)
     resolved_by_user_id = Column(
         UUID(as_uuid=True), ForeignKey('users.id'), nullable=True
     )
@@ -86,6 +91,8 @@ class Feedback(BaseModel):
     form = relationship('FeedbackForm', back_populates='feedback_items')
     assigned_to = relationship('User', foreign_keys=[assigned_to_user_id])
     resolved_by = relationship('User', foreign_keys=[resolved_by_user_id])
+    comments = relationship('FeedbackComment', back_populates='feedback', cascade='all, delete-orphan')
+    votes = relationship('FeedbackVote', back_populates='feedback', cascade='all, delete-orphan')
 
     __mapper_args__ = {
         'polymorphic_identity': 'feedback',
@@ -113,11 +120,9 @@ class ReviewFeedback(Feedback):
         UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
     )
     overall_rating = Column(Integer)
-    review_categories = Column(JSONB, default=dict)
+    pros = Column(Text)
+    cons = Column(Text)
     is_published = Column(Boolean, default=False)
-    published_at = Column
-    moderation_status = Column(String(50), default='pending')
-    reviewer_location = Column(String(255))
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.REVIEW}
 
@@ -128,12 +133,11 @@ class BugReportFeedback(Feedback):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
     )
-    severity_level = Column(SQLEnum(FeedbackPriority), default=FeedbackPriority.MEDIUM)
+    severity_level = Column(String(50), default='medium')
     steps_to_reproduce = Column(Text)
     expected_behavior = Column(Text)
     actual_behavior = Column(Text)
     environment_info = Column(JSONB, default=dict)
-    attachments = Column(JSONB, default=list)
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.BUG_REPORT}
 
@@ -146,10 +150,45 @@ class FeatureRequestFeedback(Feedback):
     )
     use_case = Column(Text)
     business_value = Column(Text)
-    upvotes_count = Column(Integer, default=0)
-    downvotes_count = Column(Integer, default=0)
-    estimated_effort = Column(String(50))
+    effort_estimate = Column(String(50))
+    impact_score = Column(Integer)
     implementation_status = Column(String(50), default='backlog')
-    roadmap_position = Column(Integer)
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.FEATURE_REQUEST}
+
+
+class FeedbackComment(BaseModel):
+    __tablename__ = 'feedback_comments'
+
+    feedback_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey('feedback.id'), nullable=False, index=True
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey('users.id'), nullable=False
+    )
+
+    comment_text = Column(Text, nullable=False)
+
+    feedback = relationship('Feedback', back_populates='comments')
+    user = relationship('User')
+
+
+class FeedbackVote(BaseModel):
+    __tablename__ = 'feedback_votes'
+
+    feedback_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey('feedback.id'), nullable=False, index=True
+    )
+    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey('users.id'), nullable=True
+    )
+    session_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
+    vote_type = Column(String(10), nullable=False)
+
+    feedback = relationship('Feedback', back_populates='votes')
+    user = relationship('User')
+
+    __table_args__ = (
+        {'extend_existing': True},
+    )

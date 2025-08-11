@@ -49,7 +49,7 @@ class Auth:
                 return value[:max_length] if len(value) > max_length else value
 
             return TokenData(
-                user_id=user_id,
+                sub=user_id,
                 email=email,
                 name=safe_get_string(user_metadata, 'full_name')
                 or safe_get_string(user_metadata, 'name'),
@@ -73,12 +73,12 @@ class Auth:
         from app.models.user_model import User
         from sqlalchemy import select
 
-        stmt = select(User).where(User.id == token_data.user_id)
+        stmt = select(User).where(User.id == token_data.sub)
         result = await db.execute(stmt)
         user = result.scalar_one_or_none()
 
         if not user:
-            user = User(id=token_data.user_id, email=token_data.email)
+            user = User(id=token_data.sub, email=token_data.email)
             db.add(user)
             await db.commit()
             await db.refresh(user)
@@ -112,3 +112,13 @@ async def get_current_user(
     if not credentials:
         raise AuthenticationError('Authentication required')
     return await auth.verify_and_get_user(credentials, db)
+
+
+async def get_current_token_data(
+    credentials: HTTPAuthorizationCredentials = Depends(auth.security),
+) -> TokenData:
+    if not credentials:
+        raise AuthenticationError('Authentication required')
+    return auth.validate_jwt_token(credentials.credentials)
+
+

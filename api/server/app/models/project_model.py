@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional
+from typing import Optional, List, TYPE_CHECKING
 from sqlalchemy import String, Boolean, ForeignKey, UniqueConstraint, DateTime
 from sqlalchemy.dialects.postgresql import UUID, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
@@ -9,16 +9,18 @@ from datetime import datetime
 from app.models.base_model import BaseModel
 
 if TYPE_CHECKING:
-    from app.models.workspace_model import Workspace
+    from app.models.organization_model import Organization, ProjectMember
     from app.models.roadmap_model import Roadmap
+    from app.models.integration_model import Integration
+    from app.models.webhook_model import Webhook
 
 
 class Project(BaseModel):
     __tablename__ = 'projects'
 
-    workspace_id: Mapped[uuid.UUID] = mapped_column(
+    organization_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey('workspaces.id', ondelete='CASCADE'),
+        ForeignKey('organizations.id', ondelete='CASCADE'),
         nullable=False,
         index=True,
     )
@@ -49,14 +51,24 @@ class Project(BaseModel):
 
     settings: Mapped[dict] = mapped_column(JSON, default=dict)
 
-    workspace: Mapped['Workspace'] = relationship(
-        'Workspace', back_populates='projects'
+    organization: Mapped['Organization'] = relationship(
+        'Organization', back_populates='projects'
     )
+    members: Mapped[List['ProjectMember']] = relationship(
+        'ProjectMember', back_populates='project', cascade='all, delete-orphan'
+    )
+    
     widgets = relationship('Widget', back_populates='project')
     forms = relationship('FeedbackForm', back_populates='project')
 
-    roadmap: Mapped['Roadmap'] = relationship(
+    roadmap: Mapped[Optional['Roadmap']] = relationship(
         'Roadmap', back_populates='project', cascade='all, delete-orphan', uselist=False
+    )
+    integrations: Mapped[List['Integration']] = relationship(
+        'Integration', back_populates='project', cascade='all, delete-orphan'
+    )
+    webhooks: Mapped[List['Webhook']] = relationship(
+        'Webhook', back_populates='project', cascade='all, delete-orphan'
     )
 
     def generate_slug(self, name: str) -> str:
@@ -72,6 +84,6 @@ class Project(BaseModel):
         super().__init__(**kwargs)
 
     __table_args__ = (
-        UniqueConstraint('workspace_id', 'slug', name='uq_project_workspace_slug'),
+        UniqueConstraint('organization_id', 'slug', name='uq_project_organization_slug'),
         {'extend_existing': True},
     )
