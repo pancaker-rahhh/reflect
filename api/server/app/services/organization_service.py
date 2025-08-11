@@ -292,5 +292,22 @@ class OrganizationService:
             raise ForbiddenError("Only organization owner can perform this action")
         return member
 
+    async def check_project_access(
+        self, db: AsyncSession, user_id: UUID, project_id: UUID, required_role: Optional[str] = None
+    ) -> None:
+        from app.repositories.project_repository import project_repository
+        
+        project = await project_repository.get(db, project_id)
+        if not project:
+            raise NotFoundError("Project not found")
+        
+        member = await self._check_user_access(db, project.organization_id, user_id)
+        
+        if required_role:
+            if required_role == 'Admin' and member.role not in [OrganizationRole.OWNER, OrganizationRole.ADMIN]:
+                raise ForbiddenError("Admin access required")
+            elif required_role == 'Owner' and member.role != OrganizationRole.OWNER:
+                raise ForbiddenError("Owner access required")
+
 
 organization_service = OrganizationService()

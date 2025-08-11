@@ -82,9 +82,42 @@ class FieldReorderRequest(BaseModel):
     )
 
 
+# New unified form schemas for the updated service
+class FormCreate(BaseModel):
+    project_id: UUID
+    name: str = Field(..., max_length=255)
+    form_type: str = Field("custom")
+    description: Optional[str] = None
+    is_active: bool = Field(True)
+    config: Dict[str, Any] = Field(default_factory=dict)
+
+
+class FormUpdate(BaseModel):
+    name: Optional[str] = Field(None, max_length=255)
+    form_type: Optional[str] = None
+    description: Optional[str] = None
+    is_active: Optional[bool] = None
+    config: Optional[Dict[str, Any]] = None
+
+
+class FormResponse(BaseModel):
+    id: UUID
+    project_id: UUID
+    name: str
+    form_type: str
+    description: Optional[str]
+    is_active: bool
+    config: Dict[str, Any]
+    created_at: str
+    updated_at: Optional[str] = None
+    form_fields: List[FormFieldResponse] = Field(default_factory=list)
+
+    class Config:
+        from_attributes = True
+
+
 # Dynamic form submission schema
 class FormSubmissionData(BaseModel):
-    """Generic form submission data based on form fields"""
     form_id: UUID
     field_data: Dict[str, Any] = Field(..., description="Key-value pairs of form field responses")
     submitter_email: Optional[str] = None

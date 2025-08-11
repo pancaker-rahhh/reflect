@@ -4,13 +4,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.form_repository import feedback_form_repository, form_field_repository
 from app.schemas.form_schema import (
-    FeedbackFormCreate,
-    FeedbackFormUpdate,
-    FeedbackFormResponse,
     FormFieldCreate,
     FormFieldUpdate,
     FormFieldResponse,
     FormSubmissionData,
+    FormCreate,
+    FormUpdate,
+    FormResponse,
 )
 from app.models.form_model import FeedbackForm, FormField
 from app.core.exceptions import NotFoundError, ValidationError
@@ -20,50 +20,40 @@ logger = get_logger(__name__)
 
 
 class FormService:
-    async def create_form(
-        self, db: AsyncSession, project_id: UUID, form_data: FeedbackFormCreate
-    ) -> FeedbackFormResponse:
+    async def create_form(self, db: AsyncSession, form_data: FormCreate) -> FormResponse:
         form_dict = form_data.model_dump()
-        form_dict['project_id'] = project_id
-        
         form = await feedback_form_repository.create(db, **form_dict)
-        logger.info(f"Created form {form.id} for project {project_id}")
-        
-        return FeedbackFormResponse.model_validate(form)
+        logger.info(f"Created form {form.id} for project {form_data.project_id}")
+        return FormResponse.model_validate(form)
 
-    async def get_form(
-        self, db: AsyncSession, form_id: UUID
-    ) -> Optional[FeedbackFormResponse]:
+    async def get_form(self, db: AsyncSession, form_id: UUID) -> Optional[FormResponse]:
         form = await feedback_form_repository.get_with_fields(db, form_id)
         if not form:
             return None
-        
-        return FeedbackFormResponse.model_validate(form)
+        return FormResponse.model_validate(form)
 
-    async def get_forms_by_project(
-        self, db: AsyncSession, project_id: UUID, skip: int = 0, limit: int = 100
-    ) -> List[FeedbackFormResponse]:
-        forms = await feedback_form_repository.get_by_project(
-            db, project_id, skip, limit
-        )
-        return [FeedbackFormResponse.model_validate(form) for form in forms]
+    async def list_forms(
+        self, db: AsyncSession, project_id: Optional[UUID] = None, skip: int = 0, limit: int = 100
+    ) -> List[FormResponse]:
+        if project_id:
+            forms = await feedback_form_repository.get_by_project(db, project_id, skip, limit)
+        else:
+            forms = await feedback_form_repository.get_multi(db, skip=skip, limit=limit)
+        return [FormResponse.model_validate(form) for form in forms]
 
     async def update_form(
-        self, db: AsyncSession, form_id: UUID, form_data: FeedbackFormUpdate
-    ) -> Optional[FeedbackFormResponse]:
+        self, db: AsyncSession, form_id: UUID, form_data: FormUpdate
+    ) -> Optional[FormResponse]:
         update_dict = form_data.model_dump(exclude_unset=True)
-        
         form = await feedback_form_repository.update(db, form_id, **update_dict)
         if not form:
             return None
-        
-        form_with_fields = await feedback_form_repository.get_with_fields(db, form_id)
-        return FeedbackFormResponse.model_validate(form_with_fields)
+        return FormResponse.model_validate(form)
 
     async def delete_form(self, db: AsyncSession, form_id: UUID) -> bool:
         return await feedback_form_repository.delete(db, form_id)
 
-    async def add_field_to_form(
+    async def create_form_field(
         self, db: AsyncSession, form_id: UUID, field_data: FormFieldCreate
     ) -> FormFieldResponse:
         form = await feedback_form_repository.get(db, form_id)
@@ -81,7 +71,6 @@ class FormService:
             db, form_id, **field_dict
         )
         logger.info(f"Added field {field.id} to form {form_id}")
-        
         return FormFieldResponse.model_validate(field)
 
     async def get_form_fields(
@@ -89,6 +78,24 @@ class FormService:
     ) -> List[FormFieldResponse]:
         fields = await form_field_repository.get_by_form(db, form_id)
         return [FormFieldResponse.model_validate(field) for field in fields]
+
+    async def update_form_field(
+        self, db: AsyncSession, field_id: UUID, field_data: FormFieldUpdate
+    ) -> Optional[FormFieldResponse]:
+        update_dict = field_data.model_dump(exclude_unset=True)
+        field = await form_field_repository.update(db, field_id, **update_dict)
+        if not field:
+            return None
+        return FormFieldResponse.model_validate(field)
+
+    async def delete_form_field(self, db: AsyncSession, field_id: UUID) -> bool:
+        return await form_field_repository.delete(db, field_id)
+
+    async def reorder_form_fields(
+        self, db: AsyncSession, form_id: UUID, field_ids: List[UUID]
+    ) -> None:
+        for index, field_id in enumerate(field_ids):
+            await form_field_repository.update(db, field_id, order_index=index)
 
     async def validate_form_submission(
         self, db: AsyncSession, submission: FormSubmissionData
