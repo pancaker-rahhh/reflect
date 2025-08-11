@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, status, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from app.core.auth import get_current_user
-from app.models.user_model import User
+from app.schemas.auth_schema import TokenData
 from app.schemas.project_schema import (
     ProjectCreate,
     ProjectUpdate,
@@ -18,7 +18,7 @@ from app.services.project_service import project_service, ProjectService
 from app.schemas.roadmap_schema import RoadmapRead
 from app.services.roadmap_service import roadmap_service, RoadmapService
 
-router = APIRouter()
+router = APIRouter(prefix="/projects", tags=["Projects"])
 
 
 @router.post(
@@ -29,11 +29,11 @@ router = APIRouter()
 async def create_project(
     project_in: ProjectCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: TokenData = Depends(get_current_user),
     service: ProjectService = Depends(lambda: project_service),
 ) -> Any:
-    project = await service.create_project(db, user=current_user, project_in=project_in)
-    return project
+    project = await service.create_project(db, user_id=UUID(current_user.sub), project_in=project_in)
+    return ProjectRead.model_validate(project)
 
 
 @router.get(
@@ -41,17 +41,18 @@ async def create_project(
     response_model=PaginatedProjectRead,
 )
 async def list_projects(
-    workspace_id: UUID,
+    organization_id: UUID,
     page: int = Query(1, ge=1, description='Page number'),
     size: int = Query(20, ge=1, le=100, description='Page size'),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: TokenData = Depends(get_current_user),
     service: ProjectService = Depends(lambda: project_service),
 ) -> Any:
-    projects, total = await service.list_projects_by_workspace(
-        db, user=current_user, workspace_id=workspace_id, page=page, size=size
+    projects, total = await service.list_projects_by_organization(
+        db, user_id=UUID(current_user.sub), organization_id=organization_id, page=page, size=size
     )
-    return PaginatedProjectRead(total=total, page=page, size=size, items=projects)
+    project_reads = [ProjectRead.model_validate(project) for project in projects]
+    return PaginatedProjectRead(total=total, page=page, size=size, items=project_reads)
 
 
 @router.get(
@@ -61,13 +62,13 @@ async def list_projects(
 async def get_project(
     project_id: UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: TokenData = Depends(get_current_user),
     service: ProjectService = Depends(lambda: project_service),
 ) -> Any:
     project = await service.get_project_and_check_access(
-        db, user=current_user, project_id=project_id
+        db, user_id=UUID(current_user.sub), project_id=project_id
     )
-    return project
+    return ProjectRead.model_validate(project)
 
 
 @router.put(
@@ -78,13 +79,13 @@ async def update_project(
     project_id: UUID,
     project_in: ProjectUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: TokenData = Depends(get_current_user),
     service: ProjectService = Depends(lambda: project_service),
 ) -> Any:
     project = await service.update_project(
-        db, user=current_user, project_id=project_id, project_in=project_in
+        db, user_id=UUID(current_user.sub), project_id=project_id, project_in=project_in
     )
-    return project
+    return ProjectRead.model_validate(project)
 
 
 @router.get(
@@ -94,11 +95,11 @@ async def update_project(
 async def get_project_settings(
     project_id: UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: TokenData = Depends(get_current_user),
     service: ProjectService = Depends(lambda: project_service),
 ) -> Any:
     settings = await service.get_project_settings(
-        db, user=current_user, project_id=project_id
+        db, user_id=UUID(current_user.sub), project_id=project_id
     )
     return settings
 
@@ -111,11 +112,11 @@ async def update_project_settings(
     project_id: UUID,
     settings_in: ProjectSettingsUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: TokenData = Depends(get_current_user),
     service: ProjectService = Depends(lambda: project_service),
 ) -> Any:
     settings = await service.update_project_settings(
-        db, user=current_user, project_id=project_id, settings_in=settings_in
+        db, user_id=UUID(current_user.sub), project_id=project_id, settings_in=settings_in
     )
     return settings
 
@@ -127,10 +128,10 @@ async def update_project_settings(
 async def delete_project(
     project_id: UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: TokenData = Depends(get_current_user),
     service: ProjectService = Depends(lambda: project_service),
 ):
-    await service.delete_project(db, user=current_user, project_id=project_id)
+    await service.delete_project(db, user_id=UUID(current_user.sub), project_id=project_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -142,9 +143,9 @@ async def delete_project(
 async def get_project_roadmap(
     project_id: UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: TokenData = Depends(get_current_user),
     service: RoadmapService = Depends(lambda: roadmap_service),
 ) -> Any:
     return await service.get_or_create_roadmap(
-        db, user=current_user, project_id=project_id
+        db, user_id=UUID(current_user.sub), project_id=project_id
     )

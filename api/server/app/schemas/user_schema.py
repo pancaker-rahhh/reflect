@@ -5,18 +5,6 @@ from uuid import UUID
 import pytz
 
 
-class WorkspaceResponse(BaseModel):
-    id: UUID
-    name: str
-    slug: str
-    description: Optional[str] = None
-    created_at: datetime
-    updated_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
-
-
 class UserProfileResponse(BaseModel):
     id: UUID
     email: str
@@ -29,7 +17,6 @@ class UserProfileResponse(BaseModel):
     last_login_at: Optional[datetime] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
-    workspace: Optional[WorkspaceResponse] = None
 
     class Config:
         from_attributes = True

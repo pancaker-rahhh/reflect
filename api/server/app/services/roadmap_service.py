@@ -2,8 +2,6 @@ from uuid import UUID
 from typing import List, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
-
-from app.models.user_model import User
 from app.models.roadmap_model import Roadmap, RoadmapColumn, RoadmapFeature
 from app.repositories.roadmap_repository import (
     roadmap_repository,
@@ -37,9 +35,9 @@ class RoadmapService:
         self.project_serv = project_serv
 
     async def get_or_create_roadmap(
-        self, db: AsyncSession, user: User, project_id: UUID
+        self, db: AsyncSession, user_id: UUID, project_id: UUID
     ) -> Roadmap:
-        await self.project_serv.get_project_and_check_access(db, user, project_id)
+        await self.project_serv.get_project_and_check_access(db, user_id, project_id)
         roadmap = await self.roadmap_repo.get_by_project_id(db, project_id=project_id)
         if not roadmap:
             new_roadmap = Roadmap(project_id=project_id)
