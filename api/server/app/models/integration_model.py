@@ -93,7 +93,7 @@ class IntegrationMapping(BaseModel):
     external_id: Mapped[str] = mapped_column(String(255), nullable=False)
     external_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     
-    metadata: Mapped[Dict[str, Any]] = mapped_column(JSONB, default=dict)
+    mapping_metadata: Mapped[Dict[str, Any]] = mapped_column(JSONB, default=dict)
     
     sync_status: Mapped[str] = mapped_column(String(50), default='synced')
     last_synced_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)

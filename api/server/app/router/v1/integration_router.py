@@ -215,3 +215,24 @@ async def delete_webhook(
     )
     if not success:
         raise HTTPException(status_code=404, detail="Webhook not found")
+
+
+@router.post('/webhooks/{webhook_id}/test')
+async def test_webhook(
+    webhook_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: TokenData = Depends(get_current_token_data)
+):
+    from app.services.webhook_service import webhook_service
+    from app.repositories.integration_repository import webhook_repository
+    
+    webhook = await webhook_repository.get(db, webhook_id)
+    if not webhook:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+    
+    # Check project access
+    from app.services.organization_service import organization_service
+    await organization_service.check_project_access(db, UUID(current_user.user_id), webhook.project_id)
+    
+    result = await webhook_service.test_webhook(db, webhook)
+    return result

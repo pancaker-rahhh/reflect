@@ -51,7 +51,7 @@ class IntegrationMappingBase(BaseModel):
     internal_id: UUID
     external_id: str = Field(..., max_length=255)
     external_url: Optional[str] = Field(None, max_length=500)
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    mapping_metadata: Dict[str, Any] = Field(default_factory=dict)
     is_active: bool = Field(default=True)
 
 
@@ -62,7 +62,7 @@ class IntegrationMappingCreate(IntegrationMappingBase):
 class IntegrationMappingUpdate(BaseModel):
     external_id: Optional[str] = Field(None, max_length=255)
     external_url: Optional[str] = Field(None, max_length=500)
-    metadata: Optional[Dict[str, Any]] = None
+    mapping_metadata: Optional[Dict[str, Any]] = None
     sync_status: Optional[str] = None
     is_active: Optional[bool] = None
 

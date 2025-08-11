@@ -231,7 +231,7 @@ class JIRAIntegrationService:
                     'internal_id': feedback_id,
                     'external_id': result.get('key'),
                     'external_url': result.get('url'),
-                    'metadata': {"created_at": datetime.now(timezone.utc).isoformat()}
+                    'mapping_metadata': {"created_at": datetime.now(timezone.utc).isoformat()}
                 }
                 
                 await integration_mapping_repository.create(db, **mapping_data)

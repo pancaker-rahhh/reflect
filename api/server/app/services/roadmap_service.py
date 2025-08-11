@@ -170,7 +170,18 @@ class RoadmapService:
         await organization_service.check_project_access(
             db, user_id, roadmap.project_id, required_role='Admin'
         )
-        return await self.feature_repo.create(db, **feature_in.model_dump())
+        feature = await self.feature_repo.create(db, **feature_in.model_dump())
+        
+        # Dispatch webhook for new feature
+        try:
+            from app.services.webhook_dispatcher import webhook_dispatcher
+            await webhook_dispatcher.dispatch_feature_created(db, feature)
+        except Exception as e:
+            from app.core.logging import get_logger
+            logger = get_logger(__name__)
+            logger.warning(f"Failed to dispatch feature.created webhook for feature {feature.id}: {str(e)}")
+        
+        return feature
 
     async def update_feature(
         self,
@@ -191,9 +202,20 @@ class RoadmapService:
         await organization_service.check_project_access(
             db, user_id, roadmap.project_id, required_role='Admin'
         )
-        return await self.feature_repo.update(
-            db, id=feature_id, **feature_in.model_dump(exclude_unset=True)
-        )
+        updated_fields = feature_in.model_dump(exclude_unset=True)
+        updated_feature = await self.feature_repo.update(db, id=feature_id, **updated_fields)
+        
+        if updated_feature:
+            # Dispatch webhook for updated feature
+            try:
+                from app.services.webhook_dispatcher import webhook_dispatcher
+                await webhook_dispatcher.dispatch_feature_updated(db, updated_feature, updated_fields)
+            except Exception as e:
+                from app.core.logging import get_logger
+                logger = get_logger(__name__)
+                logger.warning(f"Failed to dispatch feature.updated webhook for feature {feature_id}: {str(e)}")
+        
+        return updated_feature
 
     async def delete_feature(self, db: AsyncSession, user_id: UUID, feature_id: UUID):
         feature = await self.feature_repo.get(db, id=feature_id)

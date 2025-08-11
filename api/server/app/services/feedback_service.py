@@ -27,6 +27,14 @@ class FeedbackService:
         self, db: AsyncSession, payload: FeedbackCreatePayload
     ) -> FeedbackResponsePayload:
         obj = await feedback_repository.create_polymorphic(db, **payload.model_dump())
+        
+        # Dispatch webhook for new feedback
+        try:
+            from app.services.webhook_dispatcher import webhook_dispatcher
+            await webhook_dispatcher.dispatch_feedback_created(db, obj)
+        except Exception as e:
+            logger.warning(f"Failed to dispatch feedback.created webhook for feedback {obj.id}: {str(e)}")
+        
         return self._convert_to_response(obj)
 
     async def get_feedback(
@@ -54,9 +62,17 @@ class FeedbackService:
     async def update_feedback(
         self, db: AsyncSession, feedback_id: UUID, payload: FeedbackUpdate
     ) -> Optional[FeedbackResponsePayload]:
-        obj = await feedback_repository.update_polymorphic(
-            db, feedback_id, **payload.model_dump(exclude_none=True)
-        )
+        updated_fields = payload.model_dump(exclude_none=True)
+        obj = await feedback_repository.update_polymorphic(db, feedback_id, **updated_fields)
+        
+        if obj:
+            # Dispatch webhook for updated feedback
+            try:
+                from app.services.webhook_dispatcher import webhook_dispatcher
+                await webhook_dispatcher.dispatch_feedback_updated(db, obj, updated_fields)
+            except Exception as e:
+                logger.warning(f"Failed to dispatch feedback.updated webhook for feedback {obj.id}: {str(e)}")
+        
         return self._convert_to_response(obj) if obj else None
 
     async def delete_feedback(self, db: AsyncSession, feedback_id: UUID) -> bool:
