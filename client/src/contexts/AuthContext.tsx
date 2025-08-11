@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import type { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
@@ -20,17 +20,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const hasSyncedRef = useRef(false);
 
   useEffect(() => {
+    let isMounted = true;
+
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+      if (isMounted) {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return;
+      
+      // Skip INITIAL_SESSION events as we already handle this above
+      if (event === 'INITIAL_SESSION') {
+        return;
+      }
+      
       console.log('🔐 Auth state change:', event, session?.user?.id);
       
       setSession(session);
@@ -38,8 +50,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
 
       // Sync user to backend when they sign in (but not on initial session load)
-      // TODO: part of the stop gap user sync solution, will implement webhook for prod
-      if (event === 'SIGNED_IN' && session) {
+      // Only sync once per session and only for actual sign-in events
+      if (event === 'SIGNED_IN' && session && !hasSyncedRef.current) {
+        hasSyncedRef.current = true;
         console.log('🚀 Starting user sync to backend...');
         console.log('🎫 Using session token:', session.access_token ? 'Present' : 'Missing');
         setSyncing(true);
@@ -63,13 +76,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.error('❌ Failed to sync user to backend:', error);
           // Don't block login flow if sync fails
         } finally {
-          setSyncing(false);
+          if (isMounted) {
+            setSyncing(false);
+          }
           console.log('🏁 Sync process completed');
         }
       }
+
+      // Reset sync flag on sign out
+      if (event === 'SIGNED_OUT') {
+        hasSyncedRef.current = false;
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signInWithEmail = async (email: string) => {
