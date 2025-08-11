@@ -73,3 +73,27 @@ class RoadmapRead(BaseModel):
 class RoadmapUpdate(BaseModel):
     name: Optional[str] = None
     is_public: Optional[bool] = None
+
+
+class RoadmapAssignmentCreate(BaseModel):
+    roadmap_feature_id: UUID
+    user_id: UUID
+    role: str = Field(default='contributor', max_length=50)
+    assigned_by: Optional[UUID] = None
+
+
+class RoadmapAssignmentUpdate(BaseModel):
+    role: Optional[str] = Field(None, max_length=50)
+
+
+class RoadmapAssignmentResponse(BaseModel):
+    id: UUID
+    roadmap_feature_id: UUID
+    user_id: UUID
+    role: str
+    assigned_by: Optional[UUID] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True

@@ -2,7 +2,7 @@ from uuid import UUID
 from typing import List, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
-from app.models.roadmap_model import Roadmap, RoadmapColumn, RoadmapFeature
+from app.models.roadmap_model import Roadmap, RoadmapColumn, RoadmapFeature, RoadmapItemAssignment
 from app.repositories.roadmap_repository import (
     roadmap_repository,
     RoadmapRepository,
@@ -10,6 +10,8 @@ from app.repositories.roadmap_repository import (
     RoadmapColumnRepository,
     roadmap_feature_repository,
     RoadmapFeatureRepository,
+    roadmap_assignment_repository,
+    RoadmapAssignmentRepository,
 )
 from app.schemas.roadmap_schema import (
     RoadmapUpdate,
@@ -17,8 +19,10 @@ from app.schemas.roadmap_schema import (
     RoadmapColumnUpdate,
     RoadmapFeatureCreate,
     RoadmapFeatureUpdate,
+    RoadmapAssignmentCreate,
 )
 from app.services.project_service import project_service, ProjectService
+from app.services.organization_service import organization_service
 
 
 class RoadmapService:
@@ -37,7 +41,7 @@ class RoadmapService:
     async def get_or_create_roadmap(
         self, db: AsyncSession, user_id: UUID, project_id: UUID
     ) -> Roadmap:
-        await self.project_serv.get_project_and_check_access(db, user_id, project_id)
+        await organization_service.check_project_access(db, user_id, project_id)
         roadmap = await self.roadmap_repo.get_by_project_id(db, project_id=project_id)
         if not roadmap:
             new_roadmap = Roadmap(project_id=project_id)
@@ -59,7 +63,7 @@ class RoadmapService:
         return roadmap
 
     async def update_roadmap(
-        self, db: AsyncSession, user: User, roadmap_id: UUID, roadmap_in: RoadmapUpdate
+        self, db: AsyncSession, user_id: UUID, roadmap_id: UUID, roadmap_in: RoadmapUpdate
     ) -> Roadmap:
         roadmap = await self.roadmap_repo.get(db, id=roadmap_id)
         if not roadmap:
@@ -68,7 +72,7 @@ class RoadmapService:
             )
 
         project_id = roadmap.project_id
-        await self.project_serv.get_project_and_check_access(db, user, project_id)
+        await organization_service.check_project_access(db, user_id, project_id, required_role='Admin')
 
         await self.roadmap_repo.update(
             db, id=roadmap_id, **roadmap_in.model_dump(exclude_unset=True)
@@ -96,22 +100,22 @@ class RoadmapService:
         return roadmap
 
     async def create_column(
-        self, db: AsyncSession, user: User, column_in: RoadmapColumnCreate
+        self, db: AsyncSession, user_id: UUID, column_in: RoadmapColumnCreate
     ) -> RoadmapColumn:
         roadmap = await self.roadmap_repo.get(db, id=column_in.roadmap_id)
         if not roadmap:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail='Roadmap not found'
             )
-        await self.project_serv.get_project_and_check_access(
-            db, user, roadmap.project_id
+        await organization_service.check_project_access(
+            db, user_id, roadmap.project_id, required_role='Admin'
         )
         return await self.column_repo.create(db, **column_in.model_dump())
 
     async def update_column(
         self,
         db: AsyncSession,
-        user: User,
+        user_id: UUID,
         column_id: UUID,
         column_in: RoadmapColumnUpdate,
     ) -> RoadmapColumn:
@@ -121,8 +125,10 @@ class RoadmapService:
                 status_code=status.HTTP_404_NOT_FOUND, detail='Column not found'
             )
         roadmap = await self.roadmap_repo.get(db, id=column.roadmap_id)
-        await self.project_serv.get_project_and_check_access(
-            db, user, roadmap.project_id
+        if not roadmap:
+            raise HTTPException(status_code=404, detail='Roadmap not found')
+        await organization_service.check_project_access(
+            db, user_id, roadmap.project_id, required_role='Admin'
         )
         await self.column_repo.update(
             db, id=column_id, **column_in.model_dump(exclude_unset=True)
@@ -135,21 +141,23 @@ class RoadmapService:
             )
         return updated_column
 
-    async def delete_column(self, db: AsyncSession, user: User, column_id: UUID):
+    async def delete_column(self, db: AsyncSession, user_id: UUID, column_id: UUID):
         column = await self.column_repo.get(db, id=column_id)
         if not column:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail='Column not found'
             )
         roadmap = await self.roadmap_repo.get(db, id=column.roadmap_id)
-        await self.project_serv.get_project_and_check_access(
-            db, user, roadmap.project_id
+        if not roadmap:
+            raise HTTPException(status_code=404, detail='Roadmap not found')
+        await organization_service.check_project_access(
+            db, user_id, roadmap.project_id, required_role='Admin'
         )
         await self.column_repo.delete(db, id=column_id)
         return None
 
     async def create_feature(
-        self, db: AsyncSession, user: User, feature_in: RoadmapFeatureCreate
+        self, db: AsyncSession, user_id: UUID, feature_in: RoadmapFeatureCreate
     ) -> RoadmapFeature:
         column = await self.column_repo.get(db, id=feature_in.column_id)
         if not column:
@@ -157,15 +165,17 @@ class RoadmapService:
                 status_code=status.HTTP_404_NOT_FOUND, detail='Column not found'
             )
         roadmap = await self.roadmap_repo.get(db, id=column.roadmap_id)
-        await self.project_serv.get_project_and_check_access(
-            db, user, roadmap.project_id
+        if not roadmap:
+            raise HTTPException(status_code=404, detail='Roadmap not found')
+        await organization_service.check_project_access(
+            db, user_id, roadmap.project_id, required_role='Admin'
         )
         return await self.feature_repo.create(db, **feature_in.model_dump())
 
     async def update_feature(
         self,
         db: AsyncSession,
-        user: User,
+        user_id: UUID,
         feature_id: UUID,
         feature_in: RoadmapFeatureUpdate,
     ) -> RoadmapFeature:
@@ -176,14 +186,16 @@ class RoadmapService:
             )
         column = await self.column_repo.get(db, id=feature.column_id)
         roadmap = await self.roadmap_repo.get(db, id=column.roadmap_id)
-        await self.project_serv.get_project_and_check_access(
-            db, user, roadmap.project_id
+        if not roadmap:
+            raise HTTPException(status_code=404, detail='Roadmap not found')
+        await organization_service.check_project_access(
+            db, user_id, roadmap.project_id, required_role='Admin'
         )
         return await self.feature_repo.update(
             db, id=feature_id, **feature_in.model_dump(exclude_unset=True)
         )
 
-    async def delete_feature(self, db: AsyncSession, user: User, feature_id: UUID):
+    async def delete_feature(self, db: AsyncSession, user_id: UUID, feature_id: UUID):
         feature = await self.feature_repo.get(db, id=feature_id)
         if not feature:
             raise HTTPException(
@@ -191,35 +203,44 @@ class RoadmapService:
             )
         column = await self.column_repo.get(db, id=feature.column_id)
         roadmap = await self.roadmap_repo.get(db, id=column.roadmap_id)
-        await self.project_serv.get_project_and_check_access(
-            db, user, roadmap.project_id
+        if not roadmap:
+            raise HTTPException(status_code=404, detail='Roadmap not found')
+        await organization_service.check_project_access(
+            db, user_id, roadmap.project_id, required_role='Admin'
         )
         await self.feature_repo.delete(db, id=feature_id)
         return None
 
     async def update_features_order(
-        self, db: AsyncSession, user: User, updates: List[Dict[str, Any]]
+        self, db: AsyncSession, user_id: UUID, updates: List[Dict[str, Any]]
     ):
         for update in updates:
             feature_id = update.get('id')
             new_order = update.get('order')
             new_column_id = update.get('column_id')
 
-            feature = await self.feature_repo.get(db, id=feature_id)
+            if not feature_id:
+                continue
+
+            feature = await self.feature_repo.get(db, id=UUID(feature_id))
             if not feature:
                 continue
 
             column = await self.column_repo.get(db, id=feature.column_id)
+            if not column:
+                continue
             roadmap = await self.roadmap_repo.get(db, id=column.roadmap_id)
-            await self.project_serv.get_project_and_check_access(
-                db, user, roadmap.project_id
+            if not roadmap:
+                continue
+            await organization_service.check_project_access(
+                db, user_id, roadmap.project_id, required_role='Admin'
             )
 
             update_data = {'order': new_order}
             if new_column_id:
                 update_data['column_id'] = new_column_id
 
-            await self.feature_repo.update(db, id=feature_id, **update_data)
+            await self.feature_repo.update(db, id=UUID(feature_id), **update_data)
         return {'status': 'success'}
 
     async def upvote_feature(
@@ -232,7 +253,11 @@ class RoadmapService:
             )
 
         column = await self.column_repo.get(db, id=feature.column_id)
+        if not column:
+            raise HTTPException(status_code=404, detail='Column not found')
         roadmap = await self.roadmap_repo.get(db, id=column.roadmap_id)
+        if not roadmap:
+            raise HTTPException(status_code=404, detail='Roadmap not found')
         if not roadmap.is_public:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -243,6 +268,77 @@ class RoadmapService:
         return await self.feature_repo.update(
             db, id=feature_id, vote_count=feature.vote_count
         )
+
+    async def assign_user_to_feature(
+        self, db: AsyncSession, user_id: UUID, feature_id: UUID, assignee_user_id: UUID, role: str = 'contributor'
+    ) -> RoadmapItemAssignment:
+        feature = await self.feature_repo.get(db, id=feature_id)
+        if not feature:
+            raise HTTPException(status_code=404, detail='Feature not found')
+        
+        column = await self.column_repo.get(db, id=feature.column_id)
+        if not column:
+            raise HTTPException(status_code=404, detail='Column not found')
+        roadmap = await self.roadmap_repo.get(db, id=column.roadmap_id)
+        if not roadmap:
+            raise HTTPException(status_code=404, detail='Roadmap not found')
+        
+        await organization_service.check_project_access(
+            db, user_id, roadmap.project_id, required_role='Admin'
+        )
+        
+        assignment_data = RoadmapAssignmentCreate(
+            roadmap_feature_id=feature_id,
+            user_id=assignee_user_id,
+            role=role,
+            assigned_by=user_id
+        )
+        
+        return await roadmap_assignment_repository.create(db, **assignment_data.model_dump())
+
+    async def remove_user_from_feature(
+        self, db: AsyncSession, user_id: UUID, feature_id: UUID, assignee_user_id: UUID
+    ) -> bool:
+        feature = await self.feature_repo.get(db, id=feature_id)
+        if not feature:
+            raise HTTPException(status_code=404, detail='Feature not found')
+        
+        column = await self.column_repo.get(db, id=feature.column_id)
+        if not column:
+            raise HTTPException(status_code=404, detail='Column not found')
+        roadmap = await self.roadmap_repo.get(db, id=column.roadmap_id)
+        if not roadmap:
+            raise HTTPException(status_code=404, detail='Roadmap not found')
+        
+        await organization_service.check_project_access(
+            db, user_id, roadmap.project_id, required_role='Admin'
+        )
+        
+        assignment = await roadmap_assignment_repository.get_by_feature_and_user(
+            db, feature_id, assignee_user_id
+        )
+        if not assignment:
+            raise HTTPException(status_code=404, detail='Assignment not found')
+        
+        return await roadmap_assignment_repository.delete(db, assignment.id)
+
+    async def get_feature_assignments(
+        self, db: AsyncSession, user_id: UUID, feature_id: UUID
+    ) -> List[RoadmapItemAssignment]:
+        feature = await self.feature_repo.get(db, id=feature_id)
+        if not feature:
+            raise HTTPException(status_code=404, detail='Feature not found')
+        
+        column = await self.column_repo.get(db, id=feature.column_id)
+        if not column:
+            raise HTTPException(status_code=404, detail='Column not found')
+        roadmap = await self.roadmap_repo.get(db, id=column.roadmap_id)
+        if not roadmap:
+            raise HTTPException(status_code=404, detail='Roadmap not found')
+        
+        await organization_service.check_project_access(db, user_id, roadmap.project_id)
+        
+        return await roadmap_assignment_repository.get_by_feature(db, feature_id)
 
 
 roadmap_service = RoadmapService()
