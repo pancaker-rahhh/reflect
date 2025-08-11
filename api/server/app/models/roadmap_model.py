@@ -1,5 +1,5 @@
 import uuid
-from typing import TYPE_CHECKING, List, Optional  # <-- Make sure Optional is imported
+from typing import TYPE_CHECKING, List, Optional
 from sqlalchemy import (
     String,
     Boolean,
@@ -102,5 +102,37 @@ class RoadmapFeature(BaseModel):
 
     column: Mapped['RoadmapColumn'] = relationship(back_populates='features')
 
-    # --- THIS IS THE FIX ---
     feedback: Mapped[Optional['Feedback']] = relationship()
+    assignments: Mapped[List['RoadmapItemAssignment']] = relationship(
+        'RoadmapItemAssignment', back_populates='roadmap_feature', cascade='all, delete-orphan'
+    )
+
+
+class RoadmapItemAssignment(BaseModel):
+    __tablename__ = 'roadmap_item_assignments'
+
+    roadmap_feature_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey('roadmap_features.id', ondelete='CASCADE'),
+        nullable=False,
+        index=True,
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False
+    )
+
+    role: Mapped[str] = mapped_column(String(50), default='contributor')
+    assigned_by: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey('users.id'), nullable=True
+    )
+
+    roadmap_feature = relationship('RoadmapFeature', back_populates='assignments')
+    user = relationship('User')
+    assigner = relationship('User', foreign_keys=[assigned_by])
+
+    __table_args__ = (
+        UniqueConstraint('roadmap_feature_id', 'user_id', name='uq_roadmap_assignment'),
+        {'extend_existing': True},
+    )
