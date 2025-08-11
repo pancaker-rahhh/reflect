@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional, List
+from typing import TYPE_CHECKING, Optional
 from sqlalchemy import (
     Column,
     String,
@@ -17,7 +17,7 @@ import uuid
 from app.models.base_model import BaseModel
 
 if TYPE_CHECKING:
-    from app.models.user_model import User
+    pass
 
 
 class FeedbackType(str, enum.Enum):
@@ -120,11 +120,9 @@ class ReviewFeedback(Feedback):
         UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
     )
     overall_rating = Column(Integer)
-    review_categories = Column(JSONB, default=dict)
+    pros = Column(Text)
+    cons = Column(Text)
     is_published = Column(Boolean, default=False)
-    published_at = Column(DateTimeColumn, nullable=True)
-    moderation_status = Column(String(50), default='pending')
-    reviewer_location = Column(String(255))
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.REVIEW}
 
@@ -135,12 +133,11 @@ class BugReportFeedback(Feedback):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
     )
-    severity_level = Column(SQLEnum(FeedbackPriority), default=FeedbackPriority.MEDIUM)
+    severity_level = Column(String(50), default='medium')
     steps_to_reproduce = Column(Text)
     expected_behavior = Column(Text)
     actual_behavior = Column(Text)
     environment_info = Column(JSONB, default=dict)
-    attachments = Column(JSONB, default=list)
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.BUG_REPORT}
 
@@ -153,9 +150,9 @@ class FeatureRequestFeedback(Feedback):
     )
     use_case = Column(Text)
     business_value = Column(Text)
-    estimated_effort = Column(String(50))
-    implementation_status = Column(String(50), default='backlog')
+    effort_estimate = Column(String(50))
     impact_score = Column(Integer)
+    implementation_status = Column(String(50), default='backlog')
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.FEATURE_REQUEST}
 

@@ -59,12 +59,11 @@ class FeedbackRepository(BaseRepository[Feedback]):
 
     async def create_polymorphic(self, db: AsyncSession, **obj_data: Any) -> Feedback:
         ftype = obj_data.get('feedback_type')
-        # Coerce to enum if provided as string
         if isinstance(ftype, str):
             try:
                 ftype = FeedbackType(ftype)
             except Exception:
-                ftype = None
+                ftype = FeedbackType.GENERAL
         model_cls: Any
         if ftype == FeedbackType.SURVEY:
             model_cls = SurveyFeedback

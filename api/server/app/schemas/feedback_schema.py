@@ -110,40 +110,48 @@ class FeedbackResponse(BaseModel):
 
 # Polymorphic create payloads
 class SurveyFeedbackCreate(FeedbackBase):
-    feedback_type: Literal[FeedbackType.SURVEY]
     survey_type: Optional[str] = None
     score: Optional[int] = None
     response_data: Dict[str, Any] = Field(default_factory=dict)
+    
+    def __init__(self, **data):
+        data['feedback_type'] = FeedbackType.SURVEY
+        super().__init__(**data)
 
 
 class ReviewFeedbackCreate(FeedbackBase):
-    feedback_type: Literal[FeedbackType.REVIEW]
     overall_rating: Optional[int] = None
-    review_categories: Dict[str, Any] = Field(default_factory=dict)
+    pros: Optional[str] = None
+    cons: Optional[str] = None
     is_published: bool = False
-    moderation_status: str = 'pending'
-    reviewer_location: Optional[str] = None
+    
+    def __init__(self, **data):
+        data['feedback_type'] = FeedbackType.REVIEW
+        super().__init__(**data)
 
 
 class BugReportFeedbackCreate(FeedbackBase):
-    feedback_type: Literal[FeedbackType.BUG_REPORT]
     severity_level: Optional[str] = None
     steps_to_reproduce: Optional[str] = None
     expected_behavior: Optional[str] = None
     actual_behavior: Optional[str] = None
     environment_info: Dict[str, Any] = Field(default_factory=dict)
-    attachments: list = Field(default_factory=list)
+    
+    def __init__(self, **data):
+        data['feedback_type'] = FeedbackType.BUG_REPORT
+        super().__init__(**data)
 
 
 class FeatureRequestFeedbackCreate(FeedbackBase):
-    feedback_type: Literal[FeedbackType.FEATURE_REQUEST]
     use_case: Optional[str] = None
     business_value: Optional[str] = None
-    upvotes_count: int = 0
-    downvotes_count: int = 0
-    estimated_effort: Optional[str] = None
+    effort_estimate: Optional[str] = None
+    impact_score: Optional[int] = None
     implementation_status: str = 'backlog'
-    roadmap_position: Optional[int] = None
+    
+    def __init__(self, **data):
+        data['feedback_type'] = FeedbackType.FEATURE_REQUEST
+        super().__init__(**data)
 
 
 FeedbackCreatePayload = Annotated[
@@ -159,40 +167,32 @@ FeedbackCreatePayload = Annotated[
 
 # Polymorphic response payloads
 class SurveyFeedbackResponse(FeedbackResponse):
-    feedback_type: Literal[FeedbackType.SURVEY]
     survey_type: Optional[str] = None
     score: Optional[int] = None
     response_data: Dict[str, Any] = Field(default_factory=dict)
 
 
 class ReviewFeedbackResponse(FeedbackResponse):
-    feedback_type: Literal[FeedbackType.REVIEW]
     overall_rating: Optional[int] = None
-    review_categories: Dict[str, Any] = Field(default_factory=dict)
+    pros: Optional[str] = None
+    cons: Optional[str] = None
     is_published: bool = False
-    moderation_status: str = 'pending'
-    reviewer_location: Optional[str] = None
 
 
 class BugReportFeedbackResponse(FeedbackResponse):
-    feedback_type: Literal[FeedbackType.BUG_REPORT]
     severity_level: Optional[str] = None
     steps_to_reproduce: Optional[str] = None
     expected_behavior: Optional[str] = None
     actual_behavior: Optional[str] = None
     environment_info: Dict[str, Any] = Field(default_factory=dict)
-    attachments: list = Field(default_factory=list)
 
 
 class FeatureRequestFeedbackResponse(FeedbackResponse):
-    feedback_type: Literal[FeedbackType.FEATURE_REQUEST]
     use_case: Optional[str] = None
     business_value: Optional[str] = None
-    upvotes_count: int = 0
-    downvotes_count: int = 0
-    estimated_effort: Optional[str] = None
+    effort_estimate: Optional[str] = None
+    impact_score: Optional[int] = None
     implementation_status: str = 'backlog'
-    roadmap_position: Optional[int] = None
 
 
 FeedbackResponsePayload = Annotated[
@@ -204,3 +204,41 @@ FeedbackResponsePayload = Annotated[
     ],
     Field(discriminator='feedback_type'),
 ]
+
+
+class FeedbackCommentCreate(BaseModel):
+    comment_text: str = Field(..., min_length=1, max_length=2000)
+
+
+class FeedbackCommentResponse(BaseModel):
+    id: UUID
+    feedback_id: UUID
+    user_id: UUID
+    comment_text: str
+    created_at: str
+    updated_at: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class FeedbackVoteCreate(BaseModel):
+    vote_type: Literal['up', 'down'] = Field(...)
+
+
+class FeedbackVoteResponse(BaseModel):
+    id: UUID
+    feedback_id: UUID
+    user_id: Optional[UUID] = None
+    session_id: Optional[str] = None
+    vote_type: str
+    created_at: str
+
+    class Config:
+        from_attributes = True
+
+
+class FeedbackVoteCounts(BaseModel):
+    upvotes: int
+    downvotes: int
+    total: int

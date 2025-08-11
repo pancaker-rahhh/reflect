@@ -17,6 +17,7 @@ class FeedbackForm(BaseModel):
     )
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+    form_type: Mapped[str] = mapped_column(String(50), default='custom')
     description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     config: Mapped[dict] = mapped_column(JSONB, default=dict)
