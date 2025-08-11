@@ -1,11 +1,11 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { SkipLink } from '@/components/common/SkipLink'
 import { PageLoading } from '@/components/common/LoadingSpinner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { AppProvider } from '@/context/AppContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 // Eagerly load core components
@@ -45,22 +45,13 @@ const RoadmapSettings = lazy(() =>
 )
 const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m.NotFound })))
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5,
-      retry: 1,
-    },
-  },
-})
-
 function App() {
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <BrowserRouter>
-            <AuthProvider>
+      <TooltipProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <AppProvider>
               <SkipLink />
               <Suspense fallback={<PageLoading />}>
                 <Routes>
@@ -96,10 +87,10 @@ function App() {
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
+            </AppProvider>
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
-      </QueryClientProvider>
     </ErrorBoundary>
   )
 }
