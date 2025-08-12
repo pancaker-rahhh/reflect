@@ -110,48 +110,36 @@ class FeedbackResponse(BaseModel):
 
 # Polymorphic create payloads
 class SurveyFeedbackCreate(FeedbackBase):
+    feedback_type: Literal[FeedbackType.SURVEY] = FeedbackType.SURVEY
     survey_type: Optional[str] = None
     score: Optional[int] = None
     response_data: Dict[str, Any] = Field(default_factory=dict)
-    
-    def __init__(self, **data):
-        data['feedback_type'] = FeedbackType.SURVEY
-        super().__init__(**data)
 
 
 class ReviewFeedbackCreate(FeedbackBase):
+    feedback_type: Literal[FeedbackType.REVIEW] = FeedbackType.REVIEW
     overall_rating: Optional[int] = None
     pros: Optional[str] = None
     cons: Optional[str] = None
     is_published: bool = False
-    
-    def __init__(self, **data):
-        data['feedback_type'] = FeedbackType.REVIEW
-        super().__init__(**data)
 
 
 class BugReportFeedbackCreate(FeedbackBase):
+    feedback_type: Literal[FeedbackType.BUG_REPORT] = FeedbackType.BUG_REPORT
     severity_level: Optional[str] = None
     steps_to_reproduce: Optional[str] = None
     expected_behavior: Optional[str] = None
     actual_behavior: Optional[str] = None
     environment_info: Dict[str, Any] = Field(default_factory=dict)
-    
-    def __init__(self, **data):
-        data['feedback_type'] = FeedbackType.BUG_REPORT
-        super().__init__(**data)
 
 
 class FeatureRequestFeedbackCreate(FeedbackBase):
+    feedback_type: Literal[FeedbackType.FEATURE_REQUEST] = FeedbackType.FEATURE_REQUEST
     use_case: Optional[str] = None
     business_value: Optional[str] = None
     effort_estimate: Optional[str] = None
     impact_score: Optional[int] = None
     implementation_status: str = 'backlog'
-    
-    def __init__(self, **data):
-        data['feedback_type'] = FeedbackType.FEATURE_REQUEST
-        super().__init__(**data)
 
 
 FeedbackCreatePayload = Annotated[
@@ -167,12 +155,11 @@ FeedbackCreatePayload = Annotated[
 
 # Polymorphic response payloads
 class SurveyFeedbackResponse(FeedbackResponse):
-    survey_type: Optional[str] = None
-    score: Optional[int] = None
-    response_data: Dict[str, Any] = Field(default_factory=dict)
+    feedback_type: Literal[FeedbackType.SURVEY]
 
 
 class ReviewFeedbackResponse(FeedbackResponse):
+    feedback_type: Literal[FeedbackType.REVIEW]
     overall_rating: Optional[int] = None
     pros: Optional[str] = None
     cons: Optional[str] = None
@@ -180,6 +167,7 @@ class ReviewFeedbackResponse(FeedbackResponse):
 
 
 class BugReportFeedbackResponse(FeedbackResponse):
+    feedback_type: Literal[FeedbackType.BUG_REPORT]
     severity_level: Optional[str] = None
     steps_to_reproduce: Optional[str] = None
     expected_behavior: Optional[str] = None
@@ -188,6 +176,7 @@ class BugReportFeedbackResponse(FeedbackResponse):
 
 
 class FeatureRequestFeedbackResponse(FeedbackResponse):
+    feedback_type: Literal[FeedbackType.FEATURE_REQUEST]
     use_case: Optional[str] = None
     business_value: Optional[str] = None
     effort_estimate: Optional[str] = None
