@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { onboardingApi } from '../lib/api';
 
 export type UserType = 'solo' | 'team';
 
@@ -184,21 +185,10 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
-      const response = await fetch('/api/v1/onboarding/complete', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        body: JSON.stringify({
-          feedback: null,
-          skipped_steps: [],
-        }),
+      await onboardingApi.complete({
+        feedback: null,
+        skipped_steps: [],
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to complete onboarding');
-      }
 
       localStorage.removeItem(ONBOARDING_STORAGE_KEY);
       navigate('/dashboard');
@@ -216,16 +206,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
-      const response = await fetch('/api/v1/onboarding/skip', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to skip onboarding');
-      }
+      await onboardingApi.skip();
 
       localStorage.removeItem(ONBOARDING_STORAGE_KEY);
       navigate('/dashboard');

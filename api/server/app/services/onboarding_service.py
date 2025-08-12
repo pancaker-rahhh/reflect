@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 import uuid
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 
 from app.core.logging import get_logger
 from app.models.user_model import User
@@ -80,7 +80,9 @@ class OnboardingService:
         self, user_id: uuid.UUID, db: AsyncSession
     ) -> OnboardingStatusResponse:
         try:
-            user = await db.get(User, user_id, options=[selectinload(User.onboarding)])
+            stmt = select(User).where(User.id == user_id).options(joinedload(User.onboarding))
+            result = await db.execute(stmt)
+            user = result.scalar_one_or_none()
             if not user:
                 raise ValueError(f"User {user_id} not found")
 
@@ -122,7 +124,9 @@ class OnboardingService:
         self, user_id: uuid.UUID, request: OnboardingUpdateRequest, db: AsyncSession
     ) -> OnboardingStatusResponse:
         try:
-            user = await db.get(User, user_id, options=[selectinload(User.onboarding)])
+            stmt = select(User).where(User.id == user_id).options(joinedload(User.onboarding))
+            result = await db.execute(stmt)
+            user = result.scalar_one_or_none()
             if not user:
                 raise ValueError(f"User {user_id} not found")
 
@@ -134,6 +138,7 @@ class OnboardingService:
                     has_received_first_feedback=False,
                 )
                 db.add(user.onboarding)
+                await db.flush()  # Ensure the onboarding record is persisted before accessing it
 
             if request.has_created_project is not None:
                 user.onboarding.has_created_project = request.has_created_project
@@ -158,12 +163,45 @@ class OnboardingService:
             if request.metadata:
                 user.user_metadata.update(request.metadata)
 
-            await db.commit()
+            # Store values we need before commit to avoid lazy loading issues
+            onboarding_has_created_project = user.onboarding.has_created_project if user.onboarding else False
+            onboarding_created_at = user.onboarding.created_at if user.onboarding else None
+            onboarding_updated_at = user.onboarding.updated_at if user.onboarding else None
 
-            return await self.get_onboarding_status(user_id, db)
+            await db.commit()
+            await db.refresh(user)
+
+            # Return status directly from updated user to avoid additional query
+            org_count = await db.execute(
+                select(OrganizationMember).where(OrganizationMember.user_id == user_id)
+            )
+            has_organization = len(org_count.scalars().all()) > 0
+
+            metadata = user.user_metadata or {}
+            steps_completed = metadata.get("steps_completed", {})
+            total_steps = 5
+            completed_count = len([s for s in steps_completed.values() if s])
+            
+            if metadata.get("onboarding_completed"):
+                completion_percentage = 100
+            else:
+                completion_percentage = int((completed_count / total_steps) * 100)
+
+            return OnboardingStatusResponse(
+                user_id=user_id,
+                onboarding_completed=metadata.get("onboarding_completed", False),
+                user_type=metadata.get("user_type"),
+                current_step=metadata.get("current_onboarding_step"),
+                steps_completed=steps_completed,
+                completion_percentage=completion_percentage,
+                has_created_organization=has_organization,
+                has_created_project=onboarding_has_created_project,
+                created_at=onboarding_created_at,
+                updated_at=onboarding_updated_at,
+            )
 
         except Exception as e:
-            logger.error(f"Failed to update onboarding for user {user_id}: {str(e)}")
+            logger.error(f"Failed to update onboarding for user {user_id}: {str(e)}", exc_info=True)
             await db.rollback()
             raise
 

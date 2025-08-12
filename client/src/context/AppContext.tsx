@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback, type ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { apiClient } from '@/lib/client'
+import { organizationApi } from '@/lib/api'
 import { projectApi } from '@/services(mock)/projectApi'
 import { useAuth } from '@/contexts/AuthContext'
 import type { Project } from '@/types'
@@ -35,7 +35,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Fetch user's organization
   const { data: organizations, isLoading: isLoadingOrganization } = useQuery({
     queryKey: ['organizations', 'my'],
-    queryFn: () => apiClient.get<Organization[]>('/organizations/my'),
+    queryFn: () => organizationApi.getMy(),
     enabled: !!user && !authLoading,
     retry: false,
     staleTime: 1000 * 60 * 5, // 5 minutes

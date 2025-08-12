@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth, useSession } from '../../contexts/AuthContext';
+import { onboardingApi } from '../../lib/api';
 
 interface OnboardingGuardProps {
   children: React.ReactNode;
@@ -10,31 +11,24 @@ export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) =>
   const navigate = useNavigate();
   const location = useLocation();
   const { user, loading: authLoading } = useAuth();
+  const session = useSession();
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
     const checkOnboardingStatus = async () => {
-      if (!user || authLoading) {
+      if (!user || authLoading || !session) {
         return;
       }
 
       const isOnboardingRoute = location.pathname.startsWith('/onboarding');
       
       try {
-        const response = await fetch('/api/v1/onboarding/check-first-time', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        });
+        const data = await onboardingApi.checkFirstTime();
 
-        if (response.ok) {
-          const data = await response.json();
-
-          if (data.is_first_time && !isOnboardingRoute) {
-            navigate('/onboarding');
-          } else if (!data.is_first_time && isOnboardingRoute) {
-            navigate('/dashboard');
-          }
+        if (data.is_first_time && !isOnboardingRoute) {
+          navigate('/onboarding');
+        } else if (!data.is_first_time && isOnboardingRoute) {
+          navigate('/dashboard');
         }
       } catch (error) {
         console.error('Failed to check onboarding status:', error);
@@ -44,7 +38,7 @@ export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) =>
     };
 
     checkOnboardingStatus();
-  }, [user, authLoading, navigate, location.pathname]);
+  }, [user, authLoading, session, navigate, location.pathname]);
 
   if (authLoading || isChecking) {
     return (

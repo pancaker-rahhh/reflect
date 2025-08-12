@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
 import { Building, Sparkles } from 'lucide-react';
+import { organizationApi, onboardingApi } from '../../../lib/api';
 
 export const OrganizationStep: React.FC = () => {
   const { nextStep, markStepCompleted, setOrganizationId, userType } = useOnboarding();
@@ -15,19 +16,10 @@ export const OrganizationStep: React.FC = () => {
     setIsAutoCreating(true);
     
     try {
-      const response = await fetch('/api/v1/onboarding/auto-create-organization', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      });
-
-      if (response.ok) {
-        const organization = await response.json();
-        setOrganizationId(organization.id);
-        markStepCompleted('organization');
-        nextStep();
-      }
+      const organization = await onboardingApi.autoCreateOrganization();
+      setOrganizationId(organization.id);
+      markStepCompleted('organization');
+      nextStep();
     } catch (error) {
       console.error('Failed to auto-create organization:', error);
     } finally {
@@ -40,25 +32,15 @@ export const OrganizationStep: React.FC = () => {
     setIsAutoCreating(true);
 
     try {
-      const response = await fetch('/api/v1/organizations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          description: formData.description,
-          slug: formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
-        }),
+      const organization = await organizationApi.create({
+        name: formData.name,
+        description: formData.description,
+        slug: formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
       });
 
-      if (response.ok) {
-        const organization = await response.json();
-        setOrganizationId(organization.id);
-        markStepCompleted('organization');
-        nextStep();
-      }
+      setOrganizationId(organization.id);
+      markStepCompleted('organization');
+      nextStep();
     } catch (error) {
       console.error('Failed to create organization:', error);
     } finally {

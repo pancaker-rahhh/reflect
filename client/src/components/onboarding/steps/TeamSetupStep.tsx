@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
 import { UserPlus, Mail, X } from 'lucide-react';
+import { invitationApi } from '../../../lib/api';
 
 interface TeamMember {
   email: string;
@@ -35,25 +36,15 @@ export const TeamSetupStep: React.FC = () => {
     setIsInviting(true);
     
     try {
-      // Note: This endpoint will be implemented when team invitation backend is ready
-      const response = await fetch('/api/v1/invitations/bulk', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        body: JSON.stringify({
-          invitations: teamMembers,
-        }),
+      await invitationApi.sendBulk({
+        invitations: teamMembers,
       });
 
-      if (response.ok) {
-        markStepCompleted('team-setup');
-        nextStep();
-      }
+      markStepCompleted('team-setup');
+      nextStep();
     } catch (error) {
       console.error('Failed to send invitations:', error);
-      // For now, just proceed to next step
+      // For now, just proceed to next step even if invitations fail
       markStepCompleted('team-setup');
       nextStep();
     } finally {

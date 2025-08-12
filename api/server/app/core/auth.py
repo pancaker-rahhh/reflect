@@ -22,6 +22,7 @@ class Auth:
                 algorithms=[self.settings.ALGORITHM],
                 audience='authenticated',
                 options={'verify_exp': True},
+                leeway=60,  # Allow 60 seconds of clock skew
             )
 
             user_id = payload.get('sub')

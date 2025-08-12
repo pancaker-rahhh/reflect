@@ -2,6 +2,8 @@
 export { userApi, type UserProfileUpdateRequest, type UserDeleteResponse } from './user'
 export { projectApi, type PaginatedProjects, type ProjectCreateRequest, type ProjectUpdateRequest } from './project'
 export { widgetApi, type WidgetCreateRequest, type WidgetUpdateRequest } from './widget'
+export { onboardingApi, type OnboardingCompleteRequest, type OnboardingUpdateRequest, type FirstTimeCheckResponse } from './onboarding'
+export { organizationApi, invitationApi, type Organization, type OrganizationCreateRequest, type InvitationRequest, type BulkInvitationRequest } from './organization'
 
 // Re-export client and error handling for advanced usage
 export { apiClient } from '../client'

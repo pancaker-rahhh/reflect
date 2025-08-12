@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
 import { FolderPlus } from 'lucide-react';
+import { projectApi, onboardingApi } from '../../../lib/api';
 
 export const ProjectStep: React.FC = () => {
   const { nextStep, markStepCompleted, setProjectId, organizationId } = useOnboarding();
@@ -16,44 +17,27 @@ export const ProjectStep: React.FC = () => {
     setIsCreating(true);
 
     try {
-      const response = await fetch('/api/v1/projects', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+      const project = await projectApi.createProject({
+        name: formData.name,
+        description: formData.description,
+        organization_id: organizationId,
+        settings: {
+          onboarding_project: true,
         },
-        body: JSON.stringify({
-          name: formData.name,
-          description: formData.description,
-          organization_id: organizationId,
-          settings: {
-            onboarding_project: true,
-          },
-        }),
       });
 
-      if (response.ok) {
-        const project = await response.json();
-        setProjectId(project.id);
-        
-        await fetch('/api/v1/onboarding/update', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-          },
-          body: JSON.stringify({
-            has_created_project: true,
-            current_step: 'project',
-            steps_completed: {
-              project: true,
-            },
-          }),
-        });
+      setProjectId(project.id);
+      
+      await onboardingApi.update({
+        has_created_project: true,
+        current_step: 'project',
+        steps_completed: {
+          project: true,
+        },
+      });
 
-        markStepCompleted('project');
-        nextStep();
-      }
+      markStepCompleted('project');
+      nextStep();
     } catch (error) {
       console.error('Failed to create project:', error);
     } finally {

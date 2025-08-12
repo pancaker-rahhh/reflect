@@ -58,7 +58,7 @@ class OrganizationRepository(BaseRepository[Organization]):
                 OrganizationMember.organization_id == org_id,
                 OrganizationMember.user_id == user_id
             )
-        )
+        ).options(selectinload(OrganizationMember.user))
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
 
@@ -98,7 +98,7 @@ class OrganizationMemberRepository(BaseRepository[OrganizationMember]):
                 self.model.organization_id == org_id,
                 self.model.user_id == user_id
             )
-        )
+        ).options(selectinload(self.model.user))
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
 

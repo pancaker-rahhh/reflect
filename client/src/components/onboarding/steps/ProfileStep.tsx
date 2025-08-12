@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
 import { useAuth } from '../../../contexts/AuthContext';
+import { userApi } from '../../../lib/api';
 
 export const ProfileStep: React.FC = () => {
   const { nextStep, markStepCompleted } = useOnboarding();
@@ -20,24 +21,15 @@ export const ProfileStep: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/v1/users/me', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          company_name: formData.company,
-          timezone: formData.timezone,
-          phone: formData.phone,
-        }),
+      await userApi.updateProfile({
+        name: formData.name,
+        company_name: formData.company,
+        timezone: formData.timezone,
+        phone: formData.phone,
       });
 
-      if (response.ok) {
-        markStepCompleted('profile');
-        nextStep();
-      }
+      markStepCompleted('profile');
+      nextStep();
     } catch (error) {
       console.error('Failed to update profile:', error);
     } finally {

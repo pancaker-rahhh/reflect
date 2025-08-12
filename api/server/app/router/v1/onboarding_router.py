@@ -66,7 +66,7 @@ async def update_onboarding_progress(
     try:
         return await onboarding_service.update_onboarding(user.id, request, db)
     except Exception as e:
-        logger.error(f"Failed to update onboarding: {str(e)}")
+        logger.error(f"Failed to update onboarding: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update onboarding progress",
