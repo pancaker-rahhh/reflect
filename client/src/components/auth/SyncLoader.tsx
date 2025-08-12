@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 const loadingMessages = [
-  "Setting up your workspace...",
+  "Setting up your organization...",
   "Syncing your profile...", 
   "Preparing your dashboard...",
   "Almost ready...",

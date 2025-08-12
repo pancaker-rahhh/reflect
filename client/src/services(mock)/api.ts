@@ -1,6 +1,6 @@
 import type {
   User,
-  Workspace,
+  Organization,
   Project,
   Widget,
   Feedback,
@@ -55,13 +55,13 @@ class ApiService {
     })
   }
 
-  // Workspaces - REAL API CALLS
-  async getWorkspaces(): Promise<Workspace[]> {
-    return this.request<Workspace[]>('/workspaces')
+  // Organizations - REAL API CALLS
+  async getOrganizations(): Promise<Organization[]> {
+    return this.request<Organization[]>('/organizations/my')
   }
 
-  async getWorkspace(id: string): Promise<Workspace> {
-    return this.request<Workspace>(`/workspaces/${id}`)
+  async getOrganization(id: string): Promise<Organization> {
+    return this.request<Organization>(`/organizations/${id}`)
   }
 
   // Projects - MOCKED (not implemented in backend yet)

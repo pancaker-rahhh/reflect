@@ -2,20 +2,30 @@ import { AlertCircle, Zap } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
-import { api } from '@/services(mock)/api'
+import { apiClient } from '@/lib/client'
+
+interface Organization {
+  id: string
+  name: string
+  subscription: {
+    plan: 'free' | 'pro'
+    widgetLimit: number
+    responseLimit: number
+  }
+}
 
 export function FreeTierAlert() {
-  const { data: workspaces } = useQuery({
-    queryKey: ['workspaces'],
-    queryFn: () => api.getWorkspaces()
+  const { data: organizations } = useQuery({
+    queryKey: ['organizations', 'my'],
+    queryFn: () => apiClient.get<Organization[]>('/organizations/my')
   })
 
-  const currentWorkspace = workspaces?.[0]
-  const isFreeTier = currentWorkspace?.subscription.plan === 'free'
+  const currentOrganization = organizations?.[0]
+  const isFreeTier = currentOrganization?.subscription.plan === 'free'
   
   if (!isFreeTier) return null
 
-  const { widgetLimit, responseLimit } = currentWorkspace.subscription
+  const { widgetLimit, responseLimit } = currentOrganization.subscription
 
   return (
     <Alert className="border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/30">

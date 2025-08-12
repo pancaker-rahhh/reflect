@@ -1,6 +1,5 @@
 // Export API modules
 export { userApi, type UserProfileUpdateRequest, type UserDeleteResponse } from './user'
-export { workspaceApi, type WorkspaceCreateRequest, type WorkspaceUpdateRequest } from './workspace'
 export { projectApi, type PaginatedProjects, type ProjectCreateRequest, type ProjectUpdateRequest } from './project'
 export { widgetApi, type WidgetCreateRequest, type WidgetUpdateRequest } from './widget'
 
@@ -10,11 +9,9 @@ export { ApiException, errorSanitizer, type ApiError } from '../errors'
 
 // Import APIs for convenience exports
 import { userApi } from './user'
-import { workspaceApi } from './workspace'
 import { projectApi } from './project'
 import { widgetApi } from './widget'
 import type { UserProfileUpdateRequest } from './user'
-import type { WorkspaceCreateRequest } from './workspace'
 import type { ProjectCreateRequest } from './project'
 import type { WidgetCreateRequest } from './widget'
 
@@ -26,16 +23,8 @@ export const api = {
   updateUserProfile: (data: UserProfileUpdateRequest) => userApi.updateProfile(data),
   deleteAccount: () => userApi.deleteAccount(),
   
-  // Workspace APIs  
-  getWorkspaces: () => workspaceApi.getWorkspaces(),
-  getWorkspace: (id: string) => workspaceApi.getWorkspace(id),
-  getMyWorkspace: () => workspaceApi.getMyWorkspace(),
-  createWorkspace: (data: WorkspaceCreateRequest) => workspaceApi.createWorkspace(data),
-  updateWorkspace: (id: string, data: any) => workspaceApi.updateWorkspace(id, data),
-  deleteWorkspace: (id: string) => workspaceApi.deleteWorkspace(id),
-
   // Project APIs
-  getProjectsByWorkspace: (workspaceId: string) => projectApi.getByWorkspace(workspaceId),
+  getProjectsByOrganization: (organizationId: string) => projectApi.getByWorkspace(organizationId), // TODO: Update to use organization
   getProject: (id: string) => projectApi.getProject(id),
   createProject: (data: ProjectCreateRequest) => projectApi.createProject(data),
   updateProject: (id: string, data: any) => projectApi.updateProject(id, data),

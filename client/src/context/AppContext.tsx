@@ -1,12 +1,21 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback, type ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { workspaceApi } from '@/lib/api'
+import { apiClient } from '@/lib/client'
 import { projectApi } from '@/services(mock)/projectApi'
 import { useAuth } from '@/contexts/AuthContext'
-import type { Workspace, Project } from '@/types'
+import type { Project } from '@/types'
+
+interface Organization {
+  id: string
+  name: string
+  slug: string
+  description?: string
+  created_at: string
+  settings: Record<string, any>
+}
 
 interface AppContextType {
-  workspace: Workspace | null
+  organization: Organization | null
   projects: Project[]
   currentProject: Project | null
   setCurrentProject: (project: Project | null) => void
@@ -23,20 +32,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCurrentProject(project)
   }, [])
 
-  // Only run queries when user is authenticated
-  const { data: workspace, isLoading: isLoadingWorkspace } = useQuery({
-    queryKey: ['workspace'],
-    queryFn: workspaceApi.getMyWorkspace,
-    enabled: !!user && !authLoading, // Only run when authenticated
-    retry: false, // Don't retry on 401 errors
+  // Fetch user's organization
+  const { data: organizations, isLoading: isLoadingOrganization } = useQuery({
+    queryKey: ['organizations', 'my'],
+    queryFn: () => apiClient.get<Organization[]>('/organizations/my'),
+    enabled: !!user && !authLoading,
+    retry: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
 
+  const organization = useMemo(() => organizations?.[0] || null, [organizations])
+
+  // Fetch projects for the organization
   const { data: projectsData, isLoading: isLoadingProjects } = useQuery({
-    queryKey: ['projects', workspace?.id],
-    queryFn: () => projectApi.getByWorkspace(workspace!.id),
-    enabled: !!workspace && !!user, // Only run when authenticated AND have workspace
-    retry: false, // Don't retry on 401 errors
+    queryKey: ['projects', organization?.id],
+    queryFn: () => projectApi.getByWorkspace(organization!.id), // TODO: Update to use organization
+    enabled: !!organization && !!user,
+    retry: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
 
@@ -52,13 +64,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({
-      workspace: workspace || null,
+      organization: organization || null,
       projects,
       currentProject,
       setCurrentProject: handleSetCurrentProject,
-      isLoading: isLoadingWorkspace || isLoadingProjects,
+      isLoading: isLoadingOrganization || isLoadingProjects,
     }),
-    [workspace, projects, currentProject, handleSetCurrentProject, isLoadingWorkspace, isLoadingProjects]
+    [organization, projects, currentProject, handleSetCurrentProject, isLoadingOrganization, isLoadingProjects]
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
