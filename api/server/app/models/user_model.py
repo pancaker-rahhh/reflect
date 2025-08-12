@@ -1,9 +1,10 @@
 from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime
 import uuid
-from sqlalchemy import String, DateTime as DateTimeColumn
+from sqlalchemy import String, DateTime as DateTimeColumn, Boolean, Enum
 from sqlalchemy.dialects.postgresql import UUID, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
+import enum
 
 from app.models.base_model import BaseModel
 
@@ -11,6 +12,11 @@ if TYPE_CHECKING:
     from app.models.organization_model import OrganizationMember, ProjectMember
     from app.models.notification_model import Notification
     from app.models.onboarding_model import UserOnboarding
+
+
+class UserType(str, enum.Enum):
+    SOLO = "solo"
+    TEAM = "team"
 
 
 class User(BaseModel):
@@ -35,6 +41,14 @@ class User(BaseModel):
     )
     last_login_at: Mapped[Optional[datetime]] = mapped_column(
         DateTimeColumn(timezone=True), nullable=True
+    )
+    first_login_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTimeColumn(timezone=True), nullable=True
+    )
+
+    onboarding_completed: Mapped[bool] = mapped_column(Boolean, default=False)
+    user_type: Mapped[Optional[UserType]] = mapped_column(
+        Enum(UserType), nullable=True
     )
 
     user_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
