@@ -104,7 +104,9 @@ class RoadmapFeature(BaseModel):
 
     feedback: Mapped[Optional['Feedback']] = relationship()
     assignments: Mapped[List['RoadmapItemAssignment']] = relationship(
-        'RoadmapItemAssignment', back_populates='roadmap_feature', cascade='all, delete-orphan'
+        'RoadmapItemAssignment',
+        back_populates='roadmap_feature',
+        cascade='all, delete-orphan',
     )
 
 
@@ -118,9 +120,7 @@ class RoadmapItemAssignment(BaseModel):
         index=True,
     )
     user_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey('users.id', ondelete='CASCADE'),
-        nullable=False
+        UUID(as_uuid=True), ForeignKey('users.id', ondelete='CASCADE'), nullable=False
     )
 
     role: Mapped[str] = mapped_column(String(50), default='contributor')
@@ -129,7 +129,7 @@ class RoadmapItemAssignment(BaseModel):
     )
 
     roadmap_feature = relationship('RoadmapFeature', back_populates='assignments')
-    user = relationship('User')
+    user = relationship('User', foreign_keys=[user_id])
     assigner = relationship('User', foreign_keys=[assigned_by])
 
     __table_args__ = (
