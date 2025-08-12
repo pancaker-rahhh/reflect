@@ -97,6 +97,16 @@ class UserService:
 
         if user_exist:
             logger.debug(f'User {token_data.user_id} already exists, returning profile')
+            
+            # Set first_login_at for existing users who don't have it set
+            if user_exist.first_login_at is None:
+                await user_repository.update(
+                    db, 
+                    UUID(token_data.user_id), 
+                    first_login_at=datetime.now(timezone.utc)
+                )
+                logger.info(f'Set first_login_at for existing user {token_data.user_id}')
+            
             profile = await self.get_user_profile(UUID(token_data.user_id), db)
             if not profile:
                 raise ValueError(
@@ -104,14 +114,18 @@ class UserService:
                 )
             return profile
 
+        current_time = datetime.now(timezone.utc)
         user_data = {
             'id': UUID(token_data.user_id),
             'email': token_data.email,
             'name': token_data.name,
             'avatar_url': token_data.avatar_url,
             'phone': token_data.phone,
-            'last_synced_at': datetime.now(timezone.utc),
-            'last_login_at': datetime.now(timezone.utc),
+            'last_synced_at': current_time,
+            'last_login_at': current_time,
+            'first_login_at': current_time,  # Set first login time for new users
+            'onboarding_completed': False,   # New users need onboarding
+            'user_type': None,              # Will be set during onboarding
         }
         await user_repository.create(db, **user_data)
         logger.info(f'Created new user {token_data.user_id} from token sync')

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../contexts/AuthContext';
 import { OrganizationSettings as OrganizationSettingsComponent } from '../../components/organization/OrganizationSettings';
 
 export const OrganizationSettings: React.FC = () => {

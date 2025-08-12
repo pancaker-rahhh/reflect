@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
-import { useAuth } from '../../../hooks/useAuth';
+import { useAuth } from '../../../contexts/AuthContext';
 
 export const ProfileStep: React.FC = () => {
   const { nextStep, markStepCompleted } = useOnboarding();
   const { user } = useAuth();
   
   const [formData, setFormData] = useState({
-    name: user?.name || '',
+    name: user?.user_metadata?.full_name || user?.email?.split('@')[0] || '',
     company: '',
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     phone: '',

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface OnboardingGuardProps {
   children: React.ReactNode;
@@ -9,9 +9,8 @@ interface OnboardingGuardProps {
 export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [isChecking, setIsChecking] = useState(true);
-  const [shouldOnboard, setShouldOnboard] = useState(false);
 
   useEffect(() => {
     const checkOnboardingStatus = async () => {
@@ -30,7 +29,6 @@ export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) =>
 
         if (response.ok) {
           const data = await response.json();
-          setShouldOnboard(data.is_first_time);
 
           if (data.is_first_time && !isOnboardingRoute) {
             navigate('/onboarding');
