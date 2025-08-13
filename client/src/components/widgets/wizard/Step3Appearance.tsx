@@ -58,9 +58,7 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
                           className="flex cursor-pointer flex-col rounded-lg border-2 border-muted p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
                         >
                           <span className="font-semibold">{theme.label}</span>
-                          <span className="text-sm text-muted-foreground">
-                            {theme.description}
-                          </span>
+                          <span className="text-sm text-muted-foreground">{theme.description}</span>
                         </label>
                       </div>
                     ))}
@@ -77,14 +75,9 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Widget Position</FormLabel>
-                <FormDescription>
-                  Choose where the widget appears on your page
-                </FormDescription>
+                <FormDescription>Choose where the widget appears on your page</FormDescription>
                 <FormControl>
-                  <PositionSelector
-                    value={field.value}
-                    onChange={field.onChange}
-                  />
+                  <PositionSelector value={field.value} onChange={field.onChange} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -93,7 +86,7 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
 
           <div className="space-y-4">
             <h3 className="font-medium">Colors</h3>
-            
+
             <FormField
               control={form.control}
               name="appearance.colors.primary"
@@ -135,19 +128,11 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-base">
-                    Show &quot;Powered by&quot; branding
-                  </FormLabel>
-                  <FormDescription>
-                    Pro plan required to remove branding
-                  </FormDescription>
+                  <FormLabel className="text-base">Show &quot;Powered by&quot; branding</FormLabel>
+                  <FormDescription>Pro plan required to remove branding</FormDescription>
                 </div>
                 <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    disabled
-                  />
+                  <Switch checked={field.value} onCheckedChange={field.onChange} disabled />
                 </FormControl>
               </FormItem>
             )}
@@ -161,6 +146,7 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
             position={selectedPosition}
             colors={colors}
             content={form.getValues('content')}
+            widgetType={form.getValues('primaryType')}
           />
         </div>
       </div>

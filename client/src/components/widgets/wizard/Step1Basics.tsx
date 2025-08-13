@@ -82,19 +82,14 @@ export function Step1Basics({ form }: Step1BasicsProps) {
                 render={({ field }) => (
                   <FormItem className="flex items-start space-x-3 space-y-0 rounded-lg border p-4">
                     <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                     <div className="space-y-1 leading-none flex-1">
                       <FormLabel className="flex items-center gap-2">
                         <module.icon className="h-4 w-4" />
                         {module.label}
                       </FormLabel>
-                      <FormDescription>
-                        {module.description}
-                      </FormDescription>
+                      <FormDescription>{module.description}</FormDescription>
                     </div>
                   </FormItem>
                 )}
@@ -109,9 +104,7 @@ export function Step1Basics({ form }: Step1BasicsProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Primary Feedback Type</FormLabel>
-              <FormDescription>
-                Choose the main type of feedback to collect
-              </FormDescription>
+              <FormDescription>Choose the main type of feedback to collect</FormDescription>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
@@ -119,10 +112,12 @@ export function Step1Basics({ form }: Step1BasicsProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
+                  <SelectItem value="feedback">General Feedback</SelectItem>
                   <SelectItem value="nps">NPS Survey</SelectItem>
                   <SelectItem value="csat">CSAT Survey</SelectItem>
                   <SelectItem value="ces">CES Survey</SelectItem>
-                  <SelectItem value="custom">Custom Survey</SelectItem>
+                  <SelectItem value="survey">Custom Survey</SelectItem>
+                  <SelectItem value="review">Review Collection</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
