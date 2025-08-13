@@ -9,6 +9,7 @@ from app.schemas.feedback_schema import (
     FeedbackUpdate,
     FeedbackCreatePayload,
     FeedbackResponsePayload,
+    GeneralFeedbackResponse,
     SurveyFeedbackResponse,
     ReviewFeedbackResponse,
     BugReportFeedbackResponse,
@@ -151,7 +152,9 @@ class FeedbackService:
         )
 
     def _convert_to_response(self, obj) -> FeedbackResponsePayload:
-        if obj.feedback_type == FeedbackType.SURVEY:
+        if obj.feedback_type == FeedbackType.GENERAL:
+            return GeneralFeedbackResponse.model_validate(obj)
+        elif obj.feedback_type == FeedbackType.SURVEY:
             return SurveyFeedbackResponse.model_validate(obj)
         elif obj.feedback_type == FeedbackType.REVIEW:
             return ReviewFeedbackResponse.model_validate(obj)
@@ -160,7 +163,7 @@ class FeedbackService:
         elif obj.feedback_type == FeedbackType.FEATURE_REQUEST:
             return FeatureRequestFeedbackResponse.model_validate(obj)
         else:
-            return SurveyFeedbackResponse.model_validate(obj)
+            return GeneralFeedbackResponse.model_validate(obj)
 
 
 feedback_service = FeedbackService()
