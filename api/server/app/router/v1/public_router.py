@@ -1,31 +1,51 @@
-import re
-from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.db import get_db
-from app.schemas.widget_public_schema import WidgetPublicRead
+from app.schemas.widget_schema import WidgetReadPublic
+from app.schemas.feedback_schema import FeedbackResponsePayload, GeneralFeedbackCreate
 from app.services.widget_service import widget_service, WidgetService
+from app.services.feedback_service import feedback_service
+from app.models.feedback_model import FeedbackType
+from pydantic import BaseModel
 
 public_router = APIRouter()
 
 
-@public_router.get(
-    '/widgets/{public_key}',
-    response_model=WidgetPublicRead,
-)
+class PublicFeedbackPayload(BaseModel):
+    widgetKey: str
+    response: str
+    rating: int = None
+    feedbackType: str = None
+
+
+@public_router.get('/widgets/{public_key}', response_model=WidgetReadPublic)
 async def get_public_widget_config(
-    widget_public_key: str = Path(
-        min_length=1, max_length=255, regex='^[a-zA-Z0-9_-]+$'
-    ),
+    public_key: str,
     db: AsyncSession = Depends(get_db),
     service: WidgetService = Depends(lambda: widget_service),
-) -> Any:
-    # Additional validation: ensure public_key contains only safe characters
-    if not re.match(r'^[a-zA-Z0-9_-]+$', widget_public_key):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail='Invalid public key format'
-        )
+):
+    return await service.get_public_widget_by_key(db, public_key=public_key)
 
-    widget = await service.get_public_widget_by_key(db, public_key=widget_public_key)
-    return widget
+
+@public_router.post(
+    '/feedback',
+    response_model=FeedbackResponsePayload,
+    status_code=status.HTTP_201_CREATED,
+)
+async def submit_public_feedback(
+    payload: PublicFeedbackPayload,
+    db: AsyncSession = Depends(get_db),
+    widget_service: WidgetService = Depends(lambda: widget_service),
+):
+    widget = await widget_service.get_public_widget_by_key(db, payload.widgetKey)
+
+    feedback_payload = GeneralFeedbackCreate(
+        widget_id=widget.id,
+        project_id=widget.project_id,
+        message=payload.response,
+        rating=payload.rating,
+        feedback_type=FeedbackType.GENERAL,
+        is_anonymous=True,
+    )
+
+    return await feedback_service.create_feedback(db, feedback_payload)

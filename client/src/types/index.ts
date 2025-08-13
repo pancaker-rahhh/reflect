@@ -12,11 +12,12 @@ export interface Organization {
   id: string
   name: string
   slug: string
-  ownerId: string
-  members: OrganizationMember[]
-  subscription: Subscription
-  createdAt: Date
-  updatedAt: Date
+  subscription_tier: string
+  settings: Record<string, unknown>
+  created_at: string
+  updated_at?: string
+  members_count?: number
+  projects_count?: number
 }
 
 export interface OrganizationMember {
@@ -36,7 +37,7 @@ export interface Subscription {
 
 export interface Project {
   id: string
-  organizationId: string
+  organization_id: string // Corrected from workspaceId
   name: string
   displayName: string
   logoUrl?: string
@@ -48,57 +49,50 @@ export interface Project {
   reviewSortOrder: 'newest' | 'oldest' | 'highest' | 'lowest'
   seoTitleSuffix?: string
   seoMetaDescription?: string
+  settings: Record<string, unknown>
   createdAt: Date
   updatedAt: Date
 }
 
 export interface Widget {
   id: string
-  projectId: string
+  project_id: string
   name: string
-  isActive: boolean
-  modules: {
-    feedback: boolean
-    reviews: boolean
-    bugReporting: boolean
-    featureRequests: boolean
-  }
-  primaryType: 'nps' | 'csat' | 'ces' | 'custom'
-  content: {
-    headerTitle: string
-    mainQuestion: string
-    submitButtonText: string
-    thankYouTitle: string
-    thankYouMessage: string
-  }
-  appearance: {
-    theme: 'default' | 'midnight' | 'minimal-light' | 'minimal-dark'
-    position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left' | 'center'
-    colors: {
-      primary: string
-      headerGradientEnd?: string
-      background: string
-      text: string
-      buttonColor: string
-      buttonTextColor: string
+  description?: string
+  widget_type: 'feedback' | 'survey' | 'review' | 'bug_report' | 'feature_request' | 'nps' | 'csat'
+  status: 'draft' | 'active' | 'inactive' | 'archived'
+  configuration: {
+    modules?: {
+      feedback?: boolean
+      reviews?: boolean
+      bugReporting?: boolean
+      featureRequests?: boolean
     }
-    showBranding: boolean
-  }
-  behavior: {
-    triggerType: 'immediate' | 'delay' | 'exit-intent' | 'scroll'
-    triggerDelay?: number
-    urlTargeting: {
-      includeUrls: string[]
-      excludeUrls: string[]
-    }
-    deviceTypes: {
-      desktop: boolean
-      mobile: boolean
-      tablet: boolean
+    content?: {
+      headerTitle?: string
+      mainQuestion?: string
+      submitButtonText?: string
+      thankYouTitle?: string
+      thankYouMessage?: string
     }
   }
-  createdAt: Date
-  updatedAt: Date
+  theme_configuration: {
+    primary?: string
+    headerGradientEnd?: string
+    background?: string
+    text?: string
+    buttonColor?: string
+    buttonTextColor?: string
+    theme_name?: 'default' | 'midnight' | 'minimal-light' | 'minimal-dark'
+    show_branding?: boolean
+  }
+  targeting_rules: Array<Record<string, unknown>>
+  embed_code?: string
+  public_key: string
+  position: 'bottom_right' | 'bottom_left' | 'top_right' | 'top_left' | 'center'
+  is_active: boolean
+  created_at: string
+  updated_at: string
 }
 
 export type FeedbackType = 'survey' | 'review' | 'bug' | 'feature'

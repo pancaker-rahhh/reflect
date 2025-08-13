@@ -14,6 +14,8 @@ class WidgetType(str, enum.Enum):
     BUG_REPORT = 'bug_report'
     FEATURE_REQUEST = 'feature_request'
     NPS = 'nps'
+    CSAT = 'csat'
+    CES = 'ces'
 
 
 class WidgetPosition(str, enum.Enum):

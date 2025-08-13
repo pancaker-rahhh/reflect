@@ -12,11 +12,12 @@ import {
   ChevronRight,
   Star,
   FileText,
-  Users
+  Users,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { OrganizationDropdown } from './OrganizationDropdown'
 import { isFeatureEnabled } from '@/lib/featureFlags'
+import { useAppContext } from '@/context/AppContext'
 
 interface NavItem {
   label: string
@@ -29,12 +30,12 @@ const navigation: NavItem[] = [
   {
     label: 'Dashboard',
     href: '/dashboard',
-    icon: LayoutDashboard
+    icon: LayoutDashboard,
   },
   {
     label: 'Widgets',
     href: '/widgets',
-    icon: Puzzle
+    icon: Puzzle,
   },
   {
     label: 'Feedback & Roadmap',
@@ -45,8 +46,8 @@ const navigation: NavItem[] = [
       { label: 'Reviews', href: '/feedback/reviews', icon: Star },
       { label: 'Bug Reports', href: '/feedback/bugs', icon: Bug },
       { label: 'Feature Requests', href: '/feedback/features', icon: Lightbulb },
-      { label: 'Roadmap', href: '/roadmap', icon: Map }
-    ]
+      { label: 'Roadmap', href: '/roadmap', icon: Map },
+    ],
   },
   {
     label: 'Settings',
@@ -54,13 +55,13 @@ const navigation: NavItem[] = [
     icon: Settings,
     children: [
       { label: 'Account Settings', href: '/settings/account', icon: Users },
-      ...(isFeatureEnabled('SHOW_ORG_SETTINGS_IN_SIDEBAR') 
+      ...(isFeatureEnabled('SHOW_ORG_SETTINGS_IN_SIDEBAR')
         ? [{ label: 'Organization Settings', href: '/settings/organization', icon: Users }]
         : []),
       { label: 'Project Settings', href: '/settings/project', icon: Settings },
-      { label: 'Roadmap Settings', href: '/settings/roadmap', icon: Map }
-    ]
-  }
+      { label: 'Roadmap Settings', href: '/settings/roadmap', icon: Map },
+    ],
+  },
 ]
 
 export function Sidebar() {
@@ -69,11 +70,17 @@ export function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false)
   const collapseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
+  const { projects, currentProject, setCurrentProject, isLoading } = useAppContext()
+
+  const handleProjectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedProjectId = event.target.value
+    const project = projects.find((p) => p.id === selectedProjectId) || null
+    setCurrentProject(project)
+  }
+
   const toggleExpanded = (label: string) => {
-    setExpandedItems(prev =>
-      prev.includes(label)
-        ? prev.filter(item => item !== label)
-        : [...prev, label]
+    setExpandedItems((prev) =>
+      prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]
     )
   }
 
@@ -104,10 +111,14 @@ export function Sidebar() {
       <div key={item.href}>
         <Link
           to={hasChildren ? '#' : item.href}
-          onClick={hasChildren ? (e) => {
-            e.preventDefault()
-            toggleExpanded(item.label)
-          } : undefined}
+          onClick={
+            hasChildren
+              ? (e) => {
+                  e.preventDefault()
+                  toggleExpanded(item.label)
+                }
+              : undefined
+          }
           className={cn(
             'flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200',
             'hover:bg-accent hover:text-accent-foreground',
@@ -120,21 +131,27 @@ export function Sidebar() {
           <div className="flex items-center justify-center w-4 h-4 flex-shrink-0">
             <item.icon className="h-4 w-4" />
           </div>
-          <div className={cn(
-            "flex items-center justify-between flex-1 min-w-0 transition-all duration-200",
-            !isExpanded && "opacity-0 w-0 overflow-hidden"
-          )}>
+          <div
+            className={cn(
+              'flex items-center justify-between flex-1 min-w-0 transition-all duration-200',
+              !isExpanded && 'opacity-0 w-0 overflow-hidden'
+            )}
+          >
             <span className="truncate">{item.label}</span>
             {hasChildren && (
               <div className="flex-shrink-0 ml-2">
-                {isItemExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                {isItemExpanded ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
               </div>
             )}
           </div>
         </Link>
-        {hasChildren && isItemExpanded && isExpanded && (
+        {hasChildren && isItemExpanded && isExpanded && item.children && (
           <div className="mt-1 space-y-1 overflow-hidden">
-            {item.children.map(child => renderNavItem(child, level + 1))}
+            {item.children.map((child) => renderNavItem(child, level + 1))}
           </div>
         )}
       </div>
@@ -142,15 +159,15 @@ export function Sidebar() {
   }
 
   return (
-    <div 
+    <div
       className={cn(
-        "bg-card border-r border-border flex flex-col transition-all duration-300 ease-in-out overflow-hidden",
-        isExpanded ? "w-64" : "w-16"
+        'bg-card border-r border-border flex flex-col transition-all duration-300 ease-in-out overflow-hidden',
+        isExpanded ? 'w-64' : 'w-16'
       )}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className={cn("p-6 flex items-center", !isExpanded && "p-4 justify-center")}>
+      <div className={cn('p-6 flex items-center', !isExpanded && 'p-4 justify-center')}>
         {!isExpanded ? (
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
             <span className="text-primary-foreground font-bold text-sm">R</span>
@@ -165,11 +182,31 @@ export function Sidebar() {
       {isExpanded && (
         <div className="px-3 mb-4">
           <OrganizationDropdown />
+          <div className="bg-secondary/50 rounded-md px-3 py-2 mt-2">
+            <select
+              className="w-full bg-transparent text-sm font-medium outline-none"
+              value={currentProject?.id || ''}
+              onChange={handleProjectChange}
+              disabled={isLoading || projects.length === 0}
+            >
+              {isLoading ? (
+                <option>Loading...</option>
+              ) : projects.length > 0 ? (
+                projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))
+              ) : (
+                <option>No projects found</option>
+              )}
+            </select>
+          </div>
         </div>
       )}
 
       <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
-        {navigation.map(item => renderNavItem(item))}
+        {navigation.map((item) => renderNavItem(item))}
       </nav>
 
       {isExpanded && (

@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Search } from 'lucide-react'
-import { widgetApi } from '@/services(mock)/widgetApi'
+// CORRECTED: Import the real widgetApi
+import { widgetApi } from '@/lib/api/widget'
 import { useAppContext } from '@/context/AppContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +12,7 @@ import { LanguageSupportBanner } from '@/components/widgets/LanguageSupportBanne
 import { FreeTierAlert } from '@/components/widgets/FreeTierAlert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageLoading } from '@/components/common/LoadingSpinner'
+import type { Widget } from '@/types'
 
 export function Widgets() {
   const navigate = useNavigate()
@@ -20,11 +22,13 @@ export function Widgets() {
 
   const { data: widgets, isLoading: isLoadingWidgets } = useQuery({
     queryKey: ['widgets', currentProject?.id],
+    // This now calls the real API
     queryFn: () => widgetApi.getByProject(currentProject!.id),
     enabled: !!currentProject,
   })
 
   const deleteMutation = useMutation({
+    // This now calls the real API
     mutationFn: (widgetId: string) => widgetApi.delete(widgetId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['widgets', currentProject?.id] })
@@ -34,6 +38,50 @@ export function Widgets() {
       alert(`Error: ${error.message}`)
     },
   })
+
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ widgetId, isActive }: { widgetId: string; isActive: boolean }) => {
+      // The API call is the same: activate if inactive, deactivate if active.
+      return isActive ? widgetApi.deactivate(widgetId) : widgetApi.activate(widgetId)
+    },
+    // This function runs BEFORE the mutation
+    onMutate: async (variables) => {
+      const { widgetId } = variables
+      // 1. Cancel any outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey: ['widgets', currentProject?.id] })
+
+      // 2. Snapshot the previous value
+      const previousWidgets = queryClient.getQueryData<Widget[]>(['widgets', currentProject?.id])
+
+      // 3. Optimistically update to the new value
+      queryClient.setQueryData<Widget[]>(
+        ['widgets', currentProject?.id],
+        (old) =>
+          old?.map((widget) =>
+            widget.id === widgetId ? { ...widget, is_active: !widget.is_active } : widget
+          ) || []
+      )
+
+      // 4. Return a context object with the snapshotted value
+      return { previousWidgets }
+    },
+    // If the mutation fails, use the context returned from onMutate to roll back
+    onError: (err, variables, context) => {
+      if (context?.previousWidgets) {
+        queryClient.setQueryData(['widgets', currentProject?.id], context.previousWidgets)
+      }
+      console.error('Failed to update widget status:', err)
+      alert(`Error updating widget status. Please try again.`)
+    },
+    // Always refetch after the mutation is settled to ensure data consistency
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['widgets', currentProject?.id] })
+    },
+  })
+
+  const handleStatusChange = (widgetId: string, isActive: boolean) => {
+    updateStatusMutation.mutate({ widgetId, isActive })
+  }
 
   const filteredWidgets =
     widgets?.filter((widget) => widget.name.toLowerCase().includes(searchQuery.toLowerCase())) || []
@@ -101,6 +149,7 @@ export function Widgets() {
               key={widget.id}
               widget={widget}
               onDelete={() => handleDeleteWidget(widget.id)}
+              onStatusChange={() => handleStatusChange(widget.id, widget.is_active)}
             />
           ))}
         </div>

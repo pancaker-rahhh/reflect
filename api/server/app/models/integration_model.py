@@ -86,7 +86,7 @@ class IntegrationMapping(BaseModel):
     )
 
     mapping_type: Mapped[MappingType] = mapped_column(
-        SQLEnum(MappingType), nullable=False
+        SQLEnum(MappingType, name='mappingtype', create_type=True), nullable=False
     )
 
     internal_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)

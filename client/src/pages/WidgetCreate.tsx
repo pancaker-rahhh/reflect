@@ -9,7 +9,7 @@ import { Step1Basics } from '@/components/widgets/wizard/Step1Basics'
 import { Step2Content } from '@/components/widgets/wizard/Step2Content'
 import { Step3Appearance } from '@/components/widgets/wizard/Step3Appearance'
 import { Step4Behavior } from '@/components/widgets/wizard/Step4Behavior'
-import { widgetApi } from '@/services(mock)/widgetApi'
+import { widgetApi } from '@/lib/api/widget'
 import { useAppContext } from '@/context/AppContext'
 import { PageLoading } from '@/components/common/LoadingSpinner'
 
@@ -21,7 +21,16 @@ const widgetSchema = z.object({
     bugReporting: z.boolean(),
     featureRequests: z.boolean(),
   }),
-  primaryType: z.enum(['feedback', 'survey', 'review', 'bug_report', 'feature_request', 'nps']),
+  primaryType: z.enum([
+    'feedback',
+    'survey',
+    'review',
+    'bug_report',
+    'feature_request',
+    'nps',
+    'csat',
+    'ces',
+  ]),
   content: z.object({
     headerTitle: z.string().min(1, 'Header title is required'),
     mainQuestion: z.string().min(1, 'Main question is required'),
@@ -113,8 +122,8 @@ export function WidgetCreate() {
     const data = form.getValues()
     setIsSubmitting(true)
     try {
-      await widgetApi.create(currentProject.id, data)
-      navigate('/widgets')
+      const newWidget = await widgetApi.create(currentProject.id, data)
+      navigate(`/widgets/${newWidget.id}/get-code`)
     } catch (error) {
       console.error('Failed to create widget:', error)
       alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
