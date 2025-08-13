@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, List, Dict, Any
 from uuid import UUID
 from datetime import datetime
@@ -23,6 +23,9 @@ class WidgetBase(BaseModel):
     description: Optional[str] = Field(None, max_length=1000)
     widget_type: WidgetType
     position: WidgetPosition = WidgetPosition.BOTTOM_RIGHT
+    configuration: Dict[str, Any] = Field(default_factory=dict)
+    theme_configuration: Dict[str, Any] = Field(default_factory=dict)
+    targeting_rules: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 class WidgetCreate(WidgetBase):
@@ -34,8 +37,8 @@ class WidgetUpdate(BaseModel):
     description: Optional[str] = Field(None, max_length=1000)
     position: Optional[WidgetPosition] = None
     configuration: Optional[Dict[str, Any]] = None
-    theme_configuration: Optional[ThemeConfiguration] = None
-    targeting_rules: Optional[List[TargetingRule]] = None
+    theme_configuration: Optional[Dict[str, Any]] = None
+    targeting_rules: Optional[List[Dict[str, Any]]] = None
 
 
 class WidgetRead(WidgetBase):
@@ -44,11 +47,18 @@ class WidgetRead(WidgetBase):
     status: WidgetStatus
     public_key: str
     embed_code: Optional[str] = None
-    configuration: Dict[str, Any]
-    theme_configuration: ThemeConfiguration
-    targeting_rules: List[TargetingRule]
     created_at: datetime
     updated_at: datetime
 
     class Config:
         from_attributes = True
+
+
+class WidgetReadPublic(BaseModel):
+    widget_type: WidgetType
+    position: WidgetPosition
+    configuration: dict
+    theme_configuration: dict
+    targeting_rules: list
+
+    model_config = ConfigDict(from_attributes=True)
