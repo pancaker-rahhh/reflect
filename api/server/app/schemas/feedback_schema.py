@@ -109,6 +109,10 @@ class FeedbackResponse(BaseModel):
 
 
 # Polymorphic create payloads
+class GeneralFeedbackCreate(FeedbackBase):
+    feedback_type: Literal[FeedbackType.GENERAL] = FeedbackType.GENERAL
+
+
 class SurveyFeedbackCreate(FeedbackBase):
     feedback_type: Literal[FeedbackType.SURVEY] = FeedbackType.SURVEY  # type: ignore[assignment]
     survey_type: Optional[str] = None
@@ -144,6 +148,7 @@ class FeatureRequestFeedbackCreate(FeedbackBase):
 
 FeedbackCreatePayload = Annotated[
     Union[
+        GeneralFeedbackCreate,
         SurveyFeedbackCreate,
         ReviewFeedbackCreate,
         BugReportFeedbackCreate,
@@ -154,6 +159,10 @@ FeedbackCreatePayload = Annotated[
 
 
 # Polymorphic response payloads
+class GeneralFeedbackResponse(FeedbackResponse):
+    feedback_type: Literal[FeedbackType.GENERAL]
+
+
 class SurveyFeedbackResponse(FeedbackResponse):
     feedback_type: Literal[FeedbackType.SURVEY] = FeedbackType.SURVEY  # type: ignore[assignment]
 
@@ -186,6 +195,7 @@ class FeatureRequestFeedbackResponse(FeedbackResponse):
 
 FeedbackResponsePayload = Annotated[
     Union[
+        GeneralFeedbackResponse,
         SurveyFeedbackResponse,
         ReviewFeedbackResponse,
         BugReportFeedbackResponse,
