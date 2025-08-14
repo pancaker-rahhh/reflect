@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Search } from 'lucide-react'
+import { Plus, Search, Grid3X3, List, BarChart3 } from 'lucide-react'
 // CORRECTED: Import the real widgetApi
 import { widgetApi } from '@/lib/api/widget'
 import { useAppContext } from '@/context/AppContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+
 import { WidgetCard } from '@/components/widgets/WidgetCard'
 import { LanguageSupportBanner } from '@/components/widgets/LanguageSupportBanner'
 import { FreeTierAlert } from '@/components/widgets/FreeTierAlert'
@@ -18,6 +19,7 @@ export function Widgets() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [searchQuery, setSearchQuery] = useState('')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const { currentProject, isLoading: isContextLoading } = useAppContext()
 
   const { data: widgets, isLoading: isLoadingWidgets } = useQuery({
@@ -66,7 +68,7 @@ export function Widgets() {
       return { previousWidgets }
     },
     // If the mutation fails, use the context returned from onMutate to roll back
-    onError: (err, variables, context) => {
+    onError: (err, _variables, context) => {
       if (context?.previousWidgets) {
         queryClient.setQueryData(['widgets', currentProject?.id], context.previousWidgets)
       }
@@ -85,6 +87,9 @@ export function Widgets() {
 
   const filteredWidgets =
     widgets?.filter((widget) => widget.name.toLowerCase().includes(searchQuery.toLowerCase())) || []
+
+  const activeWidgets = filteredWidgets.filter((widget) => widget.is_active)
+  const inactiveWidgets = filteredWidgets.filter((widget) => !widget.is_active)
 
   const handleCreateWidget = () => {
     navigate('/widgets/new')
@@ -115,10 +120,41 @@ export function Widgets() {
         </p>
       </div>
 
-      <Button onClick={handleCreateWidget} size="lg" className="gap-2">
-        <Plus className="h-5 w-5" />
-        Create Widget
-      </Button>
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <Button onClick={handleCreateWidget} size="lg" className="gap-2">
+          <Plus className="h-5 w-5" />
+          Create Widget
+        </Button>
+
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <BarChart3 className="h-4 w-4" />
+            <span>
+              {activeWidgets.length} active, {inactiveWidgets.length} inactive
+            </span>
+          </div>
+          <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'ghost'}
+              size="sm"
+              className="rounded-none border-0"
+              onClick={() => setViewMode('grid')}
+              aria-label="Grid view"
+            >
+              <Grid3X3 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              className="rounded-none border-0"
+              onClick={() => setViewMode('list')}
+              aria-label="List view"
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
 
       <LanguageSupportBanner />
       <FreeTierAlert />
@@ -135,23 +171,74 @@ export function Widgets() {
       </div>
 
       {isLoadingWidgets ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div
+          className={`grid gap-6 ${
+            viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
+          }`}
+        >
           {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} className="h-48" />
+            <Skeleton key={i} className={viewMode === 'grid' ? 'h-48' : 'h-32'} />
           ))}
         </div>
       ) : filteredWidgets.length === 0 ? (
         <EmptyState searchQuery={searchQuery} onCreateWidget={handleCreateWidget} />
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredWidgets.map((widget) => (
-            <WidgetCard
-              key={widget.id}
-              widget={widget}
-              onDelete={() => handleDeleteWidget(widget.id)}
-              onStatusChange={() => handleStatusChange(widget.id, widget.is_active)}
-            />
-          ))}
+        <div className="space-y-8">
+          {/* Active Widgets Section */}
+          {activeWidgets.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                <h2 className="text-xl font-semibold text-gray-900">Active Widgets</h2>
+                <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                  {activeWidgets.length}
+                </span>
+              </div>
+              <div
+                className={`grid gap-6 ${
+                  viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
+                }`}
+              >
+                {activeWidgets.map((widget) => (
+                  <WidgetCard
+                    key={widget.id}
+                    widget={widget}
+                    viewMode={viewMode}
+                    onDelete={() => handleDeleteWidget(widget.id)}
+                    onStatusChange={() => handleStatusChange(widget.id, widget.is_active)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Inactive Widgets Section */}
+          {inactiveWidgets.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 bg-gray-400 rounded-full"></div>
+                <h2 className="text-xl font-semibold text-gray-900">Inactive Widgets</h2>
+                <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                  {inactiveWidgets.length}
+                </span>
+              </div>
+              <div
+                className={`grid gap-6 ${
+                  viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
+                }`}
+              >
+                {inactiveWidgets.map((widget) => (
+                  <WidgetCard
+                    key={widget.id}
+                    widget={widget}
+                    viewMode={viewMode}
+                    onDelete={() => handleDeleteWidget(widget.id)}
+                    onStatusChange={() => handleStatusChange(widget.id, widget.is_active)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
