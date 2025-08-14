@@ -45,6 +45,7 @@ class WidgetRead(WidgetBase):
     id: UUID
     project_id: UUID
     status: WidgetStatus
+    is_active: bool
     public_key: str
     embed_code: Optional[str] = None
     created_at: datetime
