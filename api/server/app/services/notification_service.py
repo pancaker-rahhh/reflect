@@ -10,12 +10,6 @@ logger = get_logger(__name__)
 
 
 class NotificationService:
-    """
-    Service for handling user notifications.
-    Supports various notification types (email, in-app, etc.).
-    Uses ARQ task queue for asynchronous processing.
-    """
-
     async def send_notification(
         self,
         db: AsyncSession,
@@ -25,20 +19,6 @@ class NotificationService:
         data: Dict[str, Any],
         delay_seconds: Optional[int] = None,
     ) -> Dict[str, Any]:
-        """
-        Send a notification to a user using ARQ task queue
-
-        Args:
-            db: Database session
-            background_tasks: FastAPI background tasks (for executor factory)
-            user_id: The recipient user's ID
-            notification_type: Type of notification (email, in-app, etc.)
-            data: Notification data containing subject, content, etc.
-            delay_seconds: Optional delay in seconds
-
-        Returns:
-            Dict with task information
-        """
         try:
             executor = task_executor_factory(background_tasks)
             task_payload = {
@@ -85,20 +65,6 @@ class NotificationService:
         data: Dict[str, Any],
         delay_seconds: Optional[int] = None,
     ) -> Dict[str, Any]:
-        """
-        Send notifications to multiple users using ARQ task queue
-
-        Args:
-            db: Database session
-            background_tasks: FastAPI background tasks (for executor factory)
-            user_ids: List of recipient user IDs
-            notification_type: Type of notification
-            data: Notification data
-            delay_seconds: Optional delay in seconds
-
-        Returns:
-            Dict with task information
-        """
         try:
             executor = task_executor_factory(background_tasks)
             task_payload = {
@@ -141,5 +107,4 @@ class NotificationService:
             raise
 
 
-# Service singleton instance
 notification_service = NotificationService()
