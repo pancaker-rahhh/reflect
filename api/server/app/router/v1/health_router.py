@@ -1,9 +1,9 @@
-from fastapi import APIRouter, status, Depends, BackgroundTasks
+from fastapi import APIRouter, status, BackgroundTasks, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.health_schema import HealthCheckResponse
+from app.schemas.health_schema import HealthCheckResponse, WorkerHealthResponse
 from app.services.health_service import health_service
-from app.services.tasks.base_executor import TaskExecutor
-from app.services.tasks.executor_factory import task_executor_factory
+from app.db import get_db
 
 health_router = APIRouter(
     prefix='/health',
@@ -18,17 +18,10 @@ async def health_check() -> HealthCheckResponse:
     return health_service.get_health_status()
 
 
-@health_router.post(
-    '/test-task',
-    status_code=status.HTTP_202_ACCEPTED,
-    summary='Test task queueing',
+@health_router.get(
+    '/worker', response_model=WorkerHealthResponse, status_code=status.HTTP_200_OK
 )
-async def test_task_queue(
-    background_tasks: BackgroundTasks,
-    task_executor: TaskExecutor = Depends(task_executor_factory),
-):
-    """
-    Enqueues a sample task to test the Arq worker setup.
-    """
-    await task_executor.execute('example_task', {'message': 'Hello from the API!'})
-    return {'message': 'Task queued successfully'}
+async def worker_health_check(
+    background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)
+) -> WorkerHealthResponse:
+    return await health_service.check_worker_health(db, background_tasks)
