@@ -1,40 +1,59 @@
 from app.core.settings import get_settings
 from app.core.logging import get_logger
+from app.services.tasks import (
+    webhook_tasks,
+    notification_tasks,
+    integration_tasks,
+    analytics_tasks,
+)
+from arq.connections import RedisSettings
+import os
 
 logger = get_logger(__name__)
 
+# TODO: Import and register your actual task functions here.
+# from app.services.tasks import email_tasks, analytics_tasks
+# functions = [email_tasks.send_welcome_email, analytics_tasks.track_event]
 
-# This is a placeholder task. In a real application, you would
-# import and register your actual task functions here.
-async def example_task(ctx, *args, **kwargs):
-    logger.info(f'Executing example_task with args: {args}, kwargs: {kwargs}')
-    return 'Task completed'
+redis_host = os.environ.get('REDIS_HOST', 'redis')
+logger.info(f'Initializing ARQ worker with Redis host: {redis_host}')
 
 
 class WorkerSettings:
-    """
-    Defines the settings for the Arq worker.
-    This class is discovered by the `arq` CLI.
-    """
+    functions = [
+        webhook_tasks.dispatch_webhook_event,
+        notification_tasks.send_notification,
+        notification_tasks.send_bulk_notifications,
+        integration_tasks.sync_integration_data,
+        integration_tasks.create_external_issue,
+        analytics_tasks.calculate_project_metrics,
+        analytics_tasks.generate_feedback_report,
+    ]
 
-    # List of functions that the worker can execute.
-    functions = [example_task]
+    redis_settings = RedisSettings(
+        host=redis_host,
+        port=int(os.environ.get('REDIS_PORT', 6379)),
+        database=int(os.environ.get('REDIS_DB', 0)),
+        password=os.environ.get('REDIS_PASSWORD') or None,
+    )
 
-    # Runs when the worker starts.
-    async def on_startup(self, ctx):
-        logger.info('Arq worker started.')
+    keep_result = 60 * 60
+
+    max_jobs = 10
+
+    retry_jobs = True
+    job_timeout = 60 * 5
+    max_tries = 5
+
+    retry_delay = 5
+
+    @staticmethod
+    def retry_backoff(attempt: int) -> int:
+        return WorkerSettings.retry_delay * (5**attempt)
+
+    async def on_startup(ctx):
+        logger.info('Arq worker started. Connecting to Redis')
         ctx['settings'] = get_settings()
 
-    # Runs when the worker shuts down.
-    async def on_shutdown(self, ctx):
+    async def on_shutdown(ctx):
         logger.info('Arq worker shutting down.')
-
-
-# Redis settings for the worker.
-settings = get_settings()
-redis_settings = {
-    'host': settings.REDIS_HOST,
-    'port': settings.REDIS_PORT,
-    'database': settings.REDIS_DB,
-    'password': settings.REDIS_PASSWORD,
-}
