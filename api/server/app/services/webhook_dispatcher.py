@@ -1,7 +1,7 @@
 import asyncio
 from typing import Dict, Any
 from uuid import UUID
-from fastapi import BackgroundTasks  # To be used if not using Arq
+from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.webhook_model import WebhookEventType
@@ -15,23 +15,15 @@ logger = get_logger(__name__)
 
 
 class WebhookEventDispatcher:
-    """Centralized webhook event dispatcher for the application."""
-
     async def _enqueue_webhook_event(
         self,
         project_id: UUID,
         event_type: WebhookEventType,
         payload: Dict[str, Any],
     ):
-        """Helper to enqueue a webhook dispatch task."""
         try:
-            # We pass a dummy BackgroundTasks object because the arq executor doesn't use it,
-            # but the factory signature requires it.
             executor = task_executor_factory(BackgroundTasks())
 
-            # Enqueue the task - we use create_task to make this non-blocking
-            # This is critical for scalability - we don't want to wait for the task to be
-            # acknowledged by Redis before returning to the caller
             asyncio.create_task(
                 self._execute_webhook_task(executor, project_id, event_type, payload)
             )
@@ -56,7 +48,6 @@ class WebhookEventDispatcher:
         event_type: WebhookEventType,
         payload: Dict[str, Any],
     ):
-        """Actually execute the webhook task, wrapped in exception handling."""
         try:
             await executor.execute(
                 'dispatch_webhook_event',
@@ -77,7 +68,6 @@ class WebhookEventDispatcher:
     async def dispatch_feedback_created(
         self, db: AsyncSession, feedback: Feedback
     ) -> None:
-        """Dispatch webhook for new feedback creation."""
         payload = {
             'feedback': {
                 'id': str(feedback.id),
@@ -104,7 +94,6 @@ class WebhookEventDispatcher:
     async def dispatch_feedback_updated(
         self, db: AsyncSession, feedback: Feedback, updated_fields: Dict[str, Any]
     ) -> None:
-        """Dispatch webhook for feedback updates."""
         payload = {
             'feedback': {
                 'id': str(feedback.id),
@@ -127,7 +116,6 @@ class WebhookEventDispatcher:
     async def dispatch_feature_created(
         self, db: AsyncSession, feature: RoadmapFeature
     ) -> None:
-        """Dispatch webhook for new roadmap feature creation."""
         payload = {
             'feature': {
                 'id': str(feature.id),
@@ -158,7 +146,6 @@ class WebhookEventDispatcher:
     async def dispatch_feature_updated(
         self, db: AsyncSession, feature: RoadmapFeature, updated_fields: Dict[str, Any]
     ) -> None:
-        """Dispatch webhook for roadmap feature updates."""
         payload = {
             'feature': {
                 'id': str(feature.id),
@@ -190,7 +177,6 @@ class WebhookEventDispatcher:
     async def dispatch_project_updated(
         self, db: AsyncSession, project: Project, updated_fields: Dict[str, Any]
     ) -> None:
-        """Dispatch webhook for project updates."""
         payload = {
             'project': {
                 'id': str(project.id),
