@@ -137,7 +137,7 @@ class FeatureRequestFeedbackCreate(FeedbackBase):
     feedback_type: Literal[FeedbackType.FEATURE_REQUEST] = FeedbackType.FEATURE_REQUEST
     use_case: Optional[str] = None
     business_value: Optional[str] = None
-    effort_estimate: Optional[str] = None
+    estimated_effort: Optional[str] = None
     impact_score: Optional[int] = None
     implementation_status: str = 'backlog'
 
@@ -179,7 +179,7 @@ class FeatureRequestFeedbackResponse(FeedbackResponse):
     feedback_type: Literal[FeedbackType.FEATURE_REQUEST]
     use_case: Optional[str] = None
     business_value: Optional[str] = None
-    effort_estimate: Optional[str] = None
+    estimated_effort: Optional[str] = None
     impact_score: Optional[int] = None
     implementation_status: str = 'backlog'
 
