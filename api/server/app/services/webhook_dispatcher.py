@@ -1,27 +1,83 @@
-from typing import Dict, Any, Optional
+import asyncio
+from typing import Dict, Any
 from uuid import UUID
+from fastapi import BackgroundTasks  # To be used if not using Arq
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.webhook_model import WebhookEventType
 from app.models.feedback_model import Feedback
 from app.models.roadmap_model import RoadmapFeature
 from app.models.project_model import Project
-from app.services.webhook_service import webhook_service
+from app.services.tasks.executor_factory import task_executor_factory
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
 
 class WebhookEventDispatcher:
-    """Centralized webhook event dispatcher for the application"""
+    """Centralized webhook event dispatcher for the application."""
+
+    async def _enqueue_webhook_event(
+        self,
+        project_id: UUID,
+        event_type: WebhookEventType,
+        payload: Dict[str, Any],
+    ):
+        """Helper to enqueue a webhook dispatch task."""
+        try:
+            # We pass a dummy BackgroundTasks object because the arq executor doesn't use it,
+            # but the factory signature requires it.
+            executor = task_executor_factory(BackgroundTasks())
+
+            # Enqueue the task - we use create_task to make this non-blocking
+            # This is critical for scalability - we don't want to wait for the task to be
+            # acknowledged by Redis before returning to the caller
+            asyncio.create_task(
+                self._execute_webhook_task(executor, project_id, event_type, payload)
+            )
+
+            logger.info(
+                'webhook.event.queued',
+                event_type=event_type.value,
+                project_id=str(project_id),
+            )
+        except Exception as e:
+            logger.error(
+                'webhook.event.queue_failed',
+                event_type=event_type.value,
+                project_id=str(project_id),
+                error=str(e),
+            )
+
+    async def _execute_webhook_task(
+        self,
+        executor,
+        project_id: UUID,
+        event_type: WebhookEventType,
+        payload: Dict[str, Any],
+    ):
+        """Actually execute the webhook task, wrapped in exception handling."""
+        try:
+            await executor.execute(
+                'dispatch_webhook_event',
+                {
+                    'project_id': project_id,
+                    'event_type_str': event_type.value,
+                    'payload': payload,
+                },
+            )
+        except Exception as e:
+            logger.error(
+                'webhook.execute.failed',
+                event_type=event_type.value,
+                project_id=str(project_id),
+                error=str(e),
+            )
 
     async def dispatch_feedback_created(
-        self, 
-        db: AsyncSession, 
-        feedback: Feedback
-    ) -> Optional[Dict[str, Any]]:
-        """Dispatch webhook for new feedback creation"""
-        
+        self, db: AsyncSession, feedback: Feedback
+    ) -> None:
+        """Dispatch webhook for new feedback creation."""
         payload = {
             'feedback': {
                 'id': str(feedback.id),
@@ -30,38 +86,25 @@ class WebhookEventDispatcher:
                 'message': feedback.message,
                 'rating': feedback.rating,
                 'status': feedback.status.value,
-                'priority': feedback.priority.value if feedback.priority is not None else None,
+                'priority': feedback.priority.value if feedback.priority else None,
                 'submitter_name': feedback.submitter_name,
                 'submitter_email': feedback.submitter_email,
                 'is_anonymous': feedback.is_anonymous,
-                'created_at': feedback.created_at.isoformat() if feedback.created_at else None,
+                'created_at': feedback.created_at.isoformat()
+                if feedback.created_at
+                else None,
             },
-            'project': {
-                'id': str(feedback.project_id),
-            },
-            'widget': {
-                'id': str(feedback.widget_id),
-            }
+            'project': {'id': str(feedback.project_id)},
+            'widget': {'id': str(feedback.widget_id)},
         }
-        
-        try:
-            results = await webhook_service.trigger_webhooks(
-                db, UUID(str(feedback.project_id)), WebhookEventType.FEEDBACK_CREATED, payload
-            )
-            logger.info(f"Dispatched feedback.created webhooks for feedback {feedback.id}: {len(results)} webhooks triggered")
-            return {'event': 'feedback.created', 'results': results}
-        except Exception as e:
-            logger.error(f"Failed to dispatch feedback.created webhooks for feedback {feedback.id}: {str(e)}")
-            return None
+        await self._enqueue_webhook_event(
+            feedback.project_id, WebhookEventType.FEEDBACK_CREATED, payload
+        )
 
     async def dispatch_feedback_updated(
-        self, 
-        db: AsyncSession, 
-        feedback: Feedback,
-        updated_fields: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
-        """Dispatch webhook for feedback updates"""
-        
+        self, db: AsyncSession, feedback: Feedback, updated_fields: Dict[str, Any]
+    ) -> None:
+        """Dispatch webhook for feedback updates."""
         payload = {
             'feedback': {
                 'id': str(feedback.id),
@@ -69,32 +112,22 @@ class WebhookEventDispatcher:
                 'title': feedback.title,
                 'message': feedback.message,
                 'status': feedback.status.value,
-                'priority': feedback.priority.value if feedback.priority is not None else None,
-                'updated_at': feedback.updated_at.isoformat() if feedback.updated_at else None,
+                'priority': feedback.priority.value if feedback.priority else None,
+                'updated_at': feedback.updated_at.isoformat()
+                if feedback.updated_at
+                else None,
             },
             'changes': updated_fields,
-            'project': {
-                'id': str(feedback.project_id),
-            }
+            'project': {'id': str(feedback.project_id)},
         }
-        
-        try:
-            results = await webhook_service.trigger_webhooks(
-                db, UUID(str(feedback.project_id)), WebhookEventType.FEEDBACK_UPDATED, payload
-            )
-            logger.info(f"Dispatched feedback.updated webhooks for feedback {feedback.id}: {len(results)} webhooks triggered")
-            return {'event': 'feedback.updated', 'results': results}
-        except Exception as e:
-            logger.error(f"Failed to dispatch feedback.updated webhooks for feedback {feedback.id}: {str(e)}")
-            return None
+        await self._enqueue_webhook_event(
+            feedback.project_id, WebhookEventType.FEEDBACK_UPDATED, payload
+        )
 
     async def dispatch_feature_created(
-        self, 
-        db: AsyncSession, 
-        feature: RoadmapFeature
-    ) -> Optional[Dict[str, Any]]:
-        """Dispatch webhook for new roadmap feature creation"""
-        
+        self, db: AsyncSession, feature: RoadmapFeature
+    ) -> None:
+        """Dispatch webhook for new roadmap feature creation."""
         payload = {
             'feature': {
                 'id': str(feature.id),
@@ -103,41 +136,29 @@ class WebhookEventDispatcher:
                 'status': feature.status.value if feature.status else None,
                 'priority': feature.priority.value if feature.priority else None,
                 'effort_estimate': feature.effort_estimate,
-                'created_at': feature.created_at.isoformat() if feature.created_at else None,
+                'created_at': feature.created_at.isoformat()
+                if feature.created_at
+                else None,
             },
-            'roadmap': {
-                'id': str(feature.roadmap_id),
-            },
-            'column': {
-                'id': str(feature.column_id) if feature.column_id else None,
-            }
+            'roadmap': {'id': str(feature.roadmap_id)},
+            'column': {'id': str(feature.column_id) if feature.column_id else None},
         }
-        
-        try:
-            # Get project_id from roadmap
-            from app.repositories.roadmap_repository import roadmap_repository
-            roadmap = await roadmap_repository.get(db, feature.roadmap_id)
-            if not roadmap:
-                logger.error(f"Roadmap {feature.roadmap_id} not found for feature {feature.id}")
-                return None
-                
-            results = await webhook_service.trigger_webhooks(
-                db, roadmap.project_id, WebhookEventType.FEATURE_CREATED, payload
+        from app.repositories.roadmap_repository import roadmap_repository
+
+        roadmap = await roadmap_repository.get(db, feature.roadmap_id)
+        if roadmap:
+            await self._enqueue_webhook_event(
+                roadmap.project_id, WebhookEventType.FEATURE_CREATED, payload
             )
-            logger.info(f"Dispatched feature.created webhooks for feature {feature.id}: {len(results)} webhooks triggered")
-            return {'event': 'feature.created', 'results': results}
-        except Exception as e:
-            logger.error(f"Failed to dispatch feature.created webhooks for feature {feature.id}: {str(e)}")
-            return None
+        else:
+            logger.error(
+                f'Roadmap {feature.roadmap_id} not found for feature {feature.id}'
+            )
 
     async def dispatch_feature_updated(
-        self, 
-        db: AsyncSession, 
-        feature: RoadmapFeature,
-        updated_fields: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
-        """Dispatch webhook for roadmap feature updates"""
-        
+        self, db: AsyncSession, feature: RoadmapFeature, updated_fields: Dict[str, Any]
+    ) -> None:
+        """Dispatch webhook for roadmap feature updates."""
         payload = {
             'feature': {
                 'id': str(feature.id),
@@ -146,65 +167,46 @@ class WebhookEventDispatcher:
                 'status': feature.status.value if feature.status else None,
                 'priority': feature.priority.value if feature.priority else None,
                 'effort_estimate': feature.effort_estimate,
-                'updated_at': feature.updated_at.isoformat() if feature.updated_at else None,
+                'updated_at': feature.updated_at.isoformat()
+                if feature.updated_at
+                else None,
             },
             'changes': updated_fields,
-            'roadmap': {
-                'id': str(feature.roadmap_id),
-            },
-            'column': {
-                'id': str(feature.column_id) if feature.column_id else None,
-            }
+            'roadmap': {'id': str(feature.roadmap_id)},
+            'column': {'id': str(feature.column_id) if feature.column_id else None},
         }
-        
-        try:
-            # Get project_id from roadmap
-            from app.repositories.roadmap_repository import roadmap_repository
-            roadmap = await roadmap_repository.get(db, feature.roadmap_id)
-            if not roadmap:
-                logger.error(f"Roadmap {feature.roadmap_id} not found for feature {feature.id}")
-                return None
-                
-            results = await webhook_service.trigger_webhooks(
-                db, roadmap.project_id, WebhookEventType.FEATURE_UPDATED, payload
+        from app.repositories.roadmap_repository import roadmap_repository
+
+        roadmap = await roadmap_repository.get(db, feature.roadmap_id)
+        if roadmap:
+            await self._enqueue_webhook_event(
+                roadmap.project_id, WebhookEventType.FEATURE_UPDATED, payload
             )
-            logger.info(f"Dispatched feature.updated webhooks for feature {feature.id}: {len(results)} webhooks triggered")
-            return {'event': 'feature.updated', 'results': results}
-        except Exception as e:
-            logger.error(f"Failed to dispatch feature.updated webhooks for feature {feature.id}: {str(e)}")
-            return None
+        else:
+            logger.error(
+                f'Roadmap {feature.roadmap_id} not found for feature {feature.id}'
+            )
 
     async def dispatch_project_updated(
-        self, 
-        db: AsyncSession, 
-        project: Project,
-        updated_fields: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
-        """Dispatch webhook for project updates"""
-        
+        self, db: AsyncSession, project: Project, updated_fields: Dict[str, Any]
+    ) -> None:
+        """Dispatch webhook for project updates."""
         payload = {
             'project': {
                 'id': str(project.id),
                 'name': project.name,
                 'description': project.description,
                 'is_active': project.is_active,
-                'updated_at': project.updated_at.isoformat() if project.updated_at else None,
+                'updated_at': project.updated_at.isoformat()
+                if project.updated_at
+                else None,
             },
             'changes': updated_fields,
-            'organization': {
-                'id': str(project.organization_id),
-            }
+            'organization': {'id': str(project.organization_id)},
         }
-        
-        try:
-            results = await webhook_service.trigger_webhooks(
-                db, project.id, WebhookEventType.PROJECT_UPDATED, payload
-            )
-            logger.info(f"Dispatched project.updated webhooks for project {project.id}: {len(results)} webhooks triggered")
-            return {'event': 'project.updated', 'results': results}
-        except Exception as e:
-            logger.error(f"Failed to dispatch project.updated webhooks for project {project.id}: {str(e)}")
-            return None
+        await self._enqueue_webhook_event(
+            project.id, WebhookEventType.PROJECT_UPDATED, payload
+        )
 
 
 webhook_dispatcher = WebhookEventDispatcher()
