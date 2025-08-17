@@ -1,0 +1,394 @@
+{
+	"info": {
+		"_postman_id": "cad6e5a0-1f1a-4b5b-8e9c-8a5f3a7c2e01",
+		"name": "ARQ Task Queue Testing",
+		"description": "Collection for testing ARQ task queue implementation",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Checks",
+			"item": [
+				{
+					"name": "API Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Check if the API is healthy"
+					},
+					"response": []
+				},
+				{
+					"name": "Worker Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health/worker",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"health",
+								"worker"
+							]
+						},
+						"description": "Check if the ARQ worker is healthy"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for checking health of the API and worker"
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "Send Notification",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": \"00000000-0000-0000-0000-000000000000\",\n    \"notification_type\": \"test\",\n    \"data\": {\n        \"subject\": \"Test Notification\",\n        \"content\": \"This is a test notification\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/notifications",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"notifications"
+							]
+						},
+						"description": "Send a notification to a user"
+					},
+					"response": []
+				},
+				{
+					"name": "Send Bulk Notifications",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_ids\": [\n        \"00000000-0000-0000-0000-000000000000\",\n        \"00000000-0000-0000-0000-000000000001\"\n    ],\n    \"notification_type\": \"bulk_test\",\n    \"data\": {\n        \"subject\": \"Bulk Test Notification\",\n        \"content\": \"This is a bulk test notification\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/notifications/bulk",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"bulk"
+							]
+						},
+						"description": "Send notifications to multiple users"
+					},
+					"response": []
+				},
+				{
+					"name": "Schedule Notification",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": \"00000000-0000-0000-0000-000000000000\",\n    \"notification_type\": \"scheduled_test\",\n    \"data\": {\n        \"subject\": \"Scheduled Test Notification\",\n        \"content\": \"This is a scheduled test notification\"\n    },\n    \"delay_seconds\": 60\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/notifications/schedule",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"schedule"
+							]
+						},
+						"description": "Schedule a notification to be sent after delay"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for testing notification tasks"
+		},
+		{
+			"name": "Integrations",
+			"item": [
+				{
+					"name": "Sync Integration",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"integration_id\": \"{{integration_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/integrations/{{integration_id}}/sync",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"integrations",
+								"{{integration_id}}",
+								"sync"
+							]
+						},
+						"description": "Synchronize data with an external integration"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Issue From Feedback",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"integration_id\": \"{{integration_id}}\",\n    \"feedback_id\": \"{{feedback_id}}\",\n    \"title\": \"Test Issue\",\n    \"labels\": [\"bug\", \"test\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/integrations/{{integration_id}}/issues",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"integrations",
+								"{{integration_id}}",
+								"issues"
+							]
+						},
+						"description": "Create an issue in an external system from feedback"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for testing integration tasks"
+		},
+		{
+			"name": "Analytics",
+			"item": [
+				{
+					"name": "Calculate Project Metrics",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"start_date\": \"2025-01-01T00:00:00Z\",\n    \"end_date\": \"2025-08-01T00:00:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/analytics/projects/{{project_id}}/metrics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"analytics",
+								"projects",
+								"{{project_id}}",
+								"metrics"
+							]
+						},
+						"description": "Calculate metrics for a project"
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Report",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"report_type\": \"weekly_summary\",\n    \"params\": {\n        \"include_charts\": true\n    }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/analytics/projects/{{project_id}}/reports",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"analytics",
+								"projects",
+								"{{project_id}}",
+								"reports"
+							]
+						},
+						"description": "Generate a report for a project"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for testing analytics tasks"
+		},
+		{
+			"name": "Load Testing",
+			"item": [
+				{
+					"name": "Queue Multiple Tasks",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"task_count\": 100,\n    \"task_type\": \"notification\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/testing/load",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"testing",
+								"load"
+							]
+						},
+						"description": "Queue multiple tasks for load testing"
+					},
+					"response": []
+				},
+				{
+					"name": "Trigger Error Task",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"error_type\": \"connection_error\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/testing/errors",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"testing",
+								"errors"
+							]
+						},
+						"description": "Trigger an error task to test error handling"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for load testing and error handling"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "integration_id",
+			"value": "00000000-0000-0000-0000-000000000000",
+			"type": "string"
+		},
+		{
+			"key": "feedback_id",
+			"value": "00000000-0000-0000-0000-000000000000",
+			"type": "string"
+		},
+		{
+			"key": "project_id",
+			"value": "00000000-0000-0000-0000-000000000000",
+			"type": "string"
+		}
+	]
+}

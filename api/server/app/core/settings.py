@@ -38,7 +38,13 @@ class Settings(BaseSettings):
     CORS_HEADERS: str = '*'
 
     # Task Backend
-    TASK_BACKEND: str = 'fastapi'
+    TASK_BACKEND: str = 'arq'  # Can be 'fastapi', 'celery', or 'arq'
+
+    # Arq (Redis)
+    REDIS_HOST: str = 'localhost'
+    REDIS_PORT: int = 6379
+    REDIS_PASSWORD: Optional[str] = None
+    REDIS_DB: int = 0
 
     # Logging
     LOG_LEVEL: str = 'INFO'

@@ -18,6 +18,65 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: reflect_dev_redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: reflect_dev_api
+    command: >
+      sh -c "cd server && poetry run alembic upgrade head &&
+             poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    volumes:
+      - ./api/server:/app/server
+    working_dir: /app
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_HOST=postgres
+      - REDIS_HOST=redis
+    env_file:
+      - ./api/server/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: reflect_dev_worker
+    command: >
+      sh -c "echo 'Using Redis host: redis' && REDIS_HOST=redis poetry run arq server.app.worker.WorkerSettings"
+    volumes:
+      - ./api/server:/app/server
+    working_dir: /app
+    environment:
+      - PYTHONPATH=/app/server
+      - POSTGRES_HOST=postgres
+      - REDIS_HOST=redis
+    env_file:
+      - ./api/server/.env
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
     name: reflect_dev_postgres_data
+  redis_data:
+    name: reflect_dev_redis_data
