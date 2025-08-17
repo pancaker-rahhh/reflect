@@ -1,0 +1,248 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { ChevronDown, Building2, FolderOpen, Plus, Search, Clock } from 'lucide-react';
+import { organizationApi, type Organization } from '../../lib/api/organization';
+import { projectApi } from '../../lib/api/project';
+import type { Project } from '@/types';
+
+interface OrgProjectDropdownProps {
+  currentOrgId?: string;
+  currentProjectId?: string;
+  onOrgChange?: (org: Organization) => void;
+  onProjectChange?: (project: Project) => void;
+}
+
+export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
+  currentOrgId,
+  currentProjectId,
+  onOrgChange,
+  onProjectChange,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
+  const [currentProject, setCurrentProject] = useState<Project | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [recentProjects, setRecentProjects] = useState<string[]>([]);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    loadOrganizations();
+    loadRecentProjects();
+  }, []);
+
+  useEffect(() => {
+    if (currentOrgId && organizations.length > 0) {
+      const org = organizations.find(o => o.id === currentOrgId);
+      if (org) {
+        setCurrentOrg(org);
+        loadProjects(org.id);
+      }
+    }
+  }, [currentOrgId, organizations]);
+
+  useEffect(() => {
+    if (currentProjectId && projects.length > 0) {
+      const project = projects.find(p => p.id === currentProjectId);
+      if (project) {
+        setCurrentProject(project);
+        addToRecentProjects(project.id);
+      }
+    }
+  }, [currentProjectId, projects]);
+
+  const loadOrganizations = async () => {
+    try {
+      setLoading(true);
+      const orgs = await organizationApi.getMy();
+      setOrganizations(orgs);
+      if (orgs.length > 0 && !currentOrgId) {
+        setCurrentOrg(orgs[0]);
+        loadProjects(orgs[0].id);
+      }
+    } catch (error) {
+      console.error('Failed to load organizations:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadProjects = async (orgId: string) => {
+    try {
+      const response = await projectApi.getByWorkspace(orgId);
+      setProjects(response.items);
+      if (response.items.length > 0 && !currentProjectId) {
+        setCurrentProject(response.items[0]);
+      }
+    } catch (error) {
+      console.error('Failed to load projects:', error);
+    }
+  };
+
+  const loadRecentProjects = () => {
+    const stored = localStorage.getItem('recentProjects');
+    if (stored) {
+      setRecentProjects(JSON.parse(stored));
+    }
+  };
+
+  const addToRecentProjects = (projectId: string) => {
+    const updated = [projectId, ...recentProjects.filter(id => id !== projectId)].slice(0, 5);
+    setRecentProjects(updated);
+    localStorage.setItem('recentProjects', JSON.stringify(updated));
+  };
+
+  const handleOrgSelect = async (org: Organization) => {
+    setCurrentOrg(org);
+    setCurrentProject(null);
+    await loadProjects(org.id);
+    onOrgChange?.(org);
+  };
+
+  const handleProjectSelect = (project: Project) => {
+    setCurrentProject(project);
+    addToRecentProjects(project.id);
+    onProjectChange?.(project);
+    setIsOpen(false);
+  };
+
+  const filteredOrgs = organizations.filter(org =>
+    org.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredProjects = projects.filter(project =>
+    project.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const recentProjectObjects = recentProjects
+    .map(id => projects.find(p => p.id === id))
+    .filter(Boolean) as Project[];
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      >
+        <div className="flex items-center gap-2">
+          {currentOrg && (
+            <>
+              <Building2 className="w-4 h-4 text-gray-500" />
+              <span>{currentOrg.name}</span>
+            </>
+          )}
+          {currentProject && (
+            <>
+              <span className="text-gray-400">/</span>
+              <FolderOpen className="w-4 h-4 text-gray-500" />
+              <span>{currentProject.name}</span>
+            </>
+          )}
+        </div>
+        <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 w-80 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg">
+          <div className="p-3 border-b border-gray-200">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search organizations and projects..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                autoFocus
+              />
+            </div>
+          </div>
+
+          <div className="max-h-96 overflow-y-auto">
+            {loading ? (
+              <div className="p-4 text-center text-gray-500">Loading...</div>
+            ) : (
+              <>
+                {recentProjectObjects.length > 0 && searchQuery === '' && (
+                  <div className="p-2">
+                    <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
+                      Recent Projects
+                    </div>
+                    {recentProjectObjects.map(project => (
+                      <button
+                        key={project.id}
+                        onClick={() => handleProjectSelect(project)}
+                        className="w-full flex items-center gap-2 px-2 py-2 text-sm text-left hover:bg-gray-100 rounded"
+                      >
+                        <Clock className="w-4 h-4 text-gray-400" />
+                        <span>{project.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div className="p-2 border-t border-gray-200">
+                  <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
+                    Organizations
+                  </div>
+                  {filteredOrgs.map(org => (
+                    <div key={org.id}>
+                      <button
+                        onClick={() => handleOrgSelect(org)}
+                        className={`w-full flex items-center justify-between px-2 py-2 text-sm text-left hover:bg-gray-100 rounded ${
+                          currentOrg?.id === org.id ? 'bg-indigo-50 text-indigo-600' : ''
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Building2 className="w-4 h-4" />
+                          <span>{org.name}</span>
+                        </div>
+                        {currentOrg?.id === org.id && (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
+                      </button>
+
+                      {currentOrg?.id === org.id && filteredProjects.length > 0 && (
+                        <div className="ml-4 mt-1">
+                          {filteredProjects.map(project => (
+                            <button
+                              key={project.id}
+                              onClick={() => handleProjectSelect(project)}
+                              className={`w-full flex items-center gap-2 px-2 py-2 text-sm text-left hover:bg-gray-100 rounded ${
+                                currentProject?.id === project.id ? 'bg-indigo-50 text-indigo-600' : ''
+                              }`}
+                            >
+                              <FolderOpen className="w-4 h-4" />
+                              <span>{project.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  <button className="w-full flex items-center gap-2 px-2 py-2 mt-2 text-sm text-left text-indigo-600 hover:bg-indigo-50 rounded">
+                    <Plus className="w-4 h-4" />
+                    <span>Create New Organization</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

@@ -2,6 +2,7 @@ import { useLocation } from 'react-router-dom'
 import { Sun, Moon } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { UserMenu } from '../auth/UserMenu'
+import { OrgProjectDropdown } from './OrgProjectDropdown'
 
 const pageTitle: Record<string, string> = {
   '/dashboard': 'Dashboard Overview',
@@ -34,7 +35,10 @@ export function Header() {
 
   return (
     <header className="h-16 bg-card border-b border-border px-6 flex items-center justify-between">
-      <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+      <div className="flex items-center gap-4">
+        <OrgProjectDropdown />
+        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+      </div>
       
       <div className="flex items-center gap-2">
         <button
