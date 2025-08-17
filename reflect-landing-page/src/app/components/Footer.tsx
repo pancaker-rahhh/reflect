@@ -5,7 +5,7 @@ const Footer = () => {
     return (
         <footer className="bg-white border-t border-gray-200">
             <div className="container mx-auto px-6 py-16">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-sm">
                     {/* Column 1: Brand */}
                     <div className="col-span-2 md:col-span-1">
                         <div className="flex items-center gap-2">
@@ -27,7 +27,7 @@ const Footer = () => {
                             </a>
                         </div>
                     </div>
-                    
+
                     {/* Column 2: Product */}
                     <div>
                         <h4 className="font-semibold text-gray-800 uppercase tracking-wider">Product</h4>
@@ -45,6 +45,7 @@ const Footer = () => {
                         <ul className="mt-4 space-y-3">
                             <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">About Us</a></li>
                             <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Contact</a></li>
+                            <li><a href="/docs" className="text-gray-600 hover:text-purple-600 transition-colors">Docs</a></li>
                             <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Roadmap</a></li>
                             <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Affiliates</a></li>
                         </ul>
@@ -57,6 +58,21 @@ const Footer = () => {
                             <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Terms of Service</a></li>
                             <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Privacy Policy</a></li>
                             <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Cookie Policy</a></li>
+                        </ul>
+                    </div>
+
+                    {/* Column 5: Alternative To */}
+                    <div>
+                        <h4 className="font-semibold text-gray-800 uppercase tracking-wider">ALTERNATIVE TO</h4>
+                        <ul className="mt-4 space-y-3">
+                            <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Featurebase</a></li>
+                            <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Beamer</a></li>
+                            <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Canny</a></li>
+                            <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Upvoty</a></li>
+                            <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Uservoice</a></li>
+                            <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Typeform</a></li>
+                            <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Clickup</a></li>
+                            <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Feedbask</a></li>
                         </ul>
                     </div>
                 </div>

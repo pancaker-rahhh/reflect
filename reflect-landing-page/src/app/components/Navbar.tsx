@@ -1,26 +1,39 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { MessageSquare, X, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+  const isDocsPage = pathname.startsWith('/docs');
 
   useEffect(() => {
+    if (isDocsPage) {
+      setIsScrolled(true);
+      return;
+    }
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-  
+  }, [isDocsPage]);
+
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     e.preventDefault();
-    const targetElement = document.getElementById(targetId);
-    if (targetElement) {
-      targetElement.scrollIntoView({ behavior: 'smooth' });
+    if (pathname.startsWith('/docs')) {
+        router.push('/#' + targetId);
+    } else {
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: 'smooth' });
+        }
     }
     setIsMenuOpen(false);
   };
@@ -33,7 +46,7 @@ const Navbar = () => {
   ];
 
   return (
-    <motion.header 
+    <motion.header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-white/80 backdrop-blur-lg shadow-md' : 'bg-transparent'}`}
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
@@ -41,31 +54,31 @@ const Navbar = () => {
     >
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
-          <motion.a 
-            href="#" 
+          <motion.a
+            href="/"
             className="flex items-center gap-2"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <motion.div 
-              className={`p-2 rounded-lg transition-colors ${isScrolled ? 'bg-purple-600' : 'bg-white/20'}`}
+            <motion.div
+              className={`p-2 rounded-lg transition-colors ${isScrolled ? 'bg-purple-600' : isDocsPage ? 'bg-purple-600' : 'bg-white/20'}`}
               animate={{ rotate: isScrolled ? 360 : 0 }}
               transition={{ duration: 0.5 }}
             >
-                <MessageSquare className={`transition-colors ${isScrolled ? 'text-white' : 'text-white'}`} size={20} />
+                <MessageSquare className={`transition-colors ${isScrolled ? 'text-white' : isDocsPage ? 'text-white' : 'text-white'}`} size={20} />
             </motion.div>
-            <h3 className={`text-xl font-bold transition-colors ${isScrolled ? 'text-gray-900' : 'text-white'}`}>
+            <h3 className={`text-xl font-bold transition-colors ${isScrolled ? 'text-gray-900' : isDocsPage ? 'text-gray-900' : 'text-white'}`}>
               Reflect.
             </h3>
           </motion.a>
 
           <nav className="hidden lg:flex items-center gap-8">
             {navLinks.map((link, index) => (
-              <motion.a 
-                key={link.name} 
-                href={link.href} 
-                onClick={(e) => handleNavClick(e, link.targetId)} 
-                className={`text-sm font-semibold transition-colors ${isScrolled ? 'text-gray-700 hover:text-purple-600' : 'text-white/80 hover:text-white'} relative`}
+              <motion.a
+                key={link.name}
+                href={link.href}
+                onClick={(e) => handleNavClick(e, link.targetId)}
+                className={`text-sm font-semibold transition-colors ${isScrolled ? 'text-gray-700 hover:text-purple-600' : isDocsPage ? 'text-gray-700 hover:text-purple-600' : 'text-white/80 hover:text-white'} relative`}
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.4 + (index * 0.1) }}
@@ -84,9 +97,9 @@ const Navbar = () => {
           </nav>
 
           <div className="hidden lg:flex items-center gap-4">
-            <motion.a 
-              href="#" 
-              className={`text-sm font-semibold transition-colors ${isScrolled ? 'text-gray-700 hover:text-purple-600' : 'text-white/80 hover:text-white'}`}
+            <motion.a
+              href="#"
+              className={`text-sm font-semibold transition-colors ${isScrolled ? 'text-gray-700 hover:text-purple-600' : isDocsPage ? 'text-gray-700 hover:text-purple-600' : 'text-white/80 hover:text-white'}`}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.8 }}
@@ -94,8 +107,8 @@ const Navbar = () => {
             >
               Log in
             </motion.a>
-            <motion.a 
-              href="#" 
+            <motion.a
+              href="#"
               className="rounded-md bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 transition-all hover-glow"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -108,9 +121,9 @@ const Navbar = () => {
           </div>
 
           <div className="lg:hidden">
-            <motion.button 
-              onClick={() => setIsMenuOpen(!isMenuOpen)} 
-              className={`${isScrolled ? 'text-gray-800' : 'text-white'} p-2 rounded-lg hover:bg-white/10 transition-colors`}
+            <motion.button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className={`${isScrolled ? 'text-gray-800' : isDocsPage ? 'text-gray-800' : 'text-white'} p-2 rounded-lg hover:bg-white/10 transition-colors`}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
@@ -145,14 +158,14 @@ const Navbar = () => {
       {/* Mobile Menu */}
       <AnimatePresence>
         {isMenuOpen && (
-          <motion.div 
-            className={`lg:hidden overflow-hidden ${isScrolled ? 'bg-white/95' : 'bg-black/20'} backdrop-blur-lg`}
+          <motion.div
+            className={`lg:hidden overflow-hidden ${isScrolled ? 'bg-white/95' : isDocsPage ? 'bg-white/95' : 'bg-black/20'} backdrop-blur-lg`}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
-            <motion.div 
+            <motion.div
               className="px-6 pt-2 pb-6 space-y-4"
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -160,11 +173,11 @@ const Navbar = () => {
               transition={{ duration: 0.3, delay: 0.1 }}
             >
               {navLinks.map((link, index) => (
-                <motion.a 
-                  key={link.name} 
-                  href={link.href} 
-                  onClick={(e) => handleNavClick(e, link.targetId)} 
-                  className={`block text-base font-semibold transition-colors ${isScrolled ? 'text-gray-700 hover:text-purple-600' : 'text-white/80 hover:text-white'}`}
+                <motion.a
+                  key={link.name}
+                  href={link.href}
+                  onClick={(e) => handleNavClick(e, link.targetId)}
+                  className={`block text-base font-semibold transition-colors ${isScrolled ? 'text-gray-700 hover:text-purple-600' : isDocsPage ? 'text-gray-700 hover:text-purple-600' : 'text-white/80 hover:text-white'}`}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.2 + (index * 0.05) }}
@@ -172,17 +185,17 @@ const Navbar = () => {
                   {link.name}
                 </motion.a>
               ))}
-              <motion.div 
+              <motion.div
                 className="border-t border-gray-500/20 pt-4 flex flex-col space-y-4"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
               >
-                 <a href="#" className={`text-base font-semibold transition-colors ${isScrolled ? 'text-gray-700 hover:text-purple-600' : 'text-white/80 hover:text-white'}`}>
+                 <a href="#" className={`text-base font-semibold transition-colors ${isScrolled ? 'text-gray-700 hover:text-purple-600' : isDocsPage ? 'text-gray-700 hover:text-purple-600' : 'text-white/80 hover:text-white'}`}>
                   Log in
                 </a>
-                <motion.a 
-                  href="#" 
+                <motion.a
+                  href="#"
                   className="rounded-md bg-purple-600 px-4 py-2 text-base font-semibold text-white shadow-sm hover:bg-purple-500 text-center transition-all"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
