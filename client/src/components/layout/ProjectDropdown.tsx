@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ChevronDown, FolderOpen, Plus, Search, Clock } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { projectApi } from '@/lib/api';
@@ -48,7 +48,7 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({
     if (currentProject) {
       addToRecentProjects(currentProject.id);
     }
-  }, [currentProject]);
+  }, [currentProject, addToRecentProjects]);
 
   const loadRecentProjects = () => {
     const stored = localStorage.getItem('recentProjects');
@@ -57,11 +57,11 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({
     }
   };
 
-  const addToRecentProjects = (projectId: string) => {
+  const addToRecentProjects = useCallback((projectId: string) => {
     const updated = [projectId, ...recentProjects.filter(id => id !== projectId)].slice(0, 5);
     setRecentProjects(updated);
     localStorage.setItem('recentProjects', JSON.stringify(updated));
-  };
+  }, [recentProjects]);
 
   const handleProjectSelect = (project: Project) => {
     setCurrentProject(project);

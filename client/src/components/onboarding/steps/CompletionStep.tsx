@@ -40,7 +40,7 @@ export const CompletionStep: React.FC = () => {
         </div>
         
         <h2 className="text-3xl font-bold text-gray-800 mb-4">
-          You're All Set! 🎉
+          You&rsquo;re All Set! 🎉
         </h2>
         
         <p className="text-lg text-gray-600 mb-2">

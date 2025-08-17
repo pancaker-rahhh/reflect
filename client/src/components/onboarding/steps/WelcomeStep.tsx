@@ -22,7 +22,7 @@ export const WelcomeStep: React.FC = () => {
         </h2>
         
         <p className="text-xl text-gray-600 mb-8">
-          Let's get you set up in just a few minutes
+          Let&rsquo;s get you set up in just a few minutes
         </p>
       </div>
 

@@ -111,7 +111,7 @@ export interface BaseFeedback {
   userEmail?: string
   userName?: string
   userId?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   createdAt: Date
 }
 

@@ -1,18 +1,14 @@
 import React, { useState, useRef } from 'react';
 import {
   X,
-  Mail,
   Send,
   Users,
   Upload,
   FileText,
   AlertCircle,
-  Check,
   Trash2,
   Plus,
   Download,
-  Copy,
-  ChevronDown,
   Edit2
 } from 'lucide-react';
 import { organizationApi } from '../../lib/api/organization';
@@ -38,7 +34,7 @@ interface InviteEntry {
 type InputMode = 'manual' | 'bulk' | 'csv';
 
 export const BulkInviteModal: React.FC<BulkInviteModalProps> = ({
-  organizationId,
+  organizationId: _organizationId,
   isOpen,
   onClose,
   onSuccess
@@ -234,7 +230,7 @@ bob.wilson@example.com,Bob Wilson,viewer`;
           {/* Manual Entry Mode */}
           {inputMode === 'manual' && (
             <div className="space-y-3">
-              {invites.map((invite, index) => (
+              {invites.map((invite) => (
                 <div key={invite.id} className="flex gap-3 items-start">
                   <div className="flex-1">
                     <AnimatedInput

@@ -33,7 +33,7 @@ export const UserTypeStep: React.FC = () => {
                 Solo Developer
               </h3>
               <p className="text-sm text-gray-600 mb-3">
-                I'm working on personal projects or as an individual contributor
+                I&rsquo;m working on personal projects or as an individual contributor
               </p>
               <ul className="text-sm text-gray-500 space-y-1">
                 <li>• Quick setup</li>
@@ -57,7 +57,7 @@ export const UserTypeStep: React.FC = () => {
                 Team
               </h3>
               <p className="text-sm text-gray-600 mb-3">
-                I'm working with others and need collaboration features
+                I&rsquo;m working with others and need collaboration features
               </p>
               <ul className="text-sm text-gray-500 space-y-1">
                 <li>• Organization setup</li>

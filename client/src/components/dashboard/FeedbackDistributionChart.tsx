@@ -6,6 +6,23 @@ interface FeedbackDistributionChartProps {
   feedback: Feedback[]
 }
 
+interface TooltipProps {
+  active?: boolean
+  payload?: Array<{
+    name: string
+    value: number
+  }>
+}
+
+interface LabelProps {
+  cx: number
+  cy: number
+  midAngle: number
+  innerRadius: number
+  outerRadius: number
+  percent: number
+}
+
 export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChartProps) {
   const distribution = [
     {
@@ -44,7 +61,7 @@ export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChar
 
   const total = distribution.reduce((sum, item) => sum + item.value, 0)
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: TooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0]
       return (
@@ -70,7 +87,7 @@ export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChar
     innerRadius,
     outerRadius,
     percent
-  }: any) => {
+  }: LabelProps) => {
     if (percent < 0.05) return null // Don't show label if less than 5%
     
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5

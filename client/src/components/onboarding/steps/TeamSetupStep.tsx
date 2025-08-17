@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
 import { useOnboardingKeyboard } from '../../../hooks/useOnboardingKeyboard';
 import { useOnboardingData } from '../../../hooks/useOnboardingData';
-import { UserPlus, Mail, X, Users, FileText } from 'lucide-react';
+import { UserPlus, Mail, X, Users } from 'lucide-react';
 import { invitationApi } from '../../../lib/api';
 import { BulkInviteModal } from '../../organization/BulkInviteModal';
 import { onboardingDataService } from '../../../services/onboardingDataService';
@@ -198,7 +198,7 @@ export const TeamSetupStep: React.FC = () => {
             
             <select
               value={newMemberRole}
-              onChange={(e) => setNewMemberRole(e.target.value as any)}
+              onChange={(e) => setNewMemberRole(e.target.value as 'admin' | 'member' | 'viewer')}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             >
               <option value="viewer">Viewer</option>

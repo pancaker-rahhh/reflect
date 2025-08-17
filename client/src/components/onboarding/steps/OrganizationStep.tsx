@@ -28,7 +28,7 @@ export const OrganizationStep: React.FC = () => {
     } else {
       // Set default organization name based on user's name
       const userName = profileData?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
-      const defaultOrgName = `${userName}'s org`;
+      const defaultOrgName = `${userName}&rsquo;s org`;
       setFormData({
         name: defaultOrgName,
         description: ''
@@ -110,7 +110,7 @@ export const OrganizationStep: React.FC = () => {
           Create Your Workspace
         </h2>
         <p className="text-gray-600 mb-8">
-          We'll create a personal workspace for you automatically
+          We&rsquo;ll create a personal workspace for you automatically
         </p>
 
         <button
@@ -151,7 +151,7 @@ export const OrganizationStep: React.FC = () => {
           <div>
             <h4 className="font-medium text-blue-900 mb-1">Beta Limitation</h4>
             <p className="text-sm text-blue-700">
-              During our beta period, we've limited users to one organization to ensure optimal performance and gather focused feedback. Thank you for your understanding!
+              During our beta period, we&rsquo;ve limited users to one organization to ensure optimal performance and gather focused feedback. Thank you for your understanding!
             </p>
           </div>
         </div>

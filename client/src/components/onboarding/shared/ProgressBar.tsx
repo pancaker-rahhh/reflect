@@ -1,6 +1,7 @@
 import React from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
 import { Check, Sparkles } from 'lucide-react';
+import type { OnboardingStep } from '../../../context/OnboardingContext';
 
 export const ProgressBar: React.FC = () => {
   const { currentStep, userType, completedSteps } = useOnboarding();
@@ -25,7 +26,7 @@ export const ProgressBar: React.FC = () => {
   const totalSteps = steps.length;
   
   // Calculate progress based on completed steps, not current step
-  const completedStepsCount = steps.filter(step => completedSteps.has(step.key as any)).length;
+  const completedStepsCount = steps.filter(step => completedSteps.has(step.key as OnboardingStep)).length;
   const progressPercentage = (completedStepsCount / totalSteps) * 100;
 
   return (
@@ -43,7 +44,7 @@ export const ProgressBar: React.FC = () => {
       <div className="relative">
         <div className="flex items-center">
           {steps.map((step, index) => {
-            const isCompleted = completedSteps.has(step.key as any);
+            const isCompleted = completedSteps.has(step.key as OnboardingStep);
             const isCurrent = step.key === currentStep;
             const isUpcoming = index > currentStepIndex;
 

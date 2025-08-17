@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
 import { useOnboardingKeyboard } from '../../../hooks/useOnboardingKeyboard';
 import { ArrowLeft, Keyboard } from 'lucide-react';
@@ -26,8 +26,6 @@ export const StepNavigation: React.FC = () => {
     return baseSteps;
   };
 
-  const steps = getSteps();
-  const isLastStep = currentStep === steps[steps.length - 1];
 
   if (currentStep === 'completion') {
     return null;

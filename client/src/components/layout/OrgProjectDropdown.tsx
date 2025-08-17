@@ -1,20 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ChevronDown, Building2, FolderOpen, Plus, Search, Clock, Info } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { projectApi } from '@/lib/api';
 import { Alert, AlertDescription } from '../ui/alert';
-import type { Project } from '@/types';
+import type { Project, Organization } from '@/types';
 
 interface OrgProjectDropdownProps {
-  currentOrgId?: string;
-  currentProjectId?: string;
-  onOrgChange?: (org: any) => void;
+  onOrgChange?: (org: Organization) => void;
   onProjectChange?: (project: Project) => void;
 }
 
 export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
-  currentOrgId,
-  currentProjectId,
   onOrgChange,
   onProjectChange,
 }) => {
@@ -58,7 +54,7 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
     if (currentProject) {
       addToRecentProjects(currentProject.id);
     }
-  }, [currentProject]);
+  }, [currentProject, addToRecentProjects]);
 
   const loadRecentProjects = () => {
     const stored = localStorage.getItem('recentProjects');
@@ -67,13 +63,13 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
     }
   };
 
-  const addToRecentProjects = (projectId: string) => {
+  const addToRecentProjects = useCallback((projectId: string) => {
     const updated = [projectId, ...recentProjects.filter(id => id !== projectId)].slice(0, 5);
     setRecentProjects(updated);
     localStorage.setItem('recentProjects', JSON.stringify(updated));
-  };
+  }, [recentProjects]);
 
-  const handleOrgSelect = (org: any) => {
+  const handleOrgSelect = (org: Organization) => {
     setCurrentOrganization();
     onOrgChange?.(org);
   };

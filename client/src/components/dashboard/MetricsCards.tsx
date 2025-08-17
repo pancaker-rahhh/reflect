@@ -2,7 +2,7 @@ import { TrendingUp, TrendingDown, MessageSquare, Star, Bug, Lightbulb } from 'l
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import type { DashboardMetrics } from '@/types'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 
 interface MetricsCardsProps {
   metrics: DashboardMetrics
@@ -10,11 +10,12 @@ interface MetricsCardsProps {
 
 function AnimatedNumber({ value, decimals = 0 }: { value: number; decimals?: number }) {
   const [displayValue, setDisplayValue] = useState(0)
+  const displayValueRef = useRef(0)
 
   useEffect(() => {
     const duration = 1000
     const startTime = Date.now()
-    const startValue = displayValue
+    const startValue = displayValueRef.current
 
     const animate = () => {
       const now = Date.now()
@@ -23,6 +24,7 @@ function AnimatedNumber({ value, decimals = 0 }: { value: number; decimals?: num
       const easeOutCubic = 1 - Math.pow(1 - progress, 3)
       const current = startValue + (value - startValue) * easeOutCubic
       
+      displayValueRef.current = current
       setDisplayValue(current)
 
       if (progress < 1) {

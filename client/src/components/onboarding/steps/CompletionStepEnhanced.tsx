@@ -41,9 +41,7 @@ export const CompletionStepEnhanced: React.FC = () => {
     completeOnboarding, 
     userType, 
     isLoading,
-    goToStep,
-    organizationId,
-    projectId 
+    goToStep
   } = useOnboarding();
   
   const [isReviewing, setIsReviewing] = useState(true);
@@ -167,7 +165,7 @@ export const CompletionStepEnhanced: React.FC = () => {
           </h2>
           
           <p className="text-lg text-gray-600">
-            Let's make sure everything looks good before we finish
+            Let&rsquo;s make sure everything looks good before we finish
           </p>
         </div>
 
@@ -244,7 +242,7 @@ export const CompletionStepEnhanced: React.FC = () => {
               </>
             ) : (
               <>
-                Looks Good, Let's Go!
+                Looks Good, Let&rsquo;s Go!
                 <ArrowRight className="w-5 h-5" />
               </>
             )}
@@ -263,7 +261,7 @@ export const CompletionStepEnhanced: React.FC = () => {
         </div>
         
         <h2 className="text-4xl font-bold text-gray-800 mb-4">
-          You're All Set! 🎉
+          You&rsquo;re All Set! 🎉
         </h2>
         
         <p className="text-xl text-gray-600 mb-2">

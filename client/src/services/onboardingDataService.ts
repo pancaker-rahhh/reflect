@@ -28,7 +28,7 @@ interface OnboardingFormData {
 class OnboardingDataService {
   private storagePrefix = 'onboarding_';
 
-  saveStepData(step: string, data: any): void {
+  saveStepData(step: string, data: unknown): void {
     try {
       const key = `${this.storagePrefix}${step}`;
       localStorage.setItem(key, JSON.stringify(data));
@@ -37,7 +37,7 @@ class OnboardingDataService {
     }
   }
 
-  getStepData(step: string): any {
+  getStepData(step: string): unknown {
     try {
       const key = `${this.storagePrefix}${step}`;
       const data = localStorage.getItem(key);

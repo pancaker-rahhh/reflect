@@ -3,25 +3,18 @@ import {
   Building2,
   Users,
   Settings,
-  Key,
-  Webhook,
   Shield,
-  Puzzle,
   Save,
   Trash2,
   AlertCircle,
   Check,
-  Globe,
-  AlertTriangle,
   Plus,
-  Upload,
   X
 } from 'lucide-react';
 import { organizationApi, type OrganizationMember } from '../../lib/api/organization';
 import { useAppContext } from '../../context/AppContext';
 import { AnimatedInput, AnimatedTextarea } from '../onboarding/shared/AnimatedInput';
 import { InviteMemberModal } from './InviteMemberModal';
-import { DeleteMemberModal } from '../project/DeleteMemberModal';
 import type { Organization } from '@/types';
 
 interface OrganizationSettingsPageProps {
@@ -36,7 +29,6 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
   const { organization: currentOrganization } = useAppContext();
   const orgId = organizationId || currentOrganization?.id;
   const [activeTab, setActiveTab] = useState<Tab>('general');
-  const [organization, setOrganization] = useState<any | null>(null);
   const [members, setMembers] = useState<OrganizationMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -97,7 +89,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
     }
   };
 
-  const handleResendInvite = async (memberId: string) => {
+  const handleResendInvite = async (_memberId: string) => {
     try {
       // TODO: Implement resend invite API call
       setMessage({ type: 'success', text: 'Invitation resent successfully' });
@@ -108,7 +100,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
     }
   };
 
-  const handleCancelInvite = async (memberId: string) => {
+  const handleCancelInvite = async (_memberId: string) => {
     try {
       // TODO: Implement cancel invite API call
       // Reload members to reflect changes
@@ -324,7 +316,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
     </div>
   );
 
-  const renderBillingSettings = () => (
+  const _renderBillingSettings = () => (
     <div className="p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Billing & Subscription</h3>
       
@@ -369,7 +361,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
     </div>
   );
 
-  const renderPlaceholderSection = (title: string, description: string) => (
+  const _renderPlaceholderSection = (title: string, description: string) => (
     <div className="p-6">
       <div className="text-center py-12">
         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">

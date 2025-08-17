@@ -120,7 +120,7 @@ export const ProjectStep: React.FC = () => {
         </div>
 
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="font-medium text-blue-900 mb-2">What's next?</h3>
+          <h3 className="font-medium text-blue-900 mb-2">What&rsquo;s next?</h3>
           <ul className="text-sm text-blue-700 space-y-1">
             <li>• Create feedback widgets to collect user input</li>
             <li>• Analyze feedback trends and insights</li>
