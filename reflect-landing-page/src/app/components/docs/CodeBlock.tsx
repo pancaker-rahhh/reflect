@@ -1,29 +1,37 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Copy, Check } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Copy, Check, Code } from 'lucide-react';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/atom-one-dark.css'; // or your preferred theme
 
-const CodeBlock = ({ code }: { code: string }) => {
-    const [copied, setCopied] = useState(false);
+interface CodeBlockProps {
+    code: string;
+    language?: string;
+}
 
-    const handleCopy = () => {
-        navigator.clipboard.writeText(code);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
+const CodeBlock: React.FC<CodeBlockProps> = ({ code, language = 'html' }) => {
+    const codeRef = useRef<HTMLElement>(null);
+
+    useEffect(() => {
+        if (codeRef.current) {
+            // Ensure the language is registered before highlighting
+            if (language && hljs.getLanguage(language)) {
+                codeRef.current.innerHTML = hljs.highlight(code, { language }).value;
+            } else {
+                // Auto-highlight if language is not specified or not registered
+                codeRef.current.innerHTML = hljs.highlightAuto(code).value;
+            }
+        }
+    }, [code, language]);
 
     return (
-        <div className="bg-gray-900 rounded-lg overflow-hidden">
-            <pre className="p-4 text-sm text-white overflow-x-auto font-mono">{code}</pre>
-            <button
-                onClick={handleCopy}
-                className="flex items-center w-full py-2 px-4 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors text-sm"
-            >
-                <div className="flex items-center">
-                    {copied ? <Check size={16} className="mr-2 text-green-400" /> : <Copy size={16} className="mr-2" />}
-                    {copied ? 'Copied!' : 'Copy Code'}
-                </div>
-            </button>
+        <div className="rounded-lg bg-[#2D2D2D] p-4">
+            <pre className="text-sm text-gray-300 overflow-x-auto font-mono leading-relaxed whitespace-pre">
+                <code ref={codeRef} className={`language-${language}`}>
+                    {code}
+                </code>
+            </pre>
         </div>
     );
 };
