@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_
 from sqlalchemy.orm import selectinload
 
-from app.models.organization import Organization, OrganizationMember
+from app.models.organization_model import Organization, OrganizationMember
 from app.models.invitation import Invitation, PendingMember, InvitationTask
 from app.models.user_model import User
 from app.schemas.invitation_schema import (
@@ -21,7 +21,9 @@ from app.schemas.invitation_schema import (
 )
 from app.services.email_service import email_service
 from app.core.logging import get_logger
-from app.core.config import settings
+from app.core.settings import get_settings
+
+settings = get_settings()
 
 logger = get_logger(__name__)
 

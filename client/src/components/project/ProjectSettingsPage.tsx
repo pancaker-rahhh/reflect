@@ -20,7 +20,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { projectApi } from '../../lib/api/project';
-import { useOrganization } from '../../context/OrganizationContext';
+import { useAppContext } from '../../context/AppContext';
 import { AnimatedInput, AnimatedTextarea } from '../onboarding/shared/AnimatedInput';
 import { ProjectMemberModal } from './ProjectMemberModal';
 import { ApiKeyModal } from './ApiKeyModal';
@@ -33,7 +33,7 @@ interface ProjectSettingsPageProps {
 type Tab = 'general' | 'team' | 'api' | 'webhooks' | 'integrations' | 'danger';
 
 export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projectId }) => {
-  const { currentProject, refreshProjects } = useOrganization();
+  const { currentProject } = useAppContext();
   const [activeTab, setActiveTab] = useState<Tab>('general');
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);

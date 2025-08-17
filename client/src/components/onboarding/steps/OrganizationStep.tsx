@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
+import { useAuth } from '../../../contexts/AuthContext';
 import { Building, Sparkles } from 'lucide-react';
 import { organizationApi, onboardingApi } from '../../../lib/api';
+import { onboardingDataService } from '../../../services/onboardingDataService';
 
 export const OrganizationStep: React.FC = () => {
-  const { nextStep, markStepCompleted, setOrganizationId, userType } = useOnboarding();
+  const { nextStep, markStepCompleted, setOrganizationId, userType, organizationId } = useOnboarding();
+  const { user } = useAuth();
   
   const [isAutoCreating, setIsAutoCreating] = useState(false);
   const [formData, setFormData] = useState({
@@ -12,11 +15,40 @@ export const OrganizationStep: React.FC = () => {
     description: '',
   });
 
+  useEffect(() => {
+    // Load existing data or set default name
+    const existingData = onboardingDataService.getOrganizationData();
+    const profileData = onboardingDataService.getProfileData();
+    
+    if (existingData?.name) {
+      setFormData({
+        name: existingData.name,
+        description: existingData.description || ''
+      });
+    } else {
+      // Set default organization name based on user's name
+      const userName = profileData?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+      const defaultOrgName = `${userName}'s org`;
+      setFormData({
+        name: defaultOrgName,
+        description: ''
+      });
+    }
+  }, [user]);
+
   const handleAutoCreate = async () => {
     setIsAutoCreating(true);
     
     try {
       const organization = await onboardingApi.autoCreateOrganization();
+      
+      // Save organization data for review step
+      onboardingDataService.saveOrganizationData({
+        name: organization.name,
+        description: organization.description || '',
+        slug: organization.slug
+      });
+      
       setOrganizationId(organization.id);
       markStepCompleted('organization');
       nextStep();
@@ -32,17 +64,36 @@ export const OrganizationStep: React.FC = () => {
     setIsAutoCreating(true);
 
     try {
-      const organization = await organizationApi.create({
+      const slug = formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      
+      let organization;
+      if (organizationId) {
+        // Update existing organization
+        organization = await organizationApi.update(organizationId, {
+          name: formData.name,
+          description: formData.description,
+        });
+      } else {
+        // Create new organization
+        organization = await organizationApi.create({
+          name: formData.name,
+          description: formData.description,
+          slug,
+        });
+        setOrganizationId(organization.id);
+      }
+
+      // Save organization data for review step
+      onboardingDataService.saveOrganizationData({
         name: formData.name,
         description: formData.description,
-        slug: formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+        slug: organization.slug || slug
       });
 
-      setOrganizationId(organization.id);
       markStepCompleted('organization');
       nextStep();
     } catch (error) {
-      console.error('Failed to create organization:', error);
+      console.error('Failed to create/update organization:', error);
     } finally {
       setIsAutoCreating(false);
     }
@@ -92,6 +143,20 @@ export const OrganizationStep: React.FC = () => {
         This will be the main workspace for your team
       </p>
 
+      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="flex items-start gap-3">
+          <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+            <span className="text-blue-600 text-xs font-bold">β</span>
+          </div>
+          <div>
+            <h4 className="font-medium text-blue-900 mb-1">Beta Limitation</h4>
+            <p className="text-sm text-blue-700">
+              During our beta period, we've limited users to one organization to ensure optimal performance and gather focused feedback. Thank you for your understanding!
+            </p>
+          </div>
+        </div>
+      </div>
+
       <form onSubmit={handleManualCreate} className="space-y-6">
         <div>
           <label htmlFor="orgName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -132,7 +197,10 @@ export const OrganizationStep: React.FC = () => {
           disabled={isAutoCreating || !formData.name}
           className="w-full py-3 px-6 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isAutoCreating ? 'Creating Organization...' : 'Create Organization'}
+          {isAutoCreating 
+            ? (organizationId ? 'Updating Organization...' : 'Creating Organization...') 
+            : (organizationId ? 'Update Organization' : 'Create Organization')
+          }
         </button>
       </form>
     </div>

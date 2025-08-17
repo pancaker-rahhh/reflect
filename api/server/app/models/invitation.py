@@ -1,11 +1,12 @@
-from uuid import uuid4
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime, ForeignKey, JSON, Integer, Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 import enum
+import uuid
 
-from app.models.base import Base
+from app.models.base_model import BaseModel, TimeStampMixin
+from app.db import Base
 
 
 class InvitationStatus(str, enum.Enum):
@@ -22,11 +23,10 @@ class TaskStatus(str, enum.Enum):
     FAILED = "failed"
 
 
-class Invitation(Base):
+class Invitation(BaseModel):
     """Model for storing invitations."""
     __tablename__ = "invitations"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     email = Column(String, nullable=False, index=True)
     role = Column(String, nullable=False)
     organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True)
@@ -35,7 +35,6 @@ class Invitation(Base):
     token = Column(String, unique=True, nullable=False, index=True)
     status = Column(SQLEnum(InvitationStatus), default=InvitationStatus.PENDING, nullable=False)
     expires_at = Column(DateTime, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     accepted_at = Column(DateTime, nullable=True)
     accepted_by = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     
@@ -46,11 +45,10 @@ class Invitation(Base):
     accepter = relationship("User", foreign_keys=[accepted_by], back_populates="accepted_invitations")
 
 
-class PendingMember(Base):
+class PendingMember(BaseModel):
     """Model for placeholder members waiting for invitation acceptance."""
     __tablename__ = "pending_members"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     email = Column(String, nullable=False, index=True)
     name = Column(String, nullable=True)
     role = Column(String, nullable=False)
@@ -58,7 +56,6 @@ class PendingMember(Base):
     project_id = Column(UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=True)
     invitation_id = Column(UUID(as_uuid=True), ForeignKey("invitations.id", ondelete="CASCADE"), nullable=False)
     added_by = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     
     # Relationships
     organization = relationship("Organization", back_populates="pending_members")
@@ -67,11 +64,11 @@ class PendingMember(Base):
     adder = relationship("User", back_populates="added_pending_members")
 
 
-class InvitationTask(Base):
+class InvitationTask(Base, TimeStampMixin):
     """Model for tracking bulk invitation tasks."""
     __tablename__ = "invitation_tasks"
     
-    id = Column(String, primary_key=True)  # UUID as string for easier tracking
+    id: Mapped[str] = mapped_column(String, primary_key=True)  # UUID as string for easier tracking
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True)
     total_count = Column(Integer, nullable=False)
@@ -81,7 +78,6 @@ class InvitationTask(Base):
     status = Column(SQLEnum(TaskStatus), default=TaskStatus.PENDING, nullable=False)
     results = Column(JSON, nullable=True)  # Store detailed results as JSON
     error = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     completed_at = Column(DateTime, nullable=True)
     
     # Relationships

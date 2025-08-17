@@ -32,6 +32,7 @@ interface OnboardingData {
   team: {
     memberCount?: number;
     invitesSent?: number;
+    members?: Array<{ email: string; role: string }>;
   };
 }
 
@@ -73,16 +74,17 @@ export const CompletionStepEnhanced: React.FC = () => {
         company: allData.profile?.company || 'Not specified'
       },
       organization: {
-        name: allData.organization?.name || 'My Organization',
+        name: allData.organization?.name || 'Organization not set',
         type: userType === 'solo' ? 'Personal Workspace' : 'Team Organization'
       },
       project: {
-        name: allData.project?.name || 'My First Project',
-        description: allData.project?.description || 'Getting started with Reflect'
+        name: allData.project?.name || 'Project not created',
+        description: allData.project?.description || 'No description provided'
       },
       team: {
         memberCount: allData.team?.members?.length || 0,
-        invitesSent: allData.team?.invitesSent || 0
+        invitesSent: allData.team?.invitesSent || 0,
+        members: allData.team?.members || []
       }
     };
     setOnboardingData(savedData);
@@ -140,11 +142,13 @@ export const CompletionStepEnhanced: React.FC = () => {
       fields: [
         { 
           label: 'Team Members', 
-          value: onboardingData.team.memberCount ? `${onboardingData.team.memberCount} members` : 'No members added'
+          value: onboardingData.team.memberCount ? 
+            `${onboardingData.team.memberCount} member${onboardingData.team.memberCount !== 1 ? 's' : ''} added${onboardingData.team.members?.length ? ` (${onboardingData.team.members.map(m => m.email).join(', ')})` : ''}` : 
+            'No members added'
         },
         { 
-          label: 'Invitations Sent', 
-          value: onboardingData.team.invitesSent ? `${onboardingData.team.invitesSent} invites` : 'No invites sent'
+          label: 'Bulk Invitations', 
+          value: onboardingData.team.invitesSent ? `${onboardingData.team.invitesSent} invite${onboardingData.team.invitesSent !== 1 ? 's' : ''} sent` : 'No bulk invites sent'
         }
       ]
     });

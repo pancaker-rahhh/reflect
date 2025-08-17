@@ -66,6 +66,7 @@ function App() {
                   <Route path="/auth/verify-otp" element={<VerifyOtp />} />
                   <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/invite" element={<InvitationAcceptancePage />} />
+                  <Route path="/invitation/accept" element={<InvitationAcceptancePage />} />
                   
                   {/* Onboarding route */}
                   <Route path="/onboarding" element={

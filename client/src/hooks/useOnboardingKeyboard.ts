@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useKeyboardShortcuts } from '../context/KeyboardShortcutContext';
 
 interface OnboardingKeyboardOptions {
@@ -19,52 +19,70 @@ export const useOnboardingKeyboard = ({
   enabled = true
 }: OnboardingKeyboardOptions) => {
   const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
+  
+  // Use refs to store latest function references
+  const handlersRef = useRef({
+    onNext,
+    onPrevious,
+    onSkip,
+    onSubmit,
+    onAddMember
+  });
+
+  // Update refs when handlers change
+  handlersRef.current = {
+    onNext,
+    onPrevious,
+    onSkip,
+    onSubmit,
+    onAddMember
+  };
 
   useEffect(() => {
     if (!enabled) return;
 
     const shortcuts = [];
 
-    if (onNext) {
+    if (handlersRef.current.onNext) {
       shortcuts.push({
         key: 'Enter',
-        handler: onNext,
+        handler: () => handlersRef.current.onNext?.(),
         description: 'Go to next step'
       });
     }
 
-    if (onSubmit) {
+    if (handlersRef.current.onSubmit) {
       shortcuts.push({
         key: 'Enter',
         ctrl: true,
-        handler: onSubmit,
+        handler: () => handlersRef.current.onSubmit?.(),
         description: 'Submit form'
       });
     }
 
-    if (onPrevious) {
+    if (handlersRef.current.onPrevious) {
       shortcuts.push({
         key: 'ArrowLeft',
         alt: true,
-        handler: onPrevious,
+        handler: () => handlersRef.current.onPrevious?.(),
         description: 'Go to previous step'
       });
     }
 
-    if (onSkip) {
+    if (handlersRef.current.onSkip) {
       shortcuts.push({
         key: 's',
         ctrl: true,
-        handler: onSkip,
+        handler: () => handlersRef.current.onSkip?.(),
         description: 'Skip current step'
       });
     }
 
-    if (onAddMember) {
+    if (handlersRef.current.onAddMember) {
       shortcuts.push({
         key: 'a',
         ctrl: true,
-        handler: onAddMember,
+        handler: () => handlersRef.current.onAddMember?.(),
         description: 'Add team member'
       });
     }
@@ -74,5 +92,5 @@ export const useOnboardingKeyboard = ({
     return () => {
       shortcuts.forEach(shortcut => unregisterShortcut(shortcut.key));
     };
-  }, [enabled, onNext, onPrevious, onSkip, onSubmit, onAddMember, registerShortcut, unregisterShortcut]);
+  }, [enabled, registerShortcut, unregisterShortcut]);
 };

@@ -1,18 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { userApi } from '../../../lib/api';
+import { onboardingDataService } from '../../../services/onboardingDataService';
 
 export const ProfileStep: React.FC = () => {
   const { nextStep, markStepCompleted } = useOnboarding();
   const { user } = useAuth();
   
   const [formData, setFormData] = useState({
-    name: user?.user_metadata?.full_name || user?.email?.split('@')[0] || '',
+    name: '',
     company: '',
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     phone: '',
   });
+
+  useEffect(() => {
+    // Load existing profile data or set defaults
+    const existingData = onboardingDataService.getProfileData();
+    setFormData({
+      name: existingData?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || '',
+      company: existingData?.company || '',
+      timezone: existingData?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+      phone: existingData?.phone || ''
+    });
+  }, [user]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -24,6 +36,14 @@ export const ProfileStep: React.FC = () => {
       await userApi.updateProfile({
         name: formData.name,
         company_name: formData.company,
+        timezone: formData.timezone,
+        phone: formData.phone,
+      });
+
+      // Save to localStorage for review step
+      onboardingDataService.saveProfileData({
+        name: formData.name,
+        company: formData.company,
         timezone: formData.timezone,
         phone: formData.phone,
       });

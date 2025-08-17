@@ -1,7 +1,9 @@
 import asyncio
 from typing import Optional, List, Dict, Any
 from app.core.logging import get_logger
-from app.core.config import settings
+from app.core.settings import get_settings
+
+settings = get_settings()
 
 logger = get_logger(__name__)
 

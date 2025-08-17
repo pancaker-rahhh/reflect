@@ -1,23 +1,20 @@
 import React, { useEffect } from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
 import { useOnboardingKeyboard } from '../../../hooks/useOnboardingKeyboard';
-import { ArrowLeft, SkipForward, Keyboard } from 'lucide-react';
+import { ArrowLeft, Keyboard } from 'lucide-react';
 
 export const StepNavigation: React.FC = () => {
   const { 
     currentStep, 
     previousStep, 
-    skipOnboarding, 
     isLoading,
     userType,
   } = useOnboarding();
 
   const canGoBack = currentStep !== 'user-type';
-  const showSkip = currentStep !== 'completion' && currentStep !== 'welcome';
 
   useOnboardingKeyboard({
     onPrevious: canGoBack ? previousStep : undefined,
-    onSkip: showSkip ? skipOnboarding : undefined,
     enabled: !isLoading
   });
 
@@ -53,26 +50,12 @@ export const StepNavigation: React.FC = () => {
           )}
         </div>
 
-        <div className="flex items-center gap-3">
-          {showSkip && (
-            <button
-              onClick={skipOnboarding}
-              disabled={isLoading}
-              className="flex items-center gap-2 px-4 py-2 text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Ctrl + S to skip"
-            >
-              <SkipForward className="w-4 h-4" />
-              Skip Setup
-            </button>
-          )}
-
-          <div className="text-sm text-gray-500">
-            {currentStep === 'user-type' && 'Choose your account type'}
-            {currentStep === 'profile' && 'Complete your profile details'}
-            {currentStep === 'organization' && (userType === 'solo' ? 'Set up your workspace' : 'Create your organization')}
-            {currentStep === 'project' && 'Create your first project'}
-            {currentStep === 'team-setup' && 'Invite team members (optional)'}
-          </div>
+        <div className="text-sm text-gray-500">
+          {currentStep === 'user-type' && 'Choose your account type'}
+          {currentStep === 'profile' && 'Complete your profile details'}
+          {currentStep === 'organization' && (userType === 'solo' ? 'Set up your workspace' : 'Create your organization')}
+          {currentStep === 'project' && 'Create your first project'}
+          {currentStep === 'team-setup' && 'Invite team members (optional)'}
         </div>
       </div>
       
@@ -83,9 +66,6 @@ export const StepNavigation: React.FC = () => {
         </div>
         {canGoBack && (
           <span>• <kbd className="px-1 py-0.5 bg-gray-100 rounded text-gray-600">Alt + ←</kbd> to go back</span>
-        )}
-        {showSkip && (
-          <span>• <kbd className="px-1 py-0.5 bg-gray-100 rounded text-gray-600">Ctrl + S</kbd> to skip</span>
         )}
       </div>
     </div>

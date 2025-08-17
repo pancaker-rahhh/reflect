@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
 import { FolderPlus } from 'lucide-react';
 import { projectApi, onboardingApi } from '../../../lib/api';
+import { onboardingDataService } from '../../../services/onboardingDataService';
 
 export const ProjectStep: React.FC = () => {
-  const { nextStep, markStepCompleted, setProjectId, organizationId } = useOnboarding();
+  const { nextStep, markStepCompleted, setProjectId, organizationId, projectId } = useOnboarding();
   
   const [formData, setFormData] = useState({
     name: '',
@@ -12,21 +13,49 @@ export const ProjectStep: React.FC = () => {
   });
   const [isCreating, setIsCreating] = useState(false);
 
+  useEffect(() => {
+    // Load existing project data if available
+    const existingData = onboardingDataService.getProjectData();
+    if (existingData?.name) {
+      setFormData({
+        name: existingData.name,
+        description: existingData.description || ''
+      });
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsCreating(true);
 
     try {
-      const project = await projectApi.createProject({
+      let project;
+      if (projectId) {
+        // Update existing project
+        project = await projectApi.updateProject(projectId, {
+          name: formData.name,
+          description: formData.description,
+        });
+      } else {
+        // Create new project
+        project = await projectApi.createProject({
+          name: formData.name,
+          description: formData.description,
+          organization_id: organizationId,
+          settings: {
+            onboarding_project: true,
+          },
+        });
+        setProjectId(project.id);
+      }
+
+      // Save project data for review step
+      onboardingDataService.saveProjectData({
         name: formData.name,
         description: formData.description,
-        organization_id: organizationId,
-        settings: {
-          onboarding_project: true,
-        },
+        type: 'web app',
+        visibility: 'private'
       });
-
-      setProjectId(project.id);
       
       await onboardingApi.update({
         has_created_project: true,
@@ -105,7 +134,10 @@ export const ProjectStep: React.FC = () => {
           disabled={isCreating || !formData.name}
           className="w-full py-3 px-6 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isCreating ? 'Creating Project...' : 'Create Project'}
+          {isCreating 
+            ? (projectId ? 'Updating Project...' : 'Creating Project...') 
+            : (projectId ? 'Update Project' : 'Create Project')
+          }
         </button>
       </form>
     </div>

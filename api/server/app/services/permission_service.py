@@ -4,8 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_
 from sqlalchemy.orm import selectinload
 
-from app.models.organization import Organization, OrganizationMember
-from app.models.project import Project, ProjectMember
+from app.models.organization_model import Organization, OrganizationMember, ProjectMember
+from app.models.project_model import Project
 from app.models.user_model import User
 from app.core.logging import get_logger
 

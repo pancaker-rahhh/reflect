@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
 import { useOnboardingKeyboard } from '../../../hooks/useOnboardingKeyboard';
 import { useOnboardingData } from '../../../hooks/useOnboardingData';
 import { UserPlus, Mail, X, Users, FileText } from 'lucide-react';
 import { invitationApi } from '../../../lib/api';
 import { BulkInviteModal } from '../../organization/BulkInviteModal';
+import { onboardingDataService } from '../../../services/onboardingDataService';
 
 interface TeamMember {
   email: string;
@@ -21,34 +22,45 @@ export const TeamSetupStep: React.FC = () => {
   const [isInviting, setIsInviting] = useState(false);
   const [showBulkInvite, setShowBulkInvite] = useState(false);
 
+  // Load existing team data when component mounts
+  useEffect(() => {
+    const existingTeamData = onboardingDataService.getTeamData();
+    if (existingTeamData?.members && existingTeamData.members.length > 0) {
+      setTeamMembers(existingTeamData.members);
+    }
+  }, []);
+
   const addTeamMember = () => {
     if (newMemberEmail && !teamMembers.find(m => m.email === newMemberEmail)) {
-      setTeamMembers([...teamMembers, { email: newMemberEmail, role: newMemberRole }]);
+      const updatedMembers = [...teamMembers, { email: newMemberEmail, role: newMemberRole }];
+      setTeamMembers(updatedMembers);
       setNewMemberEmail('');
+      
+      // Save to localStorage immediately
+      onboardingDataService.saveTeamData({
+        members: updatedMembers,
+        invitesSent: 0
+      });
     }
   };
 
-  useOnboardingKeyboard({
-    onAddMember: () => {
-      const emailInput = document.querySelector('input[type="email"]') as HTMLInputElement;
-      if (emailInput) {
-        emailInput.focus();
-      }
-    },
-    onNext: teamMembers.length > 0 ? handleSendInvites : handleSkip,
-    enabled: !isInviting
-  });
-
   const removeMember = (email: string) => {
-    setTeamMembers(teamMembers.filter(m => m.email !== email));
+    const updatedMembers = teamMembers.filter(m => m.email !== email);
+    setTeamMembers(updatedMembers);
+    
+    // Save to localStorage immediately
+    onboardingDataService.saveTeamData({
+      members: updatedMembers,
+      invitesSent: 0
+    });
   };
 
-  const handleSkip = () => {
+  const handleSkip = useCallback(() => {
     markStepCompleted('team-setup');
     nextStep();
-  };
+  }, [markStepCompleted, nextStep]);
 
-  const handleSendInvites = async () => {
+  const handleSendInvites = useCallback(async () => {
     setIsInviting(true);
     
     try {
@@ -75,16 +87,39 @@ export const TeamSetupStep: React.FC = () => {
     } finally {
       setIsInviting(false);
     }
-  };
+  }, [teamMembers, saveTeamData, markStepCompleted, nextStep]);
 
   const handleBulkInviteSuccess = (count: number) => {
+    const existingTeamData = onboardingDataService.getTeamData();
     saveTeamData({
-      members: [],
+      members: existingTeamData?.members || teamMembers,
       invitesSent: count
     });
     markStepCompleted('team-setup');
     nextStep();
   };
+
+  // Memoize keyboard shortcut handlers to prevent infinite re-renders
+  const handleAddMember = useCallback(() => {
+    const emailInput = document.querySelector('input[type="email"]') as HTMLInputElement;
+    if (emailInput) {
+      emailInput.focus();
+    }
+  }, []);
+
+  const handleNextAction = useCallback(() => {
+    if (teamMembers.length > 0) {
+      handleSendInvites();
+    } else {
+      handleSkip();
+    }
+  }, [teamMembers.length, handleSendInvites, handleSkip]);
+
+  useOnboardingKeyboard({
+    onAddMember: handleAddMember,
+    onNext: handleNextAction,
+    enabled: !isInviting
+  });
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -200,22 +235,22 @@ export const TeamSetupStep: React.FC = () => {
         )}
 
         <div className="flex gap-3">
-          {teamMembers.length > 0 && (
+          {teamMembers.length > 0 ? (
             <button
               onClick={handleSendInvites}
               disabled={isInviting}
-              className="flex-1 py-3 px-6 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 px-6 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isInviting ? 'Sending Invites...' : `Send ${teamMembers.length} Invite${teamMembers.length !== 1 ? 's' : ''}`}
             </button>
+          ) : (
+            <button
+              onClick={handleSkip}
+              className="w-full py-3 px-6 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+            >
+              Continue Without Team Setup
+            </button>
           )}
-          
-          <button
-            onClick={handleSkip}
-            className="px-6 py-3 text-gray-600 hover:text-gray-800 transition-colors border border-gray-300 rounded-lg hover:bg-gray-50"
-          >
-            Skip for Now
-          </button>
         </div>
       </div>
 

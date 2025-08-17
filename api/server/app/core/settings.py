@@ -37,6 +37,11 @@ class Settings(BaseSettings):
     CORS_ORIGINS: str = 'http://localhost:3000,http://localhost:5173'
     CORS_HEADERS: str = '*'
 
+    # Frontend & Email Configuration
+    FRONTEND_URL: str = 'http://localhost:3000'
+    EMAIL_FROM: str = 'noreply@reflect.app'
+    EMAIL_FROM_NAME: str = 'Reflect'
+
     # Task Backend
     TASK_BACKEND: str = 'fastapi'
 

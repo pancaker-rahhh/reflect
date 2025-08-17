@@ -71,7 +71,7 @@ class InvitationModel(BaseModel):
     accepted_at: Optional[datetime] = None
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PendingMemberModel(BaseModel):
@@ -87,7 +87,7 @@ class PendingMemberModel(BaseModel):
     created_at: datetime
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class InvitationValidateResponse(BaseModel):

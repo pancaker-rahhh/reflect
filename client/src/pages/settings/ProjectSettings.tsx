@@ -1,9 +1,9 @@
 import React from 'react';
-import { useOrganization } from '../../context/OrganizationContext';
+import { useAppContext } from '../../context/AppContext';
 import { ProjectSettingsPage } from '../../components/project/ProjectSettingsPage';
 
 export function ProjectSettings() {
-  const { currentProject } = useOrganization();
+  const { currentProject } = useAppContext();
 
   return <ProjectSettingsPage projectId={currentProject?.id} />;
 }

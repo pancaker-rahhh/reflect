@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
 import { 
   Mail, 
   User, 
@@ -18,7 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { invitationService } from '@/services/invitationService';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface InvitationDetails {
   invitation_id: string;
@@ -41,12 +40,13 @@ interface NewUserFormData {
 export const InvitationAcceptancePage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, login } = useAuth();
+  const { user } = useAuth();
   
   const [invitationDetails, setInvitationDetails] = useState<InvitationDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [accepting, setAccepting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [showNewUserForm, setShowNewUserForm] = useState(false);
   const [formData, setFormData] = useState<NewUserFormData>({
     name: '',
@@ -119,6 +119,8 @@ export const InvitationAcceptancePage: React.FC = () => {
 
     try {
       setAccepting(true);
+      setError(null);
+      setSuccess(null);
       
       const userData = showNewUserForm && !user ? {
         name: formData.name,
@@ -128,15 +130,13 @@ export const InvitationAcceptancePage: React.FC = () => {
       const response = await invitationService.acceptInvitation(token, userData);
       
       if (response.success) {
-        toast.success(response.message);
+        setSuccess(response.message);
         
-        // If new user was created, we might need to login
-        if (userData && response.access_token) {
-          await login(invitationDetails.email, formData.password);
-        }
-        
-        // Redirect to the appropriate dashboard
-        navigate(response.redirect_url);
+        // Redirect to the appropriate dashboard after a brief delay to show success message
+        // Note: Authentication will be handled by Supabase auth flow
+        setTimeout(() => {
+          navigate(response.redirect_url);
+        }, 1500);
       } else {
         setError('Failed to accept invitation. Please try again.');
       }
@@ -250,6 +250,14 @@ export const InvitationAcceptancePage: React.FC = () => {
                   </span>
                 </div>
               </div>
+
+              {/* Success Alert */}
+              {success && (
+                <Alert>
+                  <CheckCircle className="h-4 w-4" />
+                  <AlertDescription>{success}</AlertDescription>
+                </Alert>
+              )}
 
               {/* Error Alert */}
               {error && (

@@ -4,11 +4,10 @@ import { useOnboardingKeyboard } from '../../../hooks/useOnboardingKeyboard';
 import { ArrowRight, Sparkles, Users, ChartBar } from 'lucide-react';
 
 export const WelcomeStep: React.FC = () => {
-  const { nextStep, skipOnboarding } = useOnboarding();
+  const { nextStep } = useOnboarding();
 
   useOnboardingKeyboard({
-    onNext: nextStep,
-    onSkip: skipOnboarding
+    onNext: nextStep
   });
 
   return (
@@ -59,20 +58,13 @@ export const WelcomeStep: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div>
         <button
           onClick={nextStep}
           className="w-full py-4 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 flex items-center justify-center gap-2 button-hover-lift shadow-lg"
         >
           Get Started
           <ArrowRight className="w-5 h-5" />
-        </button>
-        
-        <button
-          onClick={skipOnboarding}
-          className="text-gray-500 hover:text-gray-700 transition-colors text-sm font-medium"
-        >
-          Skip setup (I'll explore on my own)
         </button>
       </div>
     </div>

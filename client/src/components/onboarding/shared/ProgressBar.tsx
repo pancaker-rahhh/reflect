@@ -23,7 +23,10 @@ export const ProgressBar: React.FC = () => {
   const steps = getSteps();
   const currentStepIndex = steps.findIndex(step => step.key === currentStep);
   const totalSteps = steps.length;
-  const progressPercentage = ((currentStepIndex + 1) / totalSteps) * 100;
+  
+  // Calculate progress based on completed steps, not current step
+  const completedStepsCount = steps.filter(step => completedSteps.has(step.key as any)).length;
+  const progressPercentage = (completedStepsCount / totalSteps) * 100;
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -33,7 +36,7 @@ export const ProgressBar: React.FC = () => {
         </span>
         <span className="text-sm font-semibold text-gray-600 flex items-center gap-1">
           <Sparkles className="w-4 h-4 text-yellow-500" />
-          {Math.round(progressPercentage)}% Complete
+          {Math.round(progressPercentage)}% Complete ({completedStepsCount}/{totalSteps})
         </span>
       </div>
 

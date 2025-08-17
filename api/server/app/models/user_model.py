@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from app.models.organization_model import OrganizationMember, ProjectMember
     from app.models.notification_model import Notification
     from app.models.onboarding_model import UserOnboarding
+    from app.models.invitation import Invitation, PendingMember, InvitationTask
 
 
 class UserType(str, enum.Enum):
@@ -68,6 +69,20 @@ class User(BaseModel):
     )
     onboarding: Mapped[Optional['UserOnboarding']] = relationship(
         'UserOnboarding', back_populates='user', uselist=False, cascade='all, delete-orphan'
+    )
+    
+    # Invitation system relationships
+    sent_invitations: Mapped[List['Invitation']] = relationship(
+        'Invitation', foreign_keys='Invitation.invited_by', back_populates='inviter', cascade='all, delete-orphan'
+    )
+    accepted_invitations: Mapped[List['Invitation']] = relationship(
+        'Invitation', foreign_keys='Invitation.accepted_by', back_populates='accepter', cascade='all, delete-orphan'
+    )
+    added_pending_members: Mapped[List['PendingMember']] = relationship(
+        'PendingMember', back_populates='adder', cascade='all, delete-orphan'
+    )
+    invitation_tasks: Mapped[List['InvitationTask']] = relationship(
+        'InvitationTask', back_populates='user', cascade='all, delete-orphan'
     )
 
     def __init__(self, **kwargs):

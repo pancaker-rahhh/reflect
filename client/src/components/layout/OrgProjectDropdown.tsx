@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Building2, FolderOpen, Plus, Search, Clock } from 'lucide-react';
-import { useOrganization } from '../../context/OrganizationContext';
-import type { Organization } from '../../lib/api/organization';
+import { useAppContext } from '../../context/AppContext';
 import type { Project } from '@/types';
 
 interface OrgProjectDropdownProps {
   currentOrgId?: string;
   currentProjectId?: string;
-  onOrgChange?: (org: Organization) => void;
+  onOrgChange?: (org: any) => void;
   onProjectChange?: (project: Project) => void;
 }
 
@@ -18,14 +17,16 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
   onProjectChange,
 }) => {
   const {
-    currentOrganization,
+    organization: currentOrganization,
     currentProject,
-    organizations,
     projects,
-    setCurrentOrganization,
     setCurrentProject,
-    loading
-  } = useOrganization();
+    isLoading: loading
+  } = useAppContext();
+  
+  // For now, we'll work with single organization from AppContext
+  const organizations = currentOrganization ? [currentOrganization] : [];
+  const setCurrentOrganization = () => {}; // No-op since AppContext manages single org
   
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -66,8 +67,8 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
     localStorage.setItem('recentProjects', JSON.stringify(updated));
   };
 
-  const handleOrgSelect = (org: Organization) => {
-    setCurrentOrganization(org);
+  const handleOrgSelect = (org: any) => {
+    setCurrentOrganization();
     onOrgChange?.(org);
   };
 

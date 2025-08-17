@@ -23,6 +23,7 @@ from app.models.integration_model import Integration, IntegrationMapping
 from app.models.webhook_model import Webhook
 from app.models.notification_model import Notification
 from app.models.onboarding_model import UserOnboarding
+from app.models.invitation import Invitation, PendingMember, InvitationTask
 
 __all__ = [
     'BaseModel',
@@ -53,4 +54,7 @@ __all__ = [
     'Webhook',
     'Notification',
     'UserOnboarding',
+    'Invitation',
+    'PendingMember',
+    'InvitationTask',
 ]
