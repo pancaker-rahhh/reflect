@@ -1,11 +1,10 @@
 import aiohttp
-import json
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timezone
 
-from app.models.integration_model import Integration, IntegrationMapping, MappingType
+from app.models.integration_model import Integration, MappingType
 from app.repositories.integration_repository import integration_mapping_repository
 from app.repositories.feedback_repository import feedback_repository
 from app.core.logging import get_logger

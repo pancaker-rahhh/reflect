@@ -34,7 +34,7 @@ class FeedbackFormRepository(BaseRepository[FeedbackForm]):
             select(FeedbackForm)
             .where(
                 FeedbackForm.project_id == project_id,
-                FeedbackForm.is_active == True
+                FeedbackForm.is_active
             )
             .options(selectinload(FeedbackForm.form_fields))
             .order_by(FeedbackForm.created_at.desc())

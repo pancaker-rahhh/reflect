@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, List, Dict, Optional
 import uuid
 import enum
-from sqlalchemy import String, Boolean, ForeignKey, Text, Integer, Enum as SQLEnum
+from sqlalchemy import String, ForeignKey, Text, Integer, Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 

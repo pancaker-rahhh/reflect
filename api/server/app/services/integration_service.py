@@ -4,8 +4,7 @@ from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
 
-from app.models.integration_model import Integration, IntegrationMapping, IntegrationType, IntegrationStatus
-from app.models.webhook_model import Webhook
+from app.models.integration_model import IntegrationType, IntegrationStatus
 from app.repositories.integration_repository import (
     integration_repository,
     integration_mapping_repository,
@@ -16,7 +15,6 @@ from app.schemas.integration_schema import (
     IntegrationUpdate,
     IntegrationResponse,
     IntegrationMappingCreate,
-    IntegrationMappingUpdate,
     IntegrationMappingResponse,
     WebhookCreate,
     WebhookUpdate,

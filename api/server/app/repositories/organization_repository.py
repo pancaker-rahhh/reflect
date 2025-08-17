@@ -5,7 +5,6 @@ from sqlalchemy import select, func, and_
 from sqlalchemy.orm import selectinload
 
 from app.models.organization_model import Organization, OrganizationMember, OrganizationRole
-from app.models.user_model import User
 from app.repositories.base_repository import BaseRepository
 
 

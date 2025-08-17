@@ -2,9 +2,8 @@ from typing import Optional, List
 from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 from uuid import UUID
-from enum import Enum
 
-from app.models.organization_model import OrganizationRole, ProjectRole
+from app.models.organization_model import OrganizationRole
 
 
 class OrganizationCreate(BaseModel):

@@ -1,5 +1,5 @@
 import asyncio
-from typing import Optional, List, Dict, Any
+from typing import List, Dict, Any
 from app.core.logging import get_logger
 from app.core.settings import get_settings
 
@@ -21,7 +21,7 @@ class EmailService:
         role: str
     ) -> bool:
         try:
-            logger.info(f"📧 INVITATION EMAIL")
+            logger.info("📧 INVITATION EMAIL")
             logger.info(f"To: {to_email}")
             logger.info(f"From: {self.from_name} <{self.from_email}>")
             logger.info(f"Subject: You've been invited to join {organization_name}")

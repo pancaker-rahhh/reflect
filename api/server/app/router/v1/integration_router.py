@@ -15,10 +15,7 @@ from app.schemas.integration_schema import (
     WebhookCreate,
     WebhookUpdate,
     WebhookResponse,
-    SyncRequest,
-    SyncResponse,
-    JIRAConfig,
-    GitHubConfig
+    SyncRequest
 )
 from app.services.integration_service import integration_service
 

@@ -1,12 +1,11 @@
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_
+from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
 
 from app.models.organization_model import Organization, OrganizationMember, ProjectMember
 from app.models.project_model import Project
-from app.models.user_model import User
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

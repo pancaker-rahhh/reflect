@@ -1,4 +1,4 @@
-from typing import Optional, List, Tuple
+from typing import Optional, List
 from uuid import UUID
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,7 +6,6 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
 
 from app.models.organization_model import Organization, OrganizationMember, OrganizationRole
-from app.models.user_model import User
 from app.models.invitation import PendingMember
 from app.repositories.organization_repository import (
     organization_repository,

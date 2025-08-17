@@ -1,16 +1,15 @@
-from typing import Optional, List
+from typing import List
 from uuid import UUID
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
-from app.core.auth import get_current_user, get_current_token_data
+from app.core.auth import get_current_token_data
 from app.schemas.auth_schema import TokenData
 from app.schemas.organization_schema import (
     OrganizationCreate,
     OrganizationUpdate,
     OrganizationResponse,
-    OrganizationDetailResponse,
     OrganizationListResponse,
     OrganizationInviteRequest,
     OrganizationMemberResponse,

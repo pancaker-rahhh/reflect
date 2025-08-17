@@ -11,7 +11,6 @@ from app.repositories.roadmap_repository import (
     roadmap_feature_repository,
     RoadmapFeatureRepository,
     roadmap_assignment_repository,
-    RoadmapAssignmentRepository,
 )
 from app.schemas.roadmap_schema import (
     RoadmapUpdate,

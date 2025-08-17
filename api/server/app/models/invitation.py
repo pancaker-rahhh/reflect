@@ -1,9 +1,7 @@
-from datetime import datetime
 from sqlalchemy import Column, String, DateTime, ForeignKey, JSON, Integer, Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 import enum
-import uuid
 
 from app.models.base_model import BaseModel, TimeStampMixin
 from app.db import Base

@@ -3,7 +3,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.project_model import Project
-from app.models.organization_model import ProjectMember, ProjectRole
+from app.models.organization_model import ProjectRole
 from app.repositories.project_repository import project_repository, project_member_repository, ProjectRepository
 from app.repositories.user_repository import user_repository
 from app.services.organization_service import organization_service
@@ -140,7 +140,7 @@ class ProjectService:
     async def get_project_members(
         self, db: AsyncSession, user_id: UUID, project_id: UUID, skip: int = 0, limit: int = 100
     ) -> List[ProjectMemberResponse]:
-        project = await self.get_project_and_check_access(db, user_id, project_id)
+        await self.get_project_and_check_access(db, user_id, project_id)
         
         members = await project_member_repository.get_project_members(db, project_id, skip, limit)
         

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, status, Query, Response
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
-from app.core.auth import get_current_user, get_current_token_data
+from app.core.auth import get_current_token_data
 from app.schemas.auth_schema import TokenData
 from app.schemas.project_schema import (
     ProjectCreate,

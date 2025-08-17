@@ -1,13 +1,13 @@
 import asyncio
 import secrets
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 from uuid import UUID, uuid4
 from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_
+from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
 
-from app.models.organization_model import Organization, OrganizationMember
+from app.models.organization_model import OrganizationMember
 from app.models.invitation import Invitation, PendingMember, InvitationTask
 from app.models.user_model import User
 from app.schemas.invitation_schema import (

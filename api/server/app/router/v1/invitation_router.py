@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, BackgroundTasks, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,7 +10,6 @@ from app.schemas.invitation_schema import (
     BulkInvitationRequest,
     BulkInvitationResponse,
     InvitationStatusResponse,
-    InvitationEntry,
     InvitationAcceptRequest,
     InvitationAcceptResponse,
     InvitationValidateResponse,

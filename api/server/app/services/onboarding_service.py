@@ -1,9 +1,9 @@
-from typing import Optional, Dict, Any
+from typing import Optional
 from datetime import datetime, timezone
 import uuid
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload, joinedload
+from sqlalchemy.orm import joinedload
 
 from app.core.logging import get_logger
 from app.models.user_model import User
