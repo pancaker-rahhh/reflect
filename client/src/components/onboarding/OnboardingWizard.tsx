@@ -10,6 +10,7 @@ import { TeamSetupStep } from './steps/TeamSetupStep';
 import { CompletionStep } from './steps/CompletionStep';
 import { ProgressBar } from './shared/ProgressBar';
 import { StepNavigation } from './shared/StepNavigation';
+import '../../styles/onboarding.css';
 
 export const OnboardingWizard: React.FC = () => {
   const { currentStep, userType, isLoading, error } = useOnboarding();
@@ -37,34 +38,47 @@ export const OnboardingWizard: React.FC = () => {
 
   return (
     <KeyboardShortcutProvider>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-slate-100 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)] opacity-10"></div>
+        
+        <div className="container mx-auto px-4 py-8 relative z-10">
           <div className="max-w-3xl mx-auto">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">
+            <div className="mb-8 animate-fade-in">
+              <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
                 Welcome to Reflect
               </h1>
               {currentStep !== 'welcome' && currentStep !== 'completion' && (
-                <ProgressBar />
+                <div className="mt-6">
+                  <ProgressBar />
+                </div>
               )}
             </div>
 
-            <div className="bg-white rounded-xl shadow-lg p-8">
+            <div className="glass-effect rounded-2xl shadow-2xl p-8 animate-fade-in">
               {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                  {error}
+                <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg text-red-700 animate-slide-in">
+                  <div className="flex items-start">
+                    <svg className="w-5 h-5 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                    <span>{error}</span>
+                  </div>
                 </div>
               )}
 
               {isLoading ? (
-                <div className="flex justify-center items-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                <div className="flex flex-col justify-center items-center py-12">
+                  <div className="relative">
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200"></div>
+                    <div className="absolute top-0 animate-spin rounded-full h-16 w-16 border-4 border-indigo-600 border-t-transparent"></div>
+                  </div>
+                  <p className="mt-4 text-gray-600">Loading...</p>
                 </div>
               ) : (
-                <>
+                <div className="animate-fade-in">
                   {renderStep()}
                   {currentStep !== 'welcome' && <StepNavigation />}
-                </>
+                </div>
               )}
             </div>
           </div>
