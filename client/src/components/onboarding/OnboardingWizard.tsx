@@ -7,7 +7,7 @@ import { ProfileStep } from './steps/ProfileStep';
 import { OrganizationStep } from './steps/OrganizationStep';
 import { ProjectStep } from './steps/ProjectStep';
 import { TeamSetupStep } from './steps/TeamSetupStep';
-import { CompletionStep } from './steps/CompletionStep';
+import { CompletionStepEnhanced } from './steps/CompletionStepEnhanced';
 import { ProgressBar } from './shared/ProgressBar';
 import { StepNavigation } from './shared/StepNavigation';
 import '../../styles/onboarding.css';
@@ -30,7 +30,7 @@ export const OnboardingWizard: React.FC = () => {
       case 'team-setup':
         return userType === 'team' ? <TeamSetupStep /> : null;
       case 'completion':
-        return <CompletionStep />;
+        return <CompletionStepEnhanced />;
       default:
         return null;
     }
