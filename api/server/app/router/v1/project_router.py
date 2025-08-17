@@ -21,7 +21,7 @@ from app.services.project_service import project_service, ProjectService
 from app.schemas.roadmap_schema import RoadmapRead
 from app.services.roadmap_service import roadmap_service, RoadmapService
 
-router = APIRouter(prefix="/projects", tags=["Projects"])
+router = APIRouter(prefix='/projects', tags=['Projects'])
 
 
 @router.post(
@@ -35,7 +35,9 @@ async def create_project(
     current_user: TokenData = Depends(get_current_token_data),
     service: ProjectService = Depends(lambda: project_service),
 ) -> Any:
-    project = await service.create_project(db, user_id=UUID(current_user.sub), project_in=project_in)
+    project = await service.create_project(
+        db, user_id=UUID(current_user.sub), project_in=project_in
+    )
     return ProjectRead.model_validate(project)
 
 
@@ -52,7 +54,11 @@ async def list_projects(
     service: ProjectService = Depends(lambda: project_service),
 ) -> Any:
     projects, total = await service.list_projects_by_organization(
-        db, user_id=UUID(current_user.sub), organization_id=organization_id, page=page, size=size
+        db,
+        user_id=UUID(current_user.sub),
+        organization_id=organization_id,
+        page=page,
+        size=size,
     )
     project_reads = [ProjectRead.model_validate(project) for project in projects]
     return PaginatedProjectRead(total=total, page=page, size=size, items=project_reads)
@@ -119,7 +125,10 @@ async def update_project_settings(
     service: ProjectService = Depends(lambda: project_service),
 ) -> Any:
     settings = await service.update_project_settings(
-        db, user_id=UUID(current_user.sub), project_id=project_id, settings_in=settings_in
+        db,
+        user_id=UUID(current_user.sub),
+        project_id=project_id,
+        settings_in=settings_in,
     )
     return settings
 
@@ -134,7 +143,9 @@ async def delete_project(
     current_user: TokenData = Depends(get_current_token_data),
     service: ProjectService = Depends(lambda: project_service),
 ):
-    await service.delete_project(db, user_id=UUID(current_user.sub), project_id=project_id)
+    await service.delete_project(
+        db, user_id=UUID(current_user.sub), project_id=project_id
+    )
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -188,7 +199,10 @@ async def invite_project_member(
     service: ProjectService = Depends(lambda: project_service),
 ) -> Any:
     return await service.invite_project_member(
-        db, user_id=UUID(current_user.sub), project_id=project_id, invite_data=invite_data
+        db,
+        user_id=UUID(current_user.sub),
+        project_id=project_id,
+        invite_data=invite_data,
     )
 
 
@@ -206,8 +220,11 @@ async def update_project_member(
     service: ProjectService = Depends(lambda: project_service),
 ) -> Any:
     return await service.update_project_member(
-        db, user_id=UUID(current_user.sub), project_id=project_id, 
-        member_user_id=member_user_id, update_data=update_data
+        db,
+        user_id=UUID(current_user.sub),
+        project_id=project_id,
+        member_user_id=member_user_id,
+        update_data=update_data,
     )
 
 
@@ -224,6 +241,9 @@ async def remove_project_member(
     service: ProjectService = Depends(lambda: project_service),
 ):
     await service.remove_project_member(
-        db, user_id=UUID(current_user.sub), project_id=project_id, member_user_id=member_user_id
+        db,
+        user_id=UUID(current_user.sub),
+        project_id=project_id,
+        member_user_id=member_user_id,
     )
     return Response(status_code=status.HTTP_204_NO_CONTENT)

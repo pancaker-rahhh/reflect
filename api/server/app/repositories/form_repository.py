@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Any
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -32,10 +32,7 @@ class FeedbackFormRepository(BaseRepository[FeedbackForm]):
     ) -> List[FeedbackForm]:
         stmt = (
             select(FeedbackForm)
-            .where(
-                FeedbackForm.project_id == project_id,
-                FeedbackForm.is_active
-            )
+            .where(FeedbackForm.project_id == project_id, FeedbackForm.is_active)
             .options(selectinload(FeedbackForm.form_fields))
             .order_by(FeedbackForm.created_at.desc())
         )
@@ -58,9 +55,7 @@ class FormFieldRepository(BaseRepository[FormField]):
     def __init__(self):
         super().__init__(FormField)
 
-    async def get_by_form(
-        self, db: AsyncSession, form_id: UUID
-    ) -> List[FormField]:
+    async def get_by_form(self, db: AsyncSession, form_id: UUID) -> List[FormField]:
         stmt = (
             select(FormField)
             .where(FormField.form_id == form_id)
@@ -70,16 +65,16 @@ class FormFieldRepository(BaseRepository[FormField]):
         return list(result.scalars().all())
 
     async def create_field(
-        self, 
-        db: AsyncSession, 
-        form_id: UUID, 
+        self,
+        db: AsyncSession,
+        form_id: UUID,
         field_type: str,
         field_key: str,
         label: str,
         is_required: bool = False,
-        validation_rules: dict = None,
-        options: list = None,
-        order_index: int = 0
+        validation_rules: Optional[dict] = None,
+        options: Optional[List[Any]] = None,
+        order_index: int = 0,
     ) -> FormField:
         field_data = {
             'form_id': form_id,
@@ -89,7 +84,7 @@ class FormFieldRepository(BaseRepository[FormField]):
             'is_required': is_required,
             'validation_rules': validation_rules or {},
             'options': options or [],
-            'order_index': order_index
+            'order_index': order_index,
         }
         return await self.create(db, **field_data)
 

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Optional, Any, Dict, Annotated, Union
+from typing import Optional, Any, Dict, Union, Annotated
 from typing_extensions import Literal
 from uuid import UUID
 from pydantic import BaseModel, Field, EmailStr
@@ -110,14 +110,14 @@ class FeedbackResponse(BaseModel):
 
 # Polymorphic create payloads
 class SurveyFeedbackCreate(FeedbackBase):
-    feedback_type: Literal[FeedbackType.SURVEY] = FeedbackType.SURVEY
+    feedback_type: Literal[FeedbackType.SURVEY] = FeedbackType.SURVEY  # type: ignore[assignment]
     survey_type: Optional[str] = None
     score: Optional[int] = None
     response_data: Dict[str, Any] = Field(default_factory=dict)
 
 
 class ReviewFeedbackCreate(FeedbackBase):
-    feedback_type: Literal[FeedbackType.REVIEW] = FeedbackType.REVIEW
+    feedback_type: Literal[FeedbackType.REVIEW] = FeedbackType.REVIEW  # type: ignore[assignment]
     overall_rating: Optional[int] = None
     pros: Optional[str] = None
     cons: Optional[str] = None
@@ -125,7 +125,7 @@ class ReviewFeedbackCreate(FeedbackBase):
 
 
 class BugReportFeedbackCreate(FeedbackBase):
-    feedback_type: Literal[FeedbackType.BUG_REPORT] = FeedbackType.BUG_REPORT
+    feedback_type: Literal[FeedbackType.BUG_REPORT] = FeedbackType.BUG_REPORT  # type: ignore[assignment]
     severity_level: Optional[str] = None
     steps_to_reproduce: Optional[str] = None
     expected_behavior: Optional[str] = None
@@ -134,7 +134,7 @@ class BugReportFeedbackCreate(FeedbackBase):
 
 
 class FeatureRequestFeedbackCreate(FeedbackBase):
-    feedback_type: Literal[FeedbackType.FEATURE_REQUEST] = FeedbackType.FEATURE_REQUEST
+    feedback_type: Literal[FeedbackType.FEATURE_REQUEST] = FeedbackType.FEATURE_REQUEST  # type: ignore[assignment]
     use_case: Optional[str] = None
     business_value: Optional[str] = None
     effort_estimate: Optional[str] = None
@@ -155,11 +155,11 @@ FeedbackCreatePayload = Annotated[
 
 # Polymorphic response payloads
 class SurveyFeedbackResponse(FeedbackResponse):
-    feedback_type: Literal[FeedbackType.SURVEY]
+    feedback_type: Literal[FeedbackType.SURVEY] = FeedbackType.SURVEY  # type: ignore[assignment]
 
 
 class ReviewFeedbackResponse(FeedbackResponse):
-    feedback_type: Literal[FeedbackType.REVIEW]
+    feedback_type: Literal[FeedbackType.REVIEW] = FeedbackType.REVIEW  # type: ignore[assignment]
     overall_rating: Optional[int] = None
     pros: Optional[str] = None
     cons: Optional[str] = None
@@ -167,7 +167,7 @@ class ReviewFeedbackResponse(FeedbackResponse):
 
 
 class BugReportFeedbackResponse(FeedbackResponse):
-    feedback_type: Literal[FeedbackType.BUG_REPORT]
+    feedback_type: Literal[FeedbackType.BUG_REPORT] = FeedbackType.BUG_REPORT  # type: ignore[assignment]
     severity_level: Optional[str] = None
     steps_to_reproduce: Optional[str] = None
     expected_behavior: Optional[str] = None
@@ -176,7 +176,7 @@ class BugReportFeedbackResponse(FeedbackResponse):
 
 
 class FeatureRequestFeedbackResponse(FeedbackResponse):
-    feedback_type: Literal[FeedbackType.FEATURE_REQUEST]
+    feedback_type: Literal[FeedbackType.FEATURE_REQUEST] = FeedbackType.FEATURE_REQUEST  # type: ignore[assignment]
     use_case: Optional[str] = None
     business_value: Optional[str] = None
     effort_estimate: Optional[str] = None

@@ -34,10 +34,10 @@ async def start_onboarding(
     try:
         return await onboarding_service.start_onboarding(user.id, request, db)
     except Exception as e:
-        logger.error(f"Failed to start onboarding: {str(e)}")
+        logger.error(f'Failed to start onboarding: {str(e)}')
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to start onboarding process",
+            detail='Failed to start onboarding process',
         )
 
 
@@ -49,10 +49,10 @@ async def get_onboarding_status(
     try:
         return await onboarding_service.get_onboarding_status(user.id, db)
     except Exception as e:
-        logger.error(f"Failed to get onboarding status: {str(e)}")
+        logger.error(f'Failed to get onboarding status: {str(e)}')
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve onboarding status",
+            detail='Failed to retrieve onboarding status',
         )
 
 
@@ -65,10 +65,10 @@ async def update_onboarding_progress(
     try:
         return await onboarding_service.update_onboarding(user.id, request, db)
     except Exception as e:
-        logger.error(f"Failed to update onboarding: {str(e)}", exc_info=True)
+        logger.error(f'Failed to update onboarding: {str(e)}', exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to update onboarding progress",
+            detail='Failed to update onboarding progress',
         )
 
 
@@ -83,10 +83,10 @@ async def complete_onboarding(
             user.id, request.feedback, db
         )
     except Exception as e:
-        logger.error(f"Failed to complete onboarding: {str(e)}")
+        logger.error(f'Failed to complete onboarding: {str(e)}')
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to complete onboarding",
+            detail='Failed to complete onboarding',
         )
 
 
@@ -98,10 +98,10 @@ async def skip_onboarding(
     try:
         return await onboarding_service.skip_onboarding(user.id, db)
     except Exception as e:
-        logger.error(f"Failed to skip onboarding: {str(e)}")
+        logger.error(f'Failed to skip onboarding: {str(e)}')
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to skip onboarding",
+            detail='Failed to skip onboarding',
         )
 
 
@@ -114,10 +114,10 @@ async def auto_create_organization(
         organization = await onboarding_service.auto_create_organization(user.id, db)
         return OrganizationResponse.from_orm(organization)
     except Exception as e:
-        logger.error(f"Failed to auto-create organization: {str(e)}")
+        logger.error(f'Failed to auto-create organization: {str(e)}')
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create organization",
+            detail='Failed to create organization',
         )
 
 
@@ -128,10 +128,10 @@ async def check_first_time_user(
 ) -> dict:
     try:
         is_first_time = await onboarding_service.check_first_time_user(user.id, db)
-        return {"is_first_time": is_first_time}
+        return {'is_first_time': is_first_time}
     except Exception as e:
-        logger.error(f"Failed to check first-time user status: {str(e)}")
+        logger.error(f'Failed to check first-time user status: {str(e)}')
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to check user status",
+            detail='Failed to check user status',
         )

@@ -132,5 +132,3 @@ async def get_current_token_data_optional(
         return auth.validate_jwt_token(credentials.credentials)
     except AuthenticationError:
         return None
-
-

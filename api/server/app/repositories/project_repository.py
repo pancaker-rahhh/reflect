@@ -23,17 +23,28 @@ class ProjectRepository(BaseRepository[Project]):
         self, db: AsyncSession, organization_id: UUID, slug: str
     ) -> Optional[Project]:
         stmt = select(Project).where(
-            and_(Project.organization_id == organization_id, Project.slug == slug, Project.deleted_at.is_(None))
+            and_(
+                Project.organization_id == organization_id,
+                Project.slug == slug,
+                Project.deleted_at.is_(None),
+            )
         )
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
 
     async def get_multi_by_organization(
-        self, db: AsyncSession, *, organization_id: UUID, skip: int = 0, limit: int = 100
+        self,
+        db: AsyncSession,
+        *,
+        organization_id: UUID,
+        skip: int = 0,
+        limit: int = 100,
     ) -> Tuple[List[Project], int]:
         stmt = (
             select(Project)
-            .where(Project.organization_id == organization_id, Project.deleted_at.is_(None))
+            .where(
+                Project.organization_id == organization_id, Project.deleted_at.is_(None)
+            )
             .offset(skip)
             .limit(limit)
             .order_by(Project.created_at.desc())
@@ -42,7 +53,9 @@ class ProjectRepository(BaseRepository[Project]):
         count_stmt = (
             select(func.count())
             .select_from(Project)
-            .where(Project.organization_id == organization_id, Project.deleted_at.is_(None))
+            .where(
+                Project.organization_id == organization_id, Project.deleted_at.is_(None)
+            )
         )
 
         items_result = await db.execute(stmt)
@@ -57,7 +70,7 @@ class ProjectRepository(BaseRepository[Project]):
         project = await self.get(db, id)
         if not project:
             return None
-        
+
         project.deleted_at = datetime.now()
         db.add(project)
         await db.flush()
@@ -87,7 +100,9 @@ class ProjectMemberRepository(BaseRepository[ProjectMember]):
         self, db: AsyncSession, project_id: UUID, user_id: UUID
     ) -> Optional[ProjectMember]:
         stmt = select(ProjectMember).where(
-            and_(ProjectMember.project_id == project_id, ProjectMember.user_id == user_id)
+            and_(
+                ProjectMember.project_id == project_id, ProjectMember.user_id == user_id
+            )
         )
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
@@ -123,8 +138,10 @@ class ProjectMemberRepository(BaseRepository[ProjectMember]):
         return False
 
     async def count_project_members(self, db: AsyncSession, project_id: UUID) -> int:
-        stmt = select(func.count()).select_from(ProjectMember).where(
-            ProjectMember.project_id == project_id
+        stmt = (
+            select(func.count())
+            .select_from(ProjectMember)
+            .where(ProjectMember.project_id == project_id)
         )
         result = await db.execute(stmt)
         return result.scalar_one()

@@ -66,7 +66,6 @@ class UserService:
 
         return UserDeleteResponse(deleted_at=deleted_at)
 
-
     async def _sync_user_to_supabase(self, user_id: UUID, update_data: dict) -> None:
         supabase_metadata = {}
 
@@ -97,15 +96,17 @@ class UserService:
 
         if user_exist:
             logger.debug(f'User {token_data.user_id} already exists, returning profile')
-            
+
             if user_exist.first_login_at is None:
                 await user_repository.update(
-                    db, 
-                    UUID(token_data.user_id), 
-                    first_login_at=datetime.now(timezone.utc)
+                    db,
+                    UUID(token_data.user_id),
+                    first_login_at=datetime.now(timezone.utc),
                 )
-                logger.info(f'Set first_login_at for existing user {token_data.user_id}')
-            
+                logger.info(
+                    f'Set first_login_at for existing user {token_data.user_id}'
+                )
+
             profile = await self.get_user_profile(UUID(token_data.user_id), db)
             if not profile:
                 raise ValueError(
@@ -123,8 +124,8 @@ class UserService:
             'last_synced_at': current_time,
             'last_login_at': current_time,
             'first_login_at': current_time,  # Set first login time for new users
-            'onboarding_completed': False,   # New users need onboarding
-            'user_type': None,              # Will be set during onboarding
+            'onboarding_completed': False,  # New users need onboarding
+            'user_type': None,  # Will be set during onboarding
         }
         await user_repository.create(db, **user_data)
         logger.info(f'Created new user {token_data.user_id} from token sync')

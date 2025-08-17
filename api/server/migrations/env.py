@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 from app.core.settings import get_settings
 from app.db import Base
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 # Import all models to ensure they're registered with Base.metadata

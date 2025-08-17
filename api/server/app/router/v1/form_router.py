@@ -25,7 +25,7 @@ form_router = APIRouter(prefix='/forms', tags=['forms'])
 async def create_form(
     form_data: FormCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: TokenData = Depends(get_current_token_data)
+    current_user: TokenData = Depends(get_current_token_data),
 ):
     await organization_service.check_project_access(
         db, UUID(current_user.user_id), form_data.project_id, required_role='Admin'
@@ -37,12 +37,12 @@ async def create_form(
 async def get_form(
     form_id: UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: TokenData = Depends(get_current_token_data)
+    current_user: TokenData = Depends(get_current_token_data),
 ):
     form = await form_service.get_form(db, form_id)
     if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
-    
+        raise HTTPException(status_code=404, detail='Form not found')
+
     await organization_service.check_project_access(
         db, UUID(current_user.user_id), form.project_id
     )
@@ -55,7 +55,7 @@ async def list_forms(
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=1000),
     db: AsyncSession = Depends(get_db),
-    current_user: TokenData = Depends(get_current_token_data)
+    current_user: TokenData = Depends(get_current_token_data),
 ):
     if project_id:
         await organization_service.check_project_access(
@@ -69,12 +69,12 @@ async def update_form(
     form_id: UUID,
     form_data: FormUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: TokenData = Depends(get_current_token_data)
+    current_user: TokenData = Depends(get_current_token_data),
 ):
     form = await form_service.get_form(db, form_id)
     if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
-    
+        raise HTTPException(status_code=404, detail='Form not found')
+
     await organization_service.check_project_access(
         db, UUID(current_user.user_id), form.project_id, required_role='Admin'
     )
@@ -85,18 +85,18 @@ async def update_form(
 async def delete_form(
     form_id: UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: TokenData = Depends(get_current_token_data)
+    current_user: TokenData = Depends(get_current_token_data),
 ):
     form = await form_service.get_form(db, form_id)
     if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
-    
+        raise HTTPException(status_code=404, detail='Form not found')
+
     await organization_service.check_project_access(
         db, UUID(current_user.user_id), form.project_id, required_role='Admin'
     )
     success = await form_service.delete_form(db, form_id)
     if not success:
-        raise HTTPException(status_code=404, detail="Form not found")
+        raise HTTPException(status_code=404, detail='Form not found')
 
 
 @form_router.post('/{form_id}/fields', response_model=FormFieldResponse)
@@ -104,12 +104,12 @@ async def create_form_field(
     form_id: UUID,
     field_data: FormFieldCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: TokenData = Depends(get_current_token_data)
+    current_user: TokenData = Depends(get_current_token_data),
 ):
     form = await form_service.get_form(db, form_id)
     if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
-    
+        raise HTTPException(status_code=404, detail='Form not found')
+
     await organization_service.check_project_access(
         db, UUID(current_user.user_id), form.project_id, required_role='Admin'
     )
@@ -120,12 +120,12 @@ async def create_form_field(
 async def list_form_fields(
     form_id: UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: TokenData = Depends(get_current_token_data)
+    current_user: TokenData = Depends(get_current_token_data),
 ):
     form = await form_service.get_form(db, form_id)
     if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
-    
+        raise HTTPException(status_code=404, detail='Form not found')
+
     await organization_service.check_project_access(
         db, UUID(current_user.user_id), form.project_id
     )
@@ -138,38 +138,40 @@ async def update_form_field(
     field_id: UUID,
     field_data: FormFieldUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: TokenData = Depends(get_current_token_data)
+    current_user: TokenData = Depends(get_current_token_data),
 ):
     form = await form_service.get_form(db, form_id)
     if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
-    
+        raise HTTPException(status_code=404, detail='Form not found')
+
     await organization_service.check_project_access(
         db, UUID(current_user.user_id), form.project_id, required_role='Admin'
     )
     field = await form_service.update_form_field(db, field_id, field_data)
     if not field:
-        raise HTTPException(status_code=404, detail="Form field not found")
+        raise HTTPException(status_code=404, detail='Form field not found')
     return field
 
 
-@form_router.delete('/{form_id}/fields/{field_id}', status_code=status.HTTP_204_NO_CONTENT)
+@form_router.delete(
+    '/{form_id}/fields/{field_id}', status_code=status.HTTP_204_NO_CONTENT
+)
 async def delete_form_field(
     form_id: UUID,
     field_id: UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: TokenData = Depends(get_current_token_data)
+    current_user: TokenData = Depends(get_current_token_data),
 ):
     form = await form_service.get_form(db, form_id)
     if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
-    
+        raise HTTPException(status_code=404, detail='Form not found')
+
     await organization_service.check_project_access(
         db, UUID(current_user.user_id), form.project_id, required_role='Admin'
     )
     success = await form_service.delete_form_field(db, field_id)
     if not success:
-        raise HTTPException(status_code=404, detail="Form field not found")
+        raise HTTPException(status_code=404, detail='Form field not found')
 
 
 @form_router.put('/{form_id}/fields/reorder', status_code=status.HTTP_204_NO_CONTENT)
@@ -177,12 +179,12 @@ async def reorder_form_fields(
     form_id: UUID,
     field_ids: List[UUID],
     db: AsyncSession = Depends(get_db),
-    current_user: TokenData = Depends(get_current_token_data)
+    current_user: TokenData = Depends(get_current_token_data),
 ):
     form = await form_service.get_form(db, form_id)
     if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
-    
+        raise HTTPException(status_code=404, detail='Form not found')
+
     await organization_service.check_project_access(
         db, UUID(current_user.user_id), form.project_id, required_role='Admin'
     )

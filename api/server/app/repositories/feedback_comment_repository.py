@@ -42,7 +42,7 @@ class FeedbackCommentRepository(BaseRepository[FeedbackComment]):
         comment_data = {
             'feedback_id': feedback_id,
             'user_id': user_id,
-            'comment_text': comment_text
+            'comment_text': comment_text,
         }
         return await self.create(db, **comment_data)
 

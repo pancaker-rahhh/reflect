@@ -5,14 +5,18 @@ import uuid
 
 
 class OnboardingStepUpdate(BaseModel):
-    step: str = Field(..., description="Current onboarding step")
-    completed: bool = Field(default=False, description="Whether step is completed")
-    metadata: Optional[dict] = Field(default=None, description="Additional step metadata")
+    step: str = Field(..., description='Current onboarding step')
+    completed: bool = Field(default=False, description='Whether step is completed')
+    metadata: Optional[dict] = Field(
+        default=None, description='Additional step metadata'
+    )
 
 
 class OnboardingStartRequest(BaseModel):
-    user_type: Literal["solo", "team"] = Field(..., description="Type of user account")
-    referral_source: Optional[str] = Field(default=None, description="How user found the product")
+    user_type: Literal['solo', 'team'] = Field(..., description='Type of user account')
+    referral_source: Optional[str] = Field(
+        default=None, description='How user found the product'
+    )
 
 
 class OnboardingStartResponse(BaseModel):
@@ -39,8 +43,12 @@ class OnboardingStatusResponse(BaseModel):
 
 
 class OnboardingUpdateRequest(BaseModel):
-    current_step: Optional[str] = Field(default=None, description="Current step in onboarding")
-    steps_completed: Optional[dict] = Field(default=None, description="Completed steps tracking")
+    current_step: Optional[str] = Field(
+        default=None, description='Current step in onboarding'
+    )
+    steps_completed: Optional[dict] = Field(
+        default=None, description='Completed steps tracking'
+    )
     has_created_project: Optional[bool] = None
     has_created_organization: Optional[bool] = None
     company_size: Optional[str] = None
@@ -49,8 +57,12 @@ class OnboardingUpdateRequest(BaseModel):
 
 
 class OnboardingCompleteRequest(BaseModel):
-    feedback: Optional[str] = Field(default=None, description="User feedback about onboarding")
-    skipped_steps: Optional[list] = Field(default=None, description="List of skipped steps")
+    feedback: Optional[str] = Field(
+        default=None, description='User feedback about onboarding'
+    )
+    skipped_steps: Optional[list] = Field(
+        default=None, description='List of skipped steps'
+    )
 
 
 class OnboardingCompleteResponse(BaseModel):

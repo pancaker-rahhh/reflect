@@ -5,7 +5,11 @@ from app.models.base_model import (
     SoftDeleteMixin,
 )
 from app.models.user_model import User
-from app.models.organization_model import Organization, OrganizationMember, ProjectMember
+from app.models.organization_model import (
+    Organization,
+    OrganizationMember,
+    ProjectMember,
+)
 from app.models.project_model import Project
 from app.models.widget_model import Widget
 from app.models.form_model import FeedbackForm, FormField
@@ -18,7 +22,12 @@ from app.models.feedback_model import (
     FeedbackComment,
     FeedbackVote,
 )
-from app.models.roadmap_model import Roadmap, RoadmapColumn, RoadmapFeature, RoadmapItemAssignment
+from app.models.roadmap_model import (
+    Roadmap,
+    RoadmapColumn,
+    RoadmapFeature,
+    RoadmapItemAssignment,
+)
 from app.models.integration_model import Integration, IntegrationMapping
 from app.models.webhook_model import Webhook
 from app.models.notification_model import Notification
@@ -32,7 +41,7 @@ __all__ = [
     'SoftDeleteMixin',
     'User',
     'Organization',
-    'OrganizationMember', 
+    'OrganizationMember',
     'ProjectMember',
     'Project',
     'Widget',

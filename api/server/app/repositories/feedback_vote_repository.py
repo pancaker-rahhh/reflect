@@ -34,20 +34,24 @@ class FeedbackVoteRepository(BaseRepository[FeedbackVote]):
         vote_counts = {}
         for row in rows:
             vote_counts[row.vote_type] = row.count
-        
+
         upvotes = vote_counts.get('up', 0)
         downvotes = vote_counts.get('down', 0)
         return {
             'upvotes': upvotes,
             'downvotes': downvotes,
-            'total': upvotes + downvotes
+            'total': upvotes + downvotes,
         }
 
     async def get_user_vote(
-        self, db: AsyncSession, feedback_id: UUID, user_id: Optional[UUID] = None, session_id: Optional[str] = None
+        self,
+        db: AsyncSession,
+        feedback_id: UUID,
+        user_id: Optional[UUID] = None,
+        session_id: Optional[str] = None,
     ) -> Optional[FeedbackVote]:
         conditions = [FeedbackVote.feedback_id == feedback_id]
-        
+
         if user_id:
             conditions.append(FeedbackVote.user_id == user_id)
         elif session_id:
@@ -60,45 +64,47 @@ class FeedbackVoteRepository(BaseRepository[FeedbackVote]):
         return result.scalar_one_or_none()
 
     async def create_vote(
-        self, 
-        db: AsyncSession, 
-        feedback_id: UUID, 
-        vote_type: str, 
-        user_id: Optional[UUID] = None, 
-        session_id: Optional[str] = None
+        self,
+        db: AsyncSession,
+        feedback_id: UUID,
+        vote_type: str,
+        user_id: Optional[UUID] = None,
+        session_id: Optional[str] = None,
     ) -> FeedbackVote:
         vote_data = {
             'feedback_id': feedback_id,
             'vote_type': vote_type,
             'user_id': user_id,
-            'session_id': session_id
+            'session_id': session_id,
         }
         return await self.create(db, **vote_data)
 
     async def update_vote(
-        self, 
-        db: AsyncSession, 
-        feedback_id: UUID, 
-        vote_type: str, 
-        user_id: Optional[UUID] = None, 
-        session_id: Optional[str] = None
+        self,
+        db: AsyncSession,
+        feedback_id: UUID,
+        vote_type: str,
+        user_id: Optional[UUID] = None,
+        session_id: Optional[str] = None,
     ) -> Optional[FeedbackVote]:
         existing_vote = await self.get_user_vote(db, feedback_id, user_id, session_id)
-        
+
         if existing_vote:
             return await self.update(db, existing_vote.id, vote_type=vote_type)
         else:
-            return await self.create_vote(db, feedback_id, vote_type, user_id, session_id)
+            return await self.create_vote(
+                db, feedback_id, vote_type, user_id, session_id
+            )
 
     async def remove_vote(
-        self, 
-        db: AsyncSession, 
-        feedback_id: UUID, 
-        user_id: Optional[UUID] = None, 
-        session_id: Optional[str] = None
+        self,
+        db: AsyncSession,
+        feedback_id: UUID,
+        user_id: Optional[UUID] = None,
+        session_id: Optional[str] = None,
     ) -> bool:
         existing_vote = await self.get_user_vote(db, feedback_id, user_id, session_id)
-        
+
         if existing_vote:
             return await self.delete(db, existing_vote.id)
         return False

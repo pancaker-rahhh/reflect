@@ -15,15 +15,15 @@ if TYPE_CHECKING:
 
 
 class OrganizationRole(str, enum.Enum):
-    OWNER = "owner"
-    ADMIN = "admin"
-    MEMBER = "member"
+    OWNER = 'owner'
+    ADMIN = 'admin'
+    MEMBER = 'member'
 
 
 class ProjectRole(str, enum.Enum):
-    ADMIN = "admin"
-    EDITOR = "editor"
-    VIEWER = "viewer"
+    ADMIN = 'admin'
+    EDITOR = 'editor'
+    VIEWER = 'viewer'
 
 
 class Organization(BaseModel):
@@ -44,7 +44,9 @@ class Organization(BaseModel):
     )
 
     members: Mapped[List['OrganizationMember']] = relationship(
-        'OrganizationMember', back_populates='organization', cascade='all, delete-orphan'
+        'OrganizationMember',
+        back_populates='organization',
+        cascade='all, delete-orphan',
     )
     projects: Mapped[List['Project']] = relationship(
         'Project', back_populates='organization', cascade='all, delete-orphan'
@@ -52,7 +54,7 @@ class Organization(BaseModel):
     creator: Mapped[Optional['User']] = relationship(
         'User', foreign_keys=[created_by], back_populates='created_organizations'
     )
-    
+
     # Invitation system relationships
     invitations: Mapped[List['Invitation']] = relationship(
         'Invitation', back_populates='organization', cascade='all, delete-orphan'
@@ -97,8 +99,12 @@ class OrganizationMember(BaseModel):
 
     role: Mapped[OrganizationRole] = mapped_column(nullable=False)
 
-    organization: Mapped['Organization'] = relationship('Organization', back_populates='members')
-    user: Mapped['User'] = relationship('User', back_populates='organization_memberships')
+    organization: Mapped['Organization'] = relationship(
+        'Organization', back_populates='members'
+    )
+    user: Mapped['User'] = relationship(
+        'User', back_populates='organization_memberships'
+    )
 
 
 class ProjectMember(BaseModel):

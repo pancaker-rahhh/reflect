@@ -75,6 +75,7 @@ class OrganizationInviteRequest(BaseModel):
     @classmethod
     def validate_email(cls, v: str) -> str:
         import re
+
         email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         if not re.match(email_pattern, v):
             raise ValueError('Invalid email format')
