@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Building2, FolderOpen, Plus, Search, Clock } from 'lucide-react';
-import { organizationApi, type Organization } from '../../lib/api/organization';
-import { projectApi } from '../../lib/api/project';
+import { useOrganization } from '../../context/OrganizationContext';
+import type { Organization } from '../../lib/api/organization';
 import type { Project } from '@/types';
 
 interface OrgProjectDropdownProps {
@@ -17,13 +17,18 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
   onOrgChange,
   onProjectChange,
 }) => {
+  const {
+    currentOrganization,
+    currentProject,
+    organizations,
+    projects,
+    setCurrentOrganization,
+    setCurrentProject,
+    loading
+  } = useOrganization();
+  
   const [isOpen, setIsOpen] = useState(false);
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
-  const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(false);
   const [recentProjects, setRecentProjects] = useState<string[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -39,57 +44,14 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
   }, []);
 
   useEffect(() => {
-    loadOrganizations();
     loadRecentProjects();
   }, []);
 
   useEffect(() => {
-    if (currentOrgId && organizations.length > 0) {
-      const org = organizations.find(o => o.id === currentOrgId);
-      if (org) {
-        setCurrentOrg(org);
-        loadProjects(org.id);
-      }
+    if (currentProject) {
+      addToRecentProjects(currentProject.id);
     }
-  }, [currentOrgId, organizations]);
-
-  useEffect(() => {
-    if (currentProjectId && projects.length > 0) {
-      const project = projects.find(p => p.id === currentProjectId);
-      if (project) {
-        setCurrentProject(project);
-        addToRecentProjects(project.id);
-      }
-    }
-  }, [currentProjectId, projects]);
-
-  const loadOrganizations = async () => {
-    try {
-      setLoading(true);
-      const orgs = await organizationApi.getMy();
-      setOrganizations(orgs);
-      if (orgs.length > 0 && !currentOrgId) {
-        setCurrentOrg(orgs[0]);
-        loadProjects(orgs[0].id);
-      }
-    } catch (error) {
-      console.error('Failed to load organizations:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadProjects = async (orgId: string) => {
-    try {
-      const response = await projectApi.getByWorkspace(orgId);
-      setProjects(response.items);
-      if (response.items.length > 0 && !currentProjectId) {
-        setCurrentProject(response.items[0]);
-      }
-    } catch (error) {
-      console.error('Failed to load projects:', error);
-    }
-  };
+  }, [currentProject]);
 
   const loadRecentProjects = () => {
     const stored = localStorage.getItem('recentProjects');
@@ -104,10 +66,8 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
     localStorage.setItem('recentProjects', JSON.stringify(updated));
   };
 
-  const handleOrgSelect = async (org: Organization) => {
-    setCurrentOrg(org);
-    setCurrentProject(null);
-    await loadProjects(org.id);
+  const handleOrgSelect = (org: Organization) => {
+    setCurrentOrganization(org);
     onOrgChange?.(org);
   };
 
@@ -137,10 +97,10 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
         className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
       >
         <div className="flex items-center gap-2">
-          {currentOrg && (
+          {currentOrganization && (
             <>
               <Building2 className="w-4 h-4 text-gray-500" />
-              <span>{currentOrg.name}</span>
+              <span>{currentOrganization.name}</span>
             </>
           )}
           {currentProject && (
@@ -202,19 +162,19 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
                       <button
                         onClick={() => handleOrgSelect(org)}
                         className={`w-full flex items-center justify-between px-2 py-2 text-sm text-left hover:bg-gray-100 rounded ${
-                          currentOrg?.id === org.id ? 'bg-indigo-50 text-indigo-600' : ''
+                          currentOrganization?.id === org.id ? 'bg-indigo-50 text-indigo-600' : ''
                         }`}
                       >
                         <div className="flex items-center gap-2">
                           <Building2 className="w-4 h-4" />
                           <span>{org.name}</span>
                         </div>
-                        {currentOrg?.id === org.id && (
+                        {currentOrganization?.id === org.id && (
                           <ChevronDown className="w-4 h-4" />
                         )}
                       </button>
 
-                      {currentOrg?.id === org.id && filteredProjects.length > 0 && (
+                      {currentOrganization?.id === org.id && filteredProjects.length > 0 && (
                         <div className="ml-4 mt-1">
                           {filteredProjects.map(project => (
                             <button

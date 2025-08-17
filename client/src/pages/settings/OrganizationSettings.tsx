@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { OrganizationSettings as OrganizationSettingsComponent } from '../../components/organization/OrganizationSettings';
+import { OrganizationSettingsPage } from '../../components/organization/OrganizationSettingsPage';
 
 export const OrganizationSettings: React.FC = () => {
   const { user } = useAuth();
@@ -9,5 +9,5 @@ export const OrganizationSettings: React.FC = () => {
   // In a real app, this would come from route params or context
   const organizationId = user?.user_metadata?.primary_organization_id || '1';
 
-  return <OrganizationSettingsComponent organizationId={organizationId} />;
+  return <OrganizationSettingsPage organizationId={organizationId} />;
 };
