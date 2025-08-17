@@ -17,10 +17,10 @@ const ReactInstallationSection = () => {
     <!-- Feedback widget -->
     <script
       defer
-      src="https://cdn.feedbask.com/widget.js"
+      src="https://cdn.reflect.com/widget.js"
       data-client-key="YOUR_WIDGET_ID"
       data-language="en"
-      id="feedbask-widget-script"
+      id="reflect-widget-script"
     ></script>
 
     <script type="module" src="/src/main.tsx"></script>

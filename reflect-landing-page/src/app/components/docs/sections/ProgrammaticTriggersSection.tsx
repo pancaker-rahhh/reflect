@@ -54,7 +54,7 @@ const ProgrammaticTriggersSection = () => {
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">Configure Manual Trigger</h3>
                         <p className="mb-3 text-gray-600">First, set up your widget to use the "Manual (On Click)" trigger type:</p>
                         <ul className="list-disc list-inside text-gray-600 space-y-2 text-sm">
-                            <li>Go to your widget settings in the Feedbask dashboard</li>
+                            <li>Go to your widget settings in the reflect dashboard</li>
                             <li>Navigate to the "Behavior & Targeting" section</li>
                             <li>Under "Widget trigger", select "<strong>Manual (On Click)</strong>"</li>
                             <li>Save your widget configuration</li>

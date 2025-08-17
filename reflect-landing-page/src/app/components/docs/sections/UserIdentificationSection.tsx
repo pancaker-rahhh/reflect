@@ -33,9 +33,9 @@ window.feedback.identify({
   department: 'Engineering'
 });`;
 
-    const cursorPrompt = `Please help me implement Feedbask user identification in my codebase. I need to:
+    const cursorPrompt = `Please help me implement reflect user identification in my codebase. I need to:
 
-1. **Call identify() after user login** - When a user successfully logs in, identify them to Feedbask
+1. **Call identify() after user login** - When a user successfully logs in, identify them to reflect
 2. **Call identify() on page load** - If a user is already logged in when they visit the page
 3. **Call unidentify() on logout** - Clear user identification when they log out
 

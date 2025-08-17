@@ -24,7 +24,7 @@ const WebhooksSection = () => {
     "status": "new",
     "reporter_email": "user@example.com",
     "reporter_name": "John Doe",
-    "screenshot_url": "https://storage.feedbask.com/screenshots/...",
+    "screenshot_url": "https://storage.reflect.com/screenshots/...",
     "external_user_id": "user_789",
     "user_properties": {
       "plan": "premium",
@@ -68,15 +68,15 @@ const WebhooksSection = () => {
   "webhook_id": "550e8400-e29b-41d4-a716-446655440000",
   "webhook_name": "My Webhook",
   "data": {
-    "message": "This is a test webhook from Feedbask",
+    "message": "This is a test webhook from reflect",
     "test": true
   }
 }`;
 
     const webhookHeaders = `Content-Type: application/json
-User-Agent: Feedbask-Webhook/1.0
-X-Feedbask-Event: new_bug_report
-X-Feedbask-Delivery: 550e8400-e29b-41d4-a716-446655440000-1705316400000-1`;
+User-Agent: reflect-Webhook/1.0
+X-reflect-Event: new_bug_report
+X-reflect-Delivery: 550e8400-e29b-41d4-a716-446655440000-1705316400000-1`;
 
     const slackIntegrationCode = `// webhook-handler.js
 const express = require('express');
@@ -88,8 +88,8 @@ const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
 
 app.use(express.json());
 
-// Webhook endpoint that Feedbask will call
-app.post('/webhooks/feedbask', async (req, res) => {
+// Webhook endpoint that reflect will call
+app.post('/webhooks/reflect', async (req, res) => {
   try {
     const { event_type, data, program } = req.body;
 
@@ -109,7 +109,7 @@ app.post('/webhooks/feedbask', async (req, res) => {
       await axios.post(SLACK_WEBHOOK_URL, slackMessage);
     }
 
-    // Always respond quickly to Feedbask
+    // Always respond quickly to reflect
     res.status(200).json({ received: true });
   } catch (error) {
     console.error('Webhook processing error:', error);
@@ -203,7 +203,7 @@ function formatBugReportForSlack(data, program) {
             type: "button",
             text: {
               type: "plain_text",
-              text: "View in Feedbask",
+              text: "View in reflect",
               emoji: true
             },
             url: \`\${program.website_url}/dashboard/bugs/\${data.id}\`
@@ -364,19 +364,19 @@ function getWebhookBySeverity(severity) {
                 <p className="text-gray-600 mb-4">Each webhook request includes the following headers:</p>
                 <CodeBlock code={webhookHeaders} />
                 <ul className="list-disc list-inside text-gray-600 space-y-2 mt-4 text-sm">
-                    <li><strong>X-Feedbask-Event:</strong> The event type that triggered the webhook</li>
-                    <li><strong>X-Feedbask-Delivery:</strong> Unique delivery ID (webhook_id-timestamp-attempt)</li>
+                    <li><strong>X-reflect-Event:</strong> The event type that triggered the webhook</li>
+                    <li><strong>X-reflect-Delivery:</strong> Unique delivery ID (webhook_id-timestamp-attempt)</li>
                 </ul>
             </ContentCard>
 
             <ContentCard>
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">Slack Integration Example</h3>
-                <p className="text-gray-600 mb-4">Complete implementation guide for sending Feedbask notifications to Slack.</p>
+                <p className="text-gray-600 mb-4">Complete implementation guide for sending reflect notifications to Slack.</p>
 
                 <h4 className="font-semibold text-gray-800">Step 1: Set Up Slack Incoming Webhook</h4>
                 <ol className="list-decimal list-inside text-gray-600 space-y-2 my-2">
                     <li>Go to <a href="https://api.slack.com/apps" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline">api.slack.com/apps</a> and click "Create New App".</li>
-                    <li>Choose "From scratch" and name your app (e.g., "Feedbask Notifications").</li>
+                    <li>Choose "From scratch" and name your app (e.g., "reflect Notifications").</li>
                     <li>Select your Slack workspace.</li>
                     <li>Navigate to "Features → Incoming Webhooks" and toggle it ON.</li>
                     <li>Click "Add New Webhook to Workspace".</li>
@@ -386,7 +386,7 @@ function getWebhookBySeverity(severity) {
                 <Note><strong>Security Note:</strong> Your Webhook URL contains a secret token. Store it in environment variables, never commit it to your repository.</Note>
 
                 <h4 className="font-semibold text-gray-800 mt-6">Step 2: Create Your Webhook Handler (Node.js/Express)</h4>
-                <p className="text-gray-600 my-2">Create an endpoint to receive Feedbask webhooks and forward them to Slack with rich formatting:</p>
+                <p className="text-gray-600 my-2">Create an endpoint to receive reflect webhooks and forward them to Slack with rich formatting:</p>
                 <CodeBlock code={slackIntegrationCode} />
 
                 <h4 className="font-semibold text-gray-800 mt-6">Step 3: Configure Environment Variables</h4>
@@ -395,8 +395,8 @@ function getWebhookBySeverity(severity) {
                 <h4 className="font-semibold text-gray-800 mt-6">Step 4: Deploy and Configure in Feedback</h4>
                 <ol className="list-decimal list-inside text-gray-600 space-y-2 my-2">
                     <li>Deploy your webhook handler to a service like Vercel, Railway, or Heroku.</li>
-                    <li>Get your public endpoint URL (e.g., https://your-app.herokuapp.com/webhooks/feedbask).</li>
-                    <li>In Feedbask, go to Settings → Integrations → Webhooks.</li>
+                    <li>Get your public endpoint URL (e.g., https://your-app.herokuapp.com/webhooks/reflect).</li>
+                    <li>In reflect, go to Settings → Integrations → Webhooks.</li>
                     <li>Click "Add Webhook" and configure:</li>
                     <ul className="list-disc list-inside ml-6">
                         <li><strong>Name:</strong> Slack Integration</li>

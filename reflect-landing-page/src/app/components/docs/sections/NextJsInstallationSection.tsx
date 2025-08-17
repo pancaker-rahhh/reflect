@@ -16,9 +16,9 @@ export default function RootLayout({
       <body>
         {children}
         <Script
-          id="feedbask-widget-script"
+          id="reflect-widget-script"
           strategy="lazyOnload"
-          src="https://cdn.feedbask.com/widget.js"
+          src="https://cdn.reflect.com/widget.js"
           data-client-key="YOUR_WIDGET_ID"
           data-language="en"
         />
@@ -37,9 +37,9 @@ export default function Document() {
         <Main />
         <NextScript />
         <script
-          id="feedbask-widget-script"
+          id="reflect-widget-script"
           strategy="lazyOnload"
-          src="https://cdn.feedbask.com/widget.js"
+          src="https://cdn.reflect.com/widget.js"
           data-client-key="YOUR_WIDGET_ID"
           data-language="en"
         />

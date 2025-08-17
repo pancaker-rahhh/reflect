@@ -8,7 +8,7 @@ const OverviewSection = () => {
         <section id="overview" className="mb-16">
             <DocsHeader
                 title="Widget Installation Guide"
-                description="Learn how to integrate the Feedbask feedback widget into your website or application."
+                description="Learn how to integrate the reflect feedback widget into your website or application."
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
                 <InfoCard

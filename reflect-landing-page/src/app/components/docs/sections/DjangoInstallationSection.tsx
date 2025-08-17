@@ -18,15 +18,15 @@ const DjangoInstallationSection = () => {
     <!-- Feedback Widget -->
     <script
         defer
-        src="https://cdn.feedbask.com/widget.js"
-        data-client-key="{{ FEEDBASK_WIDGET_ID }}"
+        src="https://cdn.reflect.com/widget.js"
+        data-client-key="{{ reflect_WIDGET_ID }}"
         data-language="en"
-        id="feedbask-widget-script"
+        id="reflect-widget-script"
     ></script>
 </body>
 </html>`;
 
-    const settingsCode = `FEEDBASK_WIDGET_ID = 'your_actual_widget_id'`;
+    const settingsCode = `reflect_WIDGET_ID = 'your_actual_widget_id'`;
 
     return (
         <section id="django-installation" className="mb-16">
@@ -44,7 +44,7 @@ const DjangoInstallationSection = () => {
                 <div className="bg-gray-100 p-4 rounded">
                     <pre className="text-sm text-gray-800">{settingsCode}</pre>
                 </div>
-                <p className="text-sm text-gray-600 mt-4">Don't forget to add <code className="bg-gray-200 text-gray-800 px-1.5 py-0.5 rounded">'FEEDBASK_WIDGET_ID': FEEDBASK_WIDGET_ID</code> to your template context processors if needed.</p>
+                <p className="text-sm text-gray-600 mt-4">Don't forget to add <code className="bg-gray-200 text-gray-800 px-1.5 py-0.5 rounded">'reflect_WIDGET_ID': reflect_WIDGET_ID</code> to your template context processors if needed.</p>
             </ContentCard>
         </section>
     );

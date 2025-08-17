@@ -18,15 +18,15 @@ const LaravelInstallationSection = () => {
     <!-- Feedback widget -->
     <script
         defer
-        src="https://cdn.feedbask.com/widget.js"
-        data-client-key="{{ env('FEEDBASK_WIDGET_ID') }}"
+        src="https://cdn.reflect.com/widget.js"
+        data-client-key="{{ env('reflect_WIDGET_ID') }}"
         data-language="en"
-        id="feedbask-widget-script"
+        id="reflect-widget-script"
     ></script>
 </body>
 </html>`;
 
-    const envCode = `FEEDBASK_WIDGET_ID=your_actual_widget_id`;
+    const envCode = `reflect_WIDGET_ID=your_actual_widget_id`;
 
     return (
         <section id="laravel-installation" className="mb-16">

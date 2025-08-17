@@ -6,10 +6,10 @@ import Note from '@/app/components/docs/Note';
 const LanguageConfigurationSection = () => {
     const frenchExampleCode = `<script
     defer
-    src="https://cdn.feedbask.com/widget.js"
+    src="https://cdn.reflect.com/widget.js"
     data-client-key="YOUR_WIDGET_ID"
     data-language="fr"
-    id="feedbask-widget-script"
+    id="reflect-widget-script"
     ></script>`;
 
     const languages = [
