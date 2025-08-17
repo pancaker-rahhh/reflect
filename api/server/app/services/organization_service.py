@@ -3,9 +3,11 @@ from uuid import UUID
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import select
 
 from app.models.organization_model import Organization, OrganizationMember, OrganizationRole
 from app.models.user_model import User
+from app.models.invitation import PendingMember
 from app.repositories.organization_repository import (
     organization_repository,
     organization_member_repository
@@ -167,6 +169,7 @@ class OrganizationService:
     ) -> List[OrganizationMemberResponse]:
         await self._check_user_access(db, org_id, user_id)
         
+        # Get active members
         members = await organization_member_repository.get_org_members(
             db, org_id, skip, limit
         )
@@ -177,6 +180,29 @@ class OrganizationService:
             if member.user:
                 response.user_name = member.user.name
                 response.user_email = member.user.email
+                response.is_pending = False
+            member_responses.append(response)
+        
+        # Get pending members
+        stmt = select(PendingMember).where(
+            PendingMember.organization_id == org_id
+        )
+        result = await db.execute(stmt)
+        pending_members = result.scalars().all()
+        
+        for pending in pending_members:
+            # Create a member response for pending members
+            response = OrganizationMemberResponse(
+                id=pending.id,
+                user_id=None,  # No user yet
+                organization_id=org_id,
+                role=pending.role,
+                user_name=pending.name or "Pending User",
+                user_email=pending.email,
+                is_pending=True,
+                created_at=pending.created_at,
+                updated_at=pending.created_at
+            )
             member_responses.append(response)
         
         return member_responses

@@ -88,3 +88,42 @@ class PendingMemberModel(BaseModel):
     
     class Config:
         orm_mode = True
+
+
+class InvitationValidateResponse(BaseModel):
+    """Response when validating an invitation token"""
+    invitation_id: UUID
+    email: EmailStr
+    organization_name: Optional[str]
+    project_name: Optional[str]
+    role: str
+    inviter_name: str
+    expires_at: datetime
+    is_expired: bool
+    user_exists: bool
+
+
+class NewUserData(BaseModel):
+    """Data for creating a new user during invitation acceptance"""
+    name: str = Field(..., min_length=1, max_length=100)
+    password: str = Field(..., min_length=8)
+    phone: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+
+class InvitationAcceptRequest(BaseModel):
+    """Request to accept an invitation"""
+    token: str
+    user_data: Optional[NewUserData] = None  # Only for new users
+
+
+class InvitationAcceptResponse(BaseModel):
+    """Response after accepting an invitation"""
+    success: bool
+    message: str
+    user_id: UUID
+    organization_id: Optional[UUID]
+    project_id: Optional[UUID]
+    role: str
+    access_token: Optional[str] = None  # For new users
+    redirect_url: str

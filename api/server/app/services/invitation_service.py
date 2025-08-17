@@ -9,12 +9,15 @@ from sqlalchemy.orm import selectinload
 
 from app.models.organization import Organization, OrganizationMember
 from app.models.invitation import Invitation, PendingMember, InvitationTask
-from app.models.user import User
+from app.models.user_model import User
 from app.schemas.invitation_schema import (
     InvitationEntry,
     InvitationResult,
     InvitationStatusResponse,
     InvitationModel,
+    InvitationValidateResponse,
+    InvitationAcceptResponse,
+    NewUserData,
 )
 from app.services.email_service import email_service
 from app.core.logging import get_logger
@@ -398,6 +401,222 @@ class InvitationService:
             return True
         
         return False
+    
+    async def validate_invitation_token(
+        self,
+        token: str,
+        db: AsyncSession
+    ) -> Optional[InvitationValidateResponse]:
+        """Validate an invitation token and return details."""
+        stmt = select(Invitation).options(
+            selectinload(Invitation.organization),
+            selectinload(Invitation.project),
+            selectinload(Invitation.inviter)
+        ).where(
+            and_(
+                Invitation.token == token,
+                Invitation.status == "pending"
+            )
+        )
+        result = await db.execute(stmt)
+        invitation = result.scalar_one_or_none()
+        
+        if not invitation:
+            return None
+        
+        # Check if user exists
+        stmt = select(User).where(User.email == invitation.email.lower())
+        result = await db.execute(stmt)
+        user_exists = result.scalar_one_or_none() is not None
+        
+        # Check expiration
+        is_expired = datetime.utcnow() > invitation.expires_at
+        
+        return InvitationValidateResponse(
+            invitation_id=invitation.id,
+            email=invitation.email,
+            organization_name=invitation.organization.name if invitation.organization else None,
+            project_name=invitation.project.name if invitation.project else None,
+            role=invitation.role,
+            inviter_name=invitation.inviter.name if invitation.inviter else "Unknown",
+            expires_at=invitation.expires_at,
+            is_expired=is_expired,
+            user_exists=user_exists
+        )
+    
+    async def accept_invitation(
+        self,
+        token: str,
+        user_id: Optional[UUID],
+        user_data: Optional[NewUserData],
+        db: AsyncSession
+    ) -> Optional[InvitationAcceptResponse]:
+        """
+        Accept an invitation and create/update user memberships.
+        Handles both existing and new users.
+        """
+        # Validate invitation
+        validation = await self.validate_invitation_token(token, db)
+        if not validation:
+            raise ValueError("Invalid or expired invitation token")
+        
+        if validation.is_expired:
+            raise ValueError("Invitation has expired")
+        
+        # Get the invitation
+        stmt = select(Invitation).where(
+            and_(
+                Invitation.token == token,
+                Invitation.status == "pending"
+            )
+        )
+        result = await db.execute(stmt)
+        invitation = result.scalar_one_or_none()
+        
+        if not invitation:
+            return None
+        
+        # Determine or create user
+        if user_id:
+            # Existing authenticated user
+            stmt = select(User).where(User.id == user_id)
+            result = await db.execute(stmt)
+            user = result.scalar_one_or_none()
+            if not user:
+                raise ValueError("User not found")
+        else:
+            # Check if user exists with this email
+            stmt = select(User).where(User.email == invitation.email.lower())
+            result = await db.execute(stmt)
+            user = result.scalar_one_or_none()
+            
+            if not user:
+                # Create new user
+                if not user_data:
+                    raise ValueError("User data required for new user registration")
+                
+                user = await self._create_user_from_invitation(
+                    invitation=invitation,
+                    user_data=user_data,
+                    db=db
+                )
+        
+        # Add user to organization/project
+        if invitation.organization_id:
+            await self._add_to_organization(
+                user_id=user.id,
+                organization_id=invitation.organization_id,
+                role=invitation.role,
+                db=db
+            )
+        
+        # Update invitation status
+        invitation.status = "accepted"
+        invitation.accepted_at = datetime.utcnow()
+        invitation.accepted_by = user.id
+        
+        # Remove pending member
+        stmt = select(PendingMember).where(
+            PendingMember.invitation_id == invitation.id
+        )
+        result = await db.execute(stmt)
+        pending_member = result.scalar_one_or_none()
+        if pending_member:
+            await db.delete(pending_member)
+        
+        await db.commit()
+        
+        # Generate response
+        redirect_url = f"{settings.FRONTEND_URL}/dashboard"
+        if invitation.organization_id:
+            redirect_url = f"{settings.FRONTEND_URL}/org/{invitation.organization_id}/dashboard"
+        
+        return InvitationAcceptResponse(
+            success=True,
+            message="Invitation accepted successfully",
+            user_id=user.id,
+            organization_id=invitation.organization_id,
+            project_id=invitation.project_id,
+            role=invitation.role,
+            access_token=None,  # Will be handled by auth flow
+            redirect_url=redirect_url
+        )
+    
+    async def _create_user_from_invitation(
+        self,
+        invitation: Invitation,
+        user_data: NewUserData,
+        db: AsyncSession
+    ) -> User:
+        """Create a new user from invitation data."""
+        from app.services.supabase_service import supabase_service
+        
+        # Create user in Supabase first
+        supabase_user = await supabase_service.create_user(
+            email=invitation.email,
+            password=user_data.password,
+            metadata={
+                "name": user_data.name,
+                "phone": user_data.phone,
+                "avatar_url": user_data.avatar_url,
+                "invited": True,
+                "invitation_id": str(invitation.id)
+            }
+        )
+        
+        if not supabase_user:
+            raise ValueError("Failed to create user account")
+        
+        # Create user in database
+        user = User(
+            id=UUID(supabase_user["id"]),
+            email=invitation.email.lower(),
+            name=user_data.name,
+            phone=user_data.phone,
+            avatar_url=user_data.avatar_url,
+            onboarding_completed=True,  # Skip onboarding for invited users
+            user_type="team_member",
+            first_login_at=datetime.utcnow(),
+            last_login_at=datetime.utcnow(),
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow()
+        )
+        
+        db.add(user)
+        await db.flush()
+        
+        return user
+    
+    async def _add_to_organization(
+        self,
+        user_id: UUID,
+        organization_id: UUID,
+        role: str,
+        db: AsyncSession
+    ) -> None:
+        """Add user to organization with specified role."""
+        # Check if already a member
+        stmt = select(OrganizationMember).where(
+            and_(
+                OrganizationMember.organization_id == organization_id,
+                OrganizationMember.user_id == user_id
+            )
+        )
+        result = await db.execute(stmt)
+        existing_member = result.scalar_one_or_none()
+        
+        if not existing_member:
+            # Add as new member
+            member = OrganizationMember(
+                id=uuid4(),
+                organization_id=organization_id,
+                user_id=user_id,
+                role=role,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            db.add(member)
+            logger.info(f"Added user {user_id} to organization {organization_id} with role {role}")
 
 
 # Singleton instance

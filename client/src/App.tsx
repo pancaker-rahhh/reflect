@@ -17,6 +17,7 @@ import { Login } from '@/pages/auth/Login'
 import { AuthCallback } from '@/pages/auth/AuthCallback'
 import { VerifyOtp } from '@/pages/auth/VerifyOtp'
 import { OnboardingPage } from '@/pages/OnboardingPage'
+import { InvitationAcceptancePage } from '@/pages/InvitationAcceptancePage'
 
 // Lazy load secondary pages
 const Widgets = lazy(() => import('@/pages/Widgets').then((m) => ({ default: m.Widgets })))
@@ -64,6 +65,7 @@ function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/auth/verify-otp" element={<VerifyOtp />} />
                   <Route path="/auth/callback" element={<AuthCallback />} />
+                  <Route path="/invite" element={<InvitationAcceptancePage />} />
                   
                   {/* Onboarding route */}
                   <Route path="/onboarding" element={

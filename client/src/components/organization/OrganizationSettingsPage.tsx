@@ -20,6 +20,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { organizationApi, type Organization, type OrganizationMember } from '../../lib/api/organization';
+import { invitationService } from '../../services/invitationService';
 import { AnimatedInput } from '../onboarding/shared/AnimatedInput';
 import { InviteMemberModal } from './InviteMemberModal';
 import { BulkInviteModal } from './BulkInviteModal';
@@ -95,6 +96,33 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
       setMessage({ type: 'error', text: 'Failed to save organization settings' });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleResendInvite = async (memberId: string) => {
+    try {
+      // Call invitation service to resend
+      await invitationService.resendInvitation(memberId);
+      setMessage({ type: 'success', text: 'Invitation resent successfully' });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      console.error('Failed to resend invitation:', error);
+      setMessage({ type: 'error', text: 'Failed to resend invitation' });
+    }
+  };
+
+  const handleCancelInvite = async (memberId: string) => {
+    try {
+      // Call invitation service to cancel
+      await invitationService.cancelInvitation(memberId);
+      // Reload members to reflect changes
+      const membersData = await organizationApi.getMembers(organizationId);
+      setMembers(membersData);
+      setMessage({ type: 'success', text: 'Invitation cancelled' });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      console.error('Failed to cancel invitation:', error);
+      setMessage({ type: 'error', text: 'Failed to cancel invitation' });
     }
   };
 
@@ -220,32 +248,67 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
 
       <div className="space-y-3">
         {members.map((member) => (
-          <div key={member.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div key={member.id} className={`flex items-center justify-between p-4 rounded-lg ${
+            member.is_pending ? 'bg-yellow-50 border border-yellow-200' : 'bg-gray-50'
+          }`}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                <span className="text-indigo-600 font-semibold">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                member.is_pending ? 'bg-yellow-100' : 'bg-indigo-100'
+              }`}>
+                <span className={`font-semibold ${
+                  member.is_pending ? 'text-yellow-600' : 'text-indigo-600'
+                }`}>
                   {member.name?.[0] || member.email?.[0] || 'U'}
                 </span>
               </div>
               <div>
-                <p className="font-medium text-gray-900">{member.name || member.email}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-gray-900">{member.name || member.email}</p>
+                  {member.is_pending && (
+                    <span className="px-2 py-0.5 text-xs bg-yellow-100 text-yellow-700 rounded-full">
+                      Pending
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-gray-500">{member.email}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <select 
-                value={member.role}
-                className="px-3 py-1 border border-gray-300 rounded-lg text-sm"
-                onChange={() => {}}
-              >
-                <option value="owner">Owner</option>
-                <option value="admin">Admin</option>
-                <option value="member">Member</option>
-                <option value="viewer">Viewer</option>
-              </select>
-              <button className="p-2 text-gray-400 hover:text-red-600">
-                <Trash2 className="w-4 h-4" />
-              </button>
+              {member.is_pending ? (
+                <>
+                  <span className="px-3 py-1 text-sm text-gray-500 italic">
+                    {member.role}
+                  </span>
+                  <button 
+                    className="px-3 py-1 text-sm bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
+                    onClick={() => handleResendInvite(member.id)}
+                  >
+                    Resend
+                  </button>
+                  <button 
+                    className="p-2 text-gray-400 hover:text-red-600"
+                    onClick={() => handleCancelInvite(member.id)}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <select 
+                    value={member.role}
+                    className="px-3 py-1 border border-gray-300 rounded-lg text-sm"
+                    onChange={() => {}}
+                  >
+                    <option value="owner">Owner</option>
+                    <option value="admin">Admin</option>
+                    <option value="member">Member</option>
+                    <option value="viewer">Viewer</option>
+                  </select>
+                  <button className="p-2 text-gray-400 hover:text-red-600">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </>
+              )}
             </div>
           </div>
         ))}

@@ -32,11 +32,14 @@ class OrganizationUpdate(BaseModel):
 
 class OrganizationMemberResponse(BaseModel):
     id: UUID
-    user_id: UUID
+    user_id: Optional[UUID] = None  # Optional for pending members
+    organization_id: Optional[UUID] = None
     role: OrganizationRole
     created_at: datetime
+    updated_at: Optional[datetime] = None
     user_name: Optional[str] = None
     user_email: Optional[str] = None
+    is_pending: bool = False  # True for invited but not yet accepted members
 
     class Config:
         from_attributes = True

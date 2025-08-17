@@ -1,16 +1,19 @@
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, BackgroundTasks, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
-from app.core.auth import get_current_token_data
+from app.core.auth import get_current_token_data, get_current_token_data_optional
 from app.schemas.auth_schema import TokenData
 from app.schemas.invitation_schema import (
     BulkInvitationRequest,
     BulkInvitationResponse,
     InvitationStatusResponse,
     InvitationEntry,
+    InvitationAcceptRequest,
+    InvitationAcceptResponse,
+    InvitationValidateResponse,
 )
 from app.services.invitation_service import invitation_service
 from app.core.logging import get_logger
@@ -142,3 +145,64 @@ async def cancel_invitation(
         )
     
     logger.info(f"Cancelled invitation {invitation_id} by user {user_id}")
+
+
+@router.get("/validate/{token}", response_model=InvitationValidateResponse)
+async def validate_invitation(
+    token: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Validate an invitation token and return invitation details.
+    This endpoint is public and doesn't require authentication.
+    """
+    invitation_details = await invitation_service.validate_invitation_token(token, db)
+    
+    if not invitation_details:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Invalid or expired invitation token"
+        )
+    
+    return invitation_details
+
+
+@router.post("/accept", response_model=InvitationAcceptResponse)
+async def accept_invitation(
+    request: InvitationAcceptRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[TokenData] = Depends(get_current_token_data_optional)
+):
+    """
+    Accept an invitation and join the organization/project.
+    Can be called by both authenticated and unauthenticated users.
+    """
+    user_id = UUID(current_user.sub) if current_user else None
+    
+    try:
+        acceptance_result = await invitation_service.accept_invitation(
+            token=request.token,
+            user_id=user_id,
+            user_data=request.user_data if not user_id else None,
+            db=db
+        )
+        
+        if not acceptance_result:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Failed to accept invitation"
+            )
+        
+        return acceptance_result
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Error accepting invitation: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while accepting the invitation"
+        )
