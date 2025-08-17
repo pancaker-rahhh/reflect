@@ -1,9 +1,15 @@
 import React from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
+import { useOnboardingKeyboard } from '../../../hooks/useOnboardingKeyboard';
 import { ArrowRight, Sparkles, Users, ChartBar } from 'lucide-react';
 
 export const WelcomeStep: React.FC = () => {
   const { nextStep, skipOnboarding } = useOnboarding();
+
+  useOnboardingKeyboard({
+    onNext: nextStep,
+    onSkip: skipOnboarding
+  });
 
   return (
     <div className="text-center py-8">

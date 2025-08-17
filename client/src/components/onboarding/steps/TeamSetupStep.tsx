@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
+import { useOnboardingKeyboard } from '../../../hooks/useOnboardingKeyboard';
 import { UserPlus, Mail, X } from 'lucide-react';
 import { invitationApi } from '../../../lib/api';
 
@@ -22,6 +23,17 @@ export const TeamSetupStep: React.FC = () => {
       setNewMemberEmail('');
     }
   };
+
+  useOnboardingKeyboard({
+    onAddMember: () => {
+      const emailInput = document.querySelector('input[type="email"]') as HTMLInputElement;
+      if (emailInput) {
+        emailInput.focus();
+      }
+    },
+    onNext: teamMembers.length > 0 ? handleSendInvites : handleSkip,
+    enabled: !isInviting
+  });
 
   const removeMember = (email: string) => {
     setTeamMembers(teamMembers.filter(m => m.email !== email));
@@ -106,6 +118,7 @@ export const TeamSetupStep: React.FC = () => {
               onClick={addTeamMember}
               disabled={!newMemberEmail}
               className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Press Enter to add"
             >
               Add
             </button>
@@ -115,6 +128,7 @@ export const TeamSetupStep: React.FC = () => {
             <p><strong>Viewer:</strong> Can view projects and feedback</p>
             <p><strong>Member:</strong> Can create and edit content</p>
             <p><strong>Admin:</strong> Full access including settings</p>
+            <p className="mt-2 text-xs"><kbd className="px-1 py-0.5 bg-gray-100 rounded text-gray-600">Ctrl + A</kbd> to focus email field</p>
           </div>
         </div>
 
