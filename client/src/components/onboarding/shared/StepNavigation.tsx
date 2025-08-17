@@ -62,8 +62,9 @@ export const StepNavigation: React.FC = () => {
       <div className="mt-4 flex items-center justify-center gap-4 text-xs text-gray-400">
         <div className="flex items-center gap-1">
           <Keyboard className="w-3 h-3" />
-          <span>Press <kbd className="px-1 py-0.5 bg-gray-100 rounded text-gray-600">Enter</kbd> to continue</span>
+          <span>Press <kbd className="px-1 py-0.5 bg-gray-100 rounded text-gray-600">Tab</kbd> to navigate</span>
         </div>
+        <span>• <kbd className="px-1 py-0.5 bg-gray-100 rounded text-gray-600">Enter</kbd> to continue</span>
         {canGoBack && (
           <span>• <kbd className="px-1 py-0.5 bg-gray-100 rounded text-gray-600">Alt + ←</kbd> to go back</span>
         )}

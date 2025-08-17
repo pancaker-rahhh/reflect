@@ -15,6 +15,7 @@ import {
   Users
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { OrganizationDropdown } from './OrganizationDropdown'
 
 interface NavItem {
   label: string
@@ -159,11 +160,7 @@ export function Sidebar() {
 
       {isExpanded && (
         <div className="px-3 mb-4">
-          <div className="bg-secondary/50 rounded-md px-3 py-2">
-            <select className="w-full bg-transparent text-sm font-medium outline-none">
-              <option>webapp</option>
-            </select>
-          </div>
+          <OrganizationDropdown />
         </div>
       )}
 

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../contexts/AuthContext';
 import { onboardingApi } from '../lib/api';
 
@@ -77,6 +78,7 @@ interface OnboardingProviderProps {
 
 export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children }) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   
   const [state, setState] = useState<OnboardingState>(() => {
@@ -189,6 +191,10 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
         feedback: null,
         skipped_steps: [],
       });
+
+      // Invalidate queries to refetch updated organization and project data
+      await queryClient.invalidateQueries({ queryKey: ['organizations'] });
+      await queryClient.invalidateQueries({ queryKey: ['projects'] });
 
       localStorage.removeItem(ONBOARDING_STORAGE_KEY);
       navigate('/dashboard');

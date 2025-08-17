@@ -11,7 +11,7 @@ export interface PaginatedProjects {
 export interface ProjectCreateRequest {
   name: string
   description?: string
-  workspace_id: string
+  organization_id: string
 }
 
 export interface ProjectUpdateRequest {
@@ -20,8 +20,8 @@ export interface ProjectUpdateRequest {
 }
 
 export const projectApi = {
-  getByWorkspace(workspaceId: string): Promise<PaginatedProjects> {
-    return apiClient.get<PaginatedProjects>(`/projects?workspace_id=${workspaceId}`)
+  getByOrganization(organizationId: string): Promise<PaginatedProjects> {
+    return apiClient.get<PaginatedProjects>(`/projects?organization_id=${organizationId}`)
   },
 
   getProject(id: string): Promise<Project> {

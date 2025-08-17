@@ -78,7 +78,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
 
   const loadProjects = async (orgId: string) => {
     try {
-      const response = await projectApi.getByWorkspace(orgId);
+      const response = await projectApi.getByOrganization(orgId);
       setProjects(response.items);
       
       // Set default project

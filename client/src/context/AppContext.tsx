@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback, type ReactNode } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { organizationApi } from '@/lib/api'
-import { projectApi } from '@/services(mock)/projectApi'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { organizationApi, projectApi } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import type { Project } from '@/types'
 
@@ -19,6 +18,7 @@ interface AppContextType {
   projects: Project[]
   currentProject: Project | null
   setCurrentProject: (project: Project | null) => void
+  refreshProjects: () => void
   isLoading: boolean
 }
 
@@ -27,6 +27,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined)
 export function AppProvider({ children }: { children: ReactNode }) {
   const [currentProject, setCurrentProject] = useState<Project | null>(null)
   const { user, loading: authLoading } = useAuth()
+  const queryClient = useQueryClient()
 
   const handleSetCurrentProject = useCallback((project: Project | null) => {
     setCurrentProject(project)
@@ -43,10 +44,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const organization = useMemo(() => organizations?.[0] || null, [organizations])
 
+  const refreshProjects = useCallback(() => {
+    if (organization?.id) {
+      queryClient.invalidateQueries({ queryKey: ['projects', organization.id] })
+    }
+  }, [organization?.id, queryClient])
+
   // Fetch projects for the organization
   const { data: projectsData, isLoading: isLoadingProjects } = useQuery({
     queryKey: ['projects', organization?.id],
-    queryFn: () => projectApi.getByWorkspace(organization!.id), // TODO: Update to use organization
+    queryFn: () => projectApi.getByOrganization(organization!.id),
     enabled: !!organization && !!user,
     retry: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -68,9 +75,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       projects,
       currentProject,
       setCurrentProject: handleSetCurrentProject,
+      refreshProjects,
       isLoading: isLoadingOrganization || isLoadingProjects,
     }),
-    [organization, projects, currentProject, handleSetCurrentProject, isLoadingOrganization, isLoadingProjects]
+    [organization, projects, currentProject, handleSetCurrentProject, refreshProjects, isLoadingOrganization, isLoadingProjects]
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

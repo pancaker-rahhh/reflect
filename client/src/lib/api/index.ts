@@ -26,7 +26,7 @@ export const api = {
   deleteAccount: () => userApi.deleteAccount(),
   
   // Project APIs
-  getProjectsByOrganization: (organizationId: string) => projectApi.getByWorkspace(organizationId), // TODO: Update to use organization
+  getProjectsByOrganization: (organizationId: string) => projectApi.getByOrganization(organizationId),
   getProject: (id: string) => projectApi.getProject(id),
   createProject: (data: ProjectCreateRequest) => projectApi.createProject(data),
   updateProject: (id: string, data: any) => projectApi.updateProject(id, data),

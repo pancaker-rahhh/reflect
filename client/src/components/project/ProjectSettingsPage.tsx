@@ -16,14 +16,15 @@ import {
   Link,
   Globe,
   Lock,
-  Archive,
   AlertTriangle
 } from 'lucide-react';
 import { projectApi } from '../../lib/api/project';
+import { organizationApi, type OrganizationMember } from '../../lib/api/organization';
 import { useAppContext } from '../../context/AppContext';
 import { AnimatedInput, AnimatedTextarea } from '../onboarding/shared/AnimatedInput';
 import { ProjectMemberModal } from './ProjectMemberModal';
 import { ApiKeyModal } from './ApiKeyModal';
+import { DeleteProjectModal } from './DeleteProjectModal';
 import type { Project } from '@/types';
 
 interface ProjectSettingsPageProps {
@@ -33,7 +34,7 @@ interface ProjectSettingsPageProps {
 type Tab = 'general' | 'team' | 'api' | 'webhooks' | 'integrations' | 'danger';
 
 export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projectId }) => {
-  const { currentProject } = useAppContext();
+  const { currentProject, refreshProjects, organization: currentOrganization } = useAppContext();
   const [activeTab, setActiveTab] = useState<Tab>('general');
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,6 +42,8 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [organizationMembers, setOrganizationMembers] = useState<OrganizationMember[]>([]);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -61,6 +64,12 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
       loadProjectData();
     }
   }, [currentProject, projectId]);
+
+  useEffect(() => {
+    if (currentOrganization) {
+      loadOrganizationMembers();
+    }
+  }, [currentOrganization]);
 
   const loadProjectData = async () => {
     try {
@@ -86,6 +95,18 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
     }
   };
 
+  const loadOrganizationMembers = async () => {
+    try {
+      if (!currentOrganization?.id) return;
+      
+      const members = await organizationApi.getMembers(currentOrganization.id);
+      setOrganizationMembers(members);
+    } catch (error) {
+      console.error('Failed to load organization members:', error);
+      setMessage({ type: 'error', text: 'Failed to load organization members' });
+    }
+  };
+
   const handleSaveGeneral = async () => {
     try {
       setSaving(true);
@@ -108,13 +129,8 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
     }
   };
 
+
   const handleDeleteProject = async () => {
-    const confirmed = window.confirm(
-      'Are you sure you want to delete this project? This action cannot be undone and will delete all associated data.'
-    );
-    
-    if (!confirmed) return;
-    
     try {
       const id = projectId || currentProject?.id;
       if (!id) return;
@@ -125,6 +141,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
     } catch (error) {
       console.error('Failed to delete project:', error);
       setMessage({ type: 'error', text: 'Failed to delete project' });
+      throw error; // Re-throw to let modal handle the error state
     }
   };
 
@@ -145,9 +162,9 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
   const tabs = [
     { id: 'general', label: 'General', icon: FolderOpen },
     { id: 'team', label: 'Team', icon: Users },
-    { id: 'api', label: 'API Keys', icon: Key },
-    { id: 'webhooks', label: 'Webhooks', icon: Webhook },
-    { id: 'integrations', label: 'Integrations', icon: Puzzle },
+    { id: 'api', label: 'API Keys', icon: Key, wip: true },
+    { id: 'webhooks', label: 'Webhooks', icon: Webhook, wip: true },
+    { id: 'integrations', label: 'Integrations', icon: Puzzle, wip: true },
     { id: 'danger', label: 'Danger Zone', icon: Shield },
   ];
 
@@ -260,38 +277,42 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
       </div>
 
       <div className="space-y-3">
-        {[
-          { id: '1', name: 'John Doe', email: 'john@example.com', role: 'owner' },
-          { id: '2', name: 'Jane Smith', email: 'jane@example.com', role: 'admin' },
-          { id: '3', name: 'Bob Johnson', email: 'bob@example.com', role: 'member' }
-        ].map((member) => (
-          <div key={member.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                <span className="text-indigo-600 font-semibold">{member.name[0]}</span>
-              </div>
-              <div>
-                <p className="font-medium text-gray-900">{member.name}</p>
-                <p className="text-sm text-gray-500">{member.email}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <select 
-                value={member.role}
-                className="px-3 py-1 border border-gray-300 rounded-lg text-sm"
-                onChange={() => {}}
-              >
-                <option value="owner">Owner</option>
-                <option value="admin">Admin</option>
-                <option value="member">Member</option>
-                <option value="viewer">Viewer</option>
-              </select>
-              <button className="p-2 text-gray-400 hover:text-red-600">
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
+        {[].length === 0 ? (
+          <div className="text-center py-8 bg-gray-50 rounded-lg">
+            <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+            <h4 className="text-gray-900 font-medium mb-2">No team members yet</h4>
+            <p className="text-gray-500 text-sm mb-4">Add team members to collaborate on this project</p>
           </div>
-        ))}
+        ) : (
+          [].map((member) => (
+            <div key={member.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                  <span className="text-indigo-600 font-semibold">{member.name[0]}</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">{member.name}</p>
+                  <p className="text-sm text-gray-500">{member.email}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <select 
+                  value={member.role}
+                  className="px-3 py-1 border border-gray-300 rounded-lg text-sm"
+                  onChange={() => {}}
+                >
+                  <option value="owner">Owner</option>
+                  <option value="admin">Admin</option>
+                  <option value="member">Member</option>
+                  <option value="viewer">Viewer</option>
+                </select>
+                <button className="p-2 text-gray-400 hover:text-red-600">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       <button 
@@ -306,8 +327,20 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
   const renderApiKeysSettings = () => (
     <div className="p-6">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">API Keys</h3>
+        <div className="flex items-center gap-3 mb-2">
+          <h3 className="text-lg font-semibold text-gray-900">API Keys</h3>
+          <span className="inline-flex items-center px-2 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full">
+            <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mr-1 animate-pulse"></div>
+            WIP
+          </span>
+        </div>
         <p className="text-sm text-gray-600">Manage API keys for accessing your project programmatically</p>
+        <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+          <p className="text-orange-800 text-sm flex items-center">
+            <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+            API Keys functionality is currently under development. The interface below is for preview purposes only.
+          </p>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -361,14 +394,21 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
   const renderPlaceholderSection = (title: string, description: string, icon: React.ReactNode) => (
     <div className="p-6">
       <div className="text-center py-12">
-        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
           {icon}
         </div>
+        <div className="mb-3">
+          <span className="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-700 text-sm font-medium rounded-full">
+            <div className="w-2 h-2 bg-orange-500 rounded-full mr-2 animate-pulse"></div>
+            Work in Progress
+          </span>
+        </div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-        <p className="text-gray-500 mb-4">{description}</p>
-        <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
-          Coming Soon
-        </button>
+        <p className="text-gray-500 mb-4 max-w-md mx-auto">{description}</p>
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-orange-800 text-sm max-w-md mx-auto">
+          <AlertCircle className="w-4 h-4 inline mr-2" />
+          This feature is currently under development and will be available soon.
+        </div>
       </div>
     </div>
   );
@@ -381,23 +421,6 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
       </div>
 
       <div className="space-y-4">
-        <div className="border border-yellow-200 rounded-lg p-4 bg-yellow-50">
-          <div className="flex items-start justify-between">
-            <div>
-              <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                <Archive className="w-4 h-4" />
-                Archive Project
-              </h4>
-              <p className="text-sm text-gray-600 mt-1">
-                Archive this project. It will be hidden but can be restored later.
-              </p>
-            </div>
-            <button className="px-4 py-2 border border-yellow-600 text-yellow-700 rounded-lg hover:bg-yellow-100">
-              Archive
-            </button>
-          </div>
-        </div>
-
         <div className="border border-red-200 rounded-lg p-4 bg-red-50">
           <div className="flex items-start justify-between">
             <div>
@@ -410,7 +433,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
               </p>
             </div>
             <button 
-              onClick={handleDeleteProject}
+              onClick={() => setShowDeleteModal(true)}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
             >
               Delete Project
@@ -485,7 +508,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as Tab)}
-                  className={`flex-1 lg:flex-initial flex items-center justify-center lg:justify-start gap-2 px-6 py-4 border-b-2 font-medium text-sm transition-colors ${
+                  className={`flex-1 lg:flex-initial flex items-center justify-center lg:justify-start gap-2 px-6 py-4 border-b-2 font-medium text-sm transition-colors relative ${
                     activeTab === tab.id
                       ? 'border-indigo-500 text-indigo-600 bg-indigo-50/50'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
@@ -493,6 +516,14 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
                 >
                   <Icon className="w-5 h-5" />
                   <span className="hidden lg:inline">{tab.label}</span>
+                  {tab.wip && (
+                    <span className="hidden lg:inline-block ml-2 px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full font-medium">
+                      WIP
+                    </span>
+                  )}
+                  {tab.wip && (
+                    <div className="lg:hidden absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full"></div>
+                  )}
                 </button>
               );
             })}
@@ -513,12 +544,12 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
             setMessage({ type: 'success', text: 'Member added successfully' });
             setTimeout(() => setMessage(null), 3000);
           }}
-          organizationMembers={[
-            { id: '4', name: 'Alice Johnson', email: 'alice@example.com' },
-            { id: '5', name: 'Charlie Brown', email: 'charlie@example.com' },
-            { id: '6', name: 'Diana Prince', email: 'diana@example.com' }
-          ]}
-          existingMembers={['1', '2', '3']}
+          organizationMembers={organizationMembers.map(member => ({
+            id: member.id,
+            name: member.name || member.email || 'Unknown Member',
+            email: member.email || '',
+          }))}
+          existingMembers={[]} // TODO: Get actual project members when API is available
         />
       )}
 
@@ -539,6 +570,16 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
           }}
         />
       )}
+
+      {showDeleteModal && (
+        <DeleteProjectModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onDelete={handleDeleteProject}
+          projectName={project?.name || 'Unknown Project'}
+        />
+      )}
+
     </div>
   );
 };

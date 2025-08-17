@@ -6,6 +6,7 @@ import { UserPlus, Mail, X, Users, FileText } from 'lucide-react';
 import { invitationApi } from '../../../lib/api';
 import { BulkInviteModal } from '../../organization/BulkInviteModal';
 import { onboardingDataService } from '../../../services/onboardingDataService';
+import { isFeatureEnabled } from '../../../lib/featureFlags';
 
 interface TeamMember {
   email: string;
@@ -146,24 +147,39 @@ export const TeamSetupStep: React.FC = () => {
       </div>
 
       <div className="space-y-6">
-        <div className="flex gap-3 mb-4">
-          <button
-            onClick={() => setShowBulkInvite(true)}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md"
-          >
-            <Users className="w-5 h-5" />
-            Bulk Invite (Recommended)
-          </button>
-          <div className="flex items-center gap-2 text-gray-500">
-            <span>or</span>
+        {isFeatureEnabled('ENABLE_BULK_TEXT_INVITES') || isFeatureEnabled('ENABLE_CSV_UPLOAD_INVITES') ? (
+          <div className="flex gap-3 mb-4">
+            <button
+              onClick={() => setShowBulkInvite(true)}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md"
+            >
+              <Users className="w-5 h-5" />
+              Bulk Invite (Recommended)
+            </button>
+            <div className="flex items-center gap-2 text-gray-500">
+              <span>or</span>
+            </div>
+            <button
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <UserPlus className="w-5 h-5" />
+              Add One by One
+            </button>
           </div>
-          <button
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <UserPlus className="w-5 h-5" />
-            Add One by One
-          </button>
-        </div>
+        ) : (
+          <div className="text-center mb-4">
+            <button
+              onClick={() => setShowBulkInvite(true)}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-md"
+            >
+              <Users className="w-5 h-5" />
+              Add Team Members
+            </button>
+            <p className="mt-2 text-sm text-gray-500">
+              You can also add individual members below
+            </p>
+          </div>
+        )}
 
         <div className="border border-gray-200 rounded-lg p-4">
           <h3 className="font-medium text-gray-800 mb-3">Add Team Member</h3>

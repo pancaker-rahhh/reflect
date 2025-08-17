@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { organizationApi } from '../../lib/api/organization';
 import { AnimatedInput, AnimatedTextarea } from '../onboarding/shared/AnimatedInput';
+import { isFeatureEnabled } from '../../lib/featureFlags';
 
 interface BulkInviteModalProps {
   organizationId: string;
@@ -211,10 +212,10 @@ bob.wilson@example.com,Bob Wilson,viewer`;
           {/* Input Mode Selector */}
           <div className="flex gap-2 mb-6">
             {[
-              { id: 'manual', label: 'Manual Entry', icon: Edit2 },
-              { id: 'bulk', label: 'Bulk Text', icon: FileText },
-              { id: 'csv', label: 'Upload CSV', icon: Upload }
-            ].map(mode => (
+              { id: 'manual', label: 'Manual Entry', icon: Edit2, enabled: true },
+              { id: 'bulk', label: 'Bulk Text', icon: FileText, enabled: isFeatureEnabled('ENABLE_BULK_TEXT_INVITES') },
+              { id: 'csv', label: 'Upload CSV', icon: Upload, enabled: isFeatureEnabled('ENABLE_CSV_UPLOAD_INVITES') }
+            ].filter(mode => mode.enabled).map(mode => (
               <button
                 key={mode.id}
                 onClick={() => setInputMode(mode.id as InputMode)}
@@ -274,7 +275,7 @@ bob.wilson@example.com,Bob Wilson,viewer`;
           )}
 
           {/* Bulk Text Mode */}
-          {inputMode === 'bulk' && (
+          {inputMode === 'bulk' && isFeatureEnabled('ENABLE_BULK_TEXT_INVITES') && (
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -323,7 +324,7 @@ alice.johnson@example.com`);
           )}
 
           {/* CSV Upload Mode */}
-          {inputMode === 'csv' && (
+          {inputMode === 'csv' && isFeatureEnabled('ENABLE_CSV_UPLOAD_INVITES') && (
             <div className="space-y-4">
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                 <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />

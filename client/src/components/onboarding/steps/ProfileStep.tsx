@@ -3,10 +3,11 @@ import { useOnboarding } from '../../../context/OnboardingContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { userApi } from '../../../lib/api';
 import { onboardingDataService } from '../../../services/onboardingDataService';
+import { supabase } from '../../../lib/supabase';
 
 export const ProfileStep: React.FC = () => {
   const { nextStep, markStepCompleted } = useOnboarding();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   
   const [formData, setFormData] = useState({
     name: '',
@@ -33,12 +34,27 @@ export const ProfileStep: React.FC = () => {
     setIsSubmitting(true);
 
     try {
+      // Update profile in backend
       await userApi.updateProfile({
         name: formData.name,
         company_name: formData.company,
         timezone: formData.timezone,
         phone: formData.phone,
       });
+
+      // Update Supabase user metadata so the navbar shows the updated name
+      await supabase.auth.updateUser({
+        data: {
+          name: formData.name,
+          full_name: formData.name,
+          company: formData.company,
+          timezone: formData.timezone,
+          phone: formData.phone,
+        }
+      });
+
+      // Refresh user data in AuthContext to reflect the changes
+      await refreshUser();
 
       // Save to localStorage for review step
       onboardingDataService.saveProfileData({
