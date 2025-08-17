@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   FolderOpen,
   Users,
@@ -16,15 +17,19 @@ import {
   Link,
   Globe,
   Lock,
-  AlertTriangle
+  AlertTriangle,
+  Plus
 } from 'lucide-react';
-import { projectApi } from '../../lib/api/project';
+import { projectApi, type ProjectMember } from '../../lib/api/project';
 import { organizationApi, type OrganizationMember } from '../../lib/api/organization';
 import { useAppContext } from '../../context/AppContext';
 import { AnimatedInput, AnimatedTextarea } from '../onboarding/shared/AnimatedInput';
 import { ProjectMemberModal } from './ProjectMemberModal';
 import { ApiKeyModal } from './ApiKeyModal';
 import { DeleteProjectModal } from './DeleteProjectModal';
+import { DeleteMemberModal } from './DeleteMemberModal';
+import { CreateProjectModal } from './CreateProjectModal';
+import { ProjectTeamSection } from './ProjectTeamSection';
 import type { Project } from '@/types';
 
 interface ProjectSettingsPageProps {
@@ -34,7 +39,8 @@ interface ProjectSettingsPageProps {
 type Tab = 'general' | 'team' | 'api' | 'webhooks' | 'integrations' | 'danger';
 
 export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projectId }) => {
-  const { currentProject, refreshProjects, organization: currentOrganization } = useAppContext();
+  const { currentProject, refreshProjects, organization: currentOrganization, projects, setCurrentProject, user: currentUser } = useAppContext();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('general');
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,7 +49,12 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showDeleteMemberModal, setShowDeleteMemberModal] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState<{ id: string; name: string; email: string; isPending: boolean } | null>(null);
   const [organizationMembers, setOrganizationMembers] = useState<OrganizationMember[]>([]);
+  const [projectMembers, setProjectMembers] = useState<ProjectMember[]>([]);
+  const [allTeamMembers, setAllTeamMembers] = useState<ProjectMember[]>([]);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -62,6 +73,9 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
   useEffect(() => {
     if (currentProject || projectId) {
       loadProjectData();
+    } else {
+      // No project to load, stop loading
+      setLoading(false);
     }
   }, [currentProject, projectId]);
 
@@ -70,6 +84,13 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
       loadOrganizationMembers();
     }
   }, [currentOrganization]);
+
+  useEffect(() => {
+    const id = currentProject?.id || projectId;
+    if (id) {
+      loadProjectMembers();
+    }
+  }, [currentProject, projectId]);
 
   const loadProjectData = async () => {
     try {
@@ -101,10 +122,54 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
       
       const members = await organizationApi.getMembers(currentOrganization.id);
       setOrganizationMembers(members);
+      
+      // Merge with existing project members if they're loaded
+      if (projectMembers.length > 0) {
+        mergeTeamMembers(projectMembers, members);
+      }
     } catch (error) {
       console.error('Failed to load organization members:', error);
       setMessage({ type: 'error', text: 'Failed to load organization members' });
     }
+  };
+
+  const loadProjectMembers = async () => {
+    try {
+      const id = currentProject?.id || projectId;
+      if (!id) return;
+      
+      const members = await projectApi.getMembers(id);
+      setProjectMembers(members);
+      
+      // Merge with organization owners
+      mergeTeamMembers(members, organizationMembers);
+    } catch (error) {
+      console.error('Failed to load project members:', error);
+      setMessage({ type: 'error', text: 'Failed to load project members' });
+    }
+  };
+
+  const mergeTeamMembers = (projectMems: ProjectMember[], orgMembers: OrganizationMember[]) => {
+    // Find organization owners who are not already project members
+    const projectMemberUserIds = new Set(projectMems.map(pm => pm.user_id));
+    const orgOwners = orgMembers.filter(om => om.role === 'owner' && om.user_id && !projectMemberUserIds.has(om.user_id));
+    
+    // Convert organization owners to project member format
+    const ownersAsProjectMembers: ProjectMember[] = orgOwners.map(owner => ({
+      id: `org-owner-${owner.id}`, // Use a special ID to distinguish from actual project members
+      user_id: owner.user_id!,
+      project_id: currentProject?.id || projectId || '',
+      role: 'admin' as const, // Organization owners are shown as admins in projects
+      created_at: owner.created_at,
+      updated_at: owner.updated_at || owner.created_at,
+      user_name: owner.name,
+      user_email: owner.email,
+      is_organization_owner: true // Add a flag to identify them
+    }));
+    
+    // Merge project members with organization owners
+    const allMembers = [...projectMems, ...ownersAsProjectMembers];
+    setAllTeamMembers(allMembers);
   };
 
   const handleSaveGeneral = async () => {
@@ -138,10 +203,105 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
       await projectApi.deleteProject(id);
       setMessage({ type: 'success', text: 'Project deleted successfully' });
       refreshProjects();
+      
+      // Set current project to null and stay on the same page
+      // The component will show "no projects" state if no projects remain
+      const remainingProjects = projects.filter(p => p.id !== id);
+      if (remainingProjects.length > 0) {
+        setCurrentProject(remainingProjects[0]);
+      } else {
+        setCurrentProject(null);
+      }
     } catch (error) {
       console.error('Failed to delete project:', error);
       setMessage({ type: 'error', text: 'Failed to delete project' });
       throw error; // Re-throw to let modal handle the error state
+    }
+  };
+
+  const handleCreateProject = async (projectData: { name: string; description: string }) => {
+    try {
+      if (!currentOrganization?.id) {
+        throw new Error('No organization found');
+      }
+
+      const newProject = await projectApi.createProject({
+        name: projectData.name,
+        description: projectData.description,
+        organization_id: currentOrganization.id
+      });
+
+      setMessage({ type: 'success', text: 'Project created successfully' });
+      refreshProjects();
+      setCurrentProject(newProject);
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      console.error('Failed to create project:', error);
+      setMessage({ type: 'error', text: 'Failed to create project' });
+      setTimeout(() => setMessage(null), 3000);
+      throw error;
+    }
+  };
+
+  const handleResendInvite = async (memberId: string) => {
+    try {
+      // TODO: Implement resend invite API call
+      setMessage({ type: 'success', text: 'Invitation resent successfully' });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      console.error('Failed to resend invitation:', error);
+      setMessage({ type: 'error', text: 'Failed to resend invitation' });
+      setTimeout(() => setMessage(null), 3000);
+    }
+  };
+
+  const handleRemoveMember = (member: ProjectMember) => {
+    // Prevent removal of organization owners
+    if ((member as any).is_organization_owner) {
+      setMessage({ type: 'error', text: 'Cannot remove organization owner from project' });
+      setTimeout(() => setMessage(null), 3000);
+      return;
+    }
+    
+    setMemberToDelete({
+      id: member.id,
+      name: member.user_name || member.user_email || 'Unknown Member',
+      email: member.user_email || '',
+      isPending: false // Project members are never pending
+    });
+    setShowDeleteMemberModal(true);
+  };
+
+  const executeRemoveMember = async () => {
+    if (!memberToDelete) {
+      return;
+    }
+
+    const projectIdToUse = currentProject?.id || projectId;
+    if (!projectIdToUse) {
+      return;
+    }
+
+    try {
+      // Find the project member to get user_id
+      const member = projectMembers.find(m => m.id === memberToDelete.id);
+      if (!member) {
+        setMessage({ type: 'error', text: 'Member not found' });
+        return;
+      }
+
+      // Remove active member from project
+      await projectApi.removeMember(projectIdToUse, member.user_id);
+      setMessage({ type: 'success', text: 'Member removed from project successfully' });
+      
+      // Refresh the member list
+      await loadProjectMembers();
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      console.error('Failed to remove member:', error);
+      setMessage({ type: 'error', text: 'Failed to remove member' });
+      setTimeout(() => setMessage(null), 3000);
+      throw error;
     }
   };
 
@@ -270,58 +430,36 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
   );
 
   const renderTeamSettings = () => (
-    <div className="p-6">
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Project Team Members</h3>
-        <p className="text-sm text-gray-600">Manage who has access to this specific project</p>
-      </div>
+    <ProjectTeamSection
+      members={allTeamMembers}
+      currentUserId={currentUser?.id}
+      onAddMember={() => setShowMemberModal(true)}
+      onRemoveMember={handleRemoveMember}
+      onRoleChange={async (member, newRole) => {
+        try {
+          // Prevent role changes for organization owners
+          if ((member as any).is_organization_owner) {
+            setMessage({ type: 'error', text: 'Cannot change role of organization owner' });
+            setTimeout(() => setMessage(null), 3000);
+            return;
+          }
+          
+          const projectIdToUse = currentProject?.id || projectId;
+          if (!projectIdToUse) return;
 
-      <div className="space-y-3">
-        {[].length === 0 ? (
-          <div className="text-center py-8 bg-gray-50 rounded-lg">
-            <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <h4 className="text-gray-900 font-medium mb-2">No team members yet</h4>
-            <p className="text-gray-500 text-sm mb-4">Add team members to collaborate on this project</p>
-          </div>
-        ) : (
-          [].map((member) => (
-            <div key={member.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <span className="text-indigo-600 font-semibold">{member.name[0]}</span>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">{member.name}</p>
-                  <p className="text-sm text-gray-500">{member.email}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <select 
-                  value={member.role}
-                  className="px-3 py-1 border border-gray-300 rounded-lg text-sm"
-                  onChange={() => {}}
-                >
-                  <option value="owner">Owner</option>
-                  <option value="admin">Admin</option>
-                  <option value="member">Member</option>
-                  <option value="viewer">Viewer</option>
-                </select>
-                <button className="p-2 text-gray-400 hover:text-red-600">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      <button 
-        onClick={() => setShowMemberModal(true)}
-        className="mt-4 px-4 py-2 border border-indigo-600 text-indigo-600 rounded-lg hover:bg-indigo-50"
-      >
-        Add Team Member
-      </button>
-    </div>
+          await projectApi.updateMember(projectIdToUse, member.user_id, { role: newRole });
+          setMessage({ type: 'success', text: 'Member role updated successfully' });
+          
+          // Refresh project members
+          await loadProjectMembers();
+          setTimeout(() => setMessage(null), 3000);
+        } catch (error) {
+          console.error('Failed to update member role:', error);
+          setMessage({ type: 'error', text: 'Failed to update member role' });
+          setTimeout(() => setMessage(null), 3000);
+        }
+      }}
+    />
   );
 
   const renderApiKeysSettings = () => (
@@ -479,6 +617,41 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
     );
   }
 
+  // Show no projects state if no projects exist
+  if (!loading && projects.length === 0) {
+    return (
+      <>
+        <div className="max-w-7xl mx-auto p-6">
+          <div className="text-center py-16">
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <FolderOpen className="w-12 h-12 text-gray-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">No Projects Found</h2>
+            <p className="text-gray-600 mb-8 max-w-md mx-auto">
+              You don't have any projects yet. Create your first project to get started with collecting feedback and managing your roadmap.
+            </p>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-md"
+            >
+              <Plus className="w-5 h-5" />
+              Create Your First Project
+            </button>
+          </div>
+        </div>
+
+        {/* Modal for no projects state */}
+        {showCreateModal && (
+          <CreateProjectModal
+            isOpen={showCreateModal}
+            onClose={() => setShowCreateModal(false)}
+            onCreate={handleCreateProject}
+          />
+        )}
+      </>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto p-6">
       <div className="mb-8">
@@ -540,16 +713,51 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
           projectId={projectId || currentProject?.id || ''}
           isOpen={showMemberModal}
           onClose={() => setShowMemberModal(false)}
-          onAdd={(memberId, role) => {
-            setMessage({ type: 'success', text: 'Member added successfully' });
-            setTimeout(() => setMessage(null), 3000);
+          onAdd={async (memberId, role) => {
+            try {
+              const projectIdToUse = currentProject?.id || projectId;
+              if (!projectIdToUse) {
+                setMessage({ type: 'error', text: 'No project selected' });
+                return;
+              }
+
+              if (memberId.startsWith('new:')) {
+                // Handle new member invitation by email
+                const email = memberId.replace('new:', '');
+                
+                await projectApi.inviteMember(projectIdToUse, {
+                  email,
+                  role: role as 'admin' | 'editor' | 'viewer'
+                });
+                
+                setMessage({ type: 'success', text: `User ${email} added to project successfully` });
+              } else {
+                // Handle existing organization member by user ID
+                const orgMember = organizationMembers.find(m => m.id === memberId);
+                if (orgMember && orgMember.user_id) {
+                  await projectApi.inviteMember(projectIdToUse, {
+                    email: orgMember.email || '',
+                    role: role as 'admin' | 'editor' | 'viewer'
+                  });
+                  setMessage({ type: 'success', text: 'Member added to project successfully' });
+                }
+              }
+              
+              // Refresh project members
+              await loadProjectMembers();
+              setTimeout(() => setMessage(null), 3000);
+            } catch (error) {
+              console.error('Failed to add member:', error);
+              setMessage({ type: 'error', text: 'Failed to add member' });
+              setTimeout(() => setMessage(null), 3000);
+            }
           }}
           organizationMembers={organizationMembers.map(member => ({
             id: member.id,
-            name: member.name || member.email || 'Unknown Member',
+            name: member.name || null, // Let the modal handle the fallback
             email: member.email || '',
           }))}
-          existingMembers={[]} // TODO: Get actual project members when API is available
+          existingMembers={allTeamMembers.map(m => m.user_id)} // Existing project members by user_id
         />
       )}
 
@@ -577,6 +785,28 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
           onClose={() => setShowDeleteModal(false)}
           onDelete={handleDeleteProject}
           projectName={project?.name || 'Unknown Project'}
+        />
+      )}
+
+      {showCreateModal && (
+        <CreateProjectModal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onCreate={handleCreateProject}
+        />
+      )}
+
+      {showDeleteMemberModal && memberToDelete && (
+        <DeleteMemberModal
+          isOpen={showDeleteMemberModal}
+          onClose={() => {
+            setShowDeleteMemberModal(false);
+            setMemberToDelete(null);
+          }}
+          onDelete={executeRemoveMember}
+          memberName={memberToDelete.name}
+          memberEmail={memberToDelete.email}
+          isPending={memberToDelete.isPending}
         />
       )}
 

@@ -2,9 +2,11 @@ from typing import Optional, List, Tuple
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, func
+from sqlalchemy.orm import selectinload
 from datetime import datetime
 
 from app.models.project_model import Project
+from app.models.organization_model import ProjectMember, ProjectRole
 from app.repositories.base_repository import BaseRepository
 
 
@@ -63,4 +65,70 @@ class ProjectRepository(BaseRepository[Project]):
         return project
 
 
+class ProjectMemberRepository(BaseRepository[ProjectMember]):
+    def __init__(self):
+        super().__init__(ProjectMember)
+
+    async def get_project_members(
+        self, db: AsyncSession, project_id: UUID, skip: int = 0, limit: int = 100
+    ) -> List[ProjectMember]:
+        stmt = (
+            select(ProjectMember)
+            .options(selectinload(ProjectMember.user))
+            .where(ProjectMember.project_id == project_id)
+            .offset(skip)
+            .limit(limit)
+            .order_by(ProjectMember.created_at.desc())
+        )
+        result = await db.execute(stmt)
+        return list(result.scalars().all())
+
+    async def get_by_project_and_user(
+        self, db: AsyncSession, project_id: UUID, user_id: UUID
+    ) -> Optional[ProjectMember]:
+        stmt = select(ProjectMember).where(
+            and_(ProjectMember.project_id == project_id, ProjectMember.user_id == user_id)
+        )
+        result = await db.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def add_member(
+        self, db: AsyncSession, project_id: UUID, user_id: UUID, role: ProjectRole
+    ) -> ProjectMember:
+        member = ProjectMember(project_id=project_id, user_id=user_id, role=role)
+        db.add(member)
+        await db.flush()
+        await db.refresh(member)
+        return member
+
+    async def update_member_role(
+        self, db: AsyncSession, project_id: UUID, user_id: UUID, role: ProjectRole
+    ) -> Optional[ProjectMember]:
+        member = await self.get_by_project_and_user(db, project_id, user_id)
+        if member:
+            member.role = role
+            db.add(member)
+            await db.flush()
+            await db.refresh(member)
+        return member
+
+    async def remove_member(
+        self, db: AsyncSession, project_id: UUID, user_id: UUID
+    ) -> bool:
+        member = await self.get_by_project_and_user(db, project_id, user_id)
+        if member:
+            await db.delete(member)
+            await db.flush()
+            return True
+        return False
+
+    async def count_project_members(self, db: AsyncSession, project_id: UUID) -> int:
+        stmt = select(func.count()).select_from(ProjectMember).where(
+            ProjectMember.project_id == project_id
+        )
+        result = await db.execute(stmt)
+        return result.scalar_one()
+
+
 project_repository = ProjectRepository()
+project_member_repository = ProjectMemberRepository()

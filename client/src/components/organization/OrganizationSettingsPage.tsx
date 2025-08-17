@@ -1,78 +1,74 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Building2, 
-  Users, 
-  Settings, 
-  CreditCard, 
-  Shield, 
-  Puzzle, 
-  Database, 
-  FileText,
+import {
+  Building2,
+  Users,
+  Settings,
+  Key,
+  Webhook,
+  Shield,
+  Puzzle,
   Save,
-  Upload,
+  Trash2,
   AlertCircle,
   Check,
-  X,
-  Mail,
+  Globe,
+  AlertTriangle,
   Plus,
-  Trash2,
-  Edit2,
-  ChevronRight
+  Upload,
+  X
 } from 'lucide-react';
-import { organizationApi, type Organization, type OrganizationMember } from '../../lib/api/organization';
-import { invitationService } from '../../services/invitationService';
-import { AnimatedInput } from '../onboarding/shared/AnimatedInput';
+import { organizationApi, type OrganizationMember } from '../../lib/api/organization';
+import { useAppContext } from '../../context/AppContext';
+import { AnimatedInput, AnimatedTextarea } from '../onboarding/shared/AnimatedInput';
 import { InviteMemberModal } from './InviteMemberModal';
-import { BulkInviteModal } from './BulkInviteModal';
+import { DeleteMemberModal } from '../project/DeleteMemberModal';
+import type { Organization } from '@/types';
 
 interface OrganizationSettingsPageProps {
-  organizationId: string;
+  organizationId?: string;
 }
 
-type Tab = 'general' | 'members' | 'billing' | 'security' | 'integrations' | 'advanced';
+type Tab = 'general' | 'members';
 
 export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> = ({ 
   organizationId 
 }) => {
+  const { organization: currentOrganization } = useAppContext();
+  const orgId = organizationId || currentOrganization?.id;
   const [activeTab, setActiveTab] = useState<Tab>('general');
-  const [organization, setOrganization] = useState<Organization | null>(null);
+  const [organization, setOrganization] = useState<any | null>(null);
   const [members, setMembers] = useState<OrganizationMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [showBulkInviteModal, setShowBulkInviteModal] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
-    logo: '',
-    website: '',
-    industry: '',
-    size: ''
+    description: ''
   });
 
   useEffect(() => {
-    loadOrganizationData();
-  }, [organizationId]);
+    if (orgId) {
+      loadOrganizationData();
+    }
+  }, [orgId]);
 
   const loadOrganizationData = async () => {
     try {
       setLoading(true);
+      if (!orgId) return;
+      
       const [orgData, membersData] = await Promise.all([
-        organizationApi.getById(organizationId),
-        organizationApi.getMembers(organizationId)
+        organizationApi.getById(orgId),
+        organizationApi.getMembers(orgId)
       ]);
       
       setOrganization(orgData);
       setMembers(membersData);
       setFormData({
         name: orgData.name || '',
-        description: orgData.description || '',
-        logo: '',
-        website: '',
-        industry: '',
-        size: ''
+        description: orgData.description || ''
       });
     } catch (error) {
       console.error('Failed to load organization data:', error);
@@ -85,7 +81,9 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
   const handleSaveGeneral = async () => {
     try {
       setSaving(true);
-      await organizationApi.update(organizationId, {
+      if (!orgId) return;
+      
+      await organizationApi.update(orgId, {
         name: formData.name,
         description: formData.description
       });
@@ -101,8 +99,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
 
   const handleResendInvite = async (memberId: string) => {
     try {
-      // Call invitation service to resend
-      await invitationService.resendInvitation(memberId);
+      // TODO: Implement resend invite API call
       setMessage({ type: 'success', text: 'Invitation resent successfully' });
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
@@ -113,11 +110,12 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
 
   const handleCancelInvite = async (memberId: string) => {
     try {
-      // Call invitation service to cancel
-      await invitationService.cancelInvitation(memberId);
+      // TODO: Implement cancel invite API call
       // Reload members to reflect changes
-      const membersData = await organizationApi.getMembers(organizationId);
-      setMembers(membersData);
+      if (orgId) {
+        const membersData = await organizationApi.getMembers(orgId);
+        setMembers(membersData);
+      }
       setMessage({ type: 'success', text: 'Invitation cancelled' });
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
@@ -129,10 +127,6 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
   const tabs = [
     { id: 'general', label: 'General', icon: Building2 },
     { id: 'members', label: 'Members', icon: Users },
-    { id: 'billing', label: 'Billing', icon: CreditCard },
-    { id: 'security', label: 'Security', icon: Shield },
-    { id: 'integrations', label: 'Integrations', icon: Puzzle },
-    { id: 'advanced', label: 'Advanced', icon: Settings },
   ];
 
   const renderGeneralSettings = () => (
@@ -149,56 +143,13 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
             icon={<Building2 className="w-4 h-4" />}
           />
 
-          <AnimatedInput
+          <AnimatedTextarea
             label="Description"
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             placeholder="Brief description of your organization"
+            rows={3}
           />
-
-          <div className="grid grid-cols-2 gap-4">
-            <AnimatedInput
-              label="Website"
-              value={formData.website}
-              onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-              placeholder="https://example.com"
-              type="url"
-            />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
-              <select 
-                value={formData.industry}
-                onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">Select industry</option>
-                <option value="technology">Technology</option>
-                <option value="finance">Finance</option>
-                <option value="healthcare">Healthcare</option>
-                <option value="education">Education</option>
-                <option value="retail">Retail</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Organization Logo</label>
-            <div className="flex items-center gap-4">
-              <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
-                {formData.logo ? (
-                  <img src={formData.logo} alt="Logo" className="w-full h-full object-cover rounded-lg" />
-                ) : (
-                  <Building2 className="w-8 h-8 text-gray-400" />
-                )}
-              </div>
-              <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2">
-                <Upload className="w-4 h-4" />
-                Upload Logo
-              </button>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -228,97 +179,148 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-lg font-semibold text-gray-900">Team Members</h3>
-        <div className="flex gap-2">
-          <button 
-            onClick={() => setShowBulkInviteModal(true)}
-            className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 flex items-center gap-2"
-          >
-            <Users className="w-4 h-4" />
-            Bulk Invite
-          </button>
-          <button 
-            onClick={() => setShowInviteModal(true)}
-            className="px-4 py-2 border border-indigo-600 text-indigo-600 rounded-lg hover:bg-indigo-50 flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Add Single
-          </button>
+        <button 
+          onClick={() => setShowInviteModal(true)}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          Invite Member
+        </button>
+      </div>
+
+      {/* Role Permissions Info */}
+      <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <h4 className="font-medium text-blue-900 mb-3 flex items-center gap-2">
+          <Shield className="w-4 h-4" />
+          Role Permissions
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+          <div className="bg-white p-3 rounded-lg border border-blue-100">
+            <p className="font-semibold text-yellow-700 mb-1">Owner</p>
+            <p className="text-gray-600 text-xs">Full control including billing, member management, and organization deletion</p>
+          </div>
+          <div className="bg-white p-3 rounded-lg border border-blue-100">
+            <p className="font-semibold text-purple-700 mb-1">Admin</p>
+            <p className="text-gray-600 text-xs">Manage projects, invite members, and access all organization settings</p>
+          </div>
+          <div className="bg-white p-3 rounded-lg border border-blue-100">
+            <p className="font-semibold text-blue-700 mb-1">Member</p>
+            <p className="text-gray-600 text-xs">Manage project content, and collaborate with team</p>
+          </div>
+          <div className="bg-white p-3 rounded-lg border border-blue-100">
+            <p className="font-semibold text-gray-700 mb-1">Viewer</p>
+            <p className="text-gray-600 text-xs">Read-only access to view projects, dashboards, and reports</p>
+          </div>
         </div>
       </div>
 
-      <div className="space-y-3">
-        {members.map((member) => (
-          <div key={member.id} className={`flex items-center justify-between p-4 rounded-lg ${
-            member.is_pending ? 'bg-yellow-50 border border-yellow-200' : 'bg-gray-50'
-          }`}>
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                member.is_pending ? 'bg-yellow-100' : 'bg-indigo-100'
-              }`}>
-                <span className={`font-semibold ${
-                  member.is_pending ? 'text-yellow-600' : 'text-indigo-600'
-                }`}>
-                  {member.name?.[0] || member.email?.[0] || 'U'}
-                </span>
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="font-medium text-gray-900">{member.name || member.email}</p>
-                  {member.is_pending && (
-                    <span className="px-2 py-0.5 text-xs bg-yellow-100 text-yellow-700 rounded-full">
-                      Pending
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-gray-500">{member.email}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              {member.is_pending ? (
-                <>
-                  <span className="px-3 py-1 text-sm text-gray-500 italic">
-                    {member.role}
-                  </span>
-                  <button 
-                    className="px-3 py-1 text-sm bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
-                    onClick={() => handleResendInvite(member.id)}
-                  >
-                    Resend
-                  </button>
-                  <button 
-                    className="p-2 text-gray-400 hover:text-red-600"
-                    onClick={() => handleCancelInvite(member.id)}
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </>
-              ) : (
-                <>
-                  <select 
-                    value={member.role}
-                    className="px-3 py-1 border border-gray-300 rounded-lg text-sm"
-                    onChange={() => {}}
-                  >
-                    <option value="owner">Owner</option>
-                    <option value="admin">Admin</option>
-                    <option value="member">Member</option>
-                    <option value="viewer">Viewer</option>
-                  </select>
-                  <button className="p-2 text-gray-400 hover:text-red-600">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </>
-              )}
+      {members.length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+          <h4 className="text-gray-900 font-medium mb-2">No team members yet</h4>
+          <p className="text-gray-500 text-sm mb-4">Invite team members to collaborate on your organization</p>
+        </div>
+      ) : (
+        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          {/* Table Header */}
+          <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
+            <div className="grid grid-cols-12 gap-4 text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <div className="col-span-4">Member</div>
+              <div className="col-span-2">Status</div>
+              <div className="col-span-2">Role</div>
+              <div className="col-span-4">Actions</div>
             </div>
           </div>
-        ))}
-      </div>
 
-      <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-        <p className="text-sm text-blue-800">
-          <strong>Tip:</strong> You can invite multiple members at once using the bulk invite feature.
-        </p>
-      </div>
+          {/* Table Body */}
+          <div className="divide-y divide-gray-200">
+            {members.map((member) => (
+              <div key={member.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                <div className="grid grid-cols-12 gap-4 items-center">
+                  {/* Member Info */}
+                  <div className="col-span-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        member.is_pending ? 'bg-yellow-100' : 'bg-indigo-100'
+                      }`}>
+                        <span className={`font-semibold ${
+                          member.is_pending ? 'text-yellow-600' : 'text-indigo-600'
+                        }`}>
+                          {member.name?.[0] || member.email?.[0] || 'U'}
+                        </span>
+                      </div>
+                      <div className="flex flex-col">
+                        <p className="text-sm font-medium text-gray-900">
+                          {member.name || member.email}
+                        </p>
+                        <p className="text-sm text-gray-500">{member.email}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Status */}
+                  <div className="col-span-2">
+                    {member.is_pending ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full mr-1.5"></div>
+                        Pending
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <div className="w-1.5 h-1.5 bg-green-400 rounded-full mr-1.5"></div>
+                        Active
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Role */}
+                  <div className="col-span-2">
+                    {member.is_pending || member.role === 'owner' ? (
+                      <span className="text-sm text-gray-500 capitalize">{member.role}</span>
+                    ) : (
+                      <select 
+                        value={member.role}
+                        className="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                        onChange={() => {}}
+                      >
+                        <option value="admin">Admin</option>
+                        <option value="member">Member</option>
+                        <option value="viewer">Viewer</option>
+                      </select>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="col-span-4">
+                    <div className="flex items-center gap-2 justify-end">
+                      {member.is_pending ? (
+                        <>
+                          <button 
+                            className="px-3 py-1 text-sm bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
+                            onClick={() => handleResendInvite(member.id)}
+                          >
+                            Resend
+                          </button>
+                          <button 
+                            className="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                            onClick={() => handleCancelInvite(member.id)}
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </>
+                      ) : member.role !== 'owner' ? (
+                        <button className="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -388,23 +390,6 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
         return renderGeneralSettings();
       case 'members':
         return renderMembersSettings();
-      case 'billing':
-        return renderBillingSettings();
-      case 'security':
-        return renderPlaceholderSection(
-          'Security Settings',
-          'Configure SSO, 2FA, and other security settings for your organization.'
-        );
-      case 'integrations':
-        return renderPlaceholderSection(
-          'Integrations',
-          'Connect your favorite tools and services to enhance your workflow.'
-        );
-      case 'advanced':
-        return renderPlaceholderSection(
-          'Advanced Settings',
-          'Export data, manage audit logs, and configure advanced options.'
-        );
       default:
         return null;
     }
@@ -466,23 +451,10 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
         </div>
       </div>
 
-      {showInviteModal && (
+      {showInviteModal && orgId && (
         <InviteMemberModal
-          organizationId={organizationId}
+          organizationId={orgId}
           onClose={() => setShowInviteModal(false)}
-        />
-      )}
-
-      {showBulkInviteModal && (
-        <BulkInviteModal
-          organizationId={organizationId}
-          isOpen={showBulkInviteModal}
-          onClose={() => setShowBulkInviteModal(false)}
-          onSuccess={(count) => {
-            setMessage({ type: 'success', text: `Successfully sent ${count} invitation${count !== 1 ? 's' : ''}` });
-            setTimeout(() => setMessage(null), 5000);
-            loadOrganizationData();
-          }}
         />
       )}
     </div>

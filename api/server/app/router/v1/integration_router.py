@@ -230,7 +230,6 @@ async def test_webhook(
     if not webhook:
         raise HTTPException(status_code=404, detail="Webhook not found")
     
-    # Check project access
     from app.services.organization_service import organization_service
     await organization_service.check_project_access(db, UUID(current_user.user_id), webhook.project_id)
     

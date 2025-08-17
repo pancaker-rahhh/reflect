@@ -45,7 +45,6 @@ class InvitationService:
         organization_id: UUID,
         db: AsyncSession
     ) -> bool:
-        """Check if user has permission to invite members to organization."""
         stmt = select(OrganizationMember).where(
             and_(
                 OrganizationMember.organization_id == organization_id,
@@ -64,7 +63,6 @@ class InvitationService:
         invitations: List[InvitationEntry],
         db: AsyncSession
     ) -> str:
-        """Create a task entry for tracking bulk invitation progress."""
         task_id = str(uuid4())
         
         task = InvitationTask(
@@ -93,12 +91,10 @@ class InvitationService:
         This is the main background task that can be easily migrated
         to a different task queue system.
         """
-        # Create new database session for background task
         from app.db import AsyncSessionLocal
         
         async with AsyncSessionLocal() as db:
             try:
-                # Update task status to processing
                 await self._update_task_status(task_id, "processing", db)
                 
                 results = []
@@ -119,7 +115,6 @@ class InvitationService:
                     else:
                         failed_count += 1
                     
-                    # Update progress
                     await self._update_task_progress(
                         task_id=task_id,
                         processed_count=len(results),
@@ -157,14 +152,20 @@ class InvitationService:
         invitation_entry: InvitationEntry,
         db: AsyncSession
     ) -> InvitationResult:
-        """Process a single invitation."""
         try:
-            # Check if user already exists
-            stmt = select(User).where(User.email == invitation_entry.email.lower())
+            if not invitation_entry.email or not invitation_entry.email.strip():
+                return InvitationResult(
+                    email=invitation_entry.email or "unknown",
+                    status="failed",
+                    error="Email address is required"
+                )
+            
+            email = invitation_entry.email.strip().lower()
+            
+            stmt = select(User).where(User.email == email)
             result = await db.execute(stmt)
             existing_user = result.scalar_one_or_none()
             
-            # Check if already a member
             if organization_id and existing_user:
                 stmt = select(OrganizationMember).where(
                     and_(
@@ -180,10 +181,9 @@ class InvitationService:
                         error="User is already a member"
                     )
             
-            # Check for existing pending invitation
             stmt = select(Invitation).where(
                 and_(
-                    Invitation.email == invitation_entry.email.lower(),
+                    Invitation.email == email,
                     Invitation.organization_id == organization_id,
                     Invitation.status == "pending"
                 )
@@ -192,17 +192,15 @@ class InvitationService:
             existing_invitation = result.scalar_one_or_none()
             
             if existing_invitation:
-                # Update existing invitation
                 existing_invitation.expires_at = datetime.utcnow() + timedelta(hours=self.invitation_expiry_hours)
                 existing_invitation.role = invitation_entry.role
                 invitation_id = existing_invitation.id
                 token = existing_invitation.token
             else:
-                # Create new invitation
                 token = secrets.token_urlsafe(32)
                 invitation = Invitation(
                     id=uuid4(),
-                    email=invitation_entry.email.lower(),
+                    email=email,
                     role=invitation_entry.role,
                     organization_id=organization_id,
                     invited_by=user_id,
@@ -214,11 +212,10 @@ class InvitationService:
                 db.add(invitation)
                 invitation_id = invitation.id
                 
-                # Create pending member placeholder
                 if not existing_user:
                     pending_member = PendingMember(
                         id=uuid4(),
-                        email=invitation_entry.email.lower(),
+                        email=email,
                         name=invitation_entry.name,
                         role=invitation_entry.role,
                         organization_id=organization_id,
@@ -230,24 +227,24 @@ class InvitationService:
             
             await db.commit()
             
-            # Send invitation email
             await self._send_invitation_email(
-                email=invitation_entry.email,
+                email=email,
                 token=token,
                 organization_id=organization_id,
                 role=invitation_entry.role
             )
             
             return InvitationResult(
-                email=invitation_entry.email,
+                email=email,
                 status="sent",
                 invitation_id=invitation_id
             )
             
         except Exception as e:
-            logger.error(f"Failed to process invitation for {invitation_entry.email}: {str(e)}")
+            email_for_log = invitation_entry.email if invitation_entry.email else "unknown"
+            logger.error(f"Failed to process invitation for {email_for_log}: {str(e)}")
             return InvitationResult(
-                email=invitation_entry.email,
+                email=email_for_log,
                 status="failed",
                 error=str(e)
             )
@@ -259,14 +256,22 @@ class InvitationService:
         organization_id: Optional[UUID],
         role: str
     ):
-        """Send invitation email."""
-        # This is a placeholder - implement actual email sending
+        organization_name = "Your Organization"
+        if organization_id:
+            from app.repositories.organization_repository import organization_repository
+            from app.db import AsyncSessionLocal
+            
+            async with AsyncSessionLocal() as temp_db:
+                organization = await organization_repository.get(temp_db, organization_id)
+                if organization:
+                    organization_name = organization.name
+        
         invite_url = f"{settings.FRONTEND_URL}/invite?token={token}"
         
         await email_service.send_invitation(
             to_email=email,
             invite_url=invite_url,
-            organization_name="Your Organization",  # Fetch actual name
+            organization_name=organization_name,
             role=role
         )
     
@@ -278,7 +283,6 @@ class InvitationService:
         results: Optional[List[InvitationResult]] = None,
         error: Optional[str] = None
     ):
-        """Update task status in database."""
         stmt = select(InvitationTask).where(InvitationTask.id == task_id)
         result = await db.execute(stmt)
         task = result.scalar_one_or_none()
@@ -302,7 +306,6 @@ class InvitationService:
         failed_count: int,
         db: AsyncSession
     ):
-        """Update task progress in database."""
         stmt = select(InvitationTask).where(InvitationTask.id == task_id)
         result = await db.execute(stmt)
         task = result.scalar_one_or_none()
@@ -319,7 +322,6 @@ class InvitationService:
         user_id: UUID,
         db: AsyncSession
     ) -> Optional[InvitationStatusResponse]:
-        """Get status of an invitation task."""
         stmt = select(InvitationTask).where(
             and_(
                 InvitationTask.id == task_id,
@@ -351,7 +353,6 @@ class InvitationService:
         user_id: UUID,
         db: AsyncSession
     ) -> Optional[InvitationModel]:
-        """Get a specific invitation."""
         stmt = select(Invitation).where(
             and_(
                 Invitation.id == invitation_id,
@@ -366,7 +367,6 @@ class InvitationService:
         return None
     
     async def resend_invitation(self, invitation_id: UUID):
-        """Resend an invitation email."""
         # Implementation for resending invitation
         logger.info(f"Resending invitation {invitation_id}")
     
@@ -376,7 +376,6 @@ class InvitationService:
         user_id: UUID,
         db: AsyncSession
     ) -> bool:
-        """Cancel a pending invitation."""
         stmt = select(Invitation).where(
             and_(
                 Invitation.id == invitation_id,
@@ -390,7 +389,6 @@ class InvitationService:
         if invitation:
             invitation.status = "cancelled"
             
-            # Remove pending member if exists
             stmt = select(PendingMember).where(
                 PendingMember.invitation_id == invitation_id
             )
@@ -409,7 +407,6 @@ class InvitationService:
         token: str,
         db: AsyncSession
     ) -> Optional[InvitationValidateResponse]:
-        """Validate an invitation token and return details."""
         stmt = select(Invitation).options(
             selectinload(Invitation.organization),
             selectinload(Invitation.project),
@@ -426,12 +423,10 @@ class InvitationService:
         if not invitation:
             return None
         
-        # Check if user exists
         stmt = select(User).where(User.email == invitation.email.lower())
         result = await db.execute(stmt)
         user_exists = result.scalar_one_or_none() is not None
         
-        # Check expiration
         is_expired = datetime.utcnow() > invitation.expires_at
         
         return InvitationValidateResponse(
@@ -457,7 +452,6 @@ class InvitationService:
         Accept an invitation and create/update user memberships.
         Handles both existing and new users.
         """
-        # Validate invitation
         validation = await self.validate_invitation_token(token, db)
         if not validation:
             raise ValueError("Invalid or expired invitation token")
@@ -465,7 +459,6 @@ class InvitationService:
         if validation.is_expired:
             raise ValueError("Invitation has expired")
         
-        # Get the invitation
         stmt = select(Invitation).where(
             and_(
                 Invitation.token == token,
@@ -487,13 +480,11 @@ class InvitationService:
             if not user:
                 raise ValueError("User not found")
         else:
-            # Check if user exists with this email
             stmt = select(User).where(User.email == invitation.email.lower())
             result = await db.execute(stmt)
             user = result.scalar_one_or_none()
             
             if not user:
-                # Create new user
                 if not user_data:
                     raise ValueError("User data required for new user registration")
                 
@@ -503,7 +494,6 @@ class InvitationService:
                     db=db
                 )
         
-        # Add user to organization/project
         if invitation.organization_id:
             await self._add_to_organization(
                 user_id=user.id,
@@ -512,12 +502,10 @@ class InvitationService:
                 db=db
             )
         
-        # Update invitation status
         invitation.status = "accepted"
         invitation.accepted_at = datetime.utcnow()
         invitation.accepted_by = user.id
         
-        # Remove pending member
         stmt = select(PendingMember).where(
             PendingMember.invitation_id == invitation.id
         )
@@ -528,7 +516,6 @@ class InvitationService:
         
         await db.commit()
         
-        # Generate response
         redirect_url = f"{settings.FRONTEND_URL}/dashboard"
         if invitation.organization_id:
             redirect_url = f"{settings.FRONTEND_URL}/org/{invitation.organization_id}/dashboard"
@@ -550,10 +537,8 @@ class InvitationService:
         user_data: NewUserData,
         db: AsyncSession
     ) -> User:
-        """Create a new user from invitation data."""
         from app.services.supabase_service import supabase_service
         
-        # Create user in Supabase first
         supabase_user = await supabase_service.create_user(
             email=invitation.email,
             password=user_data.password,
@@ -569,7 +554,6 @@ class InvitationService:
         if not supabase_user:
             raise ValueError("Failed to create user account")
         
-        # Create user in database
         user = User(
             id=UUID(supabase_user["id"]),
             email=invitation.email.lower(),
@@ -596,8 +580,6 @@ class InvitationService:
         role: str,
         db: AsyncSession
     ) -> None:
-        """Add user to organization with specified role."""
-        # Check if already a member
         stmt = select(OrganizationMember).where(
             and_(
                 OrganizationMember.organization_id == organization_id,
@@ -608,7 +590,6 @@ class InvitationService:
         existing_member = result.scalar_one_or_none()
         
         if not existing_member:
-            # Add as new member
             member = OrganizationMember(
                 id=uuid4(),
                 organization_id=organization_id,

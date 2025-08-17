@@ -29,10 +29,6 @@ async def send_bulk_invitations(
     db: AsyncSession = Depends(get_db),
     current_user: TokenData = Depends(get_current_token_data)
 ):
-    """
-    Send bulk invitations to multiple email addresses.
-    Processes invitations in the background for better performance.
-    """
     user_id = UUID(current_user.sub)
     
     # Validate that user has permission to invite to this organization
@@ -77,18 +73,15 @@ async def get_bulk_invitation_status(
     db: AsyncSession = Depends(get_db),
     current_user: TokenData = Depends(get_current_token_data)
 ):
-    """
-    Get the status of a bulk invitation task.
-    """
     user_id = UUID(current_user.sub)
     
-    status = await invitation_service.get_invitation_task_status(
+    invitation_status = await invitation_service.get_invitation_task_status(
         task_id=task_id,
         user_id=user_id,
         db=db
     )
     
-    if not status:
+    if not invitation_status:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Invitation task not found"
@@ -104,9 +97,6 @@ async def resend_invitation(
     db: AsyncSession = Depends(get_db),
     current_user: TokenData = Depends(get_current_token_data)
 ):
-    """
-    Resend a specific invitation.
-    """
     user_id = UUID(current_user.sub)
     
     # Verify permission and resend
@@ -132,9 +122,6 @@ async def cancel_invitation(
     db: AsyncSession = Depends(get_db),
     current_user: TokenData = Depends(get_current_token_data)
 ):
-    """
-    Cancel a pending invitation.
-    """
     user_id = UUID(current_user.sub)
     
     success = await invitation_service.cancel_invitation(invitation_id, user_id, db)
@@ -152,10 +139,6 @@ async def validate_invitation(
     token: str,
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Validate an invitation token and return invitation details.
-    This endpoint is public and doesn't require authentication.
-    """
     invitation_details = await invitation_service.validate_invitation_token(token, db)
     
     if not invitation_details:
@@ -173,10 +156,6 @@ async def accept_invitation(
     db: AsyncSession = Depends(get_db),
     current_user: Optional[TokenData] = Depends(get_current_token_data_optional)
 ):
-    """
-    Accept an invitation and join the organization/project.
-    Can be called by both authenticated and unauthenticated users.
-    """
     user_id = UUID(current_user.sub) if current_user else None
     
     try:

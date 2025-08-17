@@ -171,7 +171,6 @@ class OnboardingService:
             await db.commit()
             await db.refresh(user)
 
-            # Return status directly from updated user to avoid additional query
             org_count = await db.execute(
                 select(OrganizationMember).where(OrganizationMember.user_id == user_id)
             )

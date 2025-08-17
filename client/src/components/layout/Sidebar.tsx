@@ -53,6 +53,7 @@ const navigation: NavItem[] = [
     icon: Settings,
     children: [
       { label: 'Account Settings', href: '/settings/account', icon: Users },
+      { label: 'Organization Settings', href: '/settings/organization', icon: Users },
       { label: 'Project Settings', href: '/settings/project', icon: Settings },
       { label: 'Roadmap Settings', href: '/settings/roadmap', icon: Map }
     ]

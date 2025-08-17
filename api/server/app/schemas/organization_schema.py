@@ -10,6 +10,7 @@ from app.models.organization_model import OrganizationRole, ProjectRole
 class OrganizationCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     slug: Optional[str] = Field(None, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
     subscription_tier: str = Field(default='free')
     settings: Optional[dict] = Field(default_factory=dict)
 
@@ -21,6 +22,7 @@ class OrganizationCreate(BaseModel):
 
 class OrganizationUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=255)
+    description: Optional[str] = Field(None, max_length=500)
     subscription_tier: Optional[str] = None
     settings: Optional[dict] = None
 
@@ -49,8 +51,10 @@ class OrganizationResponse(BaseModel):
     id: UUID
     name: str
     slug: str
+    description: Optional[str] = None
     subscription_tier: str
     settings: dict
+    created_by: Optional[UUID] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
     members_count: Optional[int] = None

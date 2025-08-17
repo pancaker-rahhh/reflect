@@ -9,7 +9,7 @@ import enum
 from app.models.base_model import BaseModel
 
 if TYPE_CHECKING:
-    from app.models.organization_model import OrganizationMember, ProjectMember
+    from app.models.organization_model import OrganizationMember, ProjectMember, Organization
     from app.models.notification_model import Notification
     from app.models.onboarding_model import UserOnboarding
     from app.models.invitation import Invitation, PendingMember, InvitationTask
@@ -63,6 +63,9 @@ class User(BaseModel):
     )
     project_memberships: Mapped[List['ProjectMember']] = relationship(
         'ProjectMember', back_populates='user', cascade='all, delete-orphan'
+    )
+    created_organizations: Mapped[List['Organization']] = relationship(
+        'Organization', foreign_keys='Organization.created_by', back_populates='creator', cascade='all, delete-orphan'
     )
     notifications: Mapped[List['Notification']] = relationship(
         'Notification', back_populates='user', cascade='all, delete-orphan'

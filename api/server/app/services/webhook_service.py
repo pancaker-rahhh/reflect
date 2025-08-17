@@ -24,7 +24,6 @@ class WebhookDeliveryService:
         return self.session
 
     def _generate_signature(self, payload: str, secret: str) -> str:
-        """Generate HMAC-SHA256 signature for webhook payload"""
         return hmac.new(
             secret.encode('utf-8'),
             payload.encode('utf-8'),
@@ -32,7 +31,6 @@ class WebhookDeliveryService:
         ).hexdigest()
 
     def _prepare_headers(self, webhook: Webhook, payload: str) -> Dict[str, str]:
-        """Prepare headers for webhook delivery"""
         headers = {
             'Content-Type': 'application/json',
             'User-Agent': 'Reflect-Webhooks/1.0',
@@ -83,7 +81,6 @@ class WebhookDeliveryService:
                 ) as response:
                     response_text = await response.text()
                     
-                    # Update webhook status
                     await webhook_repository.update(
                         db, webhook.id,
                         last_triggered_at=datetime.now(timezone.utc).isoformat(),
@@ -134,7 +131,6 @@ class WebhookDeliveryService:
     ) -> List[Dict[str, Any]]:
         """Trigger all webhooks for a project and event type"""
         
-        # Get active webhooks for this event
         webhooks = await webhook_repository.get_webhooks_for_event(
             db, project_id, event_type.value
         )
@@ -187,7 +183,6 @@ class WebhookDeliveryService:
         return result
 
     async def close(self):
-        """Close the HTTP session"""
         if self.session and not self.session.closed:
             await self.session.close()
 

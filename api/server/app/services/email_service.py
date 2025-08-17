@@ -9,12 +9,6 @@ logger = get_logger(__name__)
 
 
 class EmailService:
-    """
-    Email service for sending various types of emails.
-    This is a stub implementation that can be replaced with actual email providers
-    like SendGrid, AWS SES, Mailgun, etc.
-    """
-    
     def __init__(self):
         self.from_email = settings.EMAIL_FROM if hasattr(settings, 'EMAIL_FROM') else "noreply@reflect.app"
         self.from_name = settings.EMAIL_FROM_NAME if hasattr(settings, 'EMAIL_FROM_NAME') else "Reflect"
@@ -26,40 +20,29 @@ class EmailService:
         organization_name: str,
         role: str
     ) -> bool:
-        """
-        Send an invitation email.
-        
-        Args:
-            to_email: Recipient email address
-            invite_url: URL for accepting the invitation
-            organization_name: Name of the organization
-            role: Role being assigned
-        
-        Returns:
-            bool: True if email was sent successfully
-        """
         try:
-            # Log the email details for now (replace with actual email sending)
-            logger.info(f"Sending invitation email to {to_email}")
-            logger.debug(f"Invitation details: org={organization_name}, role={role}, url={invite_url}")
+            logger.info(f"📧 INVITATION EMAIL")
+            logger.info(f"To: {to_email}")
+            logger.info(f"From: {self.from_name} <{self.from_email}>")
+            logger.info(f"Subject: You've been invited to join {organization_name}")
+            logger.info(f"Organization: {organization_name}")
+            logger.info(f"Role: {role}")
+            logger.info(f"Invitation URL: {invite_url}")
+            logger.info("=" * 60)
             
-            # Simulate email sending delay
+            html_content = self._get_invitation_html(invite_url, organization_name, role)
+            logger.info("HTML Content (truncated):")
+            logger.info(html_content[:500] + "..." if len(html_content) > 500 else html_content)
+            logger.info("=" * 60)
+            
             await asyncio.sleep(0.1)
             
-            # In production, this would integrate with an email service provider
-            # Example with SendGrid:
-            # message = Mail(
-            #     from_email=(self.from_email, self.from_name),
-            #     to_emails=to_email,
-            #     subject=f"You've been invited to join {organization_name}",
-            #     html_content=self._get_invitation_html(invite_url, organization_name, role)
-            # )
-            # response = await self.sendgrid_client.send(message)
             
+            logger.info(f"✅ Email invitation successfully processed for {to_email}")
             return True
             
         except Exception as e:
-            logger.error(f"Failed to send invitation email to {to_email}: {str(e)}")
+            logger.error(f"❌ Failed to send invitation email to {to_email}: {str(e)}")
             return False
     
     async def send_bulk_emails(
@@ -68,21 +51,9 @@ class EmailService:
         template: str,
         subject: str
     ) -> Dict[str, bool]:
-        """
-        Send bulk emails to multiple recipients.
-        
-        Args:
-            recipients: List of recipient data with email and personalization
-            template: Email template name
-            subject: Email subject
-        
-        Returns:
-            Dict mapping email to success status
-        """
         results = {}
         
         for recipient in recipients:
-            # Add small delay to avoid rate limiting
             await asyncio.sleep(0.05)
             
             success = await self._send_single_email(
@@ -102,10 +73,8 @@ class EmailService:
         subject: str,
         data: Dict[str, Any]
     ) -> bool:
-        """Send a single templated email."""
         try:
             logger.info(f"Sending {template} email to {to_email}")
-            # Implement actual email sending here
             return True
         except Exception as e:
             logger.error(f"Failed to send email to {to_email}: {str(e)}")
@@ -117,7 +86,6 @@ class EmailService:
         organization_name: str,
         role: str
     ) -> str:
-        """Generate HTML content for invitation email."""
         return f"""
         <!DOCTYPE html>
         <html>

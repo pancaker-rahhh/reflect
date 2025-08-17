@@ -24,7 +24,6 @@ class TaskStatus(str, enum.Enum):
 
 
 class Invitation(BaseModel):
-    """Model for storing invitations."""
     __tablename__ = "invitations"
     
     email = Column(String, nullable=False, index=True)
@@ -46,7 +45,6 @@ class Invitation(BaseModel):
 
 
 class PendingMember(BaseModel):
-    """Model for placeholder members waiting for invitation acceptance."""
     __tablename__ = "pending_members"
     
     email = Column(String, nullable=False, index=True)
@@ -65,7 +63,6 @@ class PendingMember(BaseModel):
 
 
 class InvitationTask(Base, TimeStampMixin):
-    """Model for tracking bulk invitation tasks."""
     __tablename__ = "invitation_tasks"
     
     id: Mapped[str] = mapped_column(String, primary_key=True)  # UUID as string for easier tracking

@@ -114,7 +114,6 @@ class WebhookEventDispatcher:
         }
         
         try:
-            # Get project_id from roadmap
             from app.repositories.roadmap_repository import roadmap_repository
             roadmap = await roadmap_repository.get(db, feature.roadmap_id)
             if not roadmap:
@@ -158,7 +157,6 @@ class WebhookEventDispatcher:
         }
         
         try:
-            # Get project_id from roadmap
             from app.repositories.roadmap_repository import roadmap_repository
             roadmap = await roadmap_repository.get(db, feature.roadmap_id)
             if not roadmap:

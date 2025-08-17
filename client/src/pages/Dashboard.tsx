@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { api } from '@/services(mock)/api'
 import { MetricsCards } from '@/components/dashboard/MetricsCards'
 import { TimeRangeFilter } from '@/components/dashboard/TimeRangeFilter'
@@ -7,11 +8,15 @@ import { RecentActivityTable } from '@/components/dashboard/RecentActivityTable'
 import { NPSDistributionChart } from '@/components/dashboard/NPSDistributionChart'
 import { FeedbackDistributionChart } from '@/components/dashboard/FeedbackDistributionChart'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useAppContext } from '@/context/AppContext'
+import { FolderOpen, Plus } from 'lucide-react'
 
 export type TimeRange = 'all' | 'week' | 'month' | 'year'
 
 export function Dashboard() {
   const [timeRange, setTimeRange] = useState<TimeRange>('all')
+  const navigate = useNavigate()
+  const { projects, currentProject, isLoading: appLoading } = useAppContext()
 
   const { data: metrics, isLoading: metricsLoading } = useQuery({
     queryKey: ['dashboard-metrics', timeRange],

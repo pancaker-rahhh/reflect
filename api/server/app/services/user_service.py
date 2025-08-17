@@ -98,7 +98,6 @@ class UserService:
         if user_exist:
             logger.debug(f'User {token_data.user_id} already exists, returning profile')
             
-            # Set first_login_at for existing users who don't have it set
             if user_exist.first_login_at is None:
                 await user_repository.update(
                     db, 

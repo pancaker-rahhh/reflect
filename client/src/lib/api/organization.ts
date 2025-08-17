@@ -31,10 +31,10 @@ export interface OrganizationListResponse {
 export interface OrganizationMember {
   id: string
   user_id?: string  // Optional for pending members
-  organization_id: string
+  organization_id?: string
   role: 'owner' | 'admin' | 'member' | 'viewer'
-  email?: string
-  name?: string
+  user_name?: string
+  user_email?: string
   created_at: string
   updated_at?: string
   is_pending?: boolean  // True for invited but not accepted members

@@ -3,19 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../lib/client';
 import { UserPlus, Mail, MoreHorizontal, Shield, User, Eye, Crown } from 'lucide-react';
 import { InviteMemberModal } from './InviteMemberModal';
-
-interface OrganizationMember {
-  id: string;
-  user_id: string;
-  role: 'owner' | 'admin' | 'member' | 'viewer';
-  joined_at: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    avatar_url?: string;
-  };
-}
+import type { OrganizationMember } from '../../lib/api/organization';
 
 interface OrganizationMembersProps {
   organizationId: string;
@@ -28,7 +16,7 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = ({ organi
 
   const { data: members = [], isLoading } = useQuery({
     queryKey: ['organization', organizationId, 'members'],
-    queryFn: () => apiClient.get<OrganizationMember[]>(`/organizations/${organizationId}/members`),
+    queryFn: () => apiClient.get<OrganizationMember[]>(`/organizations/${organizationId}/members?skip=0&limit=50`),
   });
 
   const updateRoleMutation = useMutation({
@@ -131,23 +119,15 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = ({ organi
               <div className="grid grid-cols-12 gap-4 items-center">
                 <div className="col-span-5 flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                    {member.user.avatar_url ? (
-                      <img
-                        src={member.user.avatar_url}
-                        alt={member.user.name}
-                        className="w-8 h-8 rounded-full"
-                      />
-                    ) : (
-                      <span className="text-sm font-medium text-gray-600">
-                        {member.user.name?.charAt(0) || member.user.email.charAt(0)}
-                      </span>
-                    )}
+                    <span className="text-sm font-medium text-gray-600">
+                      {member.user_name?.charAt(0) || member.user_email?.charAt(0) || '?'}
+                    </span>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-900">
-                      {member.user.name || member.user.email}
+                      {member.user_name || member.user_email || 'Unknown Member'}
                     </p>
-                    <p className="text-sm text-gray-500">{member.user.email}</p>
+                    <p className="text-sm text-gray-500">{member.user_email || 'No email'}</p>
                   </div>
                 </div>
 
@@ -161,7 +141,7 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = ({ organi
                 </div>
 
                 <div className="col-span-3 text-sm text-gray-500">
-                  {new Date(member.joined_at).toLocaleDateString()}
+                  {new Date(member.created_at).toLocaleDateString()}
                 </div>
 
                 <div className="col-span-1">

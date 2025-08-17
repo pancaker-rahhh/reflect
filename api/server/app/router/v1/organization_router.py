@@ -29,7 +29,6 @@ async def create_organization(
     db: AsyncSession = Depends(get_db),
     current_user: TokenData = Depends(get_current_token_data)
 ):
-    """Create a new organization."""
     logger.info(f"Creating organization for user {current_user.sub}")
     return await organization_service.create_organization(UUID(current_user.sub), org_data, db)
 
@@ -41,7 +40,6 @@ async def get_user_organizations(
     db: AsyncSession = Depends(get_db),
     current_user: TokenData = Depends(get_current_token_data)
 ):
-    """Get all organizations for the current user."""
     return await organization_service.get_user_organizations(
         UUID(current_user.sub), db, skip, limit
     )
@@ -52,7 +50,6 @@ async def get_my_organizations(
     db: AsyncSession = Depends(get_db),
     current_user: TokenData = Depends(get_current_token_data)
 ):
-    """Get all organizations for the current user (simplified endpoint)."""
     result = await organization_service.get_user_organizations(
         UUID(current_user.sub), db, skip=0, limit=100
     )
@@ -66,7 +63,6 @@ async def get_organization(
     db: AsyncSession = Depends(get_db),
     current_user: TokenData = Depends(get_current_token_data)
 ):
-    """Get organization by ID."""
     return await organization_service.get_organization(
         org_id, UUID(current_user.sub), db, include_members
     )
@@ -79,7 +75,6 @@ async def update_organization(
     db: AsyncSession = Depends(get_db),
     current_user: TokenData = Depends(get_current_token_data)
 ):
-    """Update organization (admin/owner only)."""
     return await organization_service.update_organization(
         org_id, UUID(current_user.sub), update_data, db
     )
@@ -91,7 +86,6 @@ async def delete_organization(
     db: AsyncSession = Depends(get_db),
     current_user: TokenData = Depends(get_current_token_data)
 ):
-    """Delete organization (owner only)."""
     await organization_service.delete_organization(org_id, UUID(current_user.sub), db)
 
 
@@ -102,7 +96,6 @@ async def invite_member(
     db: AsyncSession = Depends(get_db),
     current_user: TokenData = Depends(get_current_token_data)
 ):
-    """Invite a member to the organization (admin/owner only)."""
     return await organization_service.invite_member(
         org_id, UUID(current_user.sub), invite_data, db
     )
@@ -116,7 +109,6 @@ async def get_organization_members(
     db: AsyncSession = Depends(get_db),
     current_user: TokenData = Depends(get_current_token_data)
 ):
-    """Get all members of an organization."""
     return await organization_service.get_members(
         org_id, UUID(current_user.sub), db, skip, limit
     )
@@ -130,7 +122,6 @@ async def update_member(
     db: AsyncSession = Depends(get_db),
     current_user: TokenData = Depends(get_current_token_data)
 ):
-    """Update member role (admin/owner only)."""
     return await organization_service.update_member(
         org_id, member_user_id, UUID(current_user.sub), update_data, db
     )
@@ -143,7 +134,6 @@ async def remove_member(
     db: AsyncSession = Depends(get_db),
     current_user: TokenData = Depends(get_current_token_data)
 ):
-    """Remove member from organization (admin/owner only)."""
     await organization_service.remove_member(org_id, member_user_id, UUID(current_user.sub), db)
 
 
@@ -153,5 +143,4 @@ async def leave_organization(
     db: AsyncSession = Depends(get_db),
     current_user: TokenData = Depends(get_current_token_data)
 ):
-    """Leave organization (members only, owner must transfer ownership first)."""
     await organization_service.leave_organization(org_id, UUID(current_user.sub), db)

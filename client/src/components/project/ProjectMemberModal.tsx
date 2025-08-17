@@ -21,7 +21,9 @@ export const ProjectMemberModal: React.FC<ProjectMemberModalProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMember, setSelectedMember] = useState<string | null>(null);
-  const [selectedRole, setSelectedRole] = useState<'admin' | 'member' | 'viewer'>('member');
+  const [selectedRole, setSelectedRole] = useState<'admin' | 'editor' | 'viewer'>('editor');
+  const [newMemberEmail, setNewMemberEmail] = useState('');
+  const [isAddingNewMember, setIsAddingNewMember] = useState(false);
 
   if (!isOpen) return null;
 
@@ -30,12 +32,18 @@ export const ProjectMemberModal: React.FC<ProjectMemberModalProps> = ({
   );
 
   const filteredMembers = availableMembers.filter(member =>
-    member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.email.toLowerCase().includes(searchQuery.toLowerCase())
+    (member.name && member.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (member.email && member.email.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const handleAdd = () => {
-    if (selectedMember) {
+    if (isAddingNewMember && newMemberEmail) {
+      // For new members, we'll use a special identifier that the parent can handle
+      onAdd(`new:${newMemberEmail}`, selectedRole);
+      setNewMemberEmail('');
+      setIsAddingNewMember(false);
+      onClose();
+    } else if (selectedMember) {
       onAdd(selectedMember, selectedRole);
       setSelectedMember(null);
       setSearchQuery('');
@@ -67,20 +75,62 @@ export const ProjectMemberModal: React.FC<ProjectMemberModalProps> = ({
         </div>
 
         <div className="p-6 space-y-4">
-          <AnimatedInput
-            placeholder="Search organization members..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            icon={<Search className="w-4 h-4" />}
-          />
+          <div className="flex gap-2 mb-4">
+            <button
+              onClick={() => setIsAddingNewMember(false)}
+              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                !isAddingNewMember 
+                  ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' 
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              From Organization
+            </button>
+            <button
+              onClick={() => setIsAddingNewMember(true)}
+              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                isAddingNewMember 
+                  ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' 
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Invite New User
+            </button>
+          </div>
 
-          <div className="max-h-60 overflow-y-auto space-y-2">
-            {filteredMembers.length === 0 ? (
-              <p className="text-center text-gray-500 py-4">
-                {searchQuery ? 'No members found' : 'All organization members are already in this project'}
-              </p>
-            ) : (
-              filteredMembers.map((member) => (
+          {!isAddingNewMember ? (
+            <AnimatedInput
+              placeholder="Search organization members..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              icon={<Search className="w-4 h-4" />}
+            />
+          ) : (
+            <div className="space-y-3">
+              <AnimatedInput
+                placeholder="Enter email address..."
+                value={newMemberEmail}
+                onChange={(e) => setNewMemberEmail(e.target.value)}
+                icon={<UserPlus className="w-4 h-4" />}
+                type="email"
+              />
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-blue-800 text-sm">
+                  <strong>Note:</strong> This user will be invited to both the organization and this project. 
+                  They'll receive an email invitation to join.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {!isAddingNewMember && (
+            <div className="max-h-60 overflow-y-auto space-y-2">
+              {filteredMembers.length === 0 ? (
+                <p className="text-center text-gray-500 py-4">
+                  {searchQuery ? 'No members found' : 'All organization members are already in this project'}
+                </p>
+              ) : (
+                filteredMembers.map((member) => (
                 <label
                   key={member.id}
                   className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
@@ -101,21 +151,22 @@ export const ProjectMemberModal: React.FC<ProjectMemberModalProps> = ({
                     {member.name?.[0] || member.email[0]}
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900">{member.name}</p>
+                    <p className="font-medium text-gray-900">{member.name || member.email}</p>
                     <p className="text-sm text-gray-500">{member.email}</p>
                   </div>
                 </label>
-              ))
-            )}
-          </div>
+                ))
+              )}
+            </div>
+          )}
 
-          {selectedMember && (
+          {(selectedMember || (isAddingNewMember && newMemberEmail)) && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Project Role
               </label>
               <div className="grid grid-cols-3 gap-2">
-                {(['viewer', 'member', 'admin'] as const).map((role) => (
+                {(['viewer', 'editor', 'admin'] as const).map((role) => (
                   <button
                     key={role}
                     type="button"
@@ -142,11 +193,11 @@ export const ProjectMemberModal: React.FC<ProjectMemberModalProps> = ({
             </button>
             <button
               onClick={handleAdd}
-              disabled={!selectedMember}
+              disabled={!selectedMember && (!isAddingNewMember || !newMemberEmail)}
               className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               <UserPlus className="w-4 h-4" />
-              Add Member
+              {isAddingNewMember ? 'Invite & Add' : 'Add Member'}
             </button>
           </div>
         </div>

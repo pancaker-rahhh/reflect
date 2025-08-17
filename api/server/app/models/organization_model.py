@@ -1,5 +1,5 @@
 from typing import List, Optional, TYPE_CHECKING
-from sqlalchemy import String, ForeignKey, UniqueConstraint, Boolean
+from sqlalchemy import String, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 import re
@@ -33,14 +33,24 @@ class Organization(BaseModel):
     slug: Mapped[str] = mapped_column(
         String(100), unique=True, nullable=False, index=True
     )
+    description: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     subscription_tier: Mapped[str] = mapped_column(String(50), default='free')
     settings: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_by: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey('users.id', ondelete='SET NULL'),
+        nullable=True,
+        index=True,
+    )
 
     members: Mapped[List['OrganizationMember']] = relationship(
         'OrganizationMember', back_populates='organization', cascade='all, delete-orphan'
     )
     projects: Mapped[List['Project']] = relationship(
         'Project', back_populates='organization', cascade='all, delete-orphan'
+    )
+    creator: Mapped[Optional['User']] = relationship(
+        'User', foreign_keys=[created_by], back_populates='created_organizations'
     )
     
     # Invitation system relationships

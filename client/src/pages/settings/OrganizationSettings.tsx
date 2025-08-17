@@ -1,13 +1,19 @@
 import React from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAppContext } from '../../context/AppContext';
 import { OrganizationSettingsPage } from '../../components/organization/OrganizationSettingsPage';
 
 export const OrganizationSettings: React.FC = () => {
-  const { user } = useAuth();
+  const { organization } = useAppContext();
 
-  // For now, we'll use the first organization ID
-  // In a real app, this would come from route params or context
-  const organizationId = user?.user_metadata?.primary_organization_id || '1';
+  if (!organization) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-gray-500">No organization found</p>
+        </div>
+      </div>
+    );
+  }
 
-  return <OrganizationSettingsPage organizationId={organizationId} />;
+  return <OrganizationSettingsPage organizationId={organization.id} />;
 };

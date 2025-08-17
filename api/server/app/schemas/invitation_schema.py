@@ -5,14 +5,12 @@ from pydantic import BaseModel, EmailStr, Field, validator
 
 
 class InvitationEntry(BaseModel):
-    """Single invitation entry"""
     email: EmailStr
     role: Literal["admin", "member", "viewer"] = "member"
     name: Optional[str] = None
 
 
 class BulkInvitationRequest(BaseModel):
-    """Request model for bulk invitations"""
     organization_id: Optional[UUID] = None
     project_id: Optional[UUID] = None
     invitations: List[InvitationEntry] = Field(..., min_items=1, max_items=100)
@@ -27,7 +25,6 @@ class BulkInvitationRequest(BaseModel):
 
 
 class BulkInvitationResponse(BaseModel):
-    """Response model for bulk invitation request"""
     task_id: str
     total_count: int
     status: Literal["processing", "completed", "failed"]
@@ -35,7 +32,6 @@ class BulkInvitationResponse(BaseModel):
 
 
 class InvitationResult(BaseModel):
-    """Result of a single invitation"""
     email: EmailStr
     status: Literal["sent", "failed", "duplicate", "invalid"]
     error: Optional[str] = None
@@ -43,7 +39,6 @@ class InvitationResult(BaseModel):
 
 
 class InvitationStatusResponse(BaseModel):
-    """Status response for bulk invitation task"""
     task_id: str
     status: Literal["pending", "processing", "completed", "failed"]
     total_count: int
@@ -57,7 +52,6 @@ class InvitationStatusResponse(BaseModel):
 
 
 class InvitationModel(BaseModel):
-    """Invitation database model representation"""
     id: UUID
     email: EmailStr
     role: str
@@ -75,7 +69,6 @@ class InvitationModel(BaseModel):
 
 
 class PendingMemberModel(BaseModel):
-    """Pending member model for placeholder members"""
     id: UUID
     email: EmailStr
     name: Optional[str]
@@ -91,7 +84,6 @@ class PendingMemberModel(BaseModel):
 
 
 class InvitationValidateResponse(BaseModel):
-    """Response when validating an invitation token"""
     invitation_id: UUID
     email: EmailStr
     organization_name: Optional[str]
@@ -104,7 +96,6 @@ class InvitationValidateResponse(BaseModel):
 
 
 class NewUserData(BaseModel):
-    """Data for creating a new user during invitation acceptance"""
     name: str = Field(..., min_length=1, max_length=100)
     password: str = Field(..., min_length=8)
     phone: Optional[str] = None
@@ -112,13 +103,11 @@ class NewUserData(BaseModel):
 
 
 class InvitationAcceptRequest(BaseModel):
-    """Request to accept an invitation"""
     token: str
     user_data: Optional[NewUserData] = None  # Only for new users
 
 
 class InvitationAcceptResponse(BaseModel):
-    """Response after accepting an invitation"""
     success: bool
     message: str
     user_id: UUID

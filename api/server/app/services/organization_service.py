@@ -144,46 +144,89 @@ class OrganizationService:
         await self._check_admin_access(db, org_id, user_id)
         
         invited_user = await user_repository.get_by_email(db, invite_data.email)
-        if not invited_user:
-            raise NotFoundError(f"User with email {invite_data.email} not found")
         
-        existing_member = await organization_member_repository.get_by_org_and_user(
-            db, org_id, invited_user.id
-        )
-        if existing_member:
-            raise ConflictError("User is already a member of this organization")
-        
-        member = await organization_member_repository.add_member(
-            db, org_id, invited_user.id, invite_data.role
-        )
-        
-        logger.info(f"Added member {invited_user.id} to organization {org_id}")
-        
-        response = OrganizationMemberResponse.model_validate(member)
-        response.user_name = invited_user.name
-        response.user_email = invited_user.email
-        return response
+        if invited_user:
+            # User exists - check if already a member
+            existing_member = await organization_member_repository.get_by_org_and_user(
+                db, org_id, invited_user.id
+            )
+            if existing_member:
+                raise ConflictError("User is already a member of this organization")
+            
+            member = await organization_member_repository.add_member(
+                db, org_id, invited_user.id, invite_data.role
+            )
+            
+            logger.info(f"Added existing user {invited_user.id} to organization {org_id}")
+            
+            response = OrganizationMemberResponse.model_validate(member)
+            response.user_name = invited_user.name
+            response.user_email = invited_user.email
+            response.is_pending = False
+            return response
+        else:
+            # User doesn't exist - create invitation
+            from app.services.invitation_service import invitation_service
+            from app.schemas.invitation_schema import InvitationEntry
+            
+            if not invite_data.email or not invite_data.email.strip():
+                raise ValidationError("Email address is required")
+            
+            invitation_entry = InvitationEntry(
+                email=invite_data.email.strip(),
+                role=invite_data.role,
+                name=None  # We don't have the name yet
+            )
+            
+            result = await invitation_service._process_single_invitation(
+                user_id=user_id,
+                organization_id=org_id,
+                invitation_entry=invitation_entry,
+                db=db
+            )
+            
+            if result.status != "sent":
+                raise ValidationError(f"Failed to send invitation: {result.error}")
+            
+            logger.info(f"Sent invitation to {invite_data.email} for organization {org_id}")
+            
+            response = OrganizationMemberResponse(
+                id=result.invitation_id,
+                user_id=None,
+                organization_id=org_id,
+                role=invite_data.role,
+                user_name="Pending User",
+                user_email=invite_data.email,
+                is_pending=True,
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc)
+            )
+            return response
 
     async def get_members(
         self, org_id: UUID, user_id: UUID, db: AsyncSession, skip: int = 0, limit: int = 100
     ) -> List[OrganizationMemberResponse]:
         await self._check_user_access(db, org_id, user_id)
         
-        # Get active members
         members = await organization_member_repository.get_org_members(
             db, org_id, skip, limit
         )
         
         member_responses = []
         for member in members:
-            response = OrganizationMemberResponse.model_validate(member)
-            if member.user:
-                response.user_name = member.user.name
-                response.user_email = member.user.email
-                response.is_pending = False
+            response = OrganizationMemberResponse(
+                id=member.id,
+                user_id=member.user_id,
+                organization_id=member.organization_id,
+                role=member.role,
+                created_at=member.created_at,
+                updated_at=member.updated_at,
+                user_name=member.user.name if member.user else None,
+                user_email=member.user.email if member.user else None,
+                is_pending=False
+            )
             member_responses.append(response)
         
-        # Get pending members
         stmt = select(PendingMember).where(
             PendingMember.organization_id == org_id
         )
@@ -191,7 +234,6 @@ class OrganizationService:
         pending_members = result.scalars().all()
         
         for pending in pending_members:
-            # Create a member response for pending members
             response = OrganizationMemberResponse(
                 id=pending.id,
                 user_id=None,  # No user yet
