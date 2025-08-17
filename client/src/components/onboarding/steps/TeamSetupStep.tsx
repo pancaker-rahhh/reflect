@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
 import { useOnboardingKeyboard } from '../../../hooks/useOnboardingKeyboard';
-import { UserPlus, Mail, X } from 'lucide-react';
+import { useOnboardingData } from '../../../hooks/useOnboardingData';
+import { UserPlus, Mail, X, Users, FileText } from 'lucide-react';
 import { invitationApi } from '../../../lib/api';
+import { BulkInviteModal } from '../../organization/BulkInviteModal';
 
 interface TeamMember {
   email: string;
@@ -10,12 +12,14 @@ interface TeamMember {
 }
 
 export const TeamSetupStep: React.FC = () => {
-  const { nextStep, markStepCompleted } = useOnboarding();
+  const { nextStep, markStepCompleted, organizationId } = useOnboarding();
+  const { saveTeamData } = useOnboardingData();
   
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [newMemberEmail, setNewMemberEmail] = useState('');
   const [newMemberRole, setNewMemberRole] = useState<'admin' | 'member' | 'viewer'>('member');
   const [isInviting, setIsInviting] = useState(false);
+  const [showBulkInvite, setShowBulkInvite] = useState(false);
 
   const addTeamMember = () => {
     if (newMemberEmail && !teamMembers.find(m => m.email === newMemberEmail)) {
@@ -52,16 +56,34 @@ export const TeamSetupStep: React.FC = () => {
         invitations: teamMembers,
       });
 
+      saveTeamData({
+        members: teamMembers,
+        invitesSent: teamMembers.length
+      });
+
       markStepCompleted('team-setup');
       nextStep();
     } catch (error) {
       console.error('Failed to send invitations:', error);
       // For now, just proceed to next step even if invitations fail
+      saveTeamData({
+        members: teamMembers,
+        invitesSent: 0
+      });
       markStepCompleted('team-setup');
       nextStep();
     } finally {
       setIsInviting(false);
     }
+  };
+
+  const handleBulkInviteSuccess = (count: number) => {
+    saveTeamData({
+      members: [],
+      invitesSent: count
+    });
+    markStepCompleted('team-setup');
+    nextStep();
   };
 
   const getRoleColor = (role: string) => {
@@ -89,6 +111,25 @@ export const TeamSetupStep: React.FC = () => {
       </div>
 
       <div className="space-y-6">
+        <div className="flex gap-3 mb-4">
+          <button
+            onClick={() => setShowBulkInvite(true)}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md"
+          >
+            <Users className="w-5 h-5" />
+            Bulk Invite (Recommended)
+          </button>
+          <div className="flex items-center gap-2 text-gray-500">
+            <span>or</span>
+          </div>
+          <button
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <UserPlus className="w-5 h-5" />
+            Add One by One
+          </button>
+        </div>
+
         <div className="border border-gray-200 rounded-lg p-4">
           <h3 className="font-medium text-gray-800 mb-3">Add Team Member</h3>
           
@@ -177,6 +218,15 @@ export const TeamSetupStep: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {showBulkInvite && (
+        <BulkInviteModal
+          organizationId={organizationId || ''}
+          isOpen={showBulkInvite}
+          onClose={() => setShowBulkInvite(false)}
+          onSuccess={handleBulkInviteSuccess}
+        />
+      )}
     </div>
   );
 };

@@ -22,6 +22,7 @@ import {
 import { organizationApi, type Organization, type OrganizationMember } from '../../lib/api/organization';
 import { AnimatedInput } from '../onboarding/shared/AnimatedInput';
 import { InviteMemberModal } from './InviteMemberModal';
+import { BulkInviteModal } from './BulkInviteModal';
 
 interface OrganizationSettingsPageProps {
   organizationId: string;
@@ -39,6 +40,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showBulkInviteModal, setShowBulkInviteModal] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -198,13 +200,22 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-lg font-semibold text-gray-900">Team Members</h3>
-        <button 
-          onClick={() => setShowInviteModal(true)}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          Invite Member
-        </button>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => setShowBulkInviteModal(true)}
+            className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 flex items-center gap-2"
+          >
+            <Users className="w-4 h-4" />
+            Bulk Invite
+          </button>
+          <button 
+            onClick={() => setShowInviteModal(true)}
+            className="px-4 py-2 border border-indigo-600 text-indigo-600 rounded-lg hover:bg-indigo-50 flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Add Single
+          </button>
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -396,6 +407,19 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
         <InviteMemberModal
           organizationId={organizationId}
           onClose={() => setShowInviteModal(false)}
+        />
+      )}
+
+      {showBulkInviteModal && (
+        <BulkInviteModal
+          organizationId={organizationId}
+          isOpen={showBulkInviteModal}
+          onClose={() => setShowBulkInviteModal(false)}
+          onSuccess={(count) => {
+            setMessage({ type: 'success', text: `Successfully sent ${count} invitation${count !== 1 ? 's' : ''}` });
+            setTimeout(() => setMessage(null), 5000);
+            loadOrganizationData();
+          }}
         />
       )}
     </div>
