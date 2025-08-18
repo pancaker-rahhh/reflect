@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { OrganizationDropdown } from './OrganizationDropdown'
+import { isFeatureEnabled } from '@/lib/featureFlags'
 
 interface NavItem {
   label: string
@@ -53,7 +54,9 @@ const navigation: NavItem[] = [
     icon: Settings,
     children: [
       { label: 'Account Settings', href: '/settings/account', icon: Users },
-      { label: 'Organization Settings', href: '/settings/organization', icon: Users },
+      ...(isFeatureEnabled('SHOW_ORG_SETTINGS_IN_SIDEBAR') 
+        ? [{ label: 'Organization Settings', href: '/settings/organization', icon: Users }]
+        : []),
       { label: 'Project Settings', href: '/settings/project', icon: Settings },
       { label: 'Roadmap Settings', href: '/settings/roadmap', icon: Map }
     ]

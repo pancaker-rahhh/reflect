@@ -40,16 +40,6 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    loadRecentProjects();
-  }, []);
-
-  useEffect(() => {
-    if (currentProject) {
-      addToRecentProjects(currentProject.id);
-    }
-  }, [currentProject, addToRecentProjects]);
-
   const loadRecentProjects = () => {
     const stored = localStorage.getItem('recentProjects');
     if (stored) {
@@ -62,6 +52,16 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({
     setRecentProjects(updated);
     localStorage.setItem('recentProjects', JSON.stringify(updated));
   }, [recentProjects]);
+
+  useEffect(() => {
+    loadRecentProjects();
+  }, []);
+
+  useEffect(() => {
+    if (currentProject) {
+      addToRecentProjects(currentProject.id);
+    }
+  }, [currentProject, addToRecentProjects]);
 
   const handleProjectSelect = (project: Project) => {
     setCurrentProject(project);
