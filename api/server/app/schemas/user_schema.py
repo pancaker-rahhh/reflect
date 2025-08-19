@@ -2,7 +2,7 @@ from typing import Optional
 from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 from uuid import UUID
-import pytz
+import re
 
 
 class UserProfileResponse(BaseModel):
@@ -11,8 +11,7 @@ class UserProfileResponse(BaseModel):
     name: Optional[str] = None
     avatar_url: Optional[str] = None
     company_name: Optional[str] = None
-    phone: Optional[str] = None
-    timezone: str = Field(default='UTC')
+    country: Optional[str] = None
     email_verified_at: Optional[datetime] = None
     last_login_at: Optional[datetime] = None
     created_at: datetime
@@ -25,15 +24,18 @@ class UserProfileResponse(BaseModel):
 class UserProfileUpdateRequest(BaseModel):
     name: Optional[str] = Field(None, max_length=255)
     company_name: Optional[str] = Field(None, max_length=255)
-    phone: Optional[str] = Field(None, max_length=50)
-    timezone: Optional[str] = Field(None)
+    country: Optional[str] = Field(None, max_length=2)
     avatar_url: Optional[str] = None
 
-    @field_validator('timezone')
+    @field_validator('country')
     @classmethod
-    def validate_timezone(cls, v: Optional[str]) -> Optional[str]:
-        if v and v not in pytz.all_timezones:
-            raise ValueError(f'Invalid timezone: {v}')
+    def validate_country(cls, v: Optional[str]) -> Optional[str]:
+        if v:
+            # Validate ISO 3166-1 alpha-2 country code (2 uppercase letters)
+            if not re.match(r'^[A-Z]{2}$', v):
+                raise ValueError(
+                    'Country must be a valid ISO 3166-1 alpha-2 code (e.g., US, GB, CA)'
+                )
         return v
 
     class Config:

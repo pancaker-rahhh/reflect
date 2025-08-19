@@ -38,8 +38,9 @@ class User(BaseModel):
     avatar_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     company_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    timezone: Mapped[str] = mapped_column(String(50), default='UTC')
+    country: Mapped[Optional[str]] = mapped_column(
+        String(2), nullable=True
+    )  # ISO 3166-1 alpha-2 country code
 
     email_verified_at: Mapped[Optional[datetime]] = mapped_column(
         DateTimeColumn(timezone=True), nullable=True
