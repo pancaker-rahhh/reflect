@@ -37,6 +37,10 @@ const widgetSchema = z.object({
     submitButtonText: z.string().min(1, 'Button text is required'),
     thankYouTitle: z.string().min(1, 'Thank you title is required'),
     thankYouMessage: z.string().min(1, 'Thank you message is required'),
+    // Scoring fields for NPS, CSAT, CES
+    npsScore: z.number().min(0).max(10).optional(),
+    csatScore: z.number().min(1).max(5).optional(),
+    cesScore: z.number().min(1).max(5).optional(),
   }),
   appearance: z.object({
     theme: z.enum(['default', 'midnight', 'minimal-light', 'minimal-dark']),

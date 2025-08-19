@@ -11,14 +11,14 @@ import { cn } from '@/lib/utils'
 
 export function BillingSettings() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly')
-  
+
   const { data: organization, isLoading } = useQuery({
     queryKey: ['organization'],
-    queryFn: () => api.getOrganizations().then(organizations => organizations[0])
+    queryFn: () => api.getOrganizations().then((organizations) => organizations[0]),
   })
 
   const currentPlan = organization?.subscription?.plan || 'free'
-  
+
   const plans = {
     free: {
       name: 'Free Tier',
@@ -27,8 +27,8 @@ export function BillingSettings() {
         '1 project',
         '1 active widget',
         'Up to 20 responses, bug reports, feature requests',
-        'Public roadmap page'
-      ]
+        'Public roadmap page',
+      ],
     },
     pro: {
       name: 'Pro Plan',
@@ -42,9 +42,9 @@ export function BillingSettings() {
         'Priority email support',
         'Branding removal',
         'Advanced targeting',
-        '+$15/month per additional project'
-      ]
-    }
+        '+$15/month per additional project',
+      ],
+    },
   }
 
   const handleUpgrade = () => {
@@ -58,9 +58,7 @@ export function BillingSettings() {
         <Card>
           <CardHeader>
             <CardTitle>Billing Settings</CardTitle>
-            <CardDescription>
-              Manage your subscription and billing preferences
-            </CardDescription>
+            <CardDescription>Manage your subscription and billing preferences</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="h-32 bg-muted animate-pulse rounded" />
@@ -71,7 +69,9 @@ export function BillingSettings() {
     )
   }
 
-  const yearlyDiscount = Math.round((1 - (plans.pro.price.yearly / 12) / plans.pro.price.monthly) * 100)
+  const yearlyDiscount = Math.round(
+    (1 - plans.pro.price.yearly / 12 / plans.pro.price.monthly) * 100
+  )
 
   return (
     <div className="space-y-6">
@@ -81,9 +81,7 @@ export function BillingSettings() {
             <CreditCard className="h-5 w-5" />
             Billing Settings
           </CardTitle>
-          <CardDescription>
-            Manage your subscription and billing preferences
-          </CardDescription>
+          <CardDescription>Manage your subscription and billing preferences</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-muted/50 rounded-lg">
@@ -96,7 +94,12 @@ export function BillingSettings() {
               </Badge>
             </div>
             <div className="flex items-center space-x-2">
-              <span className={cn("text-sm", billingCycle === 'monthly' ? 'font-medium' : 'text-muted-foreground')}>
+              <span
+                className={cn(
+                  'text-sm',
+                  billingCycle === 'monthly' ? 'font-medium' : 'text-muted-foreground'
+                )}
+              >
                 Monthly
               </span>
               <Switch
@@ -104,7 +107,12 @@ export function BillingSettings() {
                 checked={billingCycle === 'yearly'}
                 onCheckedChange={(checked) => setBillingCycle(checked ? 'yearly' : 'monthly')}
               />
-              <span className={cn("text-sm", billingCycle === 'yearly' ? 'font-medium' : 'text-muted-foreground')}>
+              <span
+                className={cn(
+                  'text-sm',
+                  billingCycle === 'yearly' ? 'font-medium' : 'text-muted-foreground'
+                )}
+              >
                 Yearly
               </span>
             </div>
@@ -116,9 +124,7 @@ export function BillingSettings() {
               <Badge variant={currentPlan === 'free' ? 'secondary' : 'default'}>
                 {plans[currentPlan as keyof typeof plans].name}
               </Badge>
-              {currentPlan === 'pro' && (
-                <Crown className="h-4 w-4 text-yellow-500" />
-              )}
+              {currentPlan === 'pro' && <Crown className="h-4 w-4 text-yellow-500" />}
             </div>
           </div>
 
@@ -130,26 +136,25 @@ export function BillingSettings() {
                 const isPro = planKey === 'pro'
                 const price = plan.price[billingCycle]
                 const monthlyPrice = billingCycle === 'yearly' ? price / 12 : price
-                
+
                 return (
-                  <Card key={planKey} className={cn(
-                    "relative",
-                    isCurrentPlan && "ring-2 ring-primary",
-                    isPro && "border-primary/50"
-                  )}>
+                  <Card
+                    key={planKey}
+                    className={cn(
+                      'relative',
+                      isCurrentPlan && 'ring-2 ring-primary',
+                      isPro && 'border-primary/50'
+                    )}
+                  >
                     {isPro && (
                       <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                        <Badge className="bg-primary text-primary-foreground">
-                          Most Popular
-                        </Badge>
+                        <Badge className="bg-primary text-primary-foreground">Most Popular</Badge>
                       </div>
                     )}
                     <CardHeader>
                       <CardTitle className="flex items-center justify-between">
                         <span>{plan.name}</span>
-                        {isCurrentPlan && (
-                          <Badge variant="outline">Current</Badge>
-                        )}
+                        {isCurrentPlan && <Badge variant="outline">Current</Badge>}
                       </CardTitle>
                       <div className="space-y-1">
                         <div className="text-3xl font-bold">
@@ -174,25 +179,16 @@ export function BillingSettings() {
                           </li>
                         ))}
                       </ul>
-                      
+
                       {!isCurrentPlan && isPro && (
-                        <Button 
-                          onClick={handleUpgrade}
-                          className="w-full"
-                          size="lg"
-                        >
+                        <Button onClick={handleUpgrade} className="w-full" size="lg">
                           <Zap className="mr-2 h-4 w-4" />
                           Upgrade Now
                         </Button>
                       )}
-                      
+
                       {isCurrentPlan && isPro && (
-                        <Button 
-                          variant="outline"
-                          className="w-full"
-                          size="lg"
-                          disabled
-                        >
+                        <Button variant="outline" className="w-full" size="lg" disabled>
                           Current Plan
                         </Button>
                       )}

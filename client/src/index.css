@@ -4,6 +4,21 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -58,10 +73,14 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family:
+      'Inter',
+      system-ui,
+      -apple-system,
+      sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 
   h1 {
@@ -104,6 +123,17 @@
 
   .skip-link:focus {
     @apply top-6;
+  }
+
+  .focus\:not-sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0.5rem 1rem;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
   }
 
   /* Line clamp utilities for text truncation */
@@ -308,6 +338,7 @@
   .animate-float {
     animation: float 3s ease-in-out infinite;
   }
+  }
 }
 
 @layer utilities {
@@ -318,8 +349,8 @@
 
   /* Hide scrollbar for IE, Edge and Firefox */
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 
   /* Mobile-first responsive design utilities */
@@ -359,7 +390,6 @@
       transition-duration: 0.01ms !important;
     }
   }
-
   /* Enhanced scrollbar styling */
   .scrollbar-hide {
     -ms-overflow-style: none;
