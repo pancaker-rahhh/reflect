@@ -1,6 +1,6 @@
 import type {
   User,
-  Workspace,
+  Organization,
   Project,
   Widget,
   Feedback,
@@ -24,9 +24,9 @@ const currentUser: User = {
   updatedAt: new Date('2024-01-01')
 }
 
-const workspaces: Workspace[] = [
+const organizations: Organization[] = [
   {
-    id: 'ws-1',
+    id: 'org-1',
     name: 'webapp',
     slug: 'webapp',
     ownerId: 'user-1',
@@ -53,7 +53,7 @@ const workspaces: Workspace[] = [
 const projects: Project[] = [
   {
     id: 'project-1',
-    workspaceId: 'ws-1',
+    organizationId: 'org-1',
     name: 'Main App',
     displayName: 'Main Application',
     logoUrl: 'https://api.dicebear.com/7.x/shapes/svg?seed=mainapp',
@@ -283,7 +283,7 @@ const notificationSettings: NotificationSettings = {
 
 export const mockData = {
   currentUser,
-  workspaces,
+  organizations,
   projects,
   widgets,
   feedback,

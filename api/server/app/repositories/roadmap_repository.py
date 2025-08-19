@@ -3,7 +3,12 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
-from app.models.roadmap_model import Roadmap, RoadmapColumn, RoadmapFeature, RoadmapItemAssignment
+from app.models.roadmap_model import (
+    Roadmap,
+    RoadmapColumn,
+    RoadmapFeature,
+    RoadmapItemAssignment,
+)
 from app.repositories.base_repository import BaseRepository
 
 
@@ -84,7 +89,7 @@ class RoadmapAssignmentRepository(BaseRepository[RoadmapItemAssignment]):
     ) -> Optional[RoadmapItemAssignment]:
         stmt = select(RoadmapItemAssignment).where(
             RoadmapItemAssignment.roadmap_feature_id == feature_id,
-            RoadmapItemAssignment.user_id == user_id
+            RoadmapItemAssignment.user_id == user_id,
         )
         result = await db.execute(stmt)
         return result.scalar_one_or_none()

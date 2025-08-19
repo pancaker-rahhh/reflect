@@ -7,13 +7,19 @@ from pydantic import BaseModel, Field
 
 # Form Field Schemas
 class FormFieldBase(BaseModel):
-    field_type: str = Field(..., description="Field type: text, email, dropdown, textarea, rating, etc.")
-    field_key: str = Field(..., max_length=100, description="Unique key for the field")
-    label: str = Field(..., max_length=255, description="Display label for the field")
-    is_required: bool = Field(False, description="Whether the field is required")
-    validation_rules: Dict[str, Any] = Field(default_factory=dict, description="Validation rules JSON")
-    options: List[str] = Field(default_factory=list, description="Options for dropdown/radio fields")
-    order_index: int = Field(0, description="Display order of the field")
+    field_type: str = Field(
+        ..., description='Field type: text, email, dropdown, textarea, rating, etc.'
+    )
+    field_key: str = Field(..., max_length=100, description='Unique key for the field')
+    label: str = Field(..., max_length=255, description='Display label for the field')
+    is_required: bool = Field(False, description='Whether the field is required')
+    validation_rules: Dict[str, Any] = Field(
+        default_factory=dict, description='Validation rules JSON'
+    )
+    options: List[str] = Field(
+        default_factory=list, description='Options for dropdown/radio fields'
+    )
+    order_index: int = Field(0, description='Display order of the field')
 
 
 class FormFieldCreate(FormFieldBase):
@@ -40,11 +46,13 @@ class FormFieldResponse(FormFieldBase):
 
 # Feedback Form Schemas
 class FeedbackFormBase(BaseModel):
-    name: str = Field(..., max_length=255, description="Name of the form")
-    form_type: str = Field("custom", description="Type: custom, template")
-    description: Optional[str] = Field(None, description="Form description")
-    is_active: bool = Field(True, description="Whether form is active")
-    config: Dict[str, Any] = Field(default_factory=dict, description="Form configuration JSON")
+    name: str = Field(..., max_length=255, description='Name of the form')
+    form_type: str = Field('custom', description='Type: custom, template')
+    description: Optional[str] = Field(None, description='Form description')
+    is_active: bool = Field(True, description='Whether form is active')
+    config: Dict[str, Any] = Field(
+        default_factory=dict, description='Form configuration JSON'
+    )
 
 
 class FeedbackFormCreate(FeedbackFormBase):
@@ -78,7 +86,7 @@ class FeedbackFormListResponse(BaseModel):
 
 class FieldReorderRequest(BaseModel):
     field_orders: List[Dict[str, Any]] = Field(
-        ..., description="List of {field_id: UUID, order_index: int}"
+        ..., description='List of {field_id: UUID, order_index: int}'
     )
 
 
@@ -86,7 +94,7 @@ class FieldReorderRequest(BaseModel):
 class FormCreate(BaseModel):
     project_id: UUID
     name: str = Field(..., max_length=255)
-    form_type: str = Field("custom")
+    form_type: str = Field('custom')
     description: Optional[str] = None
     is_active: bool = Field(True)
     config: Dict[str, Any] = Field(default_factory=dict)
@@ -119,6 +127,8 @@ class FormResponse(BaseModel):
 # Dynamic form submission schema
 class FormSubmissionData(BaseModel):
     form_id: UUID
-    field_data: Dict[str, Any] = Field(..., description="Key-value pairs of form field responses")
+    field_data: Dict[str, Any] = Field(
+        ..., description='Key-value pairs of form field responses'
+    )
     submitter_email: Optional[str] = None
     submitter_name: Optional[str] = None

@@ -9,14 +9,19 @@ import enum
 from app.models.base_model import BaseModel
 
 if TYPE_CHECKING:
-    from app.models.organization_model import OrganizationMember, ProjectMember
+    from app.models.organization_model import (
+        OrganizationMember,
+        ProjectMember,
+        Organization,
+    )
     from app.models.notification_model import Notification
     from app.models.onboarding_model import UserOnboarding
+    from app.models.invitation import Invitation, PendingMember, InvitationTask
 
 
 class UserType(str, enum.Enum):
-    SOLO = "solo"
-    TEAM = "team"
+    SOLO = 'solo'
+    TEAM = 'team'
 
 
 class User(BaseModel):
@@ -47,9 +52,7 @@ class User(BaseModel):
     )
 
     onboarding_completed: Mapped[bool] = mapped_column(Boolean, default=False)
-    user_type: Mapped[Optional[UserType]] = mapped_column(
-        Enum(UserType), nullable=True
-    )
+    user_type: Mapped[Optional[UserType]] = mapped_column(Enum(UserType), nullable=True)
 
     user_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
     app_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
@@ -63,11 +66,40 @@ class User(BaseModel):
     project_memberships: Mapped[List['ProjectMember']] = relationship(
         'ProjectMember', back_populates='user', cascade='all, delete-orphan'
     )
+    created_organizations: Mapped[List['Organization']] = relationship(
+        'Organization',
+        foreign_keys='Organization.created_by',
+        back_populates='creator',
+        cascade='all, delete-orphan',
+    )
     notifications: Mapped[List['Notification']] = relationship(
         'Notification', back_populates='user', cascade='all, delete-orphan'
     )
     onboarding: Mapped[Optional['UserOnboarding']] = relationship(
-        'UserOnboarding', back_populates='user', uselist=False, cascade='all, delete-orphan'
+        'UserOnboarding',
+        back_populates='user',
+        uselist=False,
+        cascade='all, delete-orphan',
+    )
+
+    # Invitation system relationships
+    sent_invitations: Mapped[List['Invitation']] = relationship(
+        'Invitation',
+        foreign_keys='Invitation.invited_by',
+        back_populates='inviter',
+        cascade='all, delete-orphan',
+    )
+    accepted_invitations: Mapped[List['Invitation']] = relationship(
+        'Invitation',
+        foreign_keys='Invitation.accepted_by',
+        back_populates='accepter',
+        cascade='all, delete-orphan',
+    )
+    added_pending_members: Mapped[List['PendingMember']] = relationship(
+        'PendingMember', back_populates='adder', cascade='all, delete-orphan'
+    )
+    invitation_tasks: Mapped[List['InvitationTask']] = relationship(
+        'InvitationTask', back_populates='user', cascade='all, delete-orphan'
     )
 
     def __init__(self, **kwargs):

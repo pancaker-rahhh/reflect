@@ -9,7 +9,7 @@ interface PaginatedProjects {
 }
 
 export const projectApi = {
-  getByWorkspace(workspaceId: string): Promise<PaginatedProjects> {
-    return request<PaginatedProjects>(`/projects?workspace_id=${workspaceId}`)
+  getByWorkspace(organizationId: string): Promise<PaginatedProjects> {
+    return request<PaginatedProjects>(`/projects?organization_id=${organizationId}`)
   },
 }

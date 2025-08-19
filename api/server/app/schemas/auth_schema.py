@@ -14,7 +14,7 @@ class TokenData(BaseModel):
     iat: int
     iss: str
     aud: str
-    
+
     @property
     def user_id(self) -> str:
         return self.sub

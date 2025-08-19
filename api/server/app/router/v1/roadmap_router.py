@@ -43,7 +43,10 @@ async def update_roadmap(
     service: RoadmapService = Depends(lambda: roadmap_service),
 ) -> Any:
     return await service.update_roadmap(
-        db, user_id=UUID(current_user.user_id), roadmap_id=roadmap_id, roadmap_in=roadmap_in
+        db,
+        user_id=UUID(current_user.user_id),
+        roadmap_id=roadmap_id,
+        roadmap_in=roadmap_in,
     )
 
 
@@ -57,7 +60,9 @@ async def create_roadmap_column(
     current_user: TokenData = Depends(get_current_token_data),
     service: RoadmapService = Depends(lambda: roadmap_service),
 ) -> Any:
-    return await service.create_column(db, user_id=UUID(current_user.user_id), column_in=column_in)
+    return await service.create_column(
+        db, user_id=UUID(current_user.user_id), column_in=column_in
+    )
 
 
 @router.put('/columns/{column_id}', response_model=RoadmapColumnRead)
@@ -80,7 +85,9 @@ async def delete_roadmap_column(
     current_user: TokenData = Depends(get_current_token_data),
     service: RoadmapService = Depends(lambda: roadmap_service),
 ):
-    await service.delete_column(db, user_id=UUID(current_user.user_id), column_id=column_id)
+    await service.delete_column(
+        db, user_id=UUID(current_user.user_id), column_id=column_id
+    )
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -94,7 +101,9 @@ async def create_roadmap_feature(
     current_user: TokenData = Depends(get_current_token_data),
     service: RoadmapService = Depends(lambda: roadmap_service),
 ) -> Any:
-    return await service.create_feature(db, user_id=UUID(current_user.user_id), feature_in=feature_in)
+    return await service.create_feature(
+        db, user_id=UUID(current_user.user_id), feature_in=feature_in
+    )
 
 
 # --- THIS IS THE FIX: The specific route '/features/order' now comes BEFORE the generic '/features/{feature_id}' ---
@@ -105,7 +114,9 @@ async def update_features_order(
     current_user: TokenData = Depends(get_current_token_data),
     service: RoadmapService = Depends(lambda: roadmap_service),
 ) -> Any:
-    return await service.update_features_order(db, user_id=UUID(current_user.user_id), updates=updates)
+    return await service.update_features_order(
+        db, user_id=UUID(current_user.user_id), updates=updates
+    )
 
 
 @router.put('/features/{feature_id}', response_model=RoadmapFeatureRead)
@@ -117,7 +128,10 @@ async def update_roadmap_feature(
     service: RoadmapService = Depends(lambda: roadmap_service),
 ) -> Any:
     return await service.update_feature(
-        db, user_id=UUID(current_user.user_id), feature_id=feature_id, feature_in=feature_in
+        db,
+        user_id=UUID(current_user.user_id),
+        feature_id=feature_id,
+        feature_in=feature_in,
     )
 
 
@@ -128,7 +142,9 @@ async def delete_roadmap_feature(
     current_user: TokenData = Depends(get_current_token_data),
     service: RoadmapService = Depends(lambda: roadmap_service),
 ):
-    await service.delete_feature(db, user_id=UUID(current_user.user_id), feature_id=feature_id)
+    await service.delete_feature(
+        db, user_id=UUID(current_user.user_id), feature_id=feature_id
+    )
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -162,8 +178,11 @@ async def assign_user_to_feature(
     service: RoadmapService = Depends(lambda: roadmap_service),
 ) -> Any:
     return await service.assign_user_to_feature(
-        db, user_id=UUID(current_user.user_id), feature_id=feature_id, 
-        assignee_user_id=assignee_user_id, role=role
+        db,
+        user_id=UUID(current_user.user_id),
+        feature_id=feature_id,
+        assignee_user_id=assignee_user_id,
+        role=role,
     )
 
 
@@ -176,10 +195,12 @@ async def remove_user_from_feature(
     service: RoadmapService = Depends(lambda: roadmap_service),
 ) -> Any:
     success = await service.remove_user_from_feature(
-        db, user_id=UUID(current_user.user_id), feature_id=feature_id, 
-        assignee_user_id=assignee_user_id
+        db,
+        user_id=UUID(current_user.user_id),
+        feature_id=feature_id,
+        assignee_user_id=assignee_user_id,
     )
-    return {"success": success}
+    return {'success': success}
 
 
 @router.get('/features/{feature_id}/assignments')

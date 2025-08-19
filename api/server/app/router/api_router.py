@@ -10,6 +10,8 @@ from app.router.v1 import (
     roadmap_router,
     user_router,
     organization_router,
+    onboarding_router,
+    invitation_router,
 )
 
 api_router = APIRouter(prefix='/api/v1')
@@ -19,6 +21,8 @@ api_router.include_router(form_router.form_router)
 api_router.include_router(user_router.user_router)
 api_router.include_router(organization_router.router)
 api_router.include_router(project_router.router)
+api_router.include_router(onboarding_router.router)
+api_router.include_router(invitation_router.router)
 api_router.include_router(
     widget_router.project_widgets_router,
     prefix='/projects/{project_id}/widgets',

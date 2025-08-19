@@ -33,9 +33,9 @@ class WidgetService:
         if not widget:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
 
-        await self.project_service.get_project_and_check_access(
-            db, user, widget.project_id
-        )
+        # Cast to UUID to satisfy type checker
+        project_id: UUID = widget.project_id  # type: ignore
+        await self.project_service.get_project_and_check_access(db, user, project_id)
         return widget
 
     async def list_widgets_by_project(
@@ -92,7 +92,18 @@ class WidgetService:
     ) -> Widget:
         widget = await self.repository.get_by_public_key(db, public_key=public_key)
 
-        if not widget or not widget.is_active or widget.status != WidgetStatus.ACTIVE:
+        # Explicitly check widget attributes to avoid SQLAlchemy boolean column issues
+        if not widget:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail='Active widget not found for this key.',
+            )
+
+        # Force type casting to avoid SQLAlchemy column expression issues
+        widget_is_active: bool = bool(widget.is_active)  # type: ignore
+        widget_status: WidgetStatus = widget.status  # type: ignore
+
+        if not widget_is_active or widget_status != WidgetStatus.ACTIVE:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail='Active widget not found for this key.',

@@ -22,6 +22,7 @@ class Auth:
                 algorithms=[self.settings.ALGORITHM],
                 audience='authenticated',
                 options={'verify_exp': True},
+                leeway=60,  # Allow 60 seconds of clock skew
             )
 
             user_id = payload.get('sub')
@@ -122,3 +123,12 @@ async def get_current_token_data(
     return auth.validate_jwt_token(credentials.credentials)
 
 
+async def get_current_token_data_optional(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(auth.security),
+) -> Optional[TokenData]:
+    if not credentials:
+        return None
+    try:
+        return auth.validate_jwt_token(credentials.credentials)
+    except AuthenticationError:
+        return None

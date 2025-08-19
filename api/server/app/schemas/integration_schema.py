@@ -120,21 +120,21 @@ class WebhookResponse(WebhookBase):
 
 
 class JIRAConfig(BaseModel):
-    base_url: str = Field(..., description="JIRA instance base URL")
-    username: str = Field(..., description="JIRA username")
-    api_token: str = Field(..., description="JIRA API token")
-    project_key: str = Field(..., description="JIRA project key")
+    base_url: str = Field(..., description='JIRA instance base URL')
+    username: str = Field(..., description='JIRA username')
+    api_token: str = Field(..., description='JIRA API token')
+    project_key: str = Field(..., description='JIRA project key')
 
 
 class GitHubConfig(BaseModel):
-    repo_owner: str = Field(..., description="GitHub repository owner")
-    repo_name: str = Field(..., description="GitHub repository name")
-    access_token: str = Field(..., description="GitHub access token")
+    repo_owner: str = Field(..., description='GitHub repository owner')
+    repo_name: str = Field(..., description='GitHub repository name')
+    access_token: str = Field(..., description='GitHub access token')
 
 
 class SyncRequest(BaseModel):
     integration_id: UUID
-    sync_type: str = Field(..., description="Type of sync: full, incremental")
+    sync_type: str = Field(..., description='Type of sync: full, incremental')
     options: Dict[str, Any] = Field(default_factory=dict)
 
 

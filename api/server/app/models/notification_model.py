@@ -25,7 +25,9 @@ class Notification(BaseModel):
     message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     entity_type: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    entity_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), nullable=True)
+    entity_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), nullable=True
+    )
 
     is_read: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
 

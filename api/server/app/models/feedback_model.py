@@ -91,8 +91,12 @@ class Feedback(BaseModel):
     form = relationship('FeedbackForm', back_populates='feedback_items')
     assigned_to = relationship('User', foreign_keys=[assigned_to_user_id])
     resolved_by = relationship('User', foreign_keys=[resolved_by_user_id])
-    comments = relationship('FeedbackComment', back_populates='feedback', cascade='all, delete-orphan')
-    votes = relationship('FeedbackVote', back_populates='feedback', cascade='all, delete-orphan')
+    comments = relationship(
+        'FeedbackComment', back_populates='feedback', cascade='all, delete-orphan'
+    )
+    votes = relationship(
+        'FeedbackVote', back_populates='feedback', cascade='all, delete-orphan'
+    )
 
     __mapper_args__ = {
         'polymorphic_identity': 'feedback',
@@ -189,6 +193,4 @@ class FeedbackVote(BaseModel):
     feedback = relationship('Feedback', back_populates='votes')
     user = relationship('User')
 
-    __table_args__ = (
-        {'extend_existing': True},
-    )
+    __table_args__ = ({'extend_existing': True},)

@@ -7,6 +7,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { AppProvider } from '@/context/AppContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { OnboardingGuard } from '@/components/onboarding/OnboardingGuard'
 
 // Eagerly load core components
 import { AppLayout } from '@/components/layout/AppLayout'
@@ -15,6 +16,8 @@ import { Dashboard } from '@/pages/Dashboard'
 import { Login } from '@/pages/auth/Login'
 import { AuthCallback } from '@/pages/auth/AuthCallback'
 import { VerifyOtp } from '@/pages/auth/VerifyOtp'
+import { OnboardingPage } from '@/pages/OnboardingPage'
+import { InvitationAcceptancePage } from '@/pages/InvitationAcceptancePage'
 
 // Lazy load secondary pages
 const Widgets = lazy(() => import('@/pages/Widgets').then((m) => ({ default: m.Widgets })))
@@ -43,6 +46,9 @@ const ProjectSettings = lazy(() =>
 const RoadmapSettings = lazy(() =>
   import('@/pages/settings/RoadmapSettings').then((m) => ({ default: m.RoadmapSettings }))
 )
+const OrganizationSettings = lazy(() =>
+  import('@/pages/settings/OrganizationSettings').then((m) => ({ default: m.OrganizationSettings }))
+)
 const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m.NotFound })))
 
 function App() {
@@ -59,11 +65,22 @@ function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/auth/verify-otp" element={<VerifyOtp />} />
                   <Route path="/auth/callback" element={<AuthCallback />} />
+                  <Route path="/invite" element={<InvitationAcceptancePage />} />
+                  <Route path="/invitation/accept" element={<InvitationAcceptancePage />} />
                   
-                  {/* Protected routes */}
+                  {/* Onboarding route */}
+                  <Route path="/onboarding" element={
+                    <ProtectedRoute>
+                      <OnboardingPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Protected routes with onboarding guard */}
                   <Route path="/" element={
                     <ProtectedRoute>
-                      <AppLayout />
+                      <OnboardingGuard>
+                        <AppLayout />
+                      </OnboardingGuard>
                     </ProtectedRoute>
                   }>
                     <Route index element={<Navigate to="/dashboard" replace />} />
@@ -83,6 +100,7 @@ function App() {
                     </Route>
                     <Route path="settings/project" element={<ProjectSettings />} />
                     <Route path="settings/roadmap" element={<RoadmapSettings />} />
+                    <Route path="settings/organization" element={<OrganizationSettings />} />
                   </Route>
                   <Route path="*" element={<NotFound />} />
                 </Routes>

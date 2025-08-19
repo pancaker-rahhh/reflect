@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, HttpUrl
 from typing import Optional, List
 from uuid import UUID
 from datetime import datetime
+from app.models.organization_model import ProjectRole
 
 
 class ProjectBase(BaseModel):
@@ -51,3 +52,26 @@ class ProjectSettingsUpdate(BaseModel):
     theme_color: Optional[str] = None
     custom_domain: Optional[HttpUrl] = None
     is_private: Optional[bool] = None
+
+
+class ProjectMemberResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    project_id: UUID
+    role: ProjectRole
+    user_name: Optional[str] = None
+    user_email: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ProjectMemberInviteRequest(BaseModel):
+    email: str = Field(..., min_length=1, max_length=255)
+    role: ProjectRole = Field(default=ProjectRole.VIEWER)
+
+
+class ProjectMemberUpdate(BaseModel):
+    role: ProjectRole

@@ -8,20 +8,20 @@ export interface User {
   updatedAt: Date
 }
 
-export interface Workspace {
+export interface Organization {
   id: string
   name: string
   slug: string
   ownerId: string
-  members: WorkspaceMember[]
+  members: OrganizationMember[]
   subscription: Subscription
   createdAt: Date
   updatedAt: Date
 }
 
-export interface WorkspaceMember {
+export interface OrganizationMember {
   userId: string
-  role: 'owner' | 'admin' | 'member'
+  role: 'owner' | 'admin' | 'member' | 'viewer'
   joinedAt: Date
 }
 
@@ -36,7 +36,7 @@ export interface Subscription {
 
 export interface Project {
   id: string
-  workspaceId: string
+  organizationId: string
   name: string
   displayName: string
   logoUrl?: string
@@ -111,7 +111,7 @@ export interface BaseFeedback {
   userEmail?: string
   userName?: string
   userId?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   createdAt: Date
 }
 

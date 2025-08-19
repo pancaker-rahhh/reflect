@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from app.models.roadmap_model import Roadmap
     from app.models.integration_model import Integration
     from app.models.webhook_model import Webhook
+    from app.models.invitation import Invitation, PendingMember
 
 
 class Project(BaseModel):
@@ -57,7 +58,7 @@ class Project(BaseModel):
     members: Mapped[List['ProjectMember']] = relationship(
         'ProjectMember', back_populates='project', cascade='all, delete-orphan'
     )
-    
+
     widgets = relationship('Widget', back_populates='project')
     forms = relationship('FeedbackForm', back_populates='project')
 
@@ -69,6 +70,14 @@ class Project(BaseModel):
     )
     webhooks: Mapped[List['Webhook']] = relationship(
         'Webhook', back_populates='project', cascade='all, delete-orphan'
+    )
+
+    # Invitation system relationships
+    invitations: Mapped[List['Invitation']] = relationship(
+        'Invitation', back_populates='project', cascade='all, delete-orphan'
+    )
+    pending_members: Mapped[List['PendingMember']] = relationship(
+        'PendingMember', back_populates='project', cascade='all, delete-orphan'
     )
 
     def generate_slug(self, name: str) -> str:
@@ -84,6 +93,8 @@ class Project(BaseModel):
         super().__init__(**kwargs)
 
     __table_args__ = (
-        UniqueConstraint('organization_id', 'slug', name='uq_project_organization_slug'),
+        UniqueConstraint(
+            'organization_id', 'slug', name='uq_project_organization_slug'
+        ),
         {'extend_existing': True},
     )

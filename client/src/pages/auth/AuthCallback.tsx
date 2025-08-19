@@ -8,9 +8,10 @@ export function AuthCallback() {
   const { user, syncing, loading } = useAuth();
 
   useEffect(() => {
-    // Navigate to dashboard when auth is complete and sync is done
+    // Navigate to home (which has OnboardingGuard) when auth is complete and sync is done
+    // The OnboardingGuard will redirect to onboarding if needed
     if (user && !syncing && !loading) {
-      navigate('/dashboard');
+      navigate('/');
     }
   }, [user, syncing, loading, navigate]);
 

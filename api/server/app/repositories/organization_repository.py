@@ -4,8 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_
 from sqlalchemy.orm import selectinload
 
-from app.models.organization_model import Organization, OrganizationMember, OrganizationRole
-from app.models.user_model import User
+from app.models.organization_model import (
+    Organization,
+    OrganizationMember,
+    OrganizationRole,
+)
 from app.repositories.base_repository import BaseRepository
 
 
@@ -18,10 +21,14 @@ class OrganizationRepository(BaseRepository[Organization]):
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_with_members(self, db: AsyncSession, org_id: UUID) -> Optional[Organization]:
+    async def get_with_members(
+        self, db: AsyncSession, org_id: UUID
+    ) -> Optional[Organization]:
         stmt = (
             select(self.model)
-            .options(selectinload(self.model.members).selectinload(OrganizationMember.user))
+            .options(
+                selectinload(self.model.members).selectinload(OrganizationMember.user)
+            )
             .where(self.model.id == org_id)
         )
         result = await db.execute(stmt)
@@ -53,25 +60,33 @@ class OrganizationRepository(BaseRepository[Organization]):
     async def check_user_access(
         self, db: AsyncSession, org_id: UUID, user_id: UUID
     ) -> Optional[OrganizationMember]:
-        stmt = select(OrganizationMember).where(
-            and_(
-                OrganizationMember.organization_id == org_id,
-                OrganizationMember.user_id == user_id
+        stmt = (
+            select(OrganizationMember)
+            .where(
+                and_(
+                    OrganizationMember.organization_id == org_id,
+                    OrganizationMember.user_id == user_id,
+                )
             )
+            .options(selectinload(OrganizationMember.user))
         )
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_with_counts(self, db: AsyncSession, org_id: UUID) -> Optional[Organization]:
+    async def get_with_counts(
+        self, db: AsyncSession, org_id: UUID
+    ) -> Optional[Organization]:
         from app.models.project_model import Project
-        
+
         stmt = (
             select(
                 self.model,
                 func.count(OrganizationMember.id).label('members_count'),
-                func.count(Project.id).label('projects_count')
+                func.count(Project.id).label('projects_count'),
             )
-            .outerjoin(OrganizationMember, self.model.id == OrganizationMember.organization_id)
+            .outerjoin(
+                OrganizationMember, self.model.id == OrganizationMember.organization_id
+            )
             .outerjoin(Project, self.model.id == Project.organization_id)
             .where(self.model.id == org_id)
             .group_by(self.model.id)
@@ -93,11 +108,14 @@ class OrganizationMemberRepository(BaseRepository[OrganizationMember]):
     async def get_by_org_and_user(
         self, db: AsyncSession, org_id: UUID, user_id: UUID
     ) -> Optional[OrganizationMember]:
-        stmt = select(self.model).where(
-            and_(
-                self.model.organization_id == org_id,
-                self.model.user_id == user_id
+        stmt = (
+            select(self.model)
+            .where(
+                and_(
+                    self.model.organization_id == org_id, self.model.user_id == user_id
+                )
             )
+            .options(selectinload(self.model.user))
         )
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
@@ -126,11 +144,7 @@ class OrganizationMemberRepository(BaseRepository[OrganizationMember]):
     async def add_member(
         self, db: AsyncSession, org_id: UUID, user_id: UUID, role: OrganizationRole
     ) -> OrganizationMember:
-        db_obj = self.model(
-            organization_id=org_id,
-            user_id=user_id,
-            role=role
-        )
+        db_obj = self.model(organization_id=org_id, user_id=user_id, role=role)
         db.add(db_obj)
         await db.commit()
         await db.refresh(db_obj)
@@ -150,14 +164,11 @@ class OrganizationMemberRepository(BaseRepository[OrganizationMember]):
         self, db: AsyncSession, org_id: UUID, user_id: UUID
     ) -> bool:
         stmt = select(self.model).where(
-            and_(
-                self.model.organization_id == org_id,
-                self.model.user_id == user_id
-            )
+            and_(self.model.organization_id == org_id, self.model.user_id == user_id)
         )
         result = await db.execute(stmt)
         member = result.scalar_one_or_none()
-        
+
         if member:
             await db.delete(member)
             await db.commit()

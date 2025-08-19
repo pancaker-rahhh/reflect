@@ -24,7 +24,9 @@ class FeedbackForm(BaseModel):
 
     project = relationship('Project', back_populates='forms')
     feedback_items = relationship('Feedback', back_populates='form')
-    form_fields: Mapped[List['FormField']] = relationship('FormField', back_populates='form', cascade='all, delete-orphan')
+    form_fields: Mapped[List['FormField']] = relationship(
+        'FormField', back_populates='form', cascade='all, delete-orphan'
+    )
 
 
 class FormField(BaseModel):
@@ -49,6 +51,4 @@ class FormField(BaseModel):
 
     form = relationship('FeedbackForm', back_populates='form_fields')
 
-    __table_args__ = (
-        {'extend_existing': True},
-    )
+    __table_args__ = ({'extend_existing': True},)

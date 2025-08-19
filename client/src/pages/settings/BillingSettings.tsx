@@ -12,12 +12,12 @@ import { cn } from '@/lib/utils'
 export function BillingSettings() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly')
   
-  const { data: workspace, isLoading } = useQuery({
-    queryKey: ['workspace'],
-    queryFn: () => api.getWorkspaces().then(workspaces => workspaces[0])
+  const { data: organization, isLoading } = useQuery({
+    queryKey: ['organization'],
+    queryFn: () => api.getOrganizations().then(organizations => organizations[0])
   })
 
-  const currentPlan = workspace?.subscription?.plan || 'free'
+  const currentPlan = organization?.subscription?.plan || 'free'
   
   const plans = {
     free: {

@@ -4,7 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from app.models.integration_model import Integration, IntegrationMapping, IntegrationType
+from app.models.integration_model import (
+    Integration,
+    IntegrationMapping,
+    IntegrationType,
+)
 from app.models.webhook_model import Webhook
 from app.repositories.base_repository import BaseRepository
 
@@ -21,7 +25,9 @@ class IntegrationRepository(BaseRepository[Integration]):
     async def get_by_type(
         self, db: AsyncSession, project_id: UUID, integration_type: IntegrationType
     ) -> List[Integration]:
-        return await self.get_multi(db, project_id=project_id, integration_type=integration_type)
+        return await self.get_multi(
+            db, project_id=project_id, integration_type=integration_type
+        )
 
     async def get_active_integrations(
         self, db: AsyncSession, project_id: UUID
@@ -47,7 +53,9 @@ class IntegrationMappingRepository(BaseRepository[IntegrationMapping]):
     async def get_by_integration(
         self, db: AsyncSession, integration_id: UUID, skip: int = 0, limit: int = 100
     ) -> List[IntegrationMapping]:
-        return await self.get_multi(db, integration_id=integration_id, skip=skip, limit=limit)
+        return await self.get_multi(
+            db, integration_id=integration_id, skip=skip, limit=limit
+        )
 
     async def get_by_internal_id(
         self, db: AsyncSession, internal_id: UUID
@@ -59,7 +67,7 @@ class IntegrationMappingRepository(BaseRepository[IntegrationMapping]):
     ) -> Optional[IntegrationMapping]:
         stmt = select(IntegrationMapping).where(
             IntegrationMapping.integration_id == integration_id,
-            IntegrationMapping.external_id == external_id
+            IntegrationMapping.external_id == external_id,
         )
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
@@ -83,17 +91,16 @@ class WebhookRepository(BaseRepository[Webhook]):
         self, db: AsyncSession, project_id: UUID
     ) -> List[Webhook]:
         from app.models.webhook_model import WebhookStatus
-        return await self.get_multi(db, project_id=project_id, status=WebhookStatus.ACTIVE)
+
+        return await self.get_multi(
+            db, project_id=project_id, status=WebhookStatus.ACTIVE
+        )
 
     async def get_webhooks_for_event(
         self, db: AsyncSession, project_id: UUID, event_type: str
     ) -> List[Webhook]:
-        stmt = (
-            select(Webhook)
-            .where(
-                Webhook.project_id == project_id,
-                Webhook.events.contains([event_type])
-            )
+        stmt = select(Webhook).where(
+            Webhook.project_id == project_id, Webhook.events.contains([event_type])
         )
         result = await db.execute(stmt)
         return list(result.scalars().all())

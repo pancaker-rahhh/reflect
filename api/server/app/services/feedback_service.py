@@ -27,14 +27,17 @@ class FeedbackService:
         self, db: AsyncSession, payload: FeedbackCreatePayload
     ) -> FeedbackResponsePayload:
         obj = await feedback_repository.create_polymorphic(db, **payload.model_dump())
-        
+
         # Dispatch webhook for new feedback
         try:
             from app.services.webhook_dispatcher import webhook_dispatcher
+
             await webhook_dispatcher.dispatch_feedback_created(db, obj)
         except Exception as e:
-            logger.warning(f"Failed to dispatch feedback.created webhook for feedback {obj.id}: {str(e)}")
-        
+            logger.warning(
+                f'Failed to dispatch feedback.created webhook for feedback {obj.id}: {str(e)}'
+            )
+
         return self._convert_to_response(obj)
 
     async def get_feedback(
@@ -63,16 +66,23 @@ class FeedbackService:
         self, db: AsyncSession, feedback_id: UUID, payload: FeedbackUpdate
     ) -> Optional[FeedbackResponsePayload]:
         updated_fields = payload.model_dump(exclude_none=True)
-        obj = await feedback_repository.update_polymorphic(db, feedback_id, **updated_fields)
-        
+        obj = await feedback_repository.update_polymorphic(
+            db, feedback_id, **updated_fields
+        )
+
         if obj:
             # Dispatch webhook for updated feedback
             try:
                 from app.services.webhook_dispatcher import webhook_dispatcher
-                await webhook_dispatcher.dispatch_feedback_updated(db, obj, updated_fields)
+
+                await webhook_dispatcher.dispatch_feedback_updated(
+                    db, obj, updated_fields
+                )
             except Exception as e:
-                logger.warning(f"Failed to dispatch feedback.updated webhook for feedback {obj.id}: {str(e)}")
-        
+                logger.warning(
+                    f'Failed to dispatch feedback.updated webhook for feedback {obj.id}: {str(e)}'
+                )
+
         return self._convert_to_response(obj) if obj else None
 
     async def delete_feedback(self, db: AsyncSession, feedback_id: UUID) -> bool:
@@ -83,8 +93,8 @@ class FeedbackService:
     ) -> FeedbackComment:
         feedback = await feedback_repository.get(db, feedback_id)
         if not feedback:
-            raise NotFoundError("Feedback not found")
-        
+            raise NotFoundError('Feedback not found')
+
         return await feedback_comment_repository.create_comment(
             db, feedback_id, user_id, comment_text
         )
@@ -97,30 +107,30 @@ class FeedbackService:
         )
 
     async def vote_feedback(
-        self, 
-        db: AsyncSession, 
-        feedback_id: UUID, 
-        vote_type: str, 
+        self,
+        db: AsyncSession,
+        feedback_id: UUID,
+        vote_type: str,
         user_id: Optional[UUID] = None,
-        session_id: Optional[str] = None
+        session_id: Optional[str] = None,
     ) -> FeedbackVote:
         feedback = await feedback_repository.get(db, feedback_id)
         if not feedback:
-            raise NotFoundError("Feedback not found")
-        
+            raise NotFoundError('Feedback not found')
+
         if vote_type not in ['up', 'down']:
             raise ValueError("Vote type must be 'up' or 'down'")
-        
+
         return await feedback_vote_repository.update_vote(
             db, feedback_id, vote_type, user_id, session_id
         )
 
     async def remove_vote(
-        self, 
-        db: AsyncSession, 
-        feedback_id: UUID, 
+        self,
+        db: AsyncSession,
+        feedback_id: UUID,
         user_id: Optional[UUID] = None,
-        session_id: Optional[str] = None
+        session_id: Optional[str] = None,
     ) -> bool:
         return await feedback_vote_repository.remove_vote(
             db, feedback_id, user_id, session_id
@@ -130,11 +140,11 @@ class FeedbackService:
         return await feedback_vote_repository.get_vote_counts(db, feedback_id)
 
     async def get_user_vote(
-        self, 
-        db: AsyncSession, 
-        feedback_id: UUID, 
+        self,
+        db: AsyncSession,
+        feedback_id: UUID,
         user_id: Optional[UUID] = None,
-        session_id: Optional[str] = None
+        session_id: Optional[str] = None,
     ) -> Optional[FeedbackVote]:
         return await feedback_vote_repository.get_user_vote(
             db, feedback_id, user_id, session_id
