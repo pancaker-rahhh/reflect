@@ -32,7 +32,7 @@ class ProjectRepository(BaseRepository[Project]):
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_multi_by_organization(
+    async def get_all_by_organization(
         self,
         db: AsyncSession,
         *,
@@ -96,7 +96,7 @@ class ProjectMemberRepository(BaseRepository[ProjectMember]):
         result = await db.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_by_project_and_user(
+    async def get_member_by_project(
         self, db: AsyncSession, project_id: UUID, user_id: UUID
     ) -> Optional[ProjectMember]:
         stmt = select(ProjectMember).where(
@@ -119,7 +119,7 @@ class ProjectMemberRepository(BaseRepository[ProjectMember]):
     async def update_member_role(
         self, db: AsyncSession, project_id: UUID, user_id: UUID, role: ProjectRole
     ) -> Optional[ProjectMember]:
-        member = await self.get_by_project_and_user(db, project_id, user_id)
+        member = await self.get_member_by_project(db, project_id, user_id)
         if member:
             member.role = role
             db.add(member)
@@ -130,7 +130,7 @@ class ProjectMemberRepository(BaseRepository[ProjectMember]):
     async def remove_member(
         self, db: AsyncSession, project_id: UUID, user_id: UUID
     ) -> bool:
-        member = await self.get_by_project_and_user(db, project_id, user_id)
+        member = await self.get_member_by_project(db, project_id, user_id)
         if member:
             await db.delete(member)
             await db.flush()

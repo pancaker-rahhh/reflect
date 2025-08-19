@@ -62,7 +62,7 @@ class ProjectService:
         await _check_organization_access(db, user_id, organization_id)
 
         skip = (page - 1) * size
-        return await self.repository.get_multi_by_organization(
+        return await self.repository.get_all_by_organization(
             db, organization_id=organization_id, skip=skip, limit=size
         )
 
@@ -212,7 +212,7 @@ class ProjectService:
                 'User not found. User must be a registered member first.'
             )
 
-        existing_member = await project_member_repository.get_by_project_and_user(
+        existing_member = await project_member_repository.get_member_by_project(
             db, project_id, invited_user.id
         )
         if existing_member:
