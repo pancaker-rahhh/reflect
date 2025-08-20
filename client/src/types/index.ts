@@ -59,7 +59,15 @@ export interface Widget {
   project_id: string
   name: string
   description?: string
-  widget_type: 'feedback' | 'survey' | 'review' | 'bug_report' | 'feature_request' | 'nps' | 'csat'
+  widget_type:
+    | 'FEEDBACK'
+    | 'SURVEY'
+    | 'REVIEW'
+    | 'BUG_REPORT'
+    | 'FEATURE_REQUEST'
+    | 'NPS'
+    | 'CSAT'
+    | 'CES'
   status: 'draft' | 'active' | 'inactive' | 'archived'
   configuration: {
     modules?: {
@@ -111,7 +119,7 @@ export interface BaseFeedback {
 
 export interface SurveyResponse extends BaseFeedback {
   type: 'survey'
-  surveyType: 'nps' | 'csat' | 'ces' | 'custom'
+  surveyType: 'NPS' | 'CSAT' | 'CES' | 'CUSTOM'
   score: number
   comment?: string
 }

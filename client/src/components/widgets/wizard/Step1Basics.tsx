@@ -122,11 +122,11 @@ export function Step1Basics({ form }: Step1BasicsProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="feedback">General Feedback</SelectItem>
-                    <SelectItem value="nps">NPS Survey</SelectItem>
-                    <SelectItem value="csat">CSAT Survey</SelectItem>
-                    <SelectItem value="ces">CES Survey</SelectItem>
-                    <SelectItem value="survey">Custom Survey</SelectItem>
+                    <SelectItem value="FEEDBACK">General Feedback</SelectItem>
+                    <SelectItem value="NPS">NPS Survey</SelectItem>
+                    <SelectItem value="CSAT">CSAT Survey</SelectItem>
+                    <SelectItem value="CES">CES Survey</SelectItem>
+                    <SelectItem value="SURVEY">Custom Survey</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

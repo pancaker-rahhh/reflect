@@ -17,6 +17,7 @@ ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
 if ENVIRONMENT == 'production':
     CDN_WIDGET_SCRIPT_URL = 'https://cdn.reflect.com/widget.js'
 else:
+    # For development, serve the static widget.js file from the client public directory
     CDN_WIDGET_SCRIPT_URL = 'http://localhost:5173/widget.js'
 
 
@@ -83,9 +84,13 @@ class WidgetService:
         self, db: AsyncSession, user_id: UUID, widget_id: UUID
     ) -> Widget:
         await self.get_widget_and_check_access(db, user_id, widget_id)
-        return await self.repository.update(
-            db, id=widget_id, status=WidgetStatus.ARCHIVED
-        )
+        # Use soft delete to preserve feedback data
+        # TODO: Implement scheduled cleanup task to permanently delete old soft-deleted widgets
+        # - Retention period: 30 days (configurable)
+        # - Cleanup frequency: Weekly background task
+        # - Should also delete associated feedback data when permanently removing widgets
+        # - Consider using Celery or similar task queue for scheduled cleanup
+        return await self.repository.soft_delete(db, id=widget_id)
 
     async def set_widget_activation(
         self, db: AsyncSession, user_id: UUID, widget_id: UUID, is_active: bool

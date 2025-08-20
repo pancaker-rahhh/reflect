@@ -1,7 +1,6 @@
 from typing import Any, List
 from uuid import UUID
 from fastapi import APIRouter, Depends, status, Response, HTTPException
-
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from app.core.auth import get_current_user

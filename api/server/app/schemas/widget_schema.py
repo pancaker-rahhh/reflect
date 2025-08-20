@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing import Optional, List, Dict, Any
 from uuid import UUID
 from datetime import datetime
@@ -26,6 +26,8 @@ class WidgetBase(BaseModel):
     configuration: Dict[str, Any] = Field(default_factory=dict)
     theme_configuration: Dict[str, Any] = Field(default_factory=dict)
     targeting_rules: List[Dict[str, Any]] = Field(default_factory=list)
+
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class WidgetCreate(WidgetBase):

@@ -22,14 +22,14 @@ const widgetSchema = z.object({
     featureRequests: z.boolean(),
   }),
   primaryType: z.enum([
-    'feedback',
-    'survey',
-    'review',
-    'bug_report',
-    'feature_request',
-    'nps',
-    'csat',
-    'ces',
+    'FEEDBACK',
+    'SURVEY',
+    'REVIEW',
+    'BUG_REPORT',
+    'FEATURE_REQUEST',
+    'NPS',
+    'CSAT',
+    'CES',
   ]),
   content: z.object({
     headerTitle: z.string().min(1, 'Header title is required'),
@@ -90,7 +90,7 @@ export function WidgetCreate() {
     defaultValues: {
       name: '',
       modules: { feedback: true, reviews: false, bugReporting: false, featureRequests: false },
-      primaryType: 'feedback',
+      primaryType: 'FEEDBACK',
       content: {
         headerTitle: 'We value your feedback',
         mainQuestion: 'How can we improve?',

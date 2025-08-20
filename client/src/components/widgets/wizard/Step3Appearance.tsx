@@ -31,7 +31,7 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
   const selectedPosition = form.watch('appearance.position')
   const colors = form.watch('appearance.colors')
   const primaryType = form.watch('primaryType')
-  const isScoringType = ['nps', 'csat', 'ces'].includes(primaryType)
+  const isScoringType = ['NPS', 'CSAT', 'CES'].includes(primaryType)
 
   return (
     <Form {...form}>
@@ -151,7 +151,7 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
                   {form.watch('content.mainQuestion') ||
                     'How likely are you to recommend our product?'}
                 </h4>
-                {primaryType === 'nps' && (
+                {primaryType === 'NPS' && (
                   <div className="space-y-4">
                     <div className="flex justify-between text-sm" style={{ color: colors?.text }}>
                       <span>Not likely at all</span>
@@ -179,7 +179,7 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
                     </div>
                   </div>
                 )}
-                {primaryType === 'csat' && (
+                {primaryType === 'CSAT' && (
                   <div className="flex justify-center gap-2">
                     {[
                       { emoji: '😡', label: 'Very\nBad' },
@@ -201,7 +201,7 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
                     ))}
                   </div>
                 )}
-                {primaryType === 'ces' && (
+                {primaryType === 'CES' && (
                   <div className="flex justify-center gap-2">
                     {[
                       { emoji: '😤', label: 'Hard' },

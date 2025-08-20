@@ -38,7 +38,9 @@
 
   // Use production URLs in production, localhost in development
   const isDevelopment =
-    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    window.location.hostname === 'localhost' || 
+    window.location.hostname === '127.0.0.1' ||
+    window.location.protocol === 'file:' // For testing with local HTML files
   const apiBaseUrl = isDevelopment ? 'http://localhost:8000' : 'https://api.reflect.com'
   const appBaseUrl = isDevelopment ? 'http://localhost:5173' : 'https://app.reflect.com'
 

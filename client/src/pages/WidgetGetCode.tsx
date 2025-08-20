@@ -52,17 +52,18 @@ export function WidgetGetCode() {
   return (
     <div className="max-w-3xl mx-auto py-12 text-center">
       <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-      <h1 className="text-3xl font-bold tracking-tight mb-2">Amazing!</h1>
+      <h1 className="text-3xl font-bold tracking-tight mb-2">Done!</h1>
       <p className="text-xl text-muted-foreground mb-8">
         Congratulations, your widget is ready to be embedded.
       </p>
 
       <div className="bg-card border rounded-lg p-6 text-left space-y-6">
         <div>
-          <h2 className="text-lg font-semibold mb-2">Embed your widget</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="text-lg font-semibold mb-2">
+            {' '}
             Add this widget to your website in 3 simple steps:
-          </p>
+          </h2>
+
           <ol className="list-decimal list-inside text-sm text-muted-foreground space-y-1 mt-2">
             <li>Copy the code below using the "Copy Code" button.</li>
             <li>
@@ -91,16 +92,16 @@ export function WidgetGetCode() {
         <h3 className="text-lg font-semibold mb-4">What's Next?</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="border rounded-lg p-4">
-            <h4 className="font-semibold mb-1">Step 1: Configure Widget</h4>
-            <p className="text-sm text-muted-foreground">Customize the appearance and behavior.</p>
-          </div>
-          <div className="border rounded-lg p-4">
-            <h4 className="font-semibold mb-1">Step 2: Add to Website</h4>
+            <h4 className="font-semibold mb-1">Step 1: Add to Website</h4>
             <p className="text-sm text-muted-foreground">Copy and paste the embed code.</p>
           </div>
           <div className="border rounded-lg p-4">
-            <h4 className="font-semibold mb-1">Step 3: Test Widget</h4>
+            <h4 className="font-semibold mb-1">Step 2: Test Widget</h4>
             <p className="text-sm text-muted-foreground">Preview and test your widget in action.</p>
+          </div>
+          <div className="border rounded-lg p-4">
+            <h4 className="font-semibold mb-1">Step 3: Reconfigure</h4>
+            <p className="text-sm text-muted-foreground">Reconfigure the widget as needed.</p>
           </div>
         </div>
 

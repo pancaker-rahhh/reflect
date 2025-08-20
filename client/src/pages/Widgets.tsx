@@ -13,6 +13,7 @@ import { LanguageSupportBanner } from '@/components/widgets/LanguageSupportBanne
 import { FreeTierAlert } from '@/components/widgets/FreeTierAlert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageLoading } from '@/components/common/LoadingSpinner'
+import { DeleteConfirmationModal } from '@/components/common/ConfirmationModal'
 import type { Widget } from '@/types'
 
 export function Widgets() {
@@ -20,6 +21,15 @@ export function Widgets() {
   const queryClient = useQueryClient()
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean
+    widgetId: string | null
+    widgetName: string
+  }>({
+    isOpen: false,
+    widgetId: null,
+    widgetName: '',
+  })
   const { currentProject, isLoading: isContextLoading } = useAppContext()
 
   const { data: widgets, isLoading: isLoadingWidgets } = useQuery({
@@ -95,10 +105,19 @@ export function Widgets() {
     navigate('/widgets/new')
   }
 
-  const handleDeleteWidget = (widgetId: string) => {
-    if (window.confirm('Are you sure you want to delete this widget?')) {
-      deleteMutation.mutate(widgetId)
+  const handleDeleteWidget = (widgetId: string, widgetName: string) => {
+    setDeleteModal({ isOpen: true, widgetId, widgetName })
+  }
+
+  const confirmDelete = () => {
+    if (deleteModal.widgetId) {
+      deleteMutation.mutate(deleteModal.widgetId)
+      setDeleteModal({ isOpen: false, widgetId: null, widgetName: '' })
     }
+  }
+
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, widgetId: null, widgetName: '' })
   }
 
   const isLoading = isContextLoading || isLoadingWidgets
@@ -204,7 +223,7 @@ export function Widgets() {
                     key={widget.id}
                     widget={widget}
                     viewMode={viewMode}
-                    onDelete={() => handleDeleteWidget(widget.id)}
+                    onDelete={() => handleDeleteWidget(widget.id, widget.name)}
                     onStatusChange={() => handleStatusChange(widget.id, widget.is_active)}
                   />
                 ))}
@@ -232,7 +251,7 @@ export function Widgets() {
                     key={widget.id}
                     widget={widget}
                     viewMode={viewMode}
-                    onDelete={() => handleDeleteWidget(widget.id)}
+                    onDelete={() => handleDeleteWidget(widget.id, widget.name)}
                     onStatusChange={() => handleStatusChange(widget.id, widget.is_active)}
                   />
                 ))}
@@ -241,6 +260,15 @@ export function Widgets() {
           )}
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={confirmDelete}
+        itemName={deleteModal.widgetName}
+        isLoading={deleteMutation.isPending}
+      />
     </div>
   )
 }

@@ -22,11 +22,11 @@ interface Step2ContentProps {
 
 export function Step2Content({ form }: Step2ContentProps) {
   const primaryType = form.watch('primaryType')
-  const isScoringType = ['nps', 'csat', 'ces'].includes(primaryType)
+  const isScoringType = ['NPS', 'CSAT', 'CES'].includes(primaryType)
 
   const getScoringDefaults = React.useCallback(() => {
     switch (primaryType) {
-      case 'nps':
+      case 'NPS':
         return {
           headerTitle: 'We value your feedback',
           mainQuestion: 'How likely are you to recommend our product to a friend or colleague?',
@@ -34,7 +34,7 @@ export function Step2Content({ form }: Step2ContentProps) {
           thankYouTitle: 'Thank you for your feedback!',
           thankYouMessage: 'Your rating helps us improve our product and service.',
         }
-      case 'csat':
+      case 'CSAT':
         return {
           headerTitle: 'How satisfied are you?',
           mainQuestion: 'Please rate your overall satisfaction with our service',
@@ -42,7 +42,7 @@ export function Step2Content({ form }: Step2ContentProps) {
           thankYouTitle: 'Thank you!',
           thankYouMessage: 'Your satisfaction rating helps us serve you better.',
         }
-      case 'ces':
+      case 'CES':
         return {
           headerTitle: 'Help us improve',
           mainQuestion: 'How easy was it to get the help you needed?',
@@ -101,11 +101,11 @@ export function Step2Content({ form }: Step2ContentProps) {
               <FormControl>
                 <Textarea
                   placeholder={
-                    primaryType === 'nps'
+                    primaryType === 'NPS'
                       ? 'How likely are you to recommend our product to a friend or colleague?'
-                      : primaryType === 'csat'
+                      : primaryType === 'CSAT'
                         ? 'Please rate your overall satisfaction with our service'
-                        : primaryType === 'ces'
+                        : primaryType === 'CES'
                           ? 'How easy was it to get the help you needed?'
                           : 'How can we improve?'
                   }
@@ -130,13 +130,13 @@ export function Step2Content({ form }: Step2ContentProps) {
               <h4 className="font-medium mb-4 text-center">
                 {form.watch('content.mainQuestion') || getScoringDefaults().mainQuestion}
               </h4>
-              {primaryType === 'nps' && (
+              {primaryType === 'NPS' && (
                 <NPSRating value={undefined} onChange={() => {}} disabled={true} />
               )}
-              {primaryType === 'csat' && (
+              {primaryType === 'CSAT' && (
                 <CSATRating value={undefined} onChange={() => {}} disabled={true} />
               )}
-              {primaryType === 'ces' && (
+              {primaryType === 'CES' && (
                 <CESRating value={undefined} onChange={() => {}} disabled={true} />
               )}
             </div>
