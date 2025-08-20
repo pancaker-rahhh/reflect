@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Search, Grid3X3, List, BarChart3 } from 'lucide-react'
+import { Plus, Search, Grid3X3, List, BarChart3, AlertTriangle } from 'lucide-react'
 // CORRECTED: Import the real widgetApi
 import { widgetApi } from '@/lib/api/widget'
 import { useAppContext } from '@/context/AppContext'
@@ -13,7 +13,7 @@ import { LanguageSupportBanner } from '@/components/widgets/LanguageSupportBanne
 import { FreeTierAlert } from '@/components/widgets/FreeTierAlert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageLoading } from '@/components/common/LoadingSpinner'
-import { DeleteConfirmationModal } from '@/components/common/ConfirmationModal'
+import { DeleteConfirmationModal, ConfirmationModal } from '@/components/common/ConfirmationModal'
 import type { Widget } from '@/types'
 
 export function Widgets() {
@@ -28,6 +28,13 @@ export function Widgets() {
   }>({
     isOpen: false,
     widgetId: null,
+    widgetName: '',
+  })
+  const [activeWidgetModal, setActiveWidgetModal] = useState<{
+    isOpen: boolean
+    widgetName: string
+  }>({
+    isOpen: false,
     widgetName: '',
   })
   const { currentProject, isLoading: isContextLoading } = useAppContext()
@@ -45,9 +52,10 @@ export function Widgets() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['widgets', currentProject?.id] })
     },
-    onError: (error) => {
+    onError: (error: unknown) => {
       console.error('Failed to delete widget:', error)
-      alert(`Error: ${error.message}`)
+      const message = (error as any)?.message || 'Failed to delete widget'
+      alert(`Error: ${message}`)
     },
   })
 
@@ -106,7 +114,15 @@ export function Widgets() {
   }
 
   const handleDeleteWidget = (widgetId: string, widgetName: string) => {
-    setDeleteModal({ isOpen: true, widgetId, widgetName })
+    // Check if the widget is active before showing delete modal
+    const widget = widgets?.find((w) => w.id === widgetId)
+    if (widget?.is_active) {
+      // Show active widget modal instead of delete modal
+      setActiveWidgetModal({ isOpen: true, widgetName })
+    } else {
+      // Show normal delete confirmation modal
+      setDeleteModal({ isOpen: true, widgetId, widgetName })
+    }
   }
 
   const confirmDelete = () => {
@@ -118,6 +134,10 @@ export function Widgets() {
 
   const closeDeleteModal = () => {
     setDeleteModal({ isOpen: false, widgetId: null, widgetName: '' })
+  }
+
+  const closeActiveWidgetModal = () => {
+    setActiveWidgetModal({ isOpen: false, widgetName: '' })
   }
 
   const isLoading = isContextLoading || isLoadingWidgets
@@ -268,6 +288,19 @@ export function Widgets() {
         onConfirm={confirmDelete}
         itemName={deleteModal.widgetName}
         isLoading={deleteMutation.isPending}
+      />
+
+      {/* Active Widget Modal */}
+      <ConfirmationModal
+        isOpen={activeWidgetModal.isOpen}
+        onClose={closeActiveWidgetModal}
+        onConfirm={closeActiveWidgetModal}
+        title="Widget is Active"
+        description={`"${activeWidgetModal.widgetName}" is currently active and collecting feedback. Please deactivate the widget before deleting.`}
+        confirmText="Okay"
+        variant="default"
+        icon={<AlertTriangle className="h-5 w-5 text-amber-500" />}
+        showCancelButton={false}
       />
     </div>
   )

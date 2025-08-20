@@ -21,6 +21,7 @@ interface ConfirmationModalProps {
   variant?: 'destructive' | 'default'
   icon?: React.ReactNode
   isLoading?: boolean
+  showCancelButton?: boolean
 }
 
 export function ConfirmationModal({
@@ -34,6 +35,7 @@ export function ConfirmationModal({
   variant = 'default',
   icon,
   isLoading = false,
+  showCancelButton = true,
 }: ConfirmationModalProps) {
   const handleConfirm = () => {
     if (!isLoading) {
@@ -61,9 +63,11 @@ export function ConfirmationModal({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={handleClose} disabled={isLoading}>
-            {cancelText}
-          </Button>
+          {showCancelButton && (
+            <Button variant="outline" onClick={handleClose} disabled={isLoading}>
+              {cancelText}
+            </Button>
+          )}
           <Button
             variant={variant === 'destructive' ? 'destructive' : 'default'}
             onClick={handleConfirm}

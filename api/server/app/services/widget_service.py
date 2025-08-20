@@ -84,7 +84,15 @@ class WidgetService:
     async def delete_widget(
         self, db: AsyncSession, user_id: UUID, widget_id: UUID
     ) -> Widget:
-        await self.get_widget_and_check_access(db, user_id, widget_id)
+        widget = await self.get_widget_and_check_access(db, user_id, widget_id)
+
+        # Prevent deletion of active widgets
+        if widget.is_active and widget.status == WidgetStatus.ACTIVE:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='Cannot delete an active widget. Please deactivate the widget first before deleting.',
+            )
+
         # Use soft delete to preserve feedback data
         # TODO: Implement scheduled cleanup task to permanently delete old soft-deleted widgets
         # - Retention period: 30 days (configurable)
