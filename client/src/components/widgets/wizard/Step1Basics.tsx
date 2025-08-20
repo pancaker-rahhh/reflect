@@ -60,7 +60,7 @@ export function Step1Basics({ form }: Step1BasicsProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Widget Name</FormLabel>
+              <FormLabel className="text-lg font-semibold mb-4">Widget Name</FormLabel>
               <FormDescription>
                 Internal name to identify this widget (not visible to users)
               </FormDescription>
@@ -73,7 +73,7 @@ export function Step1Basics({ form }: Step1BasicsProps) {
         />
 
         <div>
-          <h3 className="text-base font-semibold mb-4">Widget Modules</h3>
+          <h3 className="text-lg font-semibold mb-4">Widget Modules</h3>
           <div className="space-y-4">
             {modules.map((module) => {
               type ModuleFieldName =
@@ -113,7 +113,7 @@ export function Step1Basics({ form }: Step1BasicsProps) {
             name="primaryType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Primary Feedback Type</FormLabel>
+                <FormLabel className="text-lg font-semibold mb-4">Primary Feedback Type</FormLabel>
                 <FormDescription>Choose the main type of feedback to collect</FormDescription>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
