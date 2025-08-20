@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -81,42 +81,114 @@ const steps = [
 
 export function WidgetCreate() {
   const navigate = useNavigate()
+  const { widgetId } = useParams<{ widgetId: string }>()
   const [currentStep, setCurrentStep] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoadingWidget, setIsLoadingWidget] = useState(false)
+  const [widgetDataLoaded, setWidgetDataLoaded] = useState(false)
   const { currentProject, isLoading } = useAppContext()
+
+  const isEditMode = !!widgetId
 
   const form = useForm<WidgetFormData>({
     resolver: zodResolver(widgetSchema),
-    defaultValues: {
-      name: '',
-      modules: { feedback: true, reviews: false, bugReporting: false, featureRequests: false },
-      primaryType: 'FEEDBACK',
-      content: {
-        headerTitle: 'We value your feedback',
-        mainQuestion: 'How can we improve?',
-        submitButtonText: 'Submit Feedback',
-        thankYouTitle: 'Thank you!',
-        thankYouMessage: 'Your feedback helps us improve.',
-      },
-      appearance: {
-        theme: 'default',
-        position: 'bottom_right',
-        colors: {
-          primary: '#6B46C1',
-          background: '#FFFFFF',
-          text: '#1F2937',
-          buttonColor: '#6B46C1',
-          buttonTextColor: '#FFFFFF',
+    defaultValues: isEditMode
+      ? undefined
+      : {
+          name: '',
+          modules: { feedback: true, reviews: false, bugReporting: false, featureRequests: false },
+          primaryType: 'FEEDBACK',
+          content: {
+            headerTitle: 'We value your feedback',
+            mainQuestion: 'How can we improve?',
+            submitButtonText: 'Submit Feedback',
+            thankYouTitle: 'Thank you!',
+            thankYouMessage: 'Your feedback helps us improve.',
+          },
+          appearance: {
+            theme: 'default',
+            position: 'bottom_right',
+            colors: {
+              primary: '#6B46C1',
+              background: '#FFFFFF',
+              text: '#1F2937',
+              buttonColor: '#6B46C1',
+              buttonTextColor: '#FFFFFF',
+            },
+            showBranding: true,
+          },
+          behavior: {
+            triggerType: 'immediate',
+            urlTargeting: { includeUrls: [], excludeUrls: [] },
+            deviceTypes: { desktop: true, mobile: true, tablet: true },
+          },
         },
-        showBranding: true,
-      },
-      behavior: {
-        triggerType: 'immediate',
-        urlTargeting: { includeUrls: [], excludeUrls: [] },
-        deviceTypes: { desktop: true, mobile: true, tablet: true },
-      },
-    },
   })
+
+  // Load widget data for edit mode
+  useEffect(() => {
+    if (isEditMode && widgetId && currentProject) {
+      setIsLoadingWidget(true)
+      widgetApi
+        .getWidget(widgetId)
+        .then((widget) => {
+          // Transform widget data to form data
+          const formData: WidgetFormData = {
+            name: widget.name,
+            modules: {
+              feedback: widget.configuration?.modules?.feedback ?? true,
+              reviews: widget.configuration?.modules?.reviews ?? false,
+              bugReporting: widget.configuration?.modules?.bugReporting ?? false,
+              featureRequests: widget.configuration?.modules?.featureRequests ?? false,
+            },
+            primaryType: widget.widget_type,
+            content: {
+              headerTitle: widget.configuration?.content?.headerTitle || 'We value your feedback',
+              mainQuestion: widget.configuration?.content?.mainQuestion || 'How can we improve?',
+              submitButtonText:
+                widget.configuration?.content?.submitButtonText || 'Submit Feedback',
+              thankYouTitle: widget.configuration?.content?.thankYouTitle || 'Thank you!',
+              thankYouMessage:
+                widget.configuration?.content?.thankYouMessage || 'Your feedback helps us improve.',
+            },
+            appearance: {
+              theme: widget.theme_configuration?.theme_name || 'default',
+              position: widget.position,
+              colors: {
+                primary: widget.theme_configuration?.primary || '#6B46C1',
+                background: widget.theme_configuration?.background || '#FFFFFF',
+                text: widget.theme_configuration?.text || '#1F2937',
+                buttonColor: widget.theme_configuration?.buttonColor || '#6B46C1',
+                buttonTextColor: widget.theme_configuration?.buttonTextColor || '#FFFFFF',
+              },
+              showBranding: widget.theme_configuration?.show_branding ?? true,
+            },
+            behavior: {
+              triggerType: widget.targeting_rules?.[0]?.details?.type || 'immediate',
+              triggerDelay: widget.targeting_rules?.[0]?.details?.delay,
+              urlTargeting: {
+                includeUrls: widget.targeting_rules?.[1]?.details?.includeUrls || [],
+                excludeUrls: widget.targeting_rules?.[1]?.details?.excludeUrls || [],
+              },
+              deviceTypes: widget.targeting_rules?.[2]?.details || {
+                desktop: true,
+                mobile: true,
+                tablet: true,
+              },
+            },
+          }
+          form.reset(formData)
+          setWidgetDataLoaded(true)
+        })
+        .catch((error) => {
+          console.error('Failed to load widget:', error)
+          alert('Failed to load widget data')
+        })
+        .finally(() => {
+          setIsLoadingWidget(false)
+        })
+    }
+  }, [isEditMode, widgetId, currentProject, form])
 
   const handleSubmit = async () => {
     if (!currentProject) {
@@ -126,10 +198,17 @@ export function WidgetCreate() {
     const data = form.getValues()
     setIsSubmitting(true)
     try {
-      const newWidget = await widgetApi.create(currentProject.id, data)
-      navigate(`/widgets/${newWidget.id}/get-code`)
+      if (isEditMode && widgetId) {
+        // Update existing widget
+        await widgetApi.update(widgetId, data)
+        navigate(`/widgets/${widgetId}/get-code`)
+      } else {
+        // Create new widget
+        const newWidget = await widgetApi.create(currentProject.id, data)
+        navigate(`/widgets/${newWidget.id}/get-code`)
+      }
     } catch (error) {
-      console.error('Failed to create widget:', error)
+      console.error(`Failed to ${isEditMode ? 'update' : 'create'} widget:`, error)
       alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsSubmitting(false)
@@ -157,19 +236,49 @@ export function WidgetCreate() {
     return <PageLoading />
   }
 
+  // In edit mode, show loading until widget data is loaded
+  if (isEditMode && isLoadingWidget) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Edit Widget</h1>
+          <p className="text-muted-foreground">Loading widget data...</p>
+        </div>
+        <PageLoading />
+      </div>
+    )
+  }
+
   if (!currentProject) {
     return <div className="text-center p-8">Please select a project to continue.</div>
   }
 
   const StepComponent = steps[currentStep].component
 
+  // Don't render the form until data is loaded in edit mode
+  if (isEditMode && !widgetDataLoaded) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Edit Widget</h1>
+          <p className="text-muted-foreground">Loading widget data...</p>
+        </div>
+        <PageLoading />
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">Create New Widget</h1>
+        <h1 className="text-3xl font-bold tracking-tight mb-2">
+          {isEditMode ? 'Edit Widget' : 'Create New Widget'}
+        </h1>
         <p className="text-muted-foreground">
-          Configure your feedback widget in just a few steps for project:{' '}
-          <strong>{currentProject.name}</strong>
+          {isEditMode
+            ? 'Update your feedback widget configuration'
+            : 'Configure your feedback widget in just a few steps'}{' '}
+          for project: <strong>{currentProject.name}</strong>
         </p>
       </div>
       <WizardProgress currentStep={currentStep} totalSteps={steps.length} />

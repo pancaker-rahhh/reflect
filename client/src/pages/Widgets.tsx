@@ -125,6 +125,10 @@ export function Widgets() {
     }
   }
 
+  const handleEditWidget = (widgetId: string) => {
+    navigate(`/widgets/${widgetId}/edit`)
+  }
+
   const confirmDelete = () => {
     if (deleteModal.widgetId) {
       deleteMutation.mutate(deleteModal.widgetId)
@@ -245,6 +249,7 @@ export function Widgets() {
                     viewMode={viewMode}
                     onDelete={() => handleDeleteWidget(widget.id, widget.name)}
                     onStatusChange={() => handleStatusChange(widget.id, widget.is_active)}
+                    onEdit={() => handleEditWidget(widget.id)}
                   />
                 ))}
               </div>
@@ -273,6 +278,7 @@ export function Widgets() {
                     viewMode={viewMode}
                     onDelete={() => handleDeleteWidget(widget.id, widget.name)}
                     onStatusChange={() => handleStatusChange(widget.id, widget.is_active)}
+                    onEdit={() => handleEditWidget(widget.id)}
                   />
                 ))}
               </div>

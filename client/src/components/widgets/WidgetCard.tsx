@@ -27,6 +27,7 @@ interface WidgetCardProps {
   viewMode?: 'grid' | 'list'
   onDelete: () => void
   onStatusChange: (isActive: boolean) => void
+  onEdit: () => void
 }
 
 export function WidgetCard({
@@ -34,6 +35,7 @@ export function WidgetCard({
   viewMode = 'grid',
   onDelete,
   onStatusChange,
+  onEdit,
 }: WidgetCardProps) {
   const [copied, setCopied] = useState(false)
 
@@ -124,7 +126,7 @@ export function WidgetCard({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem className="gap-2 cursor-pointer">
+                      <DropdownMenuItem onClick={onEdit} className="gap-2 cursor-pointer">
                         <Eye className="h-4 w-4" />
                         <span>Edit Widget</span>
                       </DropdownMenuItem>
@@ -210,7 +212,7 @@ export function WidgetCard({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem className="gap-2 cursor-pointer">
+                <DropdownMenuItem onClick={onEdit} className="gap-2 cursor-pointer">
                   <Eye className="h-4 w-4" />
                   <span>Edit Widget</span>
                 </DropdownMenuItem>

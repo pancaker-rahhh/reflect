@@ -107,6 +107,7 @@ function App() {
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="widgets" element={<Widgets />} />
                     <Route path="widgets/new" element={<WidgetCreate />} />
+                    <Route path="widgets/:widgetId/edit" element={<WidgetCreate />} />
                     <Route path="widgets/:widgetId/get-code" element={<WidgetGetCode />} />
                     <Route path="/widgets/create" element={<WidgetCreate />} />
                     <Route path="feedback/responses" element={<Responses />} />
