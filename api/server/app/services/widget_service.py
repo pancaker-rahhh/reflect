@@ -39,7 +39,6 @@ class WidgetService:
         )
         return embed_code
 
-    # CORRECTED: All methods now accept user_id: UUID for consistency
     async def get_widget_and_check_access(
         self, db: AsyncSession, user_id: UUID, widget_id: UUID
     ) -> Widget:
@@ -47,9 +46,8 @@ class WidgetService:
         if not widget:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
 
-        await self.project_service.get_project_and_check_access(
-            db, user_id, widget.project_id
-        )
+        project_id: UUID = widget.project_id
+        await self.project_service.get_project_and_check_access(db, user_id, project_id)
         return widget
 
     async def list_widgets_by_project(
@@ -70,6 +68,9 @@ class WidgetService:
         temp_widget = Widget(**widget_data)
         widget_data['public_key'] = temp_widget.public_key
         widget_data['embed_code'] = self._generate_embed_code(temp_widget.public_key)
+
+        widget_data['status'] = WidgetStatus.ACTIVE
+        widget_data['is_active'] = True
 
         return await self.repository.create(db, **widget_data)
 
@@ -110,16 +111,14 @@ class WidgetService:
     ) -> Widget:
         widget = await self.repository.get_by_public_key(db, public_key=public_key)
 
-        # Explicitly check widget attributes to avoid SQLAlchemy boolean column issues
         if not widget:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail='Active widget not found for this key.',
             )
 
-        # Force type casting to avoid SQLAlchemy column expression issues
-        widget_is_active: bool = bool(widget.is_active)  # type: ignore
-        widget_status: WidgetStatus = widget.status  # type: ignore
+        widget_is_active: bool = bool(widget.is_active)
+        widget_status: WidgetStatus = widget.status
 
         if not widget_is_active or widget_status != WidgetStatus.ACTIVE:
             raise HTTPException(
