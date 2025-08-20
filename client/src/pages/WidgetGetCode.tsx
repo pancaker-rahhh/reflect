@@ -89,18 +89,18 @@ export function WidgetGetCode() {
       </div>
 
       <div className="mt-12">
-        <h3 className="text-lg font-semibold mb-4">What's Next?</h3>
+        <h3 className="text-xl font-semibold mb-4">What's Next?</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="border rounded-lg p-4">
-            <h4 className="font-semibold mb-1">Step 1: Add to Website</h4>
+            <h4 className="text-lg font-semibold mb-1">Step 1: Add to Website</h4>
             <p className="text-sm text-muted-foreground">Copy and paste the embed code.</p>
           </div>
           <div className="border rounded-lg p-4">
-            <h4 className="font-semibold mb-1">Step 2: Test Widget</h4>
+            <h4 className="text-lg font-semibold mb-1">Step 2: Test Widget</h4>
             <p className="text-sm text-muted-foreground">Preview and test your widget in action.</p>
           </div>
           <div className="border rounded-lg p-4">
-            <h4 className="font-semibold mb-1">Step 3: Reconfigure</h4>
+            <h4 className="text-lg font-semibold mb-1">Step 3: Reconfigure</h4>
             <p className="text-sm text-muted-foreground">Reconfigure the widget as needed.</p>
           </div>
         </div>

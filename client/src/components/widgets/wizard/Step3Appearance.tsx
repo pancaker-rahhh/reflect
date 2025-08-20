@@ -77,7 +77,7 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
             name="appearance.position"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Widget Position</FormLabel>
+                <FormLabel className="text-lg font-semibold mb-4">Widget Position</FormLabel>
                 <FormDescription>Choose where the widget appears on your page</FormDescription>
                 <FormControl>
                   <PositionSelector value={field.value} onChange={field.onChange} />

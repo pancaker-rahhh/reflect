@@ -81,7 +81,7 @@ export function Step2Content({ form }: Step2ContentProps) {
           name="content.headerTitle"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Widget Header Title</FormLabel>
+              <FormLabel className="text-lg font-semibold mb-4">Widget Header Title</FormLabel>
               <FormDescription>The main title shown at the top of your widget</FormDescription>
               <FormControl>
                 <Input placeholder="We value your feedback" {...field} />
@@ -96,7 +96,7 @@ export function Step2Content({ form }: Step2ContentProps) {
           name="content.mainQuestion"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Main Question</FormLabel>
+              <FormLabel className="text-lg font-semibold mb-4">Main Question</FormLabel>
               <FormDescription>The primary question you want to ask your users</FormDescription>
               <FormControl>
                 <Textarea
@@ -148,7 +148,7 @@ export function Step2Content({ form }: Step2ContentProps) {
           name="content.submitButtonText"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Submit Button Text</FormLabel>
+              <FormLabel className="text-lg font-semibold mb-4">Submit Button Text</FormLabel>
               <FormDescription>Text displayed on the submit button</FormDescription>
               <FormControl>
                 <Input
@@ -162,7 +162,7 @@ export function Step2Content({ form }: Step2ContentProps) {
         />
 
         <div className="space-y-4 rounded-lg border p-4">
-          <h3 className="font-medium">Thank You Screen</h3>
+          <h4 className="font-medium">Thank You Screen</h4>
 
           <FormField
             control={form.control}
@@ -170,7 +170,7 @@ export function Step2Content({ form }: Step2ContentProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Thank You Title</FormLabel>
-                <FormDescription>Title shown after submission</FormDescription>
+                <FormDescription className="text-sm">Title shown after submission</FormDescription>
                 <FormControl>
                   <Input placeholder="Thank you!" {...field} />
                 </FormControl>
@@ -185,7 +185,9 @@ export function Step2Content({ form }: Step2ContentProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Thank You Message</FormLabel>
-                <FormDescription>Message shown after submission</FormDescription>
+                <FormDescription className="text-sm">
+                  Message shown after submission
+                </FormDescription>
                 <FormControl>
                   <Textarea
                     placeholder={
