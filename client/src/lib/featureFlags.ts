@@ -7,9 +7,12 @@ export const featureFlags = {
   // Navigation features
   SHOW_ORG_SETTINGS_IN_SIDEBAR: false,
   
-  // Other features that might need flags later
-  // ENABLE_ANALYTICS: false,
-  // ENABLE_ADVANCED_PERMISSIONS: false,
+  // Team features
+  ENABLE_TEAM_FEATURES: false,
+  
+  // Onboarding features
+  SKIP_USER_TYPE_SELECTION: true,
+
 } as const;
 
 export type FeatureFlag = keyof typeof featureFlags;
