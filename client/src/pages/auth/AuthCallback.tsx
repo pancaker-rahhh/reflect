@@ -11,7 +11,13 @@ export function AuthCallback() {
     // Navigate to home (which has OnboardingGuard) when auth is complete and sync is done
     // The OnboardingGuard will redirect to onboarding if needed
     if (user && !syncing && !loading) {
-      navigate('/');
+      // Check if there's a pending invitation
+      const pendingInvitationToken = localStorage.getItem('pendingInvitationToken');
+      if (pendingInvitationToken) {
+        navigate(`/invite?token=${pendingInvitationToken}`);
+      } else {
+        navigate('/');
+      }
     }
   }, [user, syncing, loading, navigate]);
 

@@ -21,7 +21,7 @@ export const ProjectMemberModal: React.FC<ProjectMemberModalProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMember, setSelectedMember] = useState<string | null>(null);
-  const [selectedRole, setSelectedRole] = useState<'admin' | 'editor' | 'viewer'>('editor');
+  const [selectedRole, setSelectedRole] = useState<'admin' | 'member' | 'viewer'>('member');
   const [newMemberEmail, setNewMemberEmail] = useState('');
   const [isAddingNewMember, setIsAddingNewMember] = useState(false);
 
@@ -166,7 +166,7 @@ export const ProjectMemberModal: React.FC<ProjectMemberModalProps> = ({
                 Project Role
               </label>
               <div className="grid grid-cols-3 gap-2">
-                {(['viewer', 'editor', 'admin'] as const).map((role) => (
+                {(['viewer', 'member', 'admin'] as const).map((role) => (
                   <button
                     key={role}
                     type="button"

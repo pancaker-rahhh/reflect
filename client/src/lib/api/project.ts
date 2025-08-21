@@ -23,7 +23,7 @@ export interface ProjectMember {
   id: string
   user_id: string
   project_id: string
-  role: 'admin' | 'editor' | 'viewer'
+  role: 'admin' | 'member' | 'viewer'
   user_name?: string
   user_email?: string
   created_at: string
@@ -32,11 +32,11 @@ export interface ProjectMember {
 
 export interface ProjectMemberInviteRequest {
   email: string
-  role: 'admin' | 'editor' | 'viewer'
+  role: 'admin' | 'member' | 'viewer'
 }
 
 export interface ProjectMemberUpdateRequest {
-  role: 'admin' | 'editor' | 'viewer'
+  role: 'admin' | 'member' | 'viewer'
 }
 
 export const projectApi = {

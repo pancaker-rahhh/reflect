@@ -727,7 +727,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
                 
                 await projectApi.inviteMember(projectIdToUse, {
                   email,
-                  role: role as 'admin' | 'editor' | 'viewer'
+                  role: role as 'admin' | 'member' | 'viewer'
                 });
                 
                 setMessage({ type: 'success', text: `User ${email} added to project successfully` });
@@ -737,7 +737,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
                 if (orgMember && orgMember.user_id) {
                   await projectApi.inviteMember(projectIdToUse, {
                     email: orgMember.email || '',
-                    role: role as 'admin' | 'editor' | 'viewer'
+                    role: role as 'admin' | 'member' | 'viewer'
                   });
                   setMessage({ type: 'success', text: 'Member added to project successfully' });
                 }

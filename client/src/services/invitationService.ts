@@ -74,7 +74,7 @@ export interface InvitationStatusResponse {
 class InvitationService {
   async validateInvitation(token: string): Promise<InvitationValidateResponse> {
     const response = await apiClient.get(`/invitations/validate/${token}`);
-    return response.data;
+    return response;
   }
 
   async acceptInvitation(
@@ -85,19 +85,19 @@ class InvitationService {
       token,
       user_data: userData
     });
-    return response.data;
+    return response;
   }
 
   async sendBulkInvitations(
     request: BulkInvitationRequest
   ): Promise<BulkInvitationResponse> {
     const response = await apiClient.post('/invitations/bulk', request);
-    return response.data;
+    return response;
   }
 
   async getBulkInvitationStatus(taskId: string): Promise<InvitationStatusResponse> {
     const response = await apiClient.get(`/invitations/bulk/${taskId}/status`);
-    return response.data;
+    return response;
   }
 
   async resendInvitation(invitationId: string): Promise<void> {

@@ -27,6 +27,7 @@ export function VerifyOtp() {
 
   const email = location.state?.email;
   const from = location.state?.from || '/dashboard';
+  const invitationToken = location.state?.invitationToken;
 
   const {
     register,
@@ -50,6 +51,10 @@ export function VerifyOtp() {
   }
 
   if (user && !syncing) {
+    // Store invitation token for post-auth processing if present
+    if (invitationToken) {
+      localStorage.setItem('pendingInvitationToken', invitationToken);
+    }
     return <Navigate to={from} replace />;
   }
 
