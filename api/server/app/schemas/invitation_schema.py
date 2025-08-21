@@ -6,7 +6,7 @@ from pydantic import BaseModel, EmailStr, Field, validator
 
 class InvitationEntry(BaseModel):
     email: EmailStr
-    role: Literal['admin', 'member', 'viewer'] = 'member'
+    role: Literal['admin', 'member', 'viewer', 'editor'] = 'member'
     name: Optional[str] = None
 
 

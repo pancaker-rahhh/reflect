@@ -55,14 +55,15 @@ class ProjectSettingsUpdate(BaseModel):
 
 
 class ProjectMemberResponse(BaseModel):
-    id: UUID
-    user_id: UUID
+    id: Optional[UUID] = None
+    user_id: Optional[UUID] = None
     project_id: UUID
     role: ProjectRole
     user_name: Optional[str] = None
     user_email: Optional[str] = None
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    is_pending: bool = False
 
     class Config:
         from_attributes = True
@@ -70,7 +71,7 @@ class ProjectMemberResponse(BaseModel):
 
 class ProjectMemberInviteRequest(BaseModel):
     email: str = Field(..., min_length=1, max_length=255)
-    role: ProjectRole = Field(default=ProjectRole.VIEWER)
+    role: ProjectRole = Field(default=ProjectRole.MEMBER)
 
 
 class ProjectMemberUpdate(BaseModel):
