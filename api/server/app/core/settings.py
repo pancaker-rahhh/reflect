@@ -38,9 +38,25 @@ class Settings(BaseSettings):
     CORS_HEADERS: str = '*'
 
     # Frontend & Email Configuration
-    FRONTEND_URL: str = 'http://localhost:3000'
-    EMAIL_FROM: str = 'noreply@reflect.app'
+    FRONTEND_URL: str = 'http://localhost:5173'
+    EMAIL_FROM: str = 'pancakes.kik@gmail.com'
     EMAIL_FROM_NAME: str = 'Reflect'
+    
+    # Email Provider Configuration
+    EMAIL_PROVIDER: str = 'mock'  # Options: mock, aws_ses, resend
+    
+    # AWS SES Configuration (optional)
+    AWS_REGION: Optional[str] = 'us-east-1'
+    AWS_ACCESS_KEY_ID: Optional[str] = None
+    AWS_SECRET_ACCESS_KEY: Optional[str] = None
+    SES_CONFIGURATION_SET: Optional[str] = None
+    
+    # Resend Configuration (optional)
+    RESEND_API_KEY: Optional[str] = None
+    
+    # Email Settings
+    EMAIL_MAX_RETRIES: int = 3
+    EMAIL_RETRY_DELAY: int = 5  # seconds
 
     # Task Backend
     TASK_BACKEND: str = 'fastapi'
