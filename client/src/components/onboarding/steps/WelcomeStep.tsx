@@ -1,14 +1,27 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
 import { useOnboardingKeyboard } from '../../../hooks/useOnboardingKeyboard';
+import { isFeatureEnabled } from '../../../lib/featureFlags';
 import { ArrowRight, Sparkles, Users, ChartBar } from 'lucide-react';
 
 export const WelcomeStep: React.FC = () => {
   const { nextStep } = useOnboarding();
+  const skipUserTypeSelection = isFeatureEnabled('SKIP_USER_TYPE_SELECTION');
 
   useOnboardingKeyboard({
     onNext: nextStep
   });
+
+  // Auto-proceed if skipping user type selection
+  useEffect(() => {
+    if (skipUserTypeSelection) {
+      // Small delay to show welcome screen briefly
+      const timer = setTimeout(() => {
+        nextStep();
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [skipUserTypeSelection, nextStep]);
 
   return (
     <div className="text-center py-8">
