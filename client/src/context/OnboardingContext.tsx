@@ -54,24 +54,39 @@ const STEP_ORDER: OnboardingStep[] = [
   'completion',
 ];
 
-const SOLO_STEPS: OnboardingStep[] = [
-  'welcome',
-  'user-type',
-  'profile',
-  'organization',
-  'project',
-  'completion',
-];
+const getSteps = (userType: UserType | null, skipUserTypeSelection: boolean): OnboardingStep[] => {
+  if (skipUserTypeSelection) {
+    return [
+      'welcome',
+      'profile',
+      'organization',
+      'project', 
+      'completion'
+    ];
+  }
+  
+  if (userType === 'solo') {
+    return [
+      'welcome',
+      'user-type',
+      'profile',
+      'organization',
+      'project',
+      'completion',
+    ];
+  }
+  
+  return [
+    'welcome',
+    'user-type',
+    'profile',
+    'organization',
+    'project',
+    'team-setup',
+    'completion',
+  ];
+};
 
-const TEAM_STEPS: OnboardingStep[] = [
-  'welcome',
-  'user-type',
-  'profile',
-  'organization',
-  'project',
-  'team-setup',
-  'completion',
-];
 
 interface OnboardingProviderProps {
   children: ReactNode;
@@ -122,8 +137,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
   }, [state]);
 
   const getRelevantSteps = (): OnboardingStep[] => {
-    if (!state.userType) return STEP_ORDER;
-    return state.userType === 'solo' ? SOLO_STEPS : TEAM_STEPS;
+    return getSteps(state.userType, skipUserTypeSelection);
   };
 
   const setUserType = (type: UserType) => {

@@ -1,19 +1,44 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { Building, Sparkles } from 'lucide-react';
 import { organizationApi, onboardingApi } from '../../../lib/api';
 import { onboardingDataService } from '../../../services/onboardingDataService';
+import { isFeatureEnabled } from '../../../lib/featureFlags';
 
 export const OrganizationStep: React.FC = () => {
   const { nextStep, markStepCompleted, setOrganizationId, userType, organizationId } = useOnboarding();
   const { user } = useAuth();
+  const skipUserTypeSelection = isFeatureEnabled('SKIP_USER_TYPE_SELECTION');
   
   const [isAutoCreating, setIsAutoCreating] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
   });
+
+  const handleAutoCreate = useCallback(async () => {
+    setIsAutoCreating(true);
+    
+    try {
+      const organization = await onboardingApi.autoCreateOrganization();
+      
+      // Save organization data for review step
+      onboardingDataService.saveOrganizationData({
+        name: organization.name,
+        description: (organization as any).description || '',
+        slug: organization.slug
+      });
+      
+      setOrganizationId(organization.id);
+      markStepCompleted('organization');
+      nextStep();
+    } catch (error) {
+      console.error('Failed to auto-create organization:', error);
+    } finally {
+      setIsAutoCreating(false);
+    }
+  }, [setOrganizationId, markStepCompleted, nextStep]);
 
   useEffect(() => {
     // Load existing data or set default name
@@ -36,28 +61,12 @@ export const OrganizationStep: React.FC = () => {
     }
   }, [user]);
 
-  const handleAutoCreate = async () => {
-    setIsAutoCreating(true);
-    
-    try {
-      const organization = await onboardingApi.autoCreateOrganization();
-      
-      // Save organization data for review step
-      onboardingDataService.saveOrganizationData({
-        name: organization.name,
-        description: organization.description || '',
-        slug: organization.slug
-      });
-      
-      setOrganizationId(organization.id);
-      markStepCompleted('organization');
-      nextStep();
-    } catch (error) {
-      console.error('Failed to auto-create organization:', error);
-    } finally {
-      setIsAutoCreating(false);
+  // Separate effect for auto-creation
+  useEffect(() => {
+    if (skipUserTypeSelection && !organizationId && !isAutoCreating) {
+      handleAutoCreate();
     }
-  };
+  }, [skipUserTypeSelection, organizationId, isAutoCreating, handleAutoCreate]);
 
   const handleManualCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,6 +107,29 @@ export const OrganizationStep: React.FC = () => {
       setIsAutoCreating(false);
     }
   };
+
+  // If skipping user type selection, show auto-creating state
+  if (skipUserTypeSelection) {
+    return (
+      <div className="py-6 text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-6">
+          <Building className="w-8 h-8 text-indigo-600" />
+        </div>
+        
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          Setting Up Your Workspace
+        </h2>
+        <p className="text-gray-600 mb-8">
+          We&rsquo;re automatically creating your personal workspace
+        </p>
+
+        <div className="flex items-center justify-center gap-2">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>
+          <span className="text-indigo-600 font-medium">Creating workspace...</span>
+        </div>
+      </div>
+    );
+  }
 
   if (userType === 'solo') {
     return (
