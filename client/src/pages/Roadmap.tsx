@@ -3,19 +3,7 @@ import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api, organizationApi, userApi } from '@/lib/api'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogClose,
-} from '@/components/ui/dialog'
 import {
   MapPin,
   Plus,
@@ -24,10 +12,10 @@ import {
   ExternalLink,
   Loader2,
   Settings,
-  Lightbulb,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { RoadmapCard } from '@/components/roadmap/RoadmapCard'
+import { AddFeatureModal } from '@/components/roadmap/AddFeatureModal'
 import { useToast } from '@/components/ui/use-toast'
 import { supabase } from '@/lib/supabase'
 import type { RoadmapColumn } from '@/types'
@@ -50,11 +38,6 @@ export function RoadmapPage() {
     name: string
     status: string
   } | null>(null)
-  const [newFeature, setNewFeature] = useState<FeatureFormData>({
-    title: '',
-    description: '',
-    tagIds: [],
-  })
   const [draggedItem, setDraggedItem] = useState<DragItem | null>(null)
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -132,11 +115,6 @@ export function RoadmapPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmap'] })
       setAddFeatureModalOpen(false)
-      setNewFeature({
-        title: '',
-        description: '',
-        tagIds: [],
-      })
       toast({
         title: 'Feature created',
         description: 'Your new feature has been added to the roadmap.',
@@ -262,42 +240,27 @@ export function RoadmapPage() {
   }
 
   const toggleTag = (tagId: string) => {
-    setNewFeature((prev) => {
-      const hasTag = prev.tagIds.includes(tagId)
-      return {
-        ...prev,
-        tagIds: hasTag ? prev.tagIds.filter((id) => id !== tagId) : [...prev.tagIds, tagId],
-      }
-    })
+    // This function is no longer needed as AddFeatureModal handles tags
   }
 
-  const handleAddFeature = () => {
-    if (newFeature.title.trim() && selectedColumn) {
-      let submitterName = 'Anonymous User'
-      let submitterEmail = 'user@example.com'
+  const handleOpenAddFeatureModal = (column: RoadmapColumn) => {
+    setSelectedColumn({
+      id: column.id,
+      name: column.name,
+      status: column.status,
+    })
+    setAddFeatureModalOpen(true)
+  }
 
-      if (currentUser) {
-        submitterName = currentUser.name || currentUser.email?.split('@')[0] || 'Anonymous User'
-        submitterEmail = currentUser.email || 'user@example.com'
-      } else {
-        supabase.auth.getUser().then(({ data: { user } }) => {
-          if (user) {
-            submitterName =
-              user.user_metadata?.name || user.email?.split('@')[0] || 'Anonymous User'
-            submitterEmail = user.email || 'user@example.com'
-          }
-        })
-      }
+  const handleAddFeature = (formData: FeatureFormData) => {
+    if (!selectedColumn) return
 
-      createFeatureMutation.mutate({
-        title: newFeature.title,
-        description: newFeature.description,
-        column_id: selectedColumn.id,
-        tag_ids: newFeature.tagIds.length > 0 ? newFeature.tagIds : undefined,
-        submitter_name: submitterName,
-        submitter_email: submitterEmail,
-      })
-    }
+    createFeatureMutation.mutate({
+      title: formData.title,
+      description: formData.description,
+      column_id: selectedColumn.id,
+      tag_ids: formData.tagIds,
+    })
   }
 
   const scrollToColumn = (direction: 'left' | 'right') => {
@@ -376,20 +339,6 @@ export function RoadmapPage() {
     if (column.order === 3) return 'under-review'
 
     return 'new'
-  }
-
-  const handleOpenAddFeatureModal = (column: RoadmapColumn) => {
-    setSelectedColumn({
-      id: column.id,
-      name: column.name,
-      status: getColumnStatus(column),
-    })
-    setNewFeature({
-      title: '',
-      description: '',
-      tagIds: [],
-    })
-    setAddFeatureModalOpen(true)
   }
 
   const isLoading = isLoadingOrgs || isLoadingProjects || isLoadingRoadmap || isLoadingUser
@@ -534,109 +483,16 @@ export function RoadmapPage() {
         </div>
       </div>
 
-      <Dialog open={addFeatureModalOpen} onOpenChange={setAddFeatureModalOpen}>
-        <DialogContent className="sm:max-w-[525px]">
-          <DialogHeader>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="bg-primary/10 p-2 rounded-lg">
-                <Lightbulb className="h-5 w-5 text-primary" />
-              </div>
-              <DialogTitle className="text-lg font-semibold">Add New Feature Request</DialogTitle>
-            </div>
-            <DialogDescription>
-              Create a new feature request that will help improve your product.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            <div className="flex items-center gap-2">
-              <Label>Status:</Label>
-              <Badge variant="outline">{selectedColumn?.status || 'Unknown'}</Badge>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="title">
-                Title <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="title"
-                placeholder="A short, descriptive title for your feature request"
-                value={newFeature.title}
-                onChange={(e) => setNewFeature((prev) => ({ ...prev, title: e.target.value }))}
-                autoFocus
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">
-                Description <span className="text-destructive">*</span>
-              </Label>
-              <Textarea
-                id="description"
-                placeholder="Provide more details about the feature, why it's needed, and how it should work..."
-                value={newFeature.description}
-                onChange={(e) =>
-                  setNewFeature((prev) => ({ ...prev, description: e.target.value }))
-                }
-                rows={4}
-              />
-              <p className="text-xs text-muted-foreground">
-                Required for better understanding and processing
-              </p>
-            </div>
-            {tags.length > 0 && (
-              <div className="space-y-2">
-                <Label>
-                  Tags <span className="text-muted-foreground">(Optional)</span>
-                </Label>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {tags.map((tag) => {
-                    const isSelected = newFeature.tagIds.includes(tag.id)
-                    return (
-                      <Badge
-                        key={tag.id}
-                        variant={isSelected ? 'default' : 'outline'}
-                        className="cursor-pointer"
-                        style={
-                          isSelected
-                            ? {
-                                backgroundColor: tag.color,
-                                color: '#fff',
-                                borderColor: tag.color,
-                              }
-                            : {
-                                borderColor: tag.color,
-                                color: tag.color,
-                              }
-                        }
-                        onClick={() => toggleTag(tag.id)}
-                      >
-                        {tag.name}
-                      </Badge>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="outline">
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button
-              type="submit"
-              onClick={handleAddFeature}
-              disabled={
-                !newFeature.title.trim() ||
-                !newFeature.description.trim() ||
-                createFeatureMutation.isPending
-              }
-            >
-              {createFeatureMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Feature
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Add Feature Modal */}
+      <AddFeatureModal
+        isOpen={addFeatureModalOpen}
+        onClose={() => setAddFeatureModalOpen(false)}
+        onSubmit={handleAddFeature}
+        isLoading={createFeatureMutation.isPending}
+        columnName={selectedColumn?.name || ''}
+        columnStatus={selectedColumn?.status || ''}
+        roadmapId={roadmap?.id || ''}
+      />
 
       <div className="relative">
         {/* Enhanced navigation buttons with better positioning and animations */}
