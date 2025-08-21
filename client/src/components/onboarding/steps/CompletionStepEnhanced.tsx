@@ -226,7 +226,7 @@ export const CompletionStepEnhanced: React.FC = () => {
               <h4 className="font-semibold text-gray-900 mb-1">Everything look good?</h4>
               <p className="text-sm text-gray-600">
                 {skipUserTypeSelection ? (
-                  'You can always change these settings later from your organization settings page.'
+                  'You can always change these information from your settings page later.'
                 ) : (
                   'You can always change these settings later from your dashboard. Click the edit buttons above to make changes now, or continue to finish setup.'
                 )}
