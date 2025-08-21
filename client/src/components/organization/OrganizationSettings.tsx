@@ -2,6 +2,7 @@ import React from 'react';
 import { Building, Users, Settings, Shield } from 'lucide-react';
 import { OrganizationMembers } from './OrganizationMembers';
 import { OrganizationDetails } from './OrganizationDetails';
+import { isFeatureEnabled } from '../../lib/featureFlags';
 
 interface OrganizationSettingsProps {
   organizationId: string;
@@ -11,10 +12,11 @@ type Tab = 'details' | 'members' | 'settings' | 'billing';
 
 export const OrganizationSettings: React.FC<OrganizationSettingsProps> = ({ organizationId }) => {
   const [activeTab, setActiveTab] = React.useState<Tab>('details');
+  const teamFeaturesEnabled = isFeatureEnabled('ENABLE_TEAM_FEATURES');
 
   const tabs = [
     { id: 'details', label: 'Organization', icon: Building },
-    { id: 'members', label: 'Members & Roles', icon: Users },
+    ...(teamFeaturesEnabled ? [{ id: 'members', label: 'Members & Roles', icon: Users }] : []),
     { id: 'settings', label: 'Settings', icon: Settings },
     { id: 'billing', label: 'Billing', icon: Shield },
   ];
