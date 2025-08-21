@@ -425,7 +425,7 @@ def upgrade() -> None:
         sa.Column('user_id', sa.UUID(), nullable=False),
         sa.Column(
             'role',
-            sa.Enum('ADMIN', 'EDITOR', 'VIEWER', name='projectrole'),
+            sa.Enum('ADMIN', 'MEMBER', 'VIEWER', name='projectrole'),
             nullable=False,
         ),
         sa.Column('id', sa.UUID(), nullable=False),

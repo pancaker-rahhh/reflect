@@ -1,5 +1,5 @@
 from typing import List, Optional, TYPE_CHECKING
-from sqlalchemy import String, ForeignKey, UniqueConstraint
+from sqlalchemy import String, ForeignKey, UniqueConstraint, Enum
 from sqlalchemy.dialects.postgresql import UUID, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 import re
@@ -15,15 +15,15 @@ if TYPE_CHECKING:
 
 
 class OrganizationRole(str, enum.Enum):
-    OWNER = 'owner'
-    ADMIN = 'admin'
-    MEMBER = 'member'
+    OWNER = 'OWNER'
+    ADMIN = 'ADMIN'
+    MEMBER = 'MEMBER'
 
 
 class ProjectRole(str, enum.Enum):
-    ADMIN = 'admin'
-    EDITOR = 'editor'
-    VIEWER = 'viewer'
+    ADMIN = 'ADMIN'
+    MEMBER = 'MEMBER'
+    VIEWER = 'VIEWER'
 
 
 class Organization(BaseModel):
@@ -97,7 +97,7 @@ class OrganizationMember(BaseModel):
         index=True,
     )
 
-    role: Mapped[OrganizationRole] = mapped_column(nullable=False)
+    role: Mapped[OrganizationRole] = mapped_column(Enum(OrganizationRole, name='organizationrole', values_callable=lambda x: [e.value for e in x]), nullable=False)
 
     organization: Mapped['Organization'] = relationship(
         'Organization', back_populates='members'
@@ -127,7 +127,7 @@ class ProjectMember(BaseModel):
         index=True,
     )
 
-    role: Mapped[ProjectRole] = mapped_column(nullable=False)
+    role: Mapped[ProjectRole] = mapped_column(Enum(ProjectRole, name='projectrole', values_callable=lambda x: [e.value for e in x]), nullable=False)
 
     project: Mapped['Project'] = relationship('Project', back_populates='members')
     user: Mapped['User'] = relationship('User', back_populates='project_memberships')

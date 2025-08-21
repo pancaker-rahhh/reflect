@@ -52,7 +52,7 @@ class User(BaseModel):
     )
 
     onboarding_completed: Mapped[bool] = mapped_column(Boolean, default=False)
-    user_type: Mapped[Optional[UserType]] = mapped_column(Enum(UserType), nullable=True)
+    user_type: Mapped[Optional[UserType]] = mapped_column(Enum(UserType, name='usertype', values_callable=lambda x: [e.value for e in x]), nullable=True)
 
     user_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
     app_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
