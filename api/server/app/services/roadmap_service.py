@@ -1,5 +1,5 @@
 from uuid import UUID
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 from app.models.roadmap_model import (
@@ -7,6 +7,7 @@ from app.models.roadmap_model import (
     RoadmapColumn,
     RoadmapFeature,
     RoadmapItemAssignment,
+    RoadmapTag,
 )
 from app.repositories.roadmap_repository import (
     roadmap_repository,
@@ -16,6 +17,10 @@ from app.repositories.roadmap_repository import (
     roadmap_feature_repository,
     RoadmapFeatureRepository,
     roadmap_assignment_repository,
+    roadmap_tag_repository,
+    RoadmapTagRepository,
+    roadmap_feature_tag_repository,
+    RoadmapFeatureTagRepository,
 )
 from app.schemas.roadmap_schema import (
     RoadmapUpdate,
@@ -24,9 +29,13 @@ from app.schemas.roadmap_schema import (
     RoadmapFeatureCreate,
     RoadmapFeatureUpdate,
     RoadmapAssignmentCreate,
+    RoadmapTagCreate,
+    RoadmapTagUpdate,
+    RoadmapCreate,
 )
 from app.services.project_service import project_service, ProjectService
 from app.services.organization_service import organization_service
+import re
 
 
 class RoadmapService:
@@ -35,36 +44,74 @@ class RoadmapService:
         roadmap_repo: RoadmapRepository = roadmap_repository,
         column_repo: RoadmapColumnRepository = roadmap_column_repository,
         feature_repo: RoadmapFeatureRepository = roadmap_feature_repository,
+        tag_repo: RoadmapTagRepository = roadmap_tag_repository,
+        feature_tag_repo: RoadmapFeatureTagRepository = roadmap_feature_tag_repository,
         project_serv: ProjectService = project_service,
     ):
         self.roadmap_repo = roadmap_repo
         self.column_repo = column_repo
         self.feature_repo = feature_repo
+        self.tag_repo = tag_repo
+        self.feature_tag_repo = feature_tag_repo
         self.project_serv = project_serv
 
-    async def get_or_create_roadmap(
+    async def get_roadmap_by_project_id(
         self, db: AsyncSession, user_id: UUID, project_id: UUID
-    ) -> Roadmap:
+    ) -> Optional[Roadmap]:
         await organization_service.check_project_access(db, user_id, project_id)
-        roadmap = await self.roadmap_repo.get_by_project_id(db, project_id=project_id)
-        if not roadmap:
-            new_roadmap = Roadmap(project_id=project_id)
-            roadmap_data = {
-                'project_id': new_roadmap.project_id,
-                'public_slug': new_roadmap.public_slug,
-            }
-            roadmap = await self.roadmap_repo.create(db, **roadmap_data)
+        return await self.roadmap_repo.get_by_project_id(db, project_id=project_id)
 
-            default_columns = ['Planned', 'In Progress', 'Launched']
-            for i, name in enumerate(default_columns):
-                col_data = {'roadmap_id': roadmap.id, 'name': name, 'order': i}
-                await self.column_repo.create(db, **col_data)
+    async def create_roadmap(
+        self, db: AsyncSession, user_id: UUID, roadmap_in: RoadmapCreate
+    ) -> Roadmap:
+        await organization_service.check_project_access(
+            db, user_id, roadmap_in.project_id, required_role='Admin'
+        )
 
-            roadmap = await self.roadmap_repo.get_by_project_id(
-                db, project_id=project_id
+        existing_roadmap = await self.roadmap_repo.get_by_project_id(
+            db, project_id=roadmap_in.project_id
+        )
+        if existing_roadmap:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail='A roadmap for this project already exists',
             )
 
-        return roadmap
+        new_roadmap = Roadmap(project_id=roadmap_in.project_id, name=roadmap_in.name)
+        roadmap_data = {
+            'project_id': new_roadmap.project_id,
+            'public_slug': new_roadmap.public_slug,
+            'name': new_roadmap.name,
+        }
+        created_roadmap = await self.roadmap_repo.create(db, **roadmap_data)
+
+        return await self.roadmap_repo.get_by_project_id(
+            db, project_id=created_roadmap.project_id
+        )
+
+    async def validate_subdomain_format(self, subdomain: str) -> bool:
+        if not subdomain:
+            return True
+
+        pattern = r'^[a-z0-9\-]+$'
+        return bool(re.match(pattern, subdomain))
+
+    async def check_subdomain_uniqueness(
+        self, db: AsyncSession, subdomain: str, roadmap_id: Optional[UUID] = None
+    ) -> bool:
+        if not subdomain:
+            return True
+
+        existing_roadmap = await self.roadmap_repo.get_by_subdomain(
+            db, subdomain=subdomain
+        )
+        if not existing_roadmap:
+            return True
+
+        if roadmap_id and existing_roadmap.id == roadmap_id:
+            return True
+
+        return False
 
     async def update_roadmap(
         self,
@@ -83,6 +130,21 @@ class RoadmapService:
         await organization_service.check_project_access(
             db, user_id, project_id, required_role='Admin'
         )
+
+        if roadmap_in.subdomain is not None:
+            if not await self.validate_subdomain_format(roadmap_in.subdomain):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail='Invalid subdomain format. Use only lowercase letters, numbers, and hyphens.',
+                )
+
+            if not await self.check_subdomain_uniqueness(
+                db, roadmap_in.subdomain, roadmap_id
+            ):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail='Subdomain is already in use',
+                )
 
         await self.roadmap_repo.update(
             db, id=roadmap_id, **roadmap_in.model_dump(exclude_unset=True)
@@ -106,6 +168,20 @@ class RoadmapService:
         if not roadmap:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail='Public roadmap not found'
+            )
+        return roadmap
+
+    async def get_public_roadmap_by_subdomain(
+        self, db: AsyncSession, subdomain: str
+    ) -> Roadmap:
+        roadmap = await self.roadmap_repo.get_by_subdomain(db, subdomain=subdomain)
+        if not roadmap:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail='Public roadmap not found'
+            )
+        if not roadmap.is_public:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail='Roadmap is not public'
             )
         return roadmap
 
@@ -180,7 +256,19 @@ class RoadmapService:
         await organization_service.check_project_access(
             db, user_id, roadmap.project_id, required_role='Admin'
         )
-        feature = await self.feature_repo.create(db, **feature_in.model_dump())
+
+        tag_ids = feature_in.tag_ids or []
+        feature_data = feature_in.model_dump(exclude={'tag_ids'})
+
+        feature = await self.feature_repo.create(db, **feature_data)
+
+        if tag_ids:
+            for tag_id in tag_ids:
+                await self.feature_tag_repo.add_tag_to_feature(
+                    db, feature_id=feature.id, tag_id=tag_id
+                )
+
+        feature = await self.feature_repo.get_with_tags(db, id=feature.id)
 
         # Dispatch webhook for new feature
         try:
@@ -216,13 +304,35 @@ class RoadmapService:
         await organization_service.check_project_access(
             db, user_id, roadmap.project_id, required_role='Admin'
         )
-        updated_fields = feature_in.model_dump(exclude_unset=True)
+
+        tag_ids = feature_in.tag_ids
+        updated_fields = feature_in.model_dump(exclude_unset=True, exclude={'tag_ids'})
+
         updated_feature = await self.feature_repo.update(
             db, id=feature_id, **updated_fields
         )
 
+        if tag_ids is not None:
+            current_tags = await self.feature_tag_repo.get_tags_for_feature(
+                db, feature_id
+            )
+            current_tag_ids = [tag.id for tag in current_tags]
+
+            for tag_id in current_tag_ids:
+                if tag_id not in tag_ids:
+                    await self.feature_tag_repo.remove_tag_from_feature(
+                        db, feature_id=feature_id, tag_id=tag_id
+                    )
+
+            for tag_id in tag_ids:
+                if tag_id not in current_tag_ids:
+                    await self.feature_tag_repo.add_tag_to_feature(
+                        db, feature_id=feature_id, tag_id=tag_id
+                    )
+
+        updated_feature = await self.feature_repo.get_with_tags(db, id=feature_id)
+
         if updated_feature:
-            # Dispatch webhook for updated feature
             try:
                 from app.services.webhook_dispatcher import webhook_dispatcher
 
@@ -390,6 +500,104 @@ class RoadmapService:
         await organization_service.check_project_access(db, user_id, roadmap.project_id)
 
         return await roadmap_assignment_repository.get_by_feature(db, feature_id)
+
+    async def create_tag(
+        self, db: AsyncSession, user_id: UUID, tag_in: RoadmapTagCreate
+    ) -> RoadmapTag:
+        roadmap = await self.roadmap_repo.get(db, id=tag_in.roadmap_id)
+        if not roadmap:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail='Roadmap not found'
+            )
+
+        await organization_service.check_project_access(
+            db, user_id, roadmap.project_id, required_role='Admin'
+        )
+
+        existing_tag = await self.tag_repo.get_by_name(
+            db, roadmap_id=tag_in.roadmap_id, name=tag_in.name
+        )
+        if existing_tag:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='A tag with this name already exists for this roadmap',
+            )
+
+        return await self.tag_repo.create(db, **tag_in.model_dump())
+
+    async def get_tags_by_roadmap(
+        self, db: AsyncSession, roadmap_id: UUID, user_id: Optional[UUID] = None
+    ) -> List[RoadmapTag]:
+        roadmap = await self.roadmap_repo.get(db, id=roadmap_id)
+        if not roadmap:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail='Roadmap not found'
+            )
+
+        if user_id:
+            await organization_service.check_project_access(
+                db, user_id, roadmap.project_id
+            )
+        elif not roadmap.is_public:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail='Roadmap is not public'
+            )
+
+        return await self.tag_repo.get_by_roadmap(db, roadmap_id=roadmap_id)
+
+    async def update_tag(
+        self, db: AsyncSession, user_id: UUID, tag_id: UUID, tag_in: RoadmapTagUpdate
+    ) -> RoadmapTag:
+        tag = await self.tag_repo.get(db, id=tag_id)
+        if not tag:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail='Tag not found'
+            )
+
+        roadmap = await self.roadmap_repo.get(db, id=tag.roadmap_id)
+        if not roadmap:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail='Roadmap not found'
+            )
+
+        await organization_service.check_project_access(
+            db, user_id, roadmap.project_id, required_role='Admin'
+        )
+
+        if tag_in.name and tag_in.name != tag.name:
+            existing_tag = await self.tag_repo.get_by_name(
+                db, roadmap_id=tag.roadmap_id, name=tag_in.name
+            )
+            if existing_tag:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail='A tag with this name already exists for this roadmap',
+                )
+
+        await self.tag_repo.update(
+            db, id=tag_id, **tag_in.model_dump(exclude_unset=True)
+        )
+
+        return await self.tag_repo.get(db, id=tag_id)
+
+    async def delete_tag(self, db: AsyncSession, user_id: UUID, tag_id: UUID) -> None:
+        tag = await self.tag_repo.get(db, id=tag_id)
+        if not tag:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail='Tag not found'
+            )
+
+        roadmap = await self.roadmap_repo.get(db, id=tag.roadmap_id)
+        if not roadmap:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail='Roadmap not found'
+            )
+
+        await organization_service.check_project_access(
+            db, user_id, roadmap.project_id, required_role='Admin'
+        )
+
+        await self.tag_repo.delete(db, id=tag_id)
 
 
 roadmap_service = RoadmapService()

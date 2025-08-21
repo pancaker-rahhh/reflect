@@ -1,6 +1,6 @@
 from typing import Any, List
 from uuid import UUID
-from fastapi import APIRouter, Depends, status, Query, Response
+from fastapi import APIRouter, Depends, status, Query, Response, HTTPException
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
@@ -160,9 +160,14 @@ async def get_project_roadmap(
     current_user: TokenData = Depends(get_current_token_data),
     service: RoadmapService = Depends(lambda: roadmap_service),
 ) -> Any:
-    return await service.get_or_create_roadmap(
+    roadmap = await service.get_roadmap_by_project_id(
         db, user_id=UUID(current_user.sub), project_id=project_id
     )
+    if not roadmap:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail='Roadmap not found'
+        )
+    return roadmap
 
 
 # Project Members endpoints

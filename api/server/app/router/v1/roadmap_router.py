@@ -9,12 +9,16 @@ from app.schemas.auth_schema import TokenData
 from app.schemas.roadmap_schema import (
     RoadmapRead,
     RoadmapUpdate,
+    RoadmapCreate,
     RoadmapColumnCreate,
     RoadmapColumnUpdate,
     RoadmapColumnRead,
     RoadmapFeatureCreate,
     RoadmapFeatureUpdate,
     RoadmapFeatureRead,
+    RoadmapTagCreate,
+    RoadmapTagUpdate,
+    RoadmapTagRead,
 )
 from app.services.roadmap_service import roadmap_service, RoadmapService
 
@@ -22,15 +26,17 @@ router = APIRouter()
 public_router = APIRouter()
 
 
-@router.get('/projects/{project_id}/roadmap', response_model=RoadmapRead)
-async def get_or_create_roadmap(
-    project_id: UUID,
+@router.post(
+    '/roadmaps', response_model=RoadmapRead, status_code=status.HTTP_201_CREATED
+)
+async def create_roadmap(
+    roadmap_in: RoadmapCreate,
     db: AsyncSession = Depends(get_db),
     current_user: TokenData = Depends(get_current_token_data),
     service: RoadmapService = Depends(lambda: roadmap_service),
 ) -> Any:
-    return await service.get_or_create_roadmap(
-        db, user_id=UUID(current_user.user_id), project_id=project_id
+    return await service.create_roadmap(
+        db, user_id=UUID(current_user.user_id), roadmap_in=roadmap_in
     )
 
 
@@ -88,6 +94,57 @@ async def delete_roadmap_column(
     await service.delete_column(
         db, user_id=UUID(current_user.user_id), column_id=column_id
     )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# --- Tag Endpoints ---
+@router.post(
+    '/tags', response_model=RoadmapTagRead, status_code=status.HTTP_201_CREATED
+)
+async def create_roadmap_tag(
+    tag_in: RoadmapTagCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: TokenData = Depends(get_current_token_data),
+    service: RoadmapService = Depends(lambda: roadmap_service),
+) -> Any:
+    return await service.create_tag(
+        db, user_id=UUID(current_user.user_id), tag_in=tag_in
+    )
+
+
+@router.get('/roadmaps/{roadmap_id}/tags', response_model=List[RoadmapTagRead])
+async def get_roadmap_tags(
+    roadmap_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: TokenData = Depends(get_current_token_data),
+    service: RoadmapService = Depends(lambda: roadmap_service),
+) -> Any:
+    return await service.get_tags_by_roadmap(
+        db, user_id=UUID(current_user.user_id), roadmap_id=roadmap_id
+    )
+
+
+@router.put('/tags/{tag_id}', response_model=RoadmapTagRead)
+async def update_roadmap_tag(
+    tag_id: UUID,
+    tag_in: RoadmapTagUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: TokenData = Depends(get_current_token_data),
+    service: RoadmapService = Depends(lambda: roadmap_service),
+) -> Any:
+    return await service.update_tag(
+        db, user_id=UUID(current_user.user_id), tag_id=tag_id, tag_in=tag_in
+    )
+
+
+@router.delete('/tags/{tag_id}', status_code=status.HTTP_204_NO_CONTENT)
+async def delete_roadmap_tag(
+    tag_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: TokenData = Depends(get_current_token_data),
+    service: RoadmapService = Depends(lambda: roadmap_service),
+):
+    await service.delete_tag(db, user_id=UUID(current_user.user_id), tag_id=tag_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -156,6 +213,25 @@ async def get_public_roadmap(
     service: RoadmapService = Depends(lambda: roadmap_service),
 ) -> Any:
     return await service.get_public_roadmap(db, public_slug=public_slug)
+
+
+@public_router.get('/r/{subdomain}', response_model=RoadmapRead)
+async def get_public_roadmap_by_subdomain(
+    subdomain: str,
+    db: AsyncSession = Depends(get_db),
+    service: RoadmapService = Depends(lambda: roadmap_service),
+) -> Any:
+    return await service.get_public_roadmap_by_subdomain(db, subdomain=subdomain)
+
+
+@public_router.get('/roadmaps/{roadmap_id}/tags', response_model=List[RoadmapTagRead])
+async def get_public_roadmap_tags(
+    roadmap_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    service: RoadmapService = Depends(lambda: roadmap_service),
+) -> Any:
+    # For public endpoints, pass None as user_id
+    return await service.get_tags_by_roadmap(db, user_id=None, roadmap_id=roadmap_id)
 
 
 @public_router.post('/features/{feature_id}/vote', response_model=RoadmapFeatureRead)
