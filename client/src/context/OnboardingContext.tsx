@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../contexts/AuthContext';
 import { onboardingApi } from '../lib/api';
+import { isFeatureEnabled } from '../lib/featureFlags';
 
 export type UserType = 'solo' | 'team';
 
@@ -80,6 +81,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const skipUserTypeSelection = isFeatureEnabled('SKIP_USER_TYPE_SELECTION');
   
   const [state, setState] = useState<OnboardingState>(() => {
     const savedState = localStorage.getItem(ONBOARDING_STORAGE_KEY);
@@ -95,10 +97,15 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
       }
     }
     
+    // If skipping user type selection, auto-set to solo
+    const initialUserType = skipUserTypeSelection ? 'solo' : null;
+    const initialStep = skipUserTypeSelection ? 'profile' : 'welcome';
+    const initialCompletedSteps = skipUserTypeSelection ? new Set(['welcome', 'user-type']) : new Set();
+    
     return {
-      currentStep: 'welcome',
-      userType: null,
-      completedSteps: new Set(),
+      currentStep: initialStep,
+      userType: initialUserType,
+      completedSteps: initialCompletedSteps,
       organizationId: null,
       projectId: null,
       isLoading: false,
