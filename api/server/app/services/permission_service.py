@@ -7,6 +7,7 @@ from sqlalchemy.orm import selectinload
 from app.models.organization_model import (
     Organization,
     OrganizationMember,
+    OrganizationRole,
     ProjectMember,
 )
 from app.models.project_model import Project
@@ -153,11 +154,11 @@ class PermissionService:
             return False
 
         # Owners can manage anyone
-        if manager_role == 'owner':
+        if manager_role == OrganizationRole.OWNER:
             return True
 
         # Admins can manage members and viewers
-        if manager_role == 'admin':
+        if manager_role == OrganizationRole.ADMIN:
             target_role = await self.get_user_role_in_organization(
                 target_user_id, organization_id, db
             )

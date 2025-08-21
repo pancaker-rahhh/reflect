@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from app.models.user_model import User
+from app.models.user_model import User, UserType
 from app.repositories.user_repository import user_repository
 from app.schemas.user_schema import (
     UserProfileUpdateRequest,
@@ -92,6 +92,9 @@ class UserService:
     async def sync_user_from_token(
         self, token_data: TokenData, db: AsyncSession
     ) -> UserProfileResponse:
+        from app.models.invitation import Invitation
+        from sqlalchemy import select, and_
+        
         user_exist = await user_repository.get(db, UUID(token_data.user_id))
 
         if user_exist:
@@ -114,6 +117,21 @@ class UserService:
                 )
             return profile
 
+        # Check if user was invited (has an accepted invitation)
+        stmt = select(Invitation).where(
+            and_(
+                Invitation.email == token_data.email.lower(),
+                Invitation.status == 'accepted',
+                Invitation.accepted_by == UUID(token_data.user_id)
+            )
+        )
+        result = await db.execute(stmt)
+        accepted_invitation = result.scalar_one_or_none()
+        
+        # Determine if user should skip onboarding
+        skip_onboarding = accepted_invitation is not None
+        user_type = UserType.TEAM if skip_onboarding else None
+        
         current_time = datetime.now(timezone.utc)
         user_data = {
             'id': UUID(token_data.user_id),
@@ -124,11 +142,14 @@ class UserService:
             'last_synced_at': current_time,
             'last_login_at': current_time,
             'first_login_at': current_time,  # Set first login time for new users
-            'onboarding_completed': False,  # New users need onboarding
-            'user_type': None,  # Will be set during onboarding
+            'onboarding_completed': skip_onboarding,  # Skip onboarding for invited users
+            'user_type': user_type,  # Set user type for invited users
         }
         await user_repository.create(db, **user_data)
-        logger.info(f'Created new user {token_data.user_id} from token sync')
+        logger.info(
+            f'Created new user {token_data.user_id} from token sync '
+            f'(invited: {skip_onboarding})'
+        )
 
         profile = await self.get_user_profile(UUID(token_data.user_id), db)
         if not profile:

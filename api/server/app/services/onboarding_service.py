@@ -8,7 +8,7 @@ from sqlalchemy.orm import joinedload
 from app.core.logging import get_logger
 from app.models.user_model import User
 from app.models.onboarding_model import UserOnboarding
-from app.models.organization_model import Organization, OrganizationMember
+from app.models.organization_model import Organization, OrganizationMember, OrganizationRole
 from app.schemas.onboarding_schema import (
     OnboardingStartRequest,
     OnboardingStartResponse,
@@ -333,7 +333,7 @@ class OnboardingService:
             member = OrganizationMember(
                 organization_id=organization.id,
                 user_id=user_id,
-                role='owner',
+                role=OrganizationRole.OWNER,
             )
             db.add(member)
 

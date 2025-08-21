@@ -3,7 +3,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.project_model import Project
-from app.models.organization_model import ProjectRole
+from app.models.organization_model import ProjectRole, OrganizationRole
 from app.repositories.project_repository import (
     project_repository,
     project_member_repository,
@@ -20,7 +20,7 @@ from app.schemas.project_schema import (
     ProjectMemberInviteRequest,
     ProjectMemberUpdate,
 )
-from app.core.exceptions import NotFoundError, ForbiddenError, ConflictError
+from app.core.exceptions import NotFoundError, ForbiddenError, ConflictError, ValidationError
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
@@ -72,7 +72,7 @@ class ProjectService:
         member = await _check_organization_access(
             db, user_id, project_in.organization_id
         )
-        if not member or member.role not in ['owner', 'admin']:
+        if not member or member.role not in [OrganizationRole.OWNER, OrganizationRole.ADMIN]:
             raise ForbiddenError('Only owners and admins can create projects')
 
         base_slug = Project().generate_slug(project_in.name)
@@ -108,7 +108,7 @@ class ProjectService:
         member = await organization_service.get_user_membership(
             project.organization_id, user_id, db
         )
-        if not member or member.role not in ['owner', 'admin']:
+        if not member or member.role not in [OrganizationRole.OWNER, OrganizationRole.ADMIN]:
             raise ForbiddenError('Only owners and admins can update projects')
 
         update_data = project_in.model_dump(exclude_unset=True)
@@ -135,7 +135,7 @@ class ProjectService:
         member = await organization_service.get_user_membership(
             project.organization_id, user_id, db
         )
-        if not member or member.role not in ['owner', 'admin']:
+        if not member or member.role not in [OrganizationRole.OWNER, OrganizationRole.ADMIN]:
             raise ForbiddenError('Only owners and admins can update project settings')
 
         update_data = settings_in.model_dump(exclude_unset=True)
@@ -157,7 +157,7 @@ class ProjectService:
         member = await organization_service.get_user_membership(
             project.organization_id, user_id, db
         )
-        if not member or member.role not in ['owner', 'admin']:
+        if not member or member.role not in [OrganizationRole.OWNER, OrganizationRole.ADMIN]:
             raise ForbiddenError('Only owners and admins can delete projects')
 
         return await self.repository.soft_delete(db, project_id)
@@ -203,37 +203,78 @@ class ProjectService:
         member = await organization_service.get_user_membership(
             project.organization_id, user_id, db
         )
-        if not member or member.role not in ['owner', 'admin']:
+        if not member or member.role not in [OrganizationRole.OWNER, OrganizationRole.ADMIN]:
             raise ForbiddenError('Only owners and admins can invite project members')
 
         invited_user = await user_repository.get_by_email(db, invite_data.email)
-        if not invited_user:
-            raise NotFoundError(
-                'User not found. User must be a registered member first.'
+        
+        if invited_user:
+            # User exists - check if already a member and add them
+            existing_member = await project_member_repository.get_member_by_project(
+                db, project_id, invited_user.id
+            )
+            if existing_member:
+                raise ConflictError('User is already a member of this project')
+
+            new_member = await project_member_repository.add_member(
+                db, project_id, invited_user.id, invite_data.role
             )
 
-        existing_member = await project_member_repository.get_member_by_project(
-            db, project_id, invited_user.id
-        )
-        if existing_member:
-            raise ConflictError('User is already a member of this project')
+            logger.info(f'Added existing user {invited_user.id} to project {project_id}')
 
-        new_member = await project_member_repository.add_member(
-            db, project_id, invited_user.id, invite_data.role
-        )
+            return ProjectMemberResponse(
+                id=new_member.id,
+                user_id=new_member.user_id,
+                project_id=new_member.project_id,
+                role=new_member.role,
+                created_at=new_member.created_at,
+                updated_at=new_member.updated_at,
+                user_name=invited_user.name,
+                user_email=invited_user.email,
+                is_pending=False,
+            )
+        else:
+            # User doesn't exist - create invitation for both org and project
+            from app.services.invitation_service import invitation_service
+            from app.schemas.invitation_schema import InvitationEntry
 
-        logger.info(f'Added user {invited_user.id} to project {project_id}')
+            if not invite_data.email or not invite_data.email.strip():
+                raise ValidationError('Email address is required')
 
-        return ProjectMemberResponse(
-            id=new_member.id,
-            user_id=new_member.user_id,
-            project_id=new_member.project_id,
-            role=new_member.role,
-            created_at=new_member.created_at,
-            updated_at=new_member.updated_at,
-            user_name=invited_user.name,
-            user_email=invited_user.email,
-        )
+            # Create invitation entry
+            invitation_entry = InvitationEntry(
+                email=invite_data.email.strip(),
+                role=invite_data.role,
+                name=None,  # We don't have the name yet
+            )
+
+            # Process the invitation for the project (this will create invitation for the org)
+            # But we also need to store that this user should be added to the specific project
+            result = await invitation_service._process_single_invitation(
+                user_id=user_id,
+                organization_id=project.organization_id,
+                invitation_entry=invitation_entry,
+                db=db,
+                project_id=project_id,  # Pass the project ID
+            )
+
+            if result.status != 'sent':
+                raise ValueError(f'Failed to send invitation: {result.error}')
+
+            logger.info(f'Created invitation for {invite_data.email} to project {project_id}')
+
+            # Return a pending member response
+            return ProjectMemberResponse(
+                id=None,  # No actual member ID yet
+                user_id=None,  # No user ID yet
+                project_id=project_id,
+                role=invite_data.role,
+                created_at=None,  # Will be set when invitation is accepted
+                updated_at=None,
+                user_name='Pending User',
+                user_email=invite_data.email,
+                is_pending=True,
+            )
 
     async def update_project_member(
         self,
@@ -247,7 +288,7 @@ class ProjectService:
         member = await organization_service.get_user_membership(
             project.organization_id, user_id, db
         )
-        if not member or member.role not in ['owner', 'admin']:
+        if not member or member.role not in [OrganizationRole.OWNER, OrganizationRole.ADMIN]:
             raise ForbiddenError('Only owners and admins can update project members')
 
         updated_member = await project_member_repository.update_member_role(
@@ -280,7 +321,7 @@ class ProjectService:
         member = await organization_service.get_user_membership(
             project.organization_id, user_id, db
         )
-        if not member or member.role not in ['owner', 'admin']:
+        if not member or member.role not in [OrganizationRole.OWNER, OrganizationRole.ADMIN]:
             raise ForbiddenError('Only owners and admins can remove project members')
 
         success = await project_member_repository.remove_member(

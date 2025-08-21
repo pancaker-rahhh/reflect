@@ -7,9 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
 
-from app.models.organization_model import OrganizationMember
+from app.models.organization_model import OrganizationMember, OrganizationRole
 from app.models.invitation import Invitation, PendingMember, InvitationTask
-from app.models.user_model import User
+from app.models.user_model import User, UserType
 from app.schemas.invitation_schema import (
     InvitationEntry,
     InvitationResult,
@@ -40,7 +40,7 @@ class InvitationService:
             and_(
                 OrganizationMember.organization_id == organization_id,
                 OrganizationMember.user_id == user_id,
-                OrganizationMember.role.in_(['owner', 'admin']),
+                OrganizationMember.role.in_([OrganizationRole.OWNER, OrganizationRole.ADMIN]),
             )
         )
         result = await db.execute(stmt)
@@ -135,6 +135,7 @@ class InvitationService:
         organization_id: Optional[UUID],
         invitation_entry: InvitationEntry,
         db: AsyncSession,
+        project_id: Optional[UUID] = None,
     ) -> InvitationResult:
         try:
             if not invitation_entry.email or not invitation_entry.email.strip():
@@ -189,6 +190,7 @@ class InvitationService:
                     email=email,
                     role=invitation_entry.role,
                     organization_id=organization_id,
+                    project_id=project_id,  # Add project_id support
                     invited_by=user_id,
                     token=token,
                     status='pending',
@@ -214,16 +216,22 @@ class InvitationService:
 
             await db.commit()
 
-            await self._send_invitation_email(
+            # Send invitation email and check if it succeeds
+            email_success = await self._send_invitation_email(
                 email=email,
                 token=token,
                 organization_id=organization_id,
                 role=invitation_entry.role,
             )
 
-            return InvitationResult(
-                email=email, status='sent', invitation_id=invitation_id
-            )
+            if email_success:
+                return InvitationResult(
+                    email=email, status='sent', invitation_id=invitation_id
+                )
+            else:
+                return InvitationResult(
+                    email=email, status='failed', invitation_id=invitation_id, error='Failed to send invitation email'
+                )
 
         except Exception as e:
             email_for_log = (
@@ -234,27 +242,34 @@ class InvitationService:
 
     async def _send_invitation_email(
         self, email: str, token: str, organization_id: Optional[UUID], role: str
-    ):
-        organization_name = 'Your Organization'
-        if organization_id:
-            from app.repositories.organization_repository import organization_repository
-            from app.db import AsyncSessionLocal
+    ) -> bool:
+        """Send invitation email and return True if successful, False otherwise"""
+        try:
+            organization_name = 'Your Organization'
+            if organization_id:
+                from app.repositories.organization_repository import organization_repository
+                from app.db import AsyncSessionLocal
 
-            async with AsyncSessionLocal() as temp_db:
-                organization = await organization_repository.get(
-                    temp_db, organization_id
-                )
-                if organization:
-                    organization_name = organization.name
+                async with AsyncSessionLocal() as temp_db:
+                    organization = await organization_repository.get(
+                        temp_db, organization_id
+                    )
+                    if organization:
+                        organization_name = organization.name
 
-        invite_url = f'{settings.FRONTEND_URL}/invite?token={token}'
+            invite_url = f'{settings.FRONTEND_URL}/invite?token={token}'
 
-        await email_service.send_invitation(
-            to_email=email,
-            invite_url=invite_url,
-            organization_name=organization_name,
-            role=role,
-        )
+            success = await email_service.send_invitation(
+                to_email=email,
+                invite_url=invite_url,
+                organization_name=organization_name,
+                role=role,
+            )
+            
+            return success
+        except Exception as e:
+            logger.error(f'Failed to send invitation email to {email}: {str(e)}')
+            return False
 
     async def _update_task_status(
         self,
@@ -273,7 +288,14 @@ class InvitationService:
             if status == 'completed':
                 task.completed_at = datetime.utcnow()
             if results:
-                task.results = [r.dict() for r in results]
+                # Convert UUIDs to strings for JSON serialization
+                task.results = []
+                for r in results:
+                    result_dict = r.dict()
+                    # Convert UUID to string if present
+                    if result_dict.get('invitation_id'):
+                        result_dict['invitation_id'] = str(result_dict['invitation_id'])
+                    task.results.append(result_dict)
             if error:
                 task.error = error
 
@@ -309,6 +331,13 @@ class InvitationService:
         if not task:
             return None
 
+        # Convert string UUIDs back to UUID objects when reading from JSON
+        results = []
+        for r in (task.results or []):
+            if r.get('invitation_id') and isinstance(r['invitation_id'], str):
+                r['invitation_id'] = UUID(r['invitation_id'])
+            results.append(InvitationResult(**r))
+        
         return InvitationStatusResponse(
             task_id=task.id,
             status=task.status,
@@ -316,7 +345,7 @@ class InvitationService:
             processed_count=task.processed_count or 0,
             success_count=task.success_count or 0,
             failed_count=task.failed_count or 0,
-            results=[InvitationResult(**r) for r in (task.results or [])],
+            results=results,
             created_at=task.created_at,
             completed_at=task.completed_at,
             error=task.error,
@@ -441,6 +470,12 @@ class InvitationService:
             user = result.scalar_one_or_none()
             if not user:
                 raise ValueError('User not found')
+            
+            # Ensure invited user skips onboarding
+            if not user.onboarding_completed:
+                user.onboarding_completed = True
+                user.user_type = user.user_type or UserType.TEAM
+                await db.flush()
         else:
             stmt = select(User).where(User.email == invitation.email.lower())
             result = await db.execute(stmt)
@@ -453,11 +488,26 @@ class InvitationService:
                 user = await self._create_user_from_invitation(
                     invitation=invitation, user_data=user_data, db=db
                 )
+            else:
+                # Existing user accepting invitation - ensure they skip onboarding
+                if not user.onboarding_completed:
+                    user.onboarding_completed = True
+                    user.user_type = user.user_type or UserType.TEAM
+                    await db.flush()
 
         if invitation.organization_id:
             await self._add_to_organization(
                 user_id=user.id,
                 organization_id=invitation.organization_id,
+                role=invitation.role,
+                db=db,
+            )
+
+        # If invitation is for a specific project, add user to that project too
+        if invitation.project_id:
+            await self._add_to_project(
+                user_id=user.id,
+                project_id=invitation.project_id,
                 role=invitation.role,
                 db=db,
             )
@@ -518,7 +568,7 @@ class InvitationService:
             phone=user_data.phone,
             avatar_url=user_data.avatar_url,
             onboarding_completed=True,  # Skip onboarding for invited users
-            user_type='team_member',
+            user_type=UserType.TEAM,
             first_login_at=datetime.utcnow(),
             last_login_at=datetime.utcnow(),
             created_at=datetime.utcnow(),
@@ -554,6 +604,32 @@ class InvitationService:
             db.add(member)
             logger.info(
                 f'Added user {user_id} to organization {organization_id} with role {role}'
+            )
+
+    async def _add_to_project(
+        self, user_id: UUID, project_id: UUID, role: str, db: AsyncSession
+    ) -> None:
+        from app.models.organization_model import ProjectMember
+        from app.repositories.project_repository import project_member_repository
+
+        # Check if user is already a project member
+        existing_member = await project_member_repository.get_member_by_project(
+            db, project_id, user_id
+        )
+
+        if not existing_member:
+            # Add user to project
+            project_member = ProjectMember(
+                id=uuid4(),
+                project_id=project_id,
+                user_id=user_id,
+                role=role,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow(),
+            )
+            db.add(project_member)
+            logger.info(
+                f'Added user {user_id} to project {project_id} with role {role}'
             )
 
 
