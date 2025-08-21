@@ -171,10 +171,18 @@ export function RoadmapPage() {
     },
   })
 
+  // Add loading state for drag operations
+  const isMovingFeature = updateFeatureOrderMutation.isPending
+
   const handleDragStart = (e: React.DragEvent, featureId: string, sourceColumnId: string) => {
     setDraggedItem({ featureId, sourceColumnId })
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('text/plain', featureId)
+
+    // Add visual feedback
+    if (e.target instanceof HTMLElement) {
+      e.target.style.transform = 'rotate(2deg) scale(1.05)'
+    }
   }
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -200,6 +208,11 @@ export function RoadmapPage() {
     e.preventDefault()
     e.stopPropagation()
     setDragOverColumn(null)
+
+    // Reset drag visual feedback
+    if (e.target instanceof HTMLElement) {
+      e.target.style.transform = ''
+    }
 
     if (draggedItem && draggedItem.sourceColumnId !== targetColumnId && roadmap) {
       const sourceColumn = roadmap.columns.find((col) => col.id === draggedItem.sourceColumnId)
@@ -237,6 +250,15 @@ export function RoadmapPage() {
   const handleDragEnd = () => {
     setDraggedItem(null)
     setDragOverColumn(null)
+
+    // Reset any remaining drag visual feedback
+    const draggedElements = document.querySelectorAll('[data-dragging="true"]')
+    draggedElements.forEach((el) => {
+      if (el instanceof HTMLElement) {
+        el.style.transform = ''
+        el.removeAttribute('data-dragging')
+      }
+    })
   }
 
   const toggleTag = (tagId: string) => {
@@ -280,7 +302,7 @@ export function RoadmapPage() {
 
   const scrollToColumn = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
-      const scrollAmount = 320 // Column width + gap
+      const scrollAmount = 512 // Column width (320) + gap (64) + padding adjustments (128)
       const currentScroll = scrollContainerRef.current.scrollLeft
       const newScroll =
         direction === 'left' ? currentScroll - scrollAmount : currentScroll + scrollAmount
@@ -374,8 +396,58 @@ export function RoadmapPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[600px]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="space-y-6">
+        {/* Enhanced loading header skeleton with shimmer */}
+        <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-background via-muted/20 to-background p-6 border border-border/50">
+          <div className="h-8 w-64 bg-muted/50 rounded animate-pulse mb-2" />
+          <div className="h-5 w-96 bg-muted/30 rounded animate-pulse" />
+          <div className="absolute inset-0 loading-shimmer opacity-20" />
+        </div>
+
+        {/* Enhanced loading columns skeleton with staggered animations */}
+        <div className="relative">
+          <div className="flex gap-6 overflow-x-auto pb-6 px-20 -mx-20">
+            {[1, 2, 3, 4].map((index) => (
+              <div
+                key={index}
+                className="flex-shrink-0 w-80 bg-muted/20 rounded-xl border border-border/50 p-4 animate-in slide-in-from-left-2 duration-500"
+                style={{ animationDelay: `${index * 150}ms` }}
+              >
+                {/* Column header skeleton */}
+                <div className="flex items-center justify-between mb-6 pb-3 border-b border-border/30">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 bg-muted/50 rounded-full animate-pulse" />
+                    <div className="h-5 w-24 bg-muted/50 rounded loading-shimmer" />
+                    <div className="h-5 w-8 bg-muted/30 rounded loading-shimmer" />
+                  </div>
+                  <div className="w-8 h-8 bg-muted/30 rounded loading-shimmer" />
+                </div>
+
+                {/* Enhanced cards skeleton with shimmer */}
+                <div className="space-y-4">
+                  {[1, 2, 3].map((cardIndex) => (
+                    <div
+                      key={cardIndex}
+                      className="bg-muted/30 rounded-lg p-4 space-y-3 animate-in slide-in-from-top-2 duration-300"
+                      style={{ animationDelay: `${index * 150 + cardIndex * 100}ms` }}
+                    >
+                      <div className="h-4 w-3/4 bg-muted/50 rounded loading-shimmer" />
+                      <div className="h-3 w-full bg-muted/40 rounded loading-shimmer" />
+                      <div className="h-3 w-2/3 bg-muted/40 rounded loading-shimmer" />
+                      <div className="flex justify-between items-center pt-2 border-t border-border/20">
+                        <div className="flex items-center gap-2">
+                          <div className="w-5 h-5 bg-muted/50 rounded-full loading-shimmer" />
+                          <div className="h-3 w-16 bg-muted/40 rounded loading-shimmer" />
+                        </div>
+                        <div className="h-3 w-8 bg-muted/40 rounded loading-shimmer" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     )
   }
@@ -423,27 +495,42 @@ export function RoadmapPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">{roadmap.name || 'Product Roadmap'}</h1>
-          <p className="text-muted-foreground mt-2">
-            Plan and track your product development progress
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {publicUrl && (
-            <Button variant="outline" asChild>
-              <a href={publicUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                View Public Roadmap
-              </a>
+      {/* Enhanced header with subtle background */}
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-background via-muted/20 to-background p-6 border border-border/50">
+        <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]" />
+        <div className="relative flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+              {roadmap.name || 'Product Roadmap'}
+            </h1>
+            <p className="text-muted-foreground mt-2 text-lg">
+              Plan and track your product development progress
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {publicUrl && (
+              <Button
+                variant="outline"
+                asChild
+                className="hover:bg-primary/5 hover:border-primary/30 transition-colors"
+              >
+                <a href={publicUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  View Public Roadmap
+                </a>
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="icon"
+              asChild
+              className="hover:bg-primary/5 hover:border-primary/30 transition-colors"
+            >
+              <Link to="/settings/roadmap">
+                <Settings className="h-4 w-4" />
+              </Link>
             </Button>
-          )}
-          <Button variant="outline" size="icon" asChild>
-            <Link to="/settings/roadmap">
-              <Settings className="h-4 w-4" />
-            </Link>
-          </Button>
+          </div>
         </div>
       </div>
 
@@ -552,102 +639,163 @@ export function RoadmapPage() {
       </Dialog>
 
       <div className="relative">
-        {/* Navigation Buttons */}
+        {/* Enhanced navigation buttons with better positioning and animations */}
         <Button
           variant="outline"
           size="icon"
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 shadow-lg"
+          className="absolute -left-12 top-1/2 -translate-y-1/2 z-20 shadow-lg bg-background/95 backdrop-blur-sm border-2 hover:bg-background hover:scale-110 transition-all duration-300 btn-interactive group"
           onClick={() => scrollToColumn('left')}
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
         </Button>
 
         <Button
           variant="outline"
           size="icon"
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 shadow-lg"
+          className="absolute -right-12 top-1/2 -translate-y-1/2 z-20 shadow-lg bg-background/95 backdrop-blur-sm border-2 hover:bg-background hover:scale-110 transition-all duration-300 btn-interactive group"
           onClick={() => scrollToColumn('right')}
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
         </Button>
 
-        {/* Kanban Board */}
-        <div
-          ref={scrollContainerRef}
-          className="overflow-x-auto pb-4 px-12 -mx-12 scrollbar-hide"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          <div className="flex gap-4 min-w-max px-12">
-            {roadmap.columns.map((column) => {
-              const columnFeatures = getFeaturesByColumn(column.id)
+        {/* Kanban Board with enhanced container and smooth scrolling */}
+        <div className="relative">
+          <div
+            ref={scrollContainerRef}
+            className="overflow-x-auto pb-6 px-32 -mx-32 scrollbar-hide smooth-scroll-x"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            <div className="flex gap-6 min-w-max px-32">
+              {roadmap.columns.map((column, columnIndex) => {
+                const columnFeatures = getFeaturesByColumn(column.id)
 
-              return (
-                <div
-                  key={column.id}
-                  className={cn(
-                    'flex-shrink-0 w-80 bg-muted/30 rounded-lg p-4 transition-colors',
-                    dragOverColumn === column.id && 'ring-2 ring-primary ring-offset-2'
-                  )}
-                  onDragOver={handleDragOver}
-                  onDragEnter={(e) => handleDragEnter(e, column.id)}
-                  onDragLeave={handleDragLeave}
-                  onDrop={(e) => handleDrop(e, column.id)}
-                >
-                  {/* Column Header */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: column.color }}
-                      />
-                      <h3 className="font-semibold">{column.name}</h3>
-                      <Badge variant="secondary" className="text-xs">
-                        {columnFeatures.length}
-                      </Badge>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleOpenAddFeatureModal(column)}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  {/* Feature Cards */}
-                  <div className="space-y-3">
-                    {/* Feature Cards */}
-                    {columnFeatures.map((feature) => (
-                      <RoadmapCard
-                        key={feature.id}
-                        feature={feature}
-                        columnId={column.id}
-                        roadmapId={roadmap.id}
-                        columns={roadmap.columns}
-                        onDragStart={handleDragStart}
-                        onDragEnd={handleDragEnd}
-                        isDragged={draggedItem?.featureId === feature.id}
-                      />
-                    ))}
-
-                    {/* Empty State */}
-                    {columnFeatures.length === 0 && (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <p className="text-sm">No features yet</p>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          onClick={() => handleOpenAddFeatureModal(column)}
-                          className="mt-2"
-                        >
-                          Add first feature
-                        </Button>
-                      </div>
+                return (
+                  <div
+                    key={column.id}
+                    className={cn(
+                      'flex-shrink-0 w-80 bg-gradient-to-b from-background via-card/50 to-muted/20 rounded-xl border border-border/50 shadow-sm transition-all duration-500 ease-out hover:shadow-md hover:border-border/70 scroll-snap-start',
+                      dragOverColumn === column.id &&
+                        'ring-2 ring-primary/60 ring-offset-2 shadow-lg scale-[1.02] bg-gradient-to-b from-primary/5 via-primary/10 to-primary/5',
+                      'animate-in slide-in-from-left-2 duration-700 hover-lift',
+                      columnIndex > 0 && 'delay-[calc(var(--index)*150ms)]'
                     )}
+                    style={
+                      {
+                        '--index': columnIndex,
+                        animationDelay: `${columnIndex * 150}ms`,
+                      } as React.CSSProperties
+                    }
+                    onDragOver={handleDragOver}
+                    onDragEnter={(e) => handleDragEnter(e, column.id)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, column.id)}
+                  >
+                    {/* Enhanced Column Header with better animations */}
+                    <div className="flex items-center justify-between mb-6 p-4 pb-3 border-b border-border/30">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full shadow-sm animate-pulse"
+                            style={{ backgroundColor: column.color }}
+                          />
+                          <h3 className="font-semibold text-base text-foreground text-transition">
+                            {column.name}
+                          </h3>
+                        </div>
+                        <Badge
+                          variant="secondary"
+                          className="text-xs font-medium px-2 py-1 bg-primary/10 text-primary border-primary/20 animate-in zoom-in-50 duration-300 hover:scale-105 transition-transform duration-200"
+                          style={{ animationDelay: `${columnIndex * 150 + 200}ms` }}
+                        >
+                          {columnFeatures.length}
+                        </Badge>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 hover:scale-110 btn-interactive"
+                        onClick={() => handleOpenAddFeatureModal(column)}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    {/* Feature Cards */}
+                    <div className="space-y-4 px-4 pb-4">
+                      {/* Loading indicator when moving features */}
+                      {isMovingFeature && (
+                        <div className="flex items-center justify-center py-4 text-muted-foreground animate-in fade-in-50 duration-200">
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          <span className="text-xs">Moving feature...</span>
+                        </div>
+                      )}
+
+                      {/* Feature Cards with enhanced staggered loading */}
+                      {columnFeatures.map((feature, featureIndex) => (
+                        <div
+                          key={feature.id}
+                          className="animate-in slide-in-from-top-2 duration-500 ease-out"
+                          style={{
+                            animationDelay: `${columnIndex * 150 + featureIndex * 100 + 300}ms`,
+                          }}
+                        >
+                          <RoadmapCard
+                            feature={feature}
+                            columnId={column.id}
+                            roadmapId={roadmap.id}
+                            columns={roadmap.columns}
+                            onDragStart={handleDragStart}
+                            onDragEnd={handleDragEnd}
+                            isDragged={draggedItem?.featureId === feature.id}
+                          />
+                        </div>
+                      ))}
+
+                      {/* Enhanced Empty State with better animations */}
+                      {columnFeatures.length === 0 && (
+                        <div
+                          className="text-center py-12 text-muted-foreground border-2 border-dashed border-border/50 rounded-lg bg-gradient-to-br from-muted/20 via-muted/10 to-muted/30 animate-in fade-in-50 duration-700"
+                          style={{ animationDelay: `${columnIndex * 150 + 500}ms` }}
+                        >
+                          {/* Floating icon with subtle animation */}
+                          <div className="p-4 bg-muted/40 rounded-full w-fit mx-auto mb-4 animate-in zoom-in-50 duration-500 animate-float">
+                            <Plus className="h-6 w-6 text-muted-foreground" />
+                          </div>
+
+                          {/* Staggered text animations */}
+                          <div className="space-y-2 mb-4">
+                            <p
+                              className="text-sm font-medium animate-in slide-in-from-top-2 duration-300"
+                              style={{ animationDelay: `${columnIndex * 150 + 700}ms` }}
+                            >
+                              No features yet
+                            </p>
+                            <p
+                              className="text-xs text-muted-foreground animate-in slide-in-from-top-2 duration-300"
+                              style={{ animationDelay: `${columnIndex * 150 + 800}ms` }}
+                            >
+                              Get started by adding your first feature
+                            </p>
+                          </div>
+
+                          {/* Enhanced button with hover effects */}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenAddFeatureModal(column)}
+                            className="text-xs hover:bg-primary/5 hover:border-primary/30 transition-all duration-300 hover:scale-105 hover:shadow-md animate-in slide-in-from-top-2 duration-300 btn-interactive"
+                            style={{ animationDelay: `${columnIndex * 150 + 900}ms` }}
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            Add first feature
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
         </div>
       </div>
