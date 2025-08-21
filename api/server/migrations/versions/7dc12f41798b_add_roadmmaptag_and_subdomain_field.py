@@ -1,11 +1,10 @@
-"""Complete MVP schema with all tables and relationships
+"""Add RoadmmapTag and subdomain field
 
-Revision ID: e436f1776c02
+Revision ID: 7dc12f41798b
 Revises:
-Create Date: 2025-08-12 01:55:38.545767
+Create Date: 2025-08-20 21:04:04.884818
 
 """
-
 from typing import Sequence, Union
 
 from alembic import op
@@ -13,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'e436f1776c02'
+revision: str = '7dc12f41798b'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -34,10 +33,8 @@ def upgrade() -> None:
         sa.Column('email_verified_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('last_login_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('first_login_at', sa.DateTime(timezone=True), nullable=True),
-        sa.Column(
-            'onboarding_completed', sa.Boolean(), nullable=False, server_default='false'
-        ),
-        sa.Column('user_type', sa.Enum('solo', 'team', name='usertype'), nullable=True),
+        sa.Column('onboarding_completed', sa.Boolean(), nullable=False),
+        sa.Column('user_type', sa.Enum('SOLO', 'TEAM', name='usertype'), nullable=True),
         sa.Column(
             'user_metadata', postgresql.JSON(astext_type=sa.Text()), nullable=False
         ),
@@ -64,61 +61,6 @@ def upgrade() -> None:
     op.create_index(op.f('ix_users_deleted_at'), 'users', ['deleted_at'], unique=False)
     op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
     op.create_index(op.f('ix_users_updated_at'), 'users', ['updated_at'], unique=False)
-    op.create_table(
-        'organizations',
-        sa.Column('name', sa.String(length=255), nullable=False),
-        sa.Column('slug', sa.String(length=100), nullable=False),
-        sa.Column('description', sa.String(), nullable=True),
-        sa.Column(
-            'subscription_tier',
-            sa.String(length=50),
-            nullable=False,
-            server_default='free',
-        ),
-        sa.Column('settings', postgresql.JSON(astext_type=sa.Text()), nullable=False),
-        sa.Column('created_by', sa.UUID(), nullable=True),
-        sa.Column('id', sa.UUID(), nullable=False),
-        sa.Column(
-            'created_at',
-            sa.DateTime(timezone=True),
-            server_default=sa.text('now()'),
-            nullable=False,
-        ),
-        sa.Column(
-            'updated_at',
-            sa.DateTime(timezone=True),
-            server_default=sa.text('now()'),
-            nullable=False,
-        ),
-        sa.Column('deleted_at', sa.DateTime(timezone=True), nullable=True),
-        sa.ForeignKeyConstraint(
-            ['created_by'],
-            ['users.id'],
-        ),
-        sa.PrimaryKeyConstraint('id'),
-    )
-    op.create_index(
-        op.f('ix_organizations_created_at'),
-        'organizations',
-        ['created_at'],
-        unique=False,
-    )
-    op.create_index(
-        op.f('ix_organizations_deleted_at'),
-        'organizations',
-        ['deleted_at'],
-        unique=False,
-    )
-    op.create_index(op.f('ix_organizations_id'), 'organizations', ['id'], unique=False)
-    op.create_index(
-        op.f('ix_organizations_slug'), 'organizations', ['slug'], unique=True
-    )
-    op.create_index(
-        op.f('ix_organizations_updated_at'),
-        'organizations',
-        ['updated_at'],
-        unique=False,
-    )
     op.create_table(
         'notifications',
         sa.Column('user_id', sa.UUID(), nullable=False),
@@ -169,6 +111,155 @@ def upgrade() -> None:
     )
     op.create_index(
         op.f('ix_notifications_user_id'), 'notifications', ['user_id'], unique=False
+    )
+    op.create_table(
+        'organizations',
+        sa.Column('name', sa.String(length=255), nullable=False),
+        sa.Column('slug', sa.String(length=100), nullable=False),
+        sa.Column('description', sa.String(length=500), nullable=True),
+        sa.Column('subscription_tier', sa.String(length=50), nullable=False),
+        sa.Column('settings', postgresql.JSON(astext_type=sa.Text()), nullable=False),
+        sa.Column('created_by', sa.UUID(), nullable=True),
+        sa.Column('id', sa.UUID(), nullable=False),
+        sa.Column(
+            'created_at',
+            sa.DateTime(timezone=True),
+            server_default=sa.text('now()'),
+            nullable=False,
+        ),
+        sa.Column(
+            'updated_at',
+            sa.DateTime(timezone=True),
+            server_default=sa.text('now()'),
+            nullable=False,
+        ),
+        sa.Column('deleted_at', sa.DateTime(timezone=True), nullable=True),
+        sa.ForeignKeyConstraint(['created_by'], ['users.id'], ondelete='SET NULL'),
+        sa.PrimaryKeyConstraint('id'),
+    )
+    op.create_index(
+        op.f('ix_organizations_created_at'),
+        'organizations',
+        ['created_at'],
+        unique=False,
+    )
+    op.create_index(
+        op.f('ix_organizations_created_by'),
+        'organizations',
+        ['created_by'],
+        unique=False,
+    )
+    op.create_index(
+        op.f('ix_organizations_deleted_at'),
+        'organizations',
+        ['deleted_at'],
+        unique=False,
+    )
+    op.create_index(op.f('ix_organizations_id'), 'organizations', ['id'], unique=False)
+    op.create_index(
+        op.f('ix_organizations_slug'), 'organizations', ['slug'], unique=True
+    )
+    op.create_index(
+        op.f('ix_organizations_updated_at'),
+        'organizations',
+        ['updated_at'],
+        unique=False,
+    )
+    op.create_table(
+        'user_onboarding',
+        sa.Column('user_id', sa.UUID(), nullable=False),
+        sa.Column('has_created_project', sa.Boolean(), nullable=False),
+        sa.Column('has_created_widget', sa.Boolean(), nullable=False),
+        sa.Column('has_received_first_feedback', sa.Boolean(), nullable=False),
+        sa.Column('company_size', sa.String(length=50), nullable=True),
+        sa.Column('use_case', sa.String(length=100), nullable=True),
+        sa.Column('id', sa.UUID(), nullable=False),
+        sa.Column(
+            'created_at',
+            sa.DateTime(timezone=True),
+            server_default=sa.text('now()'),
+            nullable=False,
+        ),
+        sa.Column(
+            'updated_at',
+            sa.DateTime(timezone=True),
+            server_default=sa.text('now()'),
+            nullable=False,
+        ),
+        sa.Column('deleted_at', sa.DateTime(timezone=True), nullable=True),
+        sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
+        sa.PrimaryKeyConstraint('id'),
+    )
+    op.create_index(
+        op.f('ix_user_onboarding_created_at'),
+        'user_onboarding',
+        ['created_at'],
+        unique=False,
+    )
+    op.create_index(
+        op.f('ix_user_onboarding_deleted_at'),
+        'user_onboarding',
+        ['deleted_at'],
+        unique=False,
+    )
+    op.create_index(
+        op.f('ix_user_onboarding_id'), 'user_onboarding', ['id'], unique=False
+    )
+    op.create_index(
+        op.f('ix_user_onboarding_updated_at'),
+        'user_onboarding',
+        ['updated_at'],
+        unique=False,
+    )
+    op.create_index(
+        op.f('ix_user_onboarding_user_id'), 'user_onboarding', ['user_id'], unique=True
+    )
+    op.create_table(
+        'invitation_tasks',
+        sa.Column('id', sa.String(), nullable=False),
+        sa.Column('user_id', sa.UUID(), nullable=False),
+        sa.Column('organization_id', sa.UUID(), nullable=True),
+        sa.Column('total_count', sa.Integer(), nullable=False),
+        sa.Column('processed_count', sa.Integer(), nullable=True),
+        sa.Column('success_count', sa.Integer(), nullable=True),
+        sa.Column('failed_count', sa.Integer(), nullable=True),
+        sa.Column(
+            'status',
+            sa.Enum('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', name='taskstatus'),
+            nullable=False,
+        ),
+        sa.Column('results', sa.JSON(), nullable=True),
+        sa.Column('error', sa.String(), nullable=True),
+        sa.Column('completed_at', sa.DateTime(), nullable=True),
+        sa.Column(
+            'created_at',
+            sa.DateTime(timezone=True),
+            server_default=sa.text('now()'),
+            nullable=False,
+        ),
+        sa.Column(
+            'updated_at',
+            sa.DateTime(timezone=True),
+            server_default=sa.text('now()'),
+            nullable=False,
+        ),
+        sa.ForeignKeyConstraint(
+            ['organization_id'], ['organizations.id'], ondelete='CASCADE'
+        ),
+        sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
+        sa.PrimaryKeyConstraint('id'),
+    )
+    op.create_index(
+        op.f('ix_invitation_tasks_created_at'),
+        'invitation_tasks',
+        ['created_at'],
+        unique=False,
+    )
+    op.create_index(
+        op.f('ix_invitation_tasks_updated_at'),
+        'invitation_tasks',
+        ['updated_at'],
+        unique=False,
     )
     op.create_table(
         'organization_members',
@@ -288,58 +379,10 @@ def upgrade() -> None:
         op.f('ix_projects_updated_at'), 'projects', ['updated_at'], unique=False
     )
     op.create_table(
-        'user_onboarding',
-        sa.Column('user_id', sa.UUID(), nullable=False),
-        sa.Column('has_created_project', sa.Boolean(), nullable=False),
-        sa.Column('has_created_widget', sa.Boolean(), nullable=False),
-        sa.Column('has_received_first_feedback', sa.Boolean(), nullable=False),
-        sa.Column('company_size', sa.String(length=50), nullable=True),
-        sa.Column('use_case', sa.String(length=100), nullable=True),
-        sa.Column('id', sa.UUID(), nullable=False),
-        sa.Column(
-            'created_at',
-            sa.DateTime(timezone=True),
-            server_default=sa.text('now()'),
-            nullable=False,
-        ),
-        sa.Column(
-            'updated_at',
-            sa.DateTime(timezone=True),
-            server_default=sa.text('now()'),
-            nullable=False,
-        ),
-        sa.Column('deleted_at', sa.DateTime(timezone=True), nullable=True),
-        sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
-        sa.PrimaryKeyConstraint('id'),
-    )
-    op.create_index(
-        op.f('ix_user_onboarding_created_at'),
-        'user_onboarding',
-        ['created_at'],
-        unique=False,
-    )
-    op.create_index(
-        op.f('ix_user_onboarding_deleted_at'),
-        'user_onboarding',
-        ['deleted_at'],
-        unique=False,
-    )
-    op.create_index(
-        op.f('ix_user_onboarding_id'), 'user_onboarding', ['id'], unique=False
-    )
-    op.create_index(
-        op.f('ix_user_onboarding_updated_at'),
-        'user_onboarding',
-        ['updated_at'],
-        unique=False,
-    )
-    op.create_index(
-        op.f('ix_user_onboarding_user_id'), 'user_onboarding', ['user_id'], unique=True
-    )
-    op.create_table(
         'feedback_forms',
         sa.Column('project_id', sa.UUID(), nullable=False),
         sa.Column('name', sa.String(length=255), nullable=False),
+        sa.Column('form_type', sa.String(length=50), nullable=False),
         sa.Column('description', sa.String(), nullable=True),
         sa.Column('is_active', sa.Boolean(), nullable=False),
         sa.Column('config', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
@@ -384,11 +427,32 @@ def upgrade() -> None:
     op.create_table(
         'integrations',
         sa.Column('project_id', sa.UUID(), nullable=False),
-        sa.Column('type', sa.String(length=50), nullable=False),
         sa.Column('name', sa.String(length=255), nullable=False),
+        sa.Column(
+            'integration_type',
+            sa.Enum(
+                'JIRA',
+                'GITHUB',
+                'LINEAR',
+                'SLACK',
+                'DISCORD',
+                'WEBHOOK',
+                name='integrationtype',
+            ),
+            nullable=False,
+        ),
+        sa.Column(
+            'status',
+            sa.Enum('ACTIVE', 'INACTIVE', 'ERROR', 'PENDING', name='integrationstatus'),
+            nullable=False,
+        ),
         sa.Column('config', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
+        sa.Column('auth_data', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column('is_active', sa.Boolean(), nullable=False),
+        sa.Column('sync_enabled', sa.Boolean(), nullable=False),
         sa.Column('last_sync_at', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('error_message', sa.Text(), nullable=True),
+        sa.Column('created_by', sa.UUID(), nullable=False),
         sa.Column('id', sa.UUID(), nullable=False),
         sa.Column(
             'created_at',
@@ -403,6 +467,10 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column('deleted_at', sa.DateTime(timezone=True), nullable=True),
+        sa.ForeignKeyConstraint(
+            ['created_by'],
+            ['users.id'],
+        ),
         sa.ForeignKeyConstraint(['project_id'], ['projects.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id'),
     )
@@ -418,6 +486,60 @@ def upgrade() -> None:
     )
     op.create_index(
         op.f('ix_integrations_updated_at'), 'integrations', ['updated_at'], unique=False
+    )
+    op.create_table(
+        'invitations',
+        sa.Column('email', sa.String(), nullable=False),
+        sa.Column('role', sa.String(), nullable=False),
+        sa.Column('organization_id', sa.UUID(), nullable=True),
+        sa.Column('project_id', sa.UUID(), nullable=True),
+        sa.Column('invited_by', sa.UUID(), nullable=False),
+        sa.Column('token', sa.String(), nullable=False),
+        sa.Column(
+            'status',
+            sa.Enum(
+                'PENDING', 'ACCEPTED', 'EXPIRED', 'CANCELLED', name='invitationstatus'
+            ),
+            nullable=False,
+        ),
+        sa.Column('expires_at', sa.DateTime(), nullable=False),
+        sa.Column('accepted_at', sa.DateTime(), nullable=True),
+        sa.Column('accepted_by', sa.UUID(), nullable=True),
+        sa.Column('id', sa.UUID(), nullable=False),
+        sa.Column(
+            'created_at',
+            sa.DateTime(timezone=True),
+            server_default=sa.text('now()'),
+            nullable=False,
+        ),
+        sa.Column(
+            'updated_at',
+            sa.DateTime(timezone=True),
+            server_default=sa.text('now()'),
+            nullable=False,
+        ),
+        sa.Column('deleted_at', sa.DateTime(timezone=True), nullable=True),
+        sa.ForeignKeyConstraint(['accepted_by'], ['users.id'], ondelete='SET NULL'),
+        sa.ForeignKeyConstraint(['invited_by'], ['users.id'], ondelete='SET NULL'),
+        sa.ForeignKeyConstraint(
+            ['organization_id'], ['organizations.id'], ondelete='CASCADE'
+        ),
+        sa.ForeignKeyConstraint(['project_id'], ['projects.id'], ondelete='CASCADE'),
+        sa.PrimaryKeyConstraint('id'),
+    )
+    op.create_index(
+        op.f('ix_invitations_created_at'), 'invitations', ['created_at'], unique=False
+    )
+    op.create_index(
+        op.f('ix_invitations_deleted_at'), 'invitations', ['deleted_at'], unique=False
+    )
+    op.create_index(
+        op.f('ix_invitations_email'), 'invitations', ['email'], unique=False
+    )
+    op.create_index(op.f('ix_invitations_id'), 'invitations', ['id'], unique=False)
+    op.create_index(op.f('ix_invitations_token'), 'invitations', ['token'], unique=True)
+    op.create_index(
+        op.f('ix_invitations_updated_at'), 'invitations', ['updated_at'], unique=False
     )
     op.create_table(
         'project_members',
@@ -483,6 +605,8 @@ def upgrade() -> None:
         sa.Column('name', sa.String(length=255), nullable=False),
         sa.Column('is_public', sa.Boolean(), nullable=False),
         sa.Column('public_slug', sa.String(length=100), nullable=False),
+        sa.Column('subdomain', sa.String(length=100), nullable=True),
+        sa.Column('logo_url', sa.Text(), nullable=True),
         sa.Column('id', sa.UUID(), nullable=False),
         sa.Column(
             'created_at',
@@ -514,15 +638,30 @@ def upgrade() -> None:
         op.f('ix_roadmaps_public_slug'), 'roadmaps', ['public_slug'], unique=True
     )
     op.create_index(
+        op.f('ix_roadmaps_subdomain'), 'roadmaps', ['subdomain'], unique=True
+    )
+    op.create_index(
         op.f('ix_roadmaps_updated_at'), 'roadmaps', ['updated_at'], unique=False
     )
     op.create_table(
         'webhooks',
         sa.Column('project_id', sa.UUID(), nullable=False),
         sa.Column('name', sa.String(length=255), nullable=False),
-        sa.Column('url', sa.Text(), nullable=False),
-        sa.Column('events', sa.ARRAY(sa.String()), nullable=False),
-        sa.Column('is_active', sa.Boolean(), nullable=False),
+        sa.Column('url', sa.String(length=500), nullable=False),
+        sa.Column('events', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
+        sa.Column('headers', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
+        sa.Column(
+            'status',
+            sa.Enum('ACTIVE', 'INACTIVE', 'FAILED', name='webhookstatus'),
+            nullable=False,
+        ),
+        sa.Column('secret', sa.String(length=255), nullable=True),
+        sa.Column('retry_count', sa.Integer(), nullable=False),
+        sa.Column('timeout_seconds', sa.Integer(), nullable=False),
+        sa.Column('last_triggered_at', sa.String(), nullable=True),
+        sa.Column('last_response_code', sa.Integer(), nullable=True),
+        sa.Column('error_message', sa.Text(), nullable=True),
+        sa.Column('created_by', sa.UUID(), nullable=False),
         sa.Column('id', sa.UUID(), nullable=False),
         sa.Column(
             'created_at',
@@ -537,6 +676,10 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column('deleted_at', sa.DateTime(timezone=True), nullable=True),
+        sa.ForeignKeyConstraint(
+            ['created_by'],
+            ['users.id'],
+        ),
         sa.ForeignKeyConstraint(['project_id'], ['projects.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id'),
     )
@@ -786,12 +929,25 @@ def upgrade() -> None:
     op.create_table(
         'integration_mappings',
         sa.Column('integration_id', sa.UUID(), nullable=False),
-        sa.Column('entity_type', sa.String(length=50), nullable=False),
-        sa.Column('local_entity_id', sa.UUID(), nullable=False),
-        sa.Column('external_entity_id', sa.String(length=255), nullable=False),
-        sa.Column('external_entity_url', sa.Text(), nullable=True),
+        sa.Column(
+            'mapping_type',
+            sa.Enum(
+                'FEEDBACK_TO_ISSUE',
+                'FEATURE_TO_EPIC',
+                'PROJECT_TO_PROJECT',
+                name='mappingtype',
+            ),
+            nullable=False,
+        ),
+        sa.Column('internal_id', sa.UUID(), nullable=False),
+        sa.Column('external_id', sa.String(length=255), nullable=False),
+        sa.Column('external_url', sa.String(length=500), nullable=True),
+        sa.Column(
+            'mapping_metadata', postgresql.JSONB(astext_type=sa.Text()), nullable=False
+        ),
         sa.Column('sync_status', sa.String(length=50), nullable=False),
         sa.Column('last_synced_at', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('is_active', sa.Boolean(), nullable=False),
         sa.Column('id', sa.UUID(), nullable=False),
         sa.Column(
             'created_at',
@@ -839,10 +995,68 @@ def upgrade() -> None:
         unique=False,
     )
     op.create_table(
+        'pending_members',
+        sa.Column('email', sa.String(), nullable=False),
+        sa.Column('name', sa.String(), nullable=True),
+        sa.Column('role', sa.String(), nullable=False),
+        sa.Column('organization_id', sa.UUID(), nullable=True),
+        sa.Column('project_id', sa.UUID(), nullable=True),
+        sa.Column('invitation_id', sa.UUID(), nullable=False),
+        sa.Column('added_by', sa.UUID(), nullable=False),
+        sa.Column('id', sa.UUID(), nullable=False),
+        sa.Column(
+            'created_at',
+            sa.DateTime(timezone=True),
+            server_default=sa.text('now()'),
+            nullable=False,
+        ),
+        sa.Column(
+            'updated_at',
+            sa.DateTime(timezone=True),
+            server_default=sa.text('now()'),
+            nullable=False,
+        ),
+        sa.Column('deleted_at', sa.DateTime(timezone=True), nullable=True),
+        sa.ForeignKeyConstraint(['added_by'], ['users.id'], ondelete='SET NULL'),
+        sa.ForeignKeyConstraint(
+            ['invitation_id'], ['invitations.id'], ondelete='CASCADE'
+        ),
+        sa.ForeignKeyConstraint(
+            ['organization_id'], ['organizations.id'], ondelete='CASCADE'
+        ),
+        sa.ForeignKeyConstraint(['project_id'], ['projects.id'], ondelete='CASCADE'),
+        sa.PrimaryKeyConstraint('id'),
+    )
+    op.create_index(
+        op.f('ix_pending_members_created_at'),
+        'pending_members',
+        ['created_at'],
+        unique=False,
+    )
+    op.create_index(
+        op.f('ix_pending_members_deleted_at'),
+        'pending_members',
+        ['deleted_at'],
+        unique=False,
+    )
+    op.create_index(
+        op.f('ix_pending_members_email'), 'pending_members', ['email'], unique=False
+    )
+    op.create_index(
+        op.f('ix_pending_members_id'), 'pending_members', ['id'], unique=False
+    )
+    op.create_index(
+        op.f('ix_pending_members_updated_at'),
+        'pending_members',
+        ['updated_at'],
+        unique=False,
+    )
+    op.create_table(
         'roadmap_columns',
         sa.Column('roadmap_id', sa.UUID(), nullable=False),
         sa.Column('name', sa.String(length=100), nullable=False),
         sa.Column('color', sa.String(length=7), nullable=False),
+        sa.Column('status', sa.String(length=50), nullable=False),
         sa.Column('order', sa.Integer(), nullable=False),
         sa.Column('id', sa.UUID(), nullable=False),
         sa.Column(
@@ -890,21 +1104,50 @@ def upgrade() -> None:
         unique=False,
     )
     op.create_table(
-        'bug_report_feedback',
+        'roadmap_tags',
+        sa.Column('roadmap_id', sa.UUID(), nullable=False),
+        sa.Column('name', sa.String(length=50), nullable=False),
+        sa.Column('color', sa.String(length=7), nullable=False),
         sa.Column('id', sa.UUID(), nullable=False),
         sa.Column(
-            'severity_level',
-            sa.Enum('LOW', 'MEDIUM', 'HIGH', 'CRITICAL', name='feedbackpriority'),
-            nullable=True,
+            'created_at',
+            sa.DateTime(timezone=True),
+            server_default=sa.text('now()'),
+            nullable=False,
         ),
+        sa.Column(
+            'updated_at',
+            sa.DateTime(timezone=True),
+            server_default=sa.text('now()'),
+            nullable=False,
+        ),
+        sa.Column('deleted_at', sa.DateTime(timezone=True), nullable=True),
+        sa.ForeignKeyConstraint(['roadmap_id'], ['roadmaps.id'], ondelete='CASCADE'),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('roadmap_id', 'name', name='uq_roadmap_tag_name'),
+    )
+    op.create_index(
+        op.f('ix_roadmap_tags_created_at'), 'roadmap_tags', ['created_at'], unique=False
+    )
+    op.create_index(
+        op.f('ix_roadmap_tags_deleted_at'), 'roadmap_tags', ['deleted_at'], unique=False
+    )
+    op.create_index(op.f('ix_roadmap_tags_id'), 'roadmap_tags', ['id'], unique=False)
+    op.create_index(
+        op.f('ix_roadmap_tags_roadmap_id'), 'roadmap_tags', ['roadmap_id'], unique=False
+    )
+    op.create_index(
+        op.f('ix_roadmap_tags_updated_at'), 'roadmap_tags', ['updated_at'], unique=False
+    )
+    op.create_table(
+        'bug_report_feedback',
+        sa.Column('id', sa.UUID(), nullable=False),
+        sa.Column('severity_level', sa.String(length=50), nullable=True),
         sa.Column('steps_to_reproduce', sa.Text(), nullable=True),
         sa.Column('expected_behavior', sa.Text(), nullable=True),
         sa.Column('actual_behavior', sa.Text(), nullable=True),
         sa.Column(
             'environment_info', postgresql.JSONB(astext_type=sa.Text()), nullable=True
-        ),
-        sa.Column(
-            'attachments', postgresql.JSONB(astext_type=sa.Text()), nullable=True
         ),
         sa.ForeignKeyConstraint(
             ['id'],
@@ -917,9 +1160,9 @@ def upgrade() -> None:
         sa.Column('id', sa.UUID(), nullable=False),
         sa.Column('use_case', sa.Text(), nullable=True),
         sa.Column('business_value', sa.Text(), nullable=True),
-        sa.Column('estimated_effort', sa.String(length=50), nullable=True),
-        sa.Column('implementation_status', sa.String(length=50), nullable=True),
+        sa.Column('effort_estimate', sa.String(length=50), nullable=True),
         sa.Column('impact_score', sa.Integer(), nullable=True),
+        sa.Column('implementation_status', sa.String(length=50), nullable=True),
         sa.ForeignKeyConstraint(
             ['id'],
             ['feedback.id'],
@@ -1043,13 +1286,9 @@ def upgrade() -> None:
         'review_feedback',
         sa.Column('id', sa.UUID(), nullable=False),
         sa.Column('overall_rating', sa.Integer(), nullable=True),
-        sa.Column(
-            'review_categories', postgresql.JSONB(astext_type=sa.Text()), nullable=True
-        ),
+        sa.Column('pros', sa.Text(), nullable=True),
+        sa.Column('cons', sa.Text(), nullable=True),
         sa.Column('is_published', sa.Boolean(), nullable=True),
-        sa.Column('published_at', sa.DateTime(), nullable=True),
-        sa.Column('moderation_status', sa.String(length=50), nullable=True),
-        sa.Column('reviewer_location', sa.String(length=255), nullable=True),
         sa.ForeignKeyConstraint(
             ['id'],
             ['feedback.id'],
@@ -1064,6 +1303,8 @@ def upgrade() -> None:
         sa.Column('description', sa.Text(), nullable=True),
         sa.Column('order', sa.Integer(), nullable=False),
         sa.Column('vote_count', sa.Integer(), nullable=False),
+        sa.Column('submitter_name', sa.String(length=255), nullable=True),
+        sa.Column('submitter_email', sa.String(length=255), nullable=True),
         sa.Column('id', sa.UUID(), nullable=False),
         sa.Column(
             'created_at',
@@ -1130,6 +1371,64 @@ def upgrade() -> None:
             ['feedback.id'],
         ),
         sa.PrimaryKeyConstraint('id'),
+    )
+    op.create_table(
+        'roadmap_feature_tags',
+        sa.Column('feature_id', sa.UUID(), nullable=False),
+        sa.Column('tag_id', sa.UUID(), nullable=False),
+        sa.Column('id', sa.UUID(), nullable=False),
+        sa.Column(
+            'created_at',
+            sa.DateTime(timezone=True),
+            server_default=sa.text('now()'),
+            nullable=False,
+        ),
+        sa.Column(
+            'updated_at',
+            sa.DateTime(timezone=True),
+            server_default=sa.text('now()'),
+            nullable=False,
+        ),
+        sa.Column('deleted_at', sa.DateTime(timezone=True), nullable=True),
+        sa.ForeignKeyConstraint(
+            ['feature_id'], ['roadmap_features.id'], ondelete='CASCADE'
+        ),
+        sa.ForeignKeyConstraint(['tag_id'], ['roadmap_tags.id'], ondelete='CASCADE'),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('feature_id', 'tag_id', name='uq_feature_tag'),
+    )
+    op.create_index(
+        op.f('ix_roadmap_feature_tags_created_at'),
+        'roadmap_feature_tags',
+        ['created_at'],
+        unique=False,
+    )
+    op.create_index(
+        op.f('ix_roadmap_feature_tags_deleted_at'),
+        'roadmap_feature_tags',
+        ['deleted_at'],
+        unique=False,
+    )
+    op.create_index(
+        op.f('ix_roadmap_feature_tags_feature_id'),
+        'roadmap_feature_tags',
+        ['feature_id'],
+        unique=False,
+    )
+    op.create_index(
+        op.f('ix_roadmap_feature_tags_id'), 'roadmap_feature_tags', ['id'], unique=False
+    )
+    op.create_index(
+        op.f('ix_roadmap_feature_tags_tag_id'),
+        'roadmap_feature_tags',
+        ['tag_id'],
+        unique=False,
+    )
+    op.create_index(
+        op.f('ix_roadmap_feature_tags_updated_at'),
+        'roadmap_feature_tags',
+        ['updated_at'],
+        unique=False,
     )
     op.create_table(
         'roadmap_item_assignments',
@@ -1220,6 +1519,23 @@ def downgrade() -> None:
         table_name='roadmap_item_assignments',
     )
     op.drop_table('roadmap_item_assignments')
+    op.drop_index(
+        op.f('ix_roadmap_feature_tags_updated_at'), table_name='roadmap_feature_tags'
+    )
+    op.drop_index(
+        op.f('ix_roadmap_feature_tags_tag_id'), table_name='roadmap_feature_tags'
+    )
+    op.drop_index(op.f('ix_roadmap_feature_tags_id'), table_name='roadmap_feature_tags')
+    op.drop_index(
+        op.f('ix_roadmap_feature_tags_feature_id'), table_name='roadmap_feature_tags'
+    )
+    op.drop_index(
+        op.f('ix_roadmap_feature_tags_deleted_at'), table_name='roadmap_feature_tags'
+    )
+    op.drop_index(
+        op.f('ix_roadmap_feature_tags_created_at'), table_name='roadmap_feature_tags'
+    )
+    op.drop_table('roadmap_feature_tags')
     op.drop_table('survey_feedback')
     op.drop_index(op.f('ix_roadmap_features_updated_at'), table_name='roadmap_features')
     op.drop_index(op.f('ix_roadmap_features_id'), table_name='roadmap_features')
@@ -1253,12 +1569,24 @@ def downgrade() -> None:
     op.drop_table('feedback_comments')
     op.drop_table('feature_request_feedback')
     op.drop_table('bug_report_feedback')
+    op.drop_index(op.f('ix_roadmap_tags_updated_at'), table_name='roadmap_tags')
+    op.drop_index(op.f('ix_roadmap_tags_roadmap_id'), table_name='roadmap_tags')
+    op.drop_index(op.f('ix_roadmap_tags_id'), table_name='roadmap_tags')
+    op.drop_index(op.f('ix_roadmap_tags_deleted_at'), table_name='roadmap_tags')
+    op.drop_index(op.f('ix_roadmap_tags_created_at'), table_name='roadmap_tags')
+    op.drop_table('roadmap_tags')
     op.drop_index(op.f('ix_roadmap_columns_updated_at'), table_name='roadmap_columns')
     op.drop_index(op.f('ix_roadmap_columns_roadmap_id'), table_name='roadmap_columns')
     op.drop_index(op.f('ix_roadmap_columns_id'), table_name='roadmap_columns')
     op.drop_index(op.f('ix_roadmap_columns_deleted_at'), table_name='roadmap_columns')
     op.drop_index(op.f('ix_roadmap_columns_created_at'), table_name='roadmap_columns')
     op.drop_table('roadmap_columns')
+    op.drop_index(op.f('ix_pending_members_updated_at'), table_name='pending_members')
+    op.drop_index(op.f('ix_pending_members_id'), table_name='pending_members')
+    op.drop_index(op.f('ix_pending_members_email'), table_name='pending_members')
+    op.drop_index(op.f('ix_pending_members_deleted_at'), table_name='pending_members')
+    op.drop_index(op.f('ix_pending_members_created_at'), table_name='pending_members')
+    op.drop_table('pending_members')
     op.drop_index(
         op.f('ix_integration_mappings_updated_at'), table_name='integration_mappings'
     )
@@ -1298,6 +1626,7 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_webhooks_created_at'), table_name='webhooks')
     op.drop_table('webhooks')
     op.drop_index(op.f('ix_roadmaps_updated_at'), table_name='roadmaps')
+    op.drop_index(op.f('ix_roadmaps_subdomain'), table_name='roadmaps')
     op.drop_index(op.f('ix_roadmaps_public_slug'), table_name='roadmaps')
     op.drop_index(op.f('ix_roadmaps_project_id'), table_name='roadmaps')
     op.drop_index(op.f('ix_roadmaps_id'), table_name='roadmaps')
@@ -1311,6 +1640,13 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_project_members_deleted_at'), table_name='project_members')
     op.drop_index(op.f('ix_project_members_created_at'), table_name='project_members')
     op.drop_table('project_members')
+    op.drop_index(op.f('ix_invitations_updated_at'), table_name='invitations')
+    op.drop_index(op.f('ix_invitations_token'), table_name='invitations')
+    op.drop_index(op.f('ix_invitations_id'), table_name='invitations')
+    op.drop_index(op.f('ix_invitations_email'), table_name='invitations')
+    op.drop_index(op.f('ix_invitations_deleted_at'), table_name='invitations')
+    op.drop_index(op.f('ix_invitations_created_at'), table_name='invitations')
+    op.drop_table('invitations')
     op.drop_index(op.f('ix_integrations_updated_at'), table_name='integrations')
     op.drop_index(op.f('ix_integrations_project_id'), table_name='integrations')
     op.drop_index(op.f('ix_integrations_id'), table_name='integrations')
@@ -1322,12 +1658,6 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_feedback_forms_deleted_at'), table_name='feedback_forms')
     op.drop_index(op.f('ix_feedback_forms_created_at'), table_name='feedback_forms')
     op.drop_table('feedback_forms')
-    op.drop_index(op.f('ix_user_onboarding_user_id'), table_name='user_onboarding')
-    op.drop_index(op.f('ix_user_onboarding_updated_at'), table_name='user_onboarding')
-    op.drop_index(op.f('ix_user_onboarding_id'), table_name='user_onboarding')
-    op.drop_index(op.f('ix_user_onboarding_deleted_at'), table_name='user_onboarding')
-    op.drop_index(op.f('ix_user_onboarding_created_at'), table_name='user_onboarding')
-    op.drop_table('user_onboarding')
     op.drop_index(op.f('ix_projects_updated_at'), table_name='projects')
     op.drop_index(op.f('ix_projects_slug'), table_name='projects')
     op.drop_index(op.f('ix_projects_organization_id'), table_name='projects')
@@ -1352,6 +1682,22 @@ def downgrade() -> None:
         op.f('ix_organization_members_created_at'), table_name='organization_members'
     )
     op.drop_table('organization_members')
+    op.drop_index(op.f('ix_invitation_tasks_updated_at'), table_name='invitation_tasks')
+    op.drop_index(op.f('ix_invitation_tasks_created_at'), table_name='invitation_tasks')
+    op.drop_table('invitation_tasks')
+    op.drop_index(op.f('ix_user_onboarding_user_id'), table_name='user_onboarding')
+    op.drop_index(op.f('ix_user_onboarding_updated_at'), table_name='user_onboarding')
+    op.drop_index(op.f('ix_user_onboarding_id'), table_name='user_onboarding')
+    op.drop_index(op.f('ix_user_onboarding_deleted_at'), table_name='user_onboarding')
+    op.drop_index(op.f('ix_user_onboarding_created_at'), table_name='user_onboarding')
+    op.drop_table('user_onboarding')
+    op.drop_index(op.f('ix_organizations_updated_at'), table_name='organizations')
+    op.drop_index(op.f('ix_organizations_slug'), table_name='organizations')
+    op.drop_index(op.f('ix_organizations_id'), table_name='organizations')
+    op.drop_index(op.f('ix_organizations_deleted_at'), table_name='organizations')
+    op.drop_index(op.f('ix_organizations_created_by'), table_name='organizations')
+    op.drop_index(op.f('ix_organizations_created_at'), table_name='organizations')
+    op.drop_table('organizations')
     op.drop_index(op.f('ix_notifications_user_id'), table_name='notifications')
     op.drop_index(op.f('ix_notifications_updated_at'), table_name='notifications')
     op.drop_index(op.f('ix_notifications_is_read'), table_name='notifications')
@@ -1364,10 +1710,4 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_users_deleted_at'), table_name='users')
     op.drop_index(op.f('ix_users_created_at'), table_name='users')
     op.drop_table('users')
-    op.drop_index(op.f('ix_organizations_updated_at'), table_name='organizations')
-    op.drop_index(op.f('ix_organizations_slug'), table_name='organizations')
-    op.drop_index(op.f('ix_organizations_id'), table_name='organizations')
-    op.drop_index(op.f('ix_organizations_deleted_at'), table_name='organizations')
-    op.drop_index(op.f('ix_organizations_created_at'), table_name='organizations')
-    op.drop_table('organizations')
     # ### end Alembic commands ###
