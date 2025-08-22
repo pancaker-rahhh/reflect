@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories.feedback_repository import feedback_repository
 from app.repositories.feedback_comment_repository import feedback_comment_repository
-from app.repositories.feedback_vote_repository import feedback_vote_repository
+
 from app.schemas.feedback_schema import (
     FeedbackUpdate,
     FeedbackCreatePayload,
@@ -27,7 +27,7 @@ from app.schemas.feedback_schema import (
     CESFeedbackResponse,
 )
 from app.models.feedback_model import FeedbackType, FeedbackPriority
-from app.models.feedback_model import FeedbackComment, FeedbackVote
+from app.models.feedback_model import FeedbackComment
 from app.models.widget_model import WidgetType
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.logging import get_logger
@@ -310,49 +310,18 @@ class FeedbackService:
             db, feedback_id, skip, limit
         )
 
-    async def vote_feedback(
-        self,
-        db: AsyncSession,
-        feedback_id: UUID,
-        vote_type: str,
-        user_id: Optional[UUID] = None,
-        session_id: Optional[str] = None,
-    ) -> FeedbackVote:
+    async def upvote_feedback(self, db: AsyncSession, feedback_id: UUID) -> bool:
+        """Simple upvote - increments the feedback_votes counter"""
         feedback = await feedback_repository.get(db, feedback_id)
         if not feedback:
             raise NotFoundError('Feedback not found')
 
-        if vote_type not in ['up', 'down']:
-            raise ValueError("Vote type must be 'up' or 'down'")
+        # Increment the vote count
+        feedback.feedback_votes += 1
+        await db.commit()
+        await db.refresh(feedback)
 
-        return await feedback_vote_repository.update_vote(
-            db, feedback_id, vote_type, user_id, session_id
-        )
-
-    async def remove_vote(
-        self,
-        db: AsyncSession,
-        feedback_id: UUID,
-        user_id: Optional[UUID] = None,
-        session_id: Optional[str] = None,
-    ) -> bool:
-        return await feedback_vote_repository.remove_vote(
-            db, feedback_id, user_id, session_id
-        )
-
-    async def get_vote_counts(self, db: AsyncSession, feedback_id: UUID) -> dict:
-        return await feedback_vote_repository.get_vote_counts(db, feedback_id)
-
-    async def get_user_vote(
-        self,
-        db: AsyncSession,
-        feedback_id: UUID,
-        user_id: Optional[UUID] = None,
-        session_id: Optional[str] = None,
-    ) -> Optional[FeedbackVote]:
-        return await feedback_vote_repository.get_user_vote(
-            db, feedback_id, user_id, session_id
-        )
+        return True
 
     def _convert_to_response(self, obj) -> FeedbackResponsePayload:
         if obj.feedback_type == FeedbackType.GENERAL:

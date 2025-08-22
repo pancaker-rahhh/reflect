@@ -59,6 +59,7 @@ class Feedback(BaseModel):
     title = Column(String(500))
     message = Column(Text)
     rating = Column(Integer)
+    feedback_votes = Column(Integer, default=0)  # Simple integer counter for upvotes
 
     feedback_metadata = Column(JSONB, default=dict)
     context = Column(JSONB, default=dict)
@@ -92,9 +93,6 @@ class Feedback(BaseModel):
     resolved_by = relationship('User', foreign_keys=[resolved_by_user_id])
     comments = relationship(
         'FeedbackComment', back_populates='feedback', cascade='all, delete-orphan'
-    )
-    votes = relationship(
-        'FeedbackVote', back_populates='feedback', cascade='all, delete-orphan'
     )
 
     __mapper_args__ = {
@@ -216,22 +214,3 @@ class FeedbackComment(BaseModel):
 
     feedback = relationship('Feedback', back_populates='comments')
     user = relationship('User')
-
-
-class FeedbackVote(BaseModel):
-    __tablename__ = 'feedback_votes'
-
-    feedback_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey('feedback.id'), nullable=False, index=True
-    )
-    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
-        UUID(as_uuid=True), ForeignKey('users.id'), nullable=True
-    )
-    session_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-
-    vote_type = Column(String(10), nullable=False)
-
-    feedback = relationship('Feedback', back_populates='votes')
-    user = relationship('User')
-
-    __table_args__ = ({'extend_existing': True},)

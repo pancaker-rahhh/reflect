@@ -320,6 +320,24 @@ curl -X POST "YOUR_BASE_URL/api/v1/public/feedback" \
 - `"CSAT"` - Customer Satisfaction (1-5)
 - `"CES"` - Customer Effort Score (1-5)
 
+## Simple Voting System
+
+The feedback system now uses a simple integer counter for votes instead of complex upvote/downvote tracking:
+
+```bash
+# Upvote a feedback item (increments the feedback_votes counter)
+curl -X POST "YOUR_BASE_URL/api/v1/feedback/{feedback_id}/upvote" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "feedback_votes": 5
+}
+```
+
 ## Notes
 
 1. Replace `widget_abc123` with an actual widget public key from your database

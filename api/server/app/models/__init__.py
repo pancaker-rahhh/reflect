@@ -20,7 +20,6 @@ from app.models.feedback_model import (
     BugReportFeedback,
     FeatureRequestFeedback,
     FeedbackComment,
-    FeedbackVote,
 )
 from app.models.roadmap_model import (
     Roadmap,
@@ -53,7 +52,6 @@ __all__ = [
     'BugReportFeedback',
     'FeatureRequestFeedback',
     'FeedbackComment',
-    'FeedbackVote',
     'Roadmap',
     'RoadmapColumn',
     'RoadmapFeature',

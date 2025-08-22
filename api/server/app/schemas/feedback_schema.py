@@ -102,6 +102,7 @@ class FeedbackResponse(BaseModel):
     title: Optional[str]
     message: Optional[str]
     rating: Optional[int]
+    feedback_votes: int = 0
     feedback_metadata: Dict[str, Any]
     context: Dict[str, Any]
     submitter_name: Optional[str]

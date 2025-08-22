@@ -10,9 +10,6 @@ from app.schemas.feedback_schema import (
     FeedbackCreatePayload,
     FeedbackCommentCreate,
     FeedbackCommentResponse,
-    FeedbackVoteCreate,
-    FeedbackVoteResponse,
-    FeedbackVoteCounts,
 )
 from fastapi import HTTPException
 from app.schemas.auth_schema import TokenData
@@ -113,56 +110,44 @@ async def get_comments(
     return [FeedbackCommentResponse.model_validate(c) for c in comments]
 
 
-# Vote endpoints
+# Simple upvote endpoint
 @feedback_router.post(
-    '/{feedback_id}/vote',
-    response_model=FeedbackVoteResponse,
-    status_code=status.HTTP_201_CREATED,
+    '/{feedback_id}/upvote',
+    status_code=status.HTTP_200_OK,
 )
-async def vote_feedback(
-    feedback_id: UUID,
-    vote_data: FeedbackVoteCreate,
-    current_user: TokenData = Depends(get_current_token_data),
-    db: AsyncSession = Depends(get_db),
-) -> FeedbackVoteResponse:
-    vote = await feedback_service.vote_feedback(
-        db, feedback_id, vote_data.vote_type, UUID(current_user.user_id)
-    )
-    return FeedbackVoteResponse.model_validate(vote)
-
-
-@feedback_router.delete('/{feedback_id}/vote', status_code=status.HTTP_204_NO_CONTENT)
-async def remove_vote(
+async def upvote_feedback(
     feedback_id: UUID,
     current_user: TokenData = Depends(get_current_token_data),
     db: AsyncSession = Depends(get_db),
-) -> None:
-    removed = await feedback_service.remove_vote(
-        db, feedback_id, UUID(current_user.user_id)
-    )
-    if not removed:
-        raise HTTPException(status_code=404, detail='Vote not found')
-    return None
+) -> dict:
+    """Simple upvote - increments the feedback_votes counter"""
+    success = await feedback_service.upvote_feedback(db, feedback_id)
+    if success:
+        # Get the updated feedback to return the new vote count
+        feedback = await feedback_service.get_feedback(db, feedback_id)
+        return {
+            'success': True,
+            'feedback_votes': feedback.feedback_votes if feedback else 0,
+        }
+    return {'success': False}
 
 
-@feedback_router.get('/{feedback_id}/votes', response_model=FeedbackVoteCounts)
-async def get_vote_counts(
-    feedback_id: UUID,
-    db: AsyncSession = Depends(get_db),
-) -> FeedbackVoteCounts:
-    counts = await feedback_service.get_vote_counts(db, feedback_id)
-    return FeedbackVoteCounts(**counts)
-
-
-@feedback_router.get(
-    '/{feedback_id}/vote/me', response_model=Optional[FeedbackVoteResponse]
+@feedback_router.post(
+    '/{feedback_id}/upvote',
+    status_code=status.HTTP_200_OK,
 )
-async def get_my_vote(
+async def upvote_feedback(
     feedback_id: UUID,
     current_user: TokenData = Depends(get_current_token_data),
     db: AsyncSession = Depends(get_db),
-) -> Optional[FeedbackVoteResponse]:
-    vote = await feedback_service.get_user_vote(
-        db, feedback_id, UUID(current_user.user_id)
-    )
-    return FeedbackVoteResponse.model_validate(vote) if vote else None
+) -> dict:
+    """Simple upvote - increments the feedback_votes counter"""
+    success = await feedback_service.upvote_feedback(db, feedback_id)
+    if success:
+        # Get the updated feedback to return the new vote count
+        feedback = await feedback_service.get_feedback(db, feedback_id)
+        return {
+            'success': True,
+            'feedback_votes': feedback.feedback_votes if feedback else 0,
+        }
+    return {'success': False}

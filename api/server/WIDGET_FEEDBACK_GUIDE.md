@@ -209,6 +209,22 @@ feedback = await widget_feedback_handler.handle_review_widget(
 )
 ```
 
+## Simplified Voting System
+
+The feedback system now uses a simple integer counter for votes instead of complex upvote/downvote tracking:
+
+- **`feedback_votes`**: Integer field in the base `feedback` table
+- **Simple upvote**: Call `feedback_service.upvote_feedback()` to increment the counter
+- **No user tracking**: Simple counter that increments with each upvote
+- **No downvotes**: Only positive voting is supported
+
+### Usage Example
+
+```python
+# Increment vote count for a feedback item
+await feedback_service.upvote_feedback(db, feedback_id)
+```
+
 ## Database Schema
 
 The system uses polymorphic tables to store different feedback types:
