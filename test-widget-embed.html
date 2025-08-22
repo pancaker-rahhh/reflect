@@ -59,9 +59,9 @@
         
         console.log('Reflect config set:', window.reflectConfig);
     </script>
-    <script async src="http://localhost:5173/widget.js" 
-            onload="console.log('Widget script loaded successfully')"
-            onerror="console.error('Failed to load widget script')">
-    </script>
+<script>
+    window.reflectConfig = { key: "widget_a5f5c87667de4e79" };
+  </script>
+  <script async src="http://localhost:5173/widget.js"></script>
 </body>
 </html>

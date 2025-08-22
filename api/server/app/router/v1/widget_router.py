@@ -95,7 +95,6 @@ async def deactivate_widget(
     current_user: User = Depends(get_current_user),
     service: WidgetService = Depends(lambda: widget_service),
 ) -> Any:
-    # CORRECTED: Pass the user's ID
     return await service.set_widget_activation(
         db, user_id=current_user.id, widget_id=widget_id, is_active=False
     )

@@ -55,7 +55,6 @@ class Feedback(BaseModel):
 
     feedback_type = Column(SQLEnum(FeedbackType), nullable=False)
     status = Column(SQLEnum(FeedbackStatus), default=FeedbackStatus.NEW)
-    priority = Column(SQLEnum(FeedbackPriority), default=FeedbackPriority.MEDIUM)
 
     title = Column(String(500))
     message = Column(Text)
@@ -123,7 +122,7 @@ class ReviewFeedback(Feedback):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
     )
-    overall_rating = Column(Integer)
+    overall_rating = Column(Integer)  # 1-5 star rating
     pros = Column(Text)
     cons = Column(Text)
     is_published = Column(Boolean, default=False)
@@ -137,11 +136,11 @@ class BugReportFeedback(Feedback):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
     )
-    severity_level = Column(String(50), default='medium')
+    severity_level = Column(SQLEnum(FeedbackPriority), default=FeedbackPriority.MEDIUM)
     steps_to_reproduce = Column(Text)
     expected_behavior = Column(Text)
     actual_behavior = Column(Text)
-    environment_info = Column(JSONB, default=dict)
+    visual_proof = Column(JSONB, default=dict)  # Store image URLs or file references
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.BUG_REPORT}
 
@@ -153,12 +152,54 @@ class FeatureRequestFeedback(Feedback):
         UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
     )
     use_case = Column(Text)
-    business_value = Column(Text)
-    effort_estimate = Column(String(50))
-    impact_score = Column(Integer)
+    suggested_solution = Column(Text)
+    benefits = Column(Text)
     implementation_status = Column(String(50), default='backlog')
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.FEATURE_REQUEST}
+
+
+class NPSFeedback(Feedback):
+    __tablename__ = 'nps_feedback'
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
+    )
+    nps_score = Column(Integer)  # 0-10 scale
+    promoter_category = Column(String(20))  # 'detractor', 'passive', 'promoter'
+    follow_up_comment = Column(Text)
+
+    __mapper_args__ = {'polymorphic_identity': FeedbackType.NPS}
+
+
+class CSATFeedback(Feedback):
+    __tablename__ = 'csat_feedback'
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
+    )
+    csat_score = Column(Integer)  # 1-5 scale
+    satisfaction_level = Column(
+        String(20)
+    )  # 'very_dissatisfied', 'dissatisfied', 'neutral', 'satisfied', 'very_satisfied'
+    follow_up_comment = Column(Text)
+
+    __mapper_args__ = {'polymorphic_identity': FeedbackType.CSAT}
+
+
+class CESFeedback(Feedback):
+    __tablename__ = 'ces_feedback'
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
+    )
+    ces_score = Column(Integer)  # 1-5 scale
+    ease_level = Column(
+        String(20)
+    )  # 'very_difficult', 'difficult', 'neutral', 'easy', 'very_easy'
+    follow_up_comment = Column(Text)
+
+    __mapper_args__ = {'polymorphic_identity': FeedbackType.CES}
 
 
 class FeedbackComment(BaseModel):

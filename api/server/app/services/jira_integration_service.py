@@ -230,23 +230,33 @@ class JIRAIntegrationService:
             if not feedback:
                 return {'status': 'error', 'message': 'Feedback not found'}
 
+            project_key = integration.config.get('project_key')
+            if not project_key:
+                return {'status': 'error', 'message': 'Project key not configured in integration'}
+
+            issue_type = 'Story' # Default issue type
+            if feedback.issue_type:
+                issue_type = feedback.issue_type
+
+            # Map feedback fields to JIRA fields
             issue_data = {
-                'title': feedback.title or f'Feedback: {feedback.message[:50]}...',
+                'summary': feedback.title or 'Feedback Submission',
                 'description': feedback.message or 'No description provided',
-                'issue_type': 'Story',
-                'labels': ['feedback', 'product-feedback'],
+                'project': {'key': project_key},
+                'issuetype': {'name': issue_type},
             }
 
-            if feedback.priority is not None:
-                priority_mapping = {
+            # Add severity for bug reports
+            if hasattr(feedback, 'severity_level') and feedback.severity_level:
+                severity_mapping = {
                     'low': 'Low',
                     'medium': 'Medium',
                     'high': 'High',
-                    'critical': 'Highest',
+                    'critical': 'Critical'
                 }
-                issue_data['priority'] = priority_mapping.get(
-                    feedback.priority.value.lower(), 'Medium'
-                )
+                issue_data['priority'] = {'name': severity_mapping.get(
+                    feedback.severity_level.value.lower(), 'Medium'
+                )}
 
             result = await self.create_issue(
                 integration.config, integration.auth_data, issue_data
