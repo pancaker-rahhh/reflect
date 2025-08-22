@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from uuid import UUID
 from fastapi import APIRouter, Depends, BackgroundTasks, Query, status
 from app.db import get_db
@@ -10,10 +10,15 @@ from app.schemas.feedback_schema import (
     FeedbackCreatePayload,
     FeedbackCommentCreate,
     FeedbackCommentResponse,
+    UpvoteResponse,
 )
 from fastapi import HTTPException
 from app.schemas.auth_schema import TokenData
 from app.services.feedback_service import feedback_service
+from app.core.exceptions import NotFoundError, ValidationError
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
 # from app.services.tasks.executors.fastapi_executor import FastAPIExecutor
 # from app.services.tasks.base_executor import TaskPriority
 
@@ -113,41 +118,45 @@ async def get_comments(
 # Simple upvote endpoint
 @feedback_router.post(
     '/{feedback_id}/upvote',
+    response_model=UpvoteResponse,
     status_code=status.HTTP_200_OK,
 )
 async def upvote_feedback(
     feedback_id: UUID,
     current_user: TokenData = Depends(get_current_token_data),
     db: AsyncSession = Depends(get_db),
-) -> dict:
-    """Simple upvote - increments the feedback_votes counter"""
-    success = await feedback_service.upvote_feedback(db, feedback_id)
-    if success:
-        # Get the updated feedback to return the new vote count
-        feedback = await feedback_service.get_feedback(db, feedback_id)
-        return {
-            'success': True,
-            'feedback_votes': feedback.feedback_votes if feedback else 0,
-        }
-    return {'success': False}
+) -> UpvoteResponse:
+    """
+    Simple upvote - increments the feedback_votes counter.
 
+    Args:
+        feedback_id: ID of the feedback to upvote
+        current_user: Authenticated user making the request
+        db: Database session
 
-@feedback_router.post(
-    '/{feedback_id}/upvote',
-    status_code=status.HTTP_200_OK,
-)
-async def upvote_feedback(
-    feedback_id: UUID,
-    current_user: TokenData = Depends(get_current_token_data),
-    db: AsyncSession = Depends(get_db),
-) -> dict:
-    """Simple upvote - increments the feedback_votes counter"""
-    success = await feedback_service.upvote_feedback(db, feedback_id)
-    if success:
-        # Get the updated feedback to return the new vote count
-        feedback = await feedback_service.get_feedback(db, feedback_id)
-        return {
-            'success': True,
-            'feedback_votes': feedback.feedback_votes if feedback else 0,
-        }
-    return {'success': False}
+    Returns:
+        UpvoteResponse: Response with success status and vote count
+
+    Raises:
+        HTTPException: If feedback not found or cannot be upvoted
+    """
+    try:
+        success = await feedback_service.upvote_feedback(db, feedback_id)
+        if success:
+            # Get the updated feedback to return the new vote count
+            feedback = await feedback_service.get_feedback(db, feedback_id)
+            return UpvoteResponse(
+                success=True,
+                feedback_votes=feedback.feedback_votes if feedback else 0,
+                message='Feedback upvoted successfully',
+            )
+        return UpvoteResponse(
+            success=False, feedback_votes=0, message='Failed to upvote feedback'
+        )
+    except NotFoundError:
+        raise HTTPException(status_code=404, detail='Feedback not found')
+    except ValidationError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f'Unexpected error during upvote: {str(e)}')
+        raise HTTPException(status_code=500, detail='Internal server error')

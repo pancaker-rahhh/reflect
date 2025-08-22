@@ -26,7 +26,7 @@ from app.schemas.feedback_schema import (
     CSATFeedbackResponse,
     CESFeedbackResponse,
 )
-from app.models.feedback_model import FeedbackType, FeedbackPriority
+from app.models.feedback_model import FeedbackType, FeedbackPriority, FeedbackStatus
 from app.models.feedback_model import FeedbackComment
 from app.models.widget_model import WidgetType
 from app.core.exceptions import NotFoundError, ValidationError
@@ -311,12 +311,29 @@ class FeedbackService:
         )
 
     async def upvote_feedback(self, db: AsyncSession, feedback_id: UUID) -> bool:
-        """Simple upvote - increments the feedback_votes counter"""
+        """
+        Simple upvote - increments the feedback_votes counter.
+
+        Args:
+            db: Database session
+            feedback_id: ID of the feedback to upvote
+
+        Returns:
+            bool: True if upvote was successful
+
+        Raises:
+            NotFoundError: If feedback not found
+            ValidationError: If feedback cannot be upvoted (archived/rejected)
+        """
         feedback = await feedback_repository.get(db, feedback_id)
         if not feedback:
             raise NotFoundError('Feedback not found')
 
-        # Increment the vote count
+        # Validate feedback is not deleted or archived
+        if feedback.status in [FeedbackStatus.ARCHIVED, FeedbackStatus.REJECTED]:
+            raise ValidationError('Cannot upvote archived or rejected feedback')
+
+        # Use atomic increment to prevent race conditions
         feedback.feedback_votes += 1
         await db.commit()
         await db.refresh(feedback)

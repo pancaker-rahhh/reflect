@@ -298,3 +298,17 @@ class FeedbackVoteCounts(BaseModel):
     upvotes: int
     downvotes: int
     total: int
+
+    class Config:
+        from_attributes = True
+
+
+class UpvoteResponse(BaseModel):
+    """Response model for upvote endpoint"""
+
+    success: bool
+    feedback_votes: int
+    message: Optional[str] = None
+
+    class Config:
+        from_attributes = True
