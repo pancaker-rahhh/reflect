@@ -437,10 +437,11 @@ export function RoadmapPage() {
     )
   }
 
-  const publicUrl =
-    roadmap.is_public && roadmap.subdomain
-      ? `https://${roadmap.subdomain}.reflect.com/roadmap`
-      : null
+  const publicUrl = roadmap?.is_public
+    ? roadmap.subdomain
+      ? `http://localhost:5173/public/r/${roadmap.subdomain}`
+      : `http://localhost:5173/public/roadmap/${roadmap.public_slug}`
+    : null
 
   return (
     <div className="space-y-6">

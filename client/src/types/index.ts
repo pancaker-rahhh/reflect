@@ -166,6 +166,15 @@ export interface RoadmapTag {
   updated_at: Date | string
 }
 
+export interface RoadmapFeatureTag {
+  id: string
+  feature_id: string
+  tag_id: string
+  tag: RoadmapTag
+  created_at: Date | string
+  updated_at: Date | string
+}
+
 export interface RoadmapFeature {
   id: string
   column_id: string
@@ -176,6 +185,7 @@ export interface RoadmapFeature {
   submitter_name?: string
   submitter_email?: string
   tags: RoadmapTag[]
+  feature_tags?: RoadmapFeatureTag[]
   created_at: Date | string
   updated_at: Date | string
 }

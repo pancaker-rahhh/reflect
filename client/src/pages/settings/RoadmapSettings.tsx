@@ -255,15 +255,35 @@ export function RoadmapSettings() {
     }
   }
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      toast({
+        title: 'URL copied',
+        description: 'Public roadmap URL has been copied to clipboard',
+      })
+    } catch (error) {
+      console.error('Failed to copy URL:', error)
+      toast({
+        title: 'Copy failed',
+        description: 'Failed to copy URL to clipboard',
+        variant: 'destructive',
+      })
+    }
   }
 
-  const publicRoadmapUrl = formData.subdomain
-    ? `https://${formData.subdomain}.reflect.com/roadmap`
-    : formData.public_slug
-      ? `https://reflect.com/public/roadmaps/${formData.public_slug}`
-      : ''
+  const getPublicRoadmapUrl = () => {
+    if (!formData.is_public) return null
+
+    if (formData.subdomain) {
+      return `http://localhost:5173/public/r/${formData.subdomain}`
+    } else if (formData.public_slug) {
+      return `http://localhost:5173/public/roadmap/${formData.public_slug}`
+    }
+    return null
+  }
+
+  const publicRoadmapUrl = getPublicRoadmapUrl()
 
   const handleFileSelect = async (file: File) => {
     setUploadError(null)
@@ -517,6 +537,38 @@ export function RoadmapSettings() {
                       Make roadmap publicly accessible
                     </Label>
                   </div>
+
+                  {formData.is_public && publicRoadmapUrl && (
+                    <div className="mt-4 p-4 bg-muted/30 rounded-lg border border-border/50">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <ExternalLink className="h-4 w-4 text-primary" />
+                          <Label className="text-sm font-medium text-foreground">
+                            Public Roadmap URL
+                          </Label>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 p-3 bg-background rounded-md border font-mono text-sm text-foreground">
+                            {publicRoadmapUrl}
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => copyToClipboard(publicRoadmapUrl)}
+                            className="shrink-0"
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        <p className="text-xs text-muted-foreground">
+                          Share this URL with your users or embed it on your website to show your
+                          roadmap publicly.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

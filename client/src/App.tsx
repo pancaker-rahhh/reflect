@@ -32,6 +32,9 @@ const FeatureRequests = lazy(() =>
   import('@/pages/FeatureRequests').then((m) => ({ default: m.FeatureRequests }))
 )
 const RoadmapPage = lazy(() => import('@/pages/Roadmap').then((m) => ({ default: m.RoadmapPage })))
+const PublicRoadmap = lazy(() =>
+  import('@/pages/PublicRoadmap').then((m) => ({ default: m.PublicRoadmap }))
+)
 const AccountSettings = lazy(() =>
   import('@/pages/settings/AccountSettings').then((m) => ({ default: m.AccountSettings }))
 )
@@ -68,6 +71,8 @@ function App() {
                   <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/invite" element={<InvitationAcceptancePage />} />
                   <Route path="/invitation/accept" element={<InvitationAcceptancePage />} />
+                  <Route path="/public/roadmap/:publicSlug" element={<PublicRoadmap />} />
+                  <Route path="/public/r/:subdomain" element={<PublicRoadmap />} />
 
                   {/* Onboarding route */}
                   <Route
