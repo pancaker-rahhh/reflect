@@ -5,18 +5,149 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reflect Widget Test</title>
     <style>
-        body { font-family: sans-serif; padding: 2rem; background-color: #f9fafb; }
-        h1 { color: #111827; }
-        p { color: #4b5563; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        .test-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        .test-btn {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+        .test-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            transform: translateY(-2px);
+        }
+        .config-display {
+            background: rgba(0,0,0,0.2);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 2rem;
+            text-align: left;
+        }
+        .config-display h3 {
+            margin-top: 0;
+            color: #ffd700;
+        }
+        pre {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
-    <h1>My Test Website</h1>
-    <p>This is a sample page to test the Reflect widget.</p>
-    <p>The widget should appear on this page based on its configuration.</p>
+    <div class="container">
+        <h1>🎯 Reflect Widget Test</h1>
+        <p>Test different widget configurations and themes</p>
+        
+        <div class="test-buttons">
+            <button class="test-btn" onclick="testLightTheme()">Light Theme</button>
+            <button class="test-btn" onclick="testDarkTheme()">Dark Theme</button>
+            <button class="test-btn" onclick="testCustomPosition()">Custom Position</button>
+            <button class="test-btn" onclick="testCustomColors()">Custom Colors</button>
+        </div>
+
+        <div class="config-display">
+            <h3>Current Configuration:</h3>
+            <pre id="config-display">No configuration set</pre>
+        </div>
+    </div>
+
     <script>
-        window.reflectConfig = { key: "widget_b4ac48918ce34c82" };
-      </script>
-      <script async src="http://localhost:5173/widget.js"></script>
+        function updateConfigDisplay() {
+            const config = window.reflectConfig || {};
+            document.getElementById('config-display').textContent = JSON.stringify(config, null, 2);
+        }
+
+        function testLightTheme() {
+            window.reflectConfig = {
+                key: "test_widget_light",
+                theme: "light"
+            };
+            updateConfigDisplay();
+            loadWidget();
+        }
+
+        function testDarkTheme() {
+            window.reflectConfig = {
+                key: "test_widget_dark",
+                theme: "dark"
+            };
+            updateConfigDisplay();
+            loadWidget();
+        }
+
+        function testCustomPosition() {
+            window.reflectConfig = {
+                key: "test_widget_position",
+                theme: "light",
+                position: "bottom-left"
+            };
+            updateConfigDisplay();
+            loadWidget();
+        }
+
+        function testCustomColors() {
+            window.reflectConfig = {
+                key: "test_widget_colors",
+                theme: "light",
+                position: "bottom-right"
+            };
+            updateConfigDisplay();
+            loadWidget();
+        }
+
+        function loadWidget() {
+            // Remove existing widget if any
+            const existingScript = document.querySelector('script[src*="widget.js"]');
+            if (existingScript) {
+                existingScript.remove();
+            }
+
+            // Load the widget
+            const script = document.createElement('script');
+            script.src = './dist-widget/widget.js';
+            script.async = true;
+            document.head.appendChild(script);
+        }
+
+        // Initialize with light theme
+        testLightTheme();
+    </script>
 </body>
 </html>
