@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:widget": "vite build --config vite.config.widget.js",
+    "dev:widget": "vite --config vite.config.widget.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },
