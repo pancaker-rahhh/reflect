@@ -26,6 +26,7 @@ from app.schemas.roadmap_schema import (
     RoadmapUpdate,
     RoadmapColumnCreate,
     RoadmapColumnUpdate,
+    RoadmapColumnRead,
     RoadmapFeatureCreate,
     RoadmapFeatureUpdate,
     RoadmapAssignmentCreate,
@@ -307,7 +308,7 @@ class RoadmapService(BaseRoadmapService):
 
     async def create_column(
         self, db: AsyncSession, user_id: UUID, column_in: RoadmapColumnCreate
-    ) -> RoadmapColumn:
+    ) -> RoadmapColumnRead:  # The return type is the Pydantic model
         await self._validate_roadmap_ownership(db, user_id, column_in.roadmap_id)
 
         existing_column = await self.column_repo.get_by_name_and_roadmap(
@@ -325,12 +326,25 @@ class RoadmapService(BaseRoadmapService):
             column_data['order'] = next_order
 
         try:
-            return await self.column_repo.create(db, **column_data)
+            new_column_orm = await self.column_repo.create(db, **column_data)
+
+            pydantic_column = RoadmapColumnRead(
+                id=new_column_orm.id,
+                roadmap_id=new_column_orm.roadmap_id,
+                name=new_column_orm.name,
+                color=new_column_orm.color,
+                status=new_column_orm.status,
+                order=new_column_orm.order,
+                features=[],
+            )
+
+            return pydantic_column
+
         except Exception as e:
             if 'uq_roadmap_column_name' in str(e):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail='A column with this name already exists in this roadmap',
+                    detail='A column with this name already exists for this roadmap',
                 )
             raise
 

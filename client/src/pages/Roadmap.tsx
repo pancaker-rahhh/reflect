@@ -253,13 +253,15 @@ export function RoadmapPage() {
   }
 
   const handleAddFeature = (formData: FeatureFormData) => {
-    if (!selectedColumn) return
+    if (!selectedColumn || !currentUser) return
 
     createFeatureMutation.mutate({
       title: formData.title,
       description: formData.description,
       column_id: selectedColumn.id,
       tag_ids: formData.tagIds,
+      submitter_name: currentUser.name,
+      submitter_email: currentUser.email,
     })
   }
 
