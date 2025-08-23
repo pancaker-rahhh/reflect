@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { SkipLink } from '@/components/common/SkipLink'
 import { PageLoading } from '@/components/common/LoadingSpinner'
@@ -18,6 +18,7 @@ import { AuthCallback } from '@/pages/auth/AuthCallback'
 import { VerifyOtp } from '@/pages/auth/VerifyOtp'
 import { OnboardingPage } from '@/pages/OnboardingPage'
 import { InvitationAcceptancePage } from '@/pages/InvitationAcceptancePage'
+import { Toaster } from '@/components/ui/toaster'
 
 // Lazy load secondary pages
 const Widgets = lazy(() => import('@/pages/Widgets').then((m) => ({ default: m.Widgets })))
@@ -31,6 +32,9 @@ const FeatureRequests = lazy(() =>
   import('@/pages/FeatureRequests').then((m) => ({ default: m.FeatureRequests }))
 )
 const RoadmapPage = lazy(() => import('@/pages/Roadmap').then((m) => ({ default: m.RoadmapPage })))
+const PublicRoadmap = lazy(() =>
+  import('@/pages/PublicRoadmap').then((m) => ({ default: m.PublicRoadmap }))
+)
 const AccountSettings = lazy(() =>
   import('@/pages/settings/AccountSettings').then((m) => ({ default: m.AccountSettings }))
 )
@@ -67,22 +71,33 @@ function App() {
                   <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/invite" element={<InvitationAcceptancePage />} />
                   <Route path="/invitation/accept" element={<InvitationAcceptancePage />} />
-                  
+                  <Route path="/public/roadmap/:publicSlug" element={<PublicRoadmap />} />
+                  <Route path="/public/r/:subdomain" element={<PublicRoadmap />} />
+
                   {/* Onboarding route */}
-                  <Route path="/onboarding" element={
-                    <ProtectedRoute>
-                      <OnboardingPage />
-                    </ProtectedRoute>
-                  } />
-                  
+                  <Route
+                    path="/onboarding"
+                    element={
+                      <ProtectedRoute>
+                        <OnboardingPage />
+                      </ProtectedRoute>
+                    }
+                  />
+
                   {/* Protected routes with onboarding guard */}
-                  <Route path="/" element={
-                    <ProtectedRoute>
-                      <OnboardingGuard>
-                        <AppLayout />
-                      </OnboardingGuard>
-                    </ProtectedRoute>
-                  }>
+                  <Route
+                    path="/"
+                    element={
+                      <ProtectedRoute>
+                        <OnboardingGuard>
+                          <AppLayout>
+                            <Outlet />
+                            <Toaster />
+                          </AppLayout>
+                        </OnboardingGuard>
+                      </ProtectedRoute>
+                    }
+                  >
                     <Route index element={<Navigate to="/dashboard" replace />} />
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="widgets" element={<Widgets />} />
@@ -106,9 +121,9 @@ function App() {
                 </Routes>
               </Suspense>
             </AppProvider>
-            </AuthProvider>
-          </BrowserRouter>
-        </TooltipProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
     </ErrorBoundary>
   )
 }

@@ -1,9 +1,38 @@
 // Export API modules
 export { userApi, type UserProfileUpdateRequest, type UserDeleteResponse } from './user'
-export { projectApi, type PaginatedProjects, type ProjectCreateRequest, type ProjectUpdateRequest } from './project'
+export {
+  projectApi,
+  type PaginatedProjects,
+  type ProjectCreateRequest,
+  type ProjectUpdateRequest,
+} from './project'
 export { widgetApi, type WidgetCreateRequest, type WidgetUpdateRequest } from './widget'
-export { onboardingApi, type OnboardingCompleteRequest, type OnboardingUpdateRequest, type FirstTimeCheckResponse } from './onboarding'
-export { organizationApi, invitationApi, type Organization, type OrganizationCreateRequest, type InvitationRequest, type BulkInvitationRequest } from './organization'
+export {
+  onboardingApi,
+  type OnboardingCompleteRequest,
+  type OnboardingUpdateRequest,
+  type FirstTimeCheckResponse,
+} from './onboarding'
+export {
+  organizationApi,
+  invitationApi,
+  type Organization,
+  type OrganizationCreateRequest,
+  type InvitationRequest,
+  type BulkInvitationRequest,
+} from './organization'
+export {
+  roadmapApi,
+  type RoadmapCreateRequest,
+  type RoadmapUpdateRequest,
+  type RoadmapColumnCreateRequest,
+  type RoadmapColumnUpdateRequest,
+  type RoadmapFeatureCreateRequest,
+  type RoadmapFeatureUpdateRequest,
+  type RoadmapTagCreateRequest,
+  type RoadmapTagUpdateRequest,
+  type FeatureOrderUpdateRequest,
+} from './roadmap'
 
 // Re-export client and error handling for advanced usage
 export { apiClient } from '../client'
@@ -13,9 +42,12 @@ export { ApiException, errorSanitizer, type ApiError } from '../errors'
 import { userApi } from './user'
 import { projectApi } from './project'
 import { widgetApi } from './widget'
+import { roadmapApi } from './roadmap'
 import type { UserProfileUpdateRequest } from './user'
 import type { ProjectCreateRequest } from './project'
 import type { WidgetCreateRequest } from './widget'
+import type { RoadmapCreateRequest } from './roadmap'
+import type { RoadmapColumnCreateRequest } from './roadmap'
 
 // Convenience API object for backward compatibility
 export const api = {
@@ -24,9 +56,10 @@ export const api = {
   syncUser: () => userApi.syncUser(),
   updateUserProfile: (data: UserProfileUpdateRequest) => userApi.updateProfile(data),
   deleteAccount: () => userApi.deleteAccount(),
-  
+
   // Project APIs
-  getProjectsByOrganization: (organizationId: string) => projectApi.getByOrganization(organizationId),
+  getProjectsByOrganization: (organizationId: string) =>
+    projectApi.getByOrganization(organizationId),
   getProject: (id: string) => projectApi.getProject(id),
   createProject: (data: ProjectCreateRequest) => projectApi.createProject(data),
   updateProject: (id: string, data: any) => projectApi.updateProject(id, data),
@@ -40,4 +73,31 @@ export const api = {
   deleteWidget: (id: string) => widgetApi.deleteWidget(id),
   activateWidget: (id: string) => widgetApi.activate(id),
   deactivateWidget: (id: string) => widgetApi.deactivate(id),
+
+  // Roadmap APIs
+  getRoadmap: (projectId: string) => roadmapApi.getByProject(projectId),
+  createRoadmap: (data: RoadmapCreateRequest) => roadmapApi.createRoadmap(data),
+  updateRoadmap: (roadmapId: string, data: any) => roadmapApi.updateRoadmap(roadmapId, data),
+  getPublicRoadmap: (publicSlug: string) => roadmapApi.getPublicRoadmap(publicSlug),
+  getPublicRoadmapBySubdomain: (subdomain: string) =>
+    roadmapApi.getPublicRoadmapBySubdomain(subdomain),
+
+  // Column APIs
+  createRoadmapColumn: (data: RoadmapColumnCreateRequest) => roadmapApi.createColumn(data),
+  updateRoadmapColumn: (columnId: string, data: any) => roadmapApi.updateColumn(columnId, data),
+  deleteRoadmapColumn: (columnId: string) => roadmapApi.deleteColumn(columnId),
+
+  // Feature APIs
+  createRoadmapFeature: (data: any) => roadmapApi.createFeature(data),
+  updateRoadmapFeature: (featureId: string, data: any) => roadmapApi.updateFeature(featureId, data),
+  deleteRoadmapFeature: (featureId: string) => roadmapApi.deleteFeature(featureId),
+  updateFeaturesOrder: (updates: any[]) => roadmapApi.updateFeaturesOrder(updates),
+  upvoteFeature: (featureId: string) => roadmapApi.upvoteFeature(featureId),
+
+  // Tag APIs
+  createRoadmapTag: (data: any) => roadmapApi.createTag(data),
+  getRoadmapTags: (roadmapId: string) => roadmapApi.getRoadmapTags(roadmapId),
+  getPublicRoadmapTags: (roadmapId: string) => roadmapApi.getPublicRoadmapTags(roadmapId),
+  updateRoadmapTag: (tagId: string, data: any) => roadmapApi.updateTag(tagId, data),
+  deleteRoadmapTag: (tagId: string) => roadmapApi.deleteTag(tagId),
 }

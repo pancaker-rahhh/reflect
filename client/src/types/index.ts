@@ -150,29 +150,77 @@ export interface FeatureRequest extends BaseFeedback {
   status: 'new' | 'under-review' | 'planned' | 'in-progress' | 'completed' | 'declined'
   upvotes: number
   roadmapColumnId?: string
+  submitterName?: string
+  submitterEmail?: string
+  tags?: RoadmapTag[]
 }
 
 export type Feedback = SurveyResponse | Review | BugReport | FeatureRequest
 
+export interface RoadmapTag {
+  id: string
+  roadmap_id: string
+  name: string
+  color: string
+  created_at: Date | string
+  updated_at: Date | string
+}
+
+export interface RoadmapFeatureTag {
+  id: string
+  feature_id: string
+  tag_id: string
+  tag: RoadmapTag
+  created_at: Date | string
+  updated_at: Date | string
+}
+
+export interface RoadmapFeature {
+  id: string
+  column_id: string
+  title: string
+  description?: string
+  order: number
+  vote_count: number
+  submitter_name?: string
+  submitter_email?: string
+  tags: RoadmapTag[]
+  feature_tags?: RoadmapFeatureTag[]
+  created_at: Date | string
+  updated_at: Date | string
+}
+
 export interface RoadmapColumn {
   id: string
-  roadmapId: string
+  roadmap_id: string
   name: string
   status: 'new' | 'in-progress' | 'planned' | 'under-review'
   color: string
   order: number
+  features: RoadmapFeature[]
 }
 
 export interface Roadmap {
   id: string
-  projectId: string
+  project_id: string
   name: string
-  isPublic: boolean
+  is_public: boolean
   subdomain: string
-  logoUrl?: string
+  public_slug?: string
+  logo_url?: string
   columns: RoadmapColumn[]
-  createdAt: Date
-  updatedAt: Date
+  tags: RoadmapTag[]
+  created_at: Date | string
+  updated_at: Date | string
+}
+
+export interface PaginatedProjects {
+  items: Project[]
+  meta: {
+    total: number
+    page: number
+    limit: number
+  }
 }
 
 export interface DashboardMetrics {

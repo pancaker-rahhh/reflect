@@ -1,9 +1,12 @@
-import { Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
 import { MainContent } from '@/components/common/SkipLink'
 
-export function AppLayout() {
+interface AppLayoutProps {
+  children: React.ReactNode
+}
+
+export function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="flex h-screen bg-background">
       <Sidebar />
@@ -11,9 +14,7 @@ export function AppLayout() {
         <Header />
         <MainContent>
           <div className="h-full overflow-y-auto p-8 lg:p-10">
-            <div className="max-w-7xl mx-auto">
-              <Outlet />
-            </div>
+            <div className="max-w-7xl mx-auto">{children}</div>
           </div>
         </MainContent>
       </div>
