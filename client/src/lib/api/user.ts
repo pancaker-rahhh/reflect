@@ -4,8 +4,7 @@ import type { User } from '@/types'
 export interface UserProfileUpdateRequest {
   name?: string
   company_name?: string
-  phone?: string
-  timezone?: string
+  country?: string
   avatar_url?: string
 }
 
@@ -30,5 +29,5 @@ export const userApi = {
 
   deleteAccount(): Promise<UserDeleteResponse> {
     return apiClient.delete<UserDeleteResponse>('/users/me')
-  }
+  },
 }

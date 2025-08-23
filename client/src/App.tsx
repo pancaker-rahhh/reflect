@@ -21,9 +21,13 @@ import { InvitationAcceptancePage } from '@/pages/InvitationAcceptancePage'
 import { Toaster } from '@/components/ui/toaster'
 
 // Lazy load secondary pages
+const WidgetView = lazy(() => import('@/pages/WidgetView').then((m) => ({ default: m.WidgetView })))
 const Widgets = lazy(() => import('@/pages/Widgets').then((m) => ({ default: m.Widgets })))
 const WidgetCreate = lazy(() =>
   import('@/pages/WidgetCreate').then((m) => ({ default: m.WidgetCreate }))
+)
+const WidgetGetCode = lazy(() =>
+  import('@/pages/WidgetGetCode').then((m) => ({ default: m.WidgetGetCode }))
 )
 const Responses = lazy(() => import('@/pages/Responses').then((m) => ({ default: m.Responses })))
 const Reviews = lazy(() => import('@/pages/Reviews').then((m) => ({ default: m.Reviews })))
@@ -73,6 +77,7 @@ function App() {
                   <Route path="/invitation/accept" element={<InvitationAcceptancePage />} />
                   <Route path="/public/roadmap/:publicSlug" element={<PublicRoadmap />} />
                   <Route path="/public/r/:subdomain" element={<PublicRoadmap />} />
+                  <Route path="/widget-view" element={<WidgetView />} />
 
                   {/* Onboarding route */}
                   <Route
@@ -102,6 +107,9 @@ function App() {
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="widgets" element={<Widgets />} />
                     <Route path="widgets/new" element={<WidgetCreate />} />
+                    <Route path="widgets/:widgetId/edit" element={<WidgetCreate />} />
+                    <Route path="widgets/:widgetId/get-code" element={<WidgetGetCode />} />
+                    <Route path="/widgets/create" element={<WidgetCreate />} />
                     <Route path="feedback/responses" element={<Responses />} />
                     <Route path="feedback/reviews" element={<Reviews />} />
                     <Route path="feedback/bugs" element={<BugReports />} />

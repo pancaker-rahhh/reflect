@@ -8,12 +8,14 @@ from app.models.base_model import BaseModel
 
 
 class WidgetType(str, enum.Enum):
-    FEEDBACK = 'feedback'
-    SURVEY = 'survey'
-    REVIEW = 'review'
-    BUG_REPORT = 'bug_report'
-    FEATURE_REQUEST = 'feature_request'
-    NPS = 'nps'
+    FEEDBACK = 'FEEDBACK'
+    SURVEY = 'SURVEY'
+    REVIEW = 'REVIEW'
+    BUG_REPORT = 'BUG_REPORT'
+    FEATURE_REQUEST = 'FEATURE_REQUEST'
+    NPS = 'NPS'
+    CSAT = 'CSAT'
+    CES = 'CES'
 
 
 class WidgetPosition(str, enum.Enum):

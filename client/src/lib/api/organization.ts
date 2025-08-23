@@ -1,13 +1,5 @@
 import { apiClient } from '../client'
-
-export interface Organization {
-  id: string
-  name: string
-  slug: string
-  description?: string
-  created_at: string
-  updated_at: string
-}
+import type { Organization } from '@/types'
 
 export interface OrganizationCreateRequest {
   name: string
@@ -30,14 +22,14 @@ export interface OrganizationListResponse {
 
 export interface OrganizationMember {
   id: string
-  user_id?: string  // Optional for pending members
+  user_id?: string // Optional for pending members
   organization_id?: string
   role: 'owner' | 'admin' | 'member' | 'viewer'
   user_name?: string
   user_email?: string
   created_at: string
   updated_at?: string
-  is_pending?: boolean  // True for invited but not accepted members
+  is_pending?: boolean // True for invited but not accepted members
 }
 
 export interface InvitationRequest {
@@ -59,8 +51,20 @@ export const organizationApi = {
   /**
    * Get simplified list of user's organizations
    */
-  getMy: (): Promise<Organization[]> =>
-    apiClient.get<Organization[]>('/organizations/my'),
+  getMy: (): Promise<Organization[]> => apiClient.get<Organization[]>('/organizations/my'),
+
+  /**
+   * Get current user's organization (newer method)
+   */
+  async getMyOrganization(): Promise<Organization | null> {
+    const response = await apiClient.get<OrganizationListResponse>('/organizations?limit=1')
+
+    if (response && response.organizations && response.organizations.length > 0) {
+      return response.organizations[0]
+    }
+
+    return null
+  },
 
   /**
    * Get organization by ID
@@ -83,14 +87,15 @@ export const organizationApi = {
   /**
    * Delete organization
    */
-  delete: (id: string): Promise<void> =>
-    apiClient.delete<void>(`/organizations/${id}`),
+  delete: (id: string): Promise<void> => apiClient.delete<void>(`/organizations/${id}`),
 
   /**
    * Get organization members
    */
   getMembers: (orgId: string, skip = 0, limit = 50): Promise<OrganizationMember[]> =>
-    apiClient.get<OrganizationMember[]>(`/organizations/${orgId}/members?skip=${skip}&limit=${limit}`),
+    apiClient.get<OrganizationMember[]>(
+      `/organizations/${orgId}/members?skip=${skip}&limit=${limit}`
+    ),
 
   /**
    * Invite member to organization
@@ -101,7 +106,11 @@ export const organizationApi = {
   /**
    * Update member role
    */
-  updateMember: (orgId: string, memberId: string, data: { role: string }): Promise<OrganizationMember> =>
+  updateMember: (
+    orgId: string,
+    memberId: string,
+    data: { role: string }
+  ): Promise<OrganizationMember> =>
     apiClient.put<OrganizationMember>(`/organizations/${orgId}/members/${memberId}`, data),
 
   /**
@@ -113,8 +122,7 @@ export const organizationApi = {
   /**
    * Leave organization
    */
-  leave: (orgId: string): Promise<void> =>
-    apiClient.post<void>(`/organizations/${orgId}/leave`),
+  leave: (orgId: string): Promise<void> => apiClient.post<void>(`/organizations/${orgId}/leave`),
 }
 
 export const invitationApi = {

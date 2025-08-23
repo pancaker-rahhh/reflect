@@ -1,20 +1,21 @@
-import { createContext, useContext, useState, useEffect, useMemo, useCallback, type ReactNode } from 'react'
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  type ReactNode,
+} from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { organizationApi, projectApi } from '@/lib/api'
+import { organizationApi } from '@/lib/api/organization'
+import { projectApi } from '@/lib/api/project'
 import { useAuth } from '@/contexts/AuthContext'
-import type { Project } from '@/types'
-
-interface Organization {
-  id: string
-  name: string
-  slug: string
-  description?: string
-  created_at: string
-  settings: Record<string, any>
-}
+import type { Organization, Project } from '@/types'
 
 interface AppContextType {
-  organization: Organization | null
+  currentOrganization: Organization | null
+  organization: Organization | null // Backward compatibility
   projects: Project[]
   currentProject: Project | null
   setCurrentProject: (project: Project | null) => void
@@ -33,52 +34,60 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCurrentProject(project)
   }, [])
 
-  // Fetch user's organization
-  const { data: organizations, isLoading: isLoadingOrganization } = useQuery({
-    queryKey: ['organizations', 'my'],
-    queryFn: () => organizationApi.getMy(),
+  const { data: currentOrganization, isLoading: isLoadingOrganization } = useQuery({
+    queryKey: ['organization'],
+    queryFn: organizationApi.getMyOrganization,
     enabled: !!user && !authLoading,
     retry: false,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   })
 
-  const organization = useMemo(() => organizations?.[0] || null, [organizations])
+  // Backward compatibility - provide organization as alias
+  const organization = currentOrganization
 
   const refreshProjects = useCallback(() => {
-    if (organization?.id) {
-      queryClient.invalidateQueries({ queryKey: ['projects', organization.id] })
+    if (currentOrganization?.id) {
+      queryClient.invalidateQueries({ queryKey: ['projects', currentOrganization.id] })
     }
-  }, [organization?.id, queryClient])
+  }, [currentOrganization?.id, queryClient])
 
   // Fetch projects for the organization
   const { data: projectsData, isLoading: isLoadingProjects } = useQuery({
-    queryKey: ['projects', organization?.id],
-    queryFn: () => projectApi.getByOrganization(organization!.id),
-    enabled: !!organization && !!user,
+    queryKey: ['projects', currentOrganization?.id],
+    queryFn: () => projectApi.getByOrganization(currentOrganization!.id),
+    enabled: !!currentOrganization && !!user,
     retry: false,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   })
 
   const projects = useMemo(() => projectsData?.items || [], [projectsData?.items])
   const hasProjects = projects.length > 0
 
-  // Set initial project only once when projects load
   useEffect(() => {
     if (hasProjects && currentProject === null) {
       setCurrentProject(projects[0])
     }
-  }, [hasProjects]) // Only run when hasProjects changes from false to true
+  }, [hasProjects, projects, currentProject])
 
   const value = useMemo(
     () => ({
-      organization: organization || null,
+      currentOrganization: currentOrganization || null,
+      organization: organization || null, // Backward compatibility
       projects,
       currentProject,
       setCurrentProject: handleSetCurrentProject,
       refreshProjects,
       isLoading: isLoadingOrganization || isLoadingProjects,
     }),
-    [organization, projects, currentProject, handleSetCurrentProject, refreshProjects, isLoadingOrganization, isLoadingProjects]
+    [
+      currentOrganization,
+      organization,
+      projects,
+      currentProject,
+      handleSetCurrentProject,
+      isLoadingOrganization,
+      isLoadingProjects,
+    ]
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

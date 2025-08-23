@@ -4,6 +4,21 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -58,10 +73,14 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family:
+      'Inter',
+      system-ui,
+      -apple-system,
+      sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 
   h1 {
@@ -104,6 +123,17 @@
 
   .skip-link:focus {
     @apply top-6;
+  }
+
+  .focus\:not-sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0.5rem 1rem;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
   }
 
   /* Line clamp utilities for text truncation */
@@ -175,7 +205,8 @@
 
   /* Enhanced micro-interactions */
   @keyframes pulse-glow {
-    0%, 100% {
+    0%,
+    100% {
       box-shadow: 0 0 5px rgba(139, 92, 246, 0.3);
     }
     50% {
@@ -184,7 +215,8 @@
   }
 
   @keyframes float {
-    0%, 100% {
+    0%,
+    100% {
       transform: translateY(0px);
     }
     50% {
@@ -232,7 +264,8 @@
 
   /* Enhanced loading states */
   .loading-shimmer {
-    background: linear-gradient(90deg,
+    background: linear-gradient(
+      90deg,
       hsl(var(--muted)) 25%,
       hsl(var(--muted-foreground) / 0.1) 50%,
       hsl(var(--muted)) 75%
@@ -288,7 +321,9 @@
 
   /* Smooth text transitions */
   .text-transition {
-    transition: color 0.3s ease, transform 0.3s ease;
+    transition:
+      color 0.3s ease,
+      transform 0.3s ease;
   }
 
   /* Enhanced button interactions */
@@ -318,8 +353,8 @@
 
   /* Hide scrollbar for IE, Edge and Firefox */
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 
   /* Mobile-first responsive design utilities */
@@ -359,7 +394,6 @@
       transition-duration: 0.01ms !important;
     }
   }
-
   /* Enhanced scrollbar styling */
   .scrollbar-hide {
     -ms-overflow-style: none;

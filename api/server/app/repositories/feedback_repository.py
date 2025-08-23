@@ -9,6 +9,9 @@ from app.models.feedback_model import (
     ReviewFeedback,
     BugReportFeedback,
     FeatureRequestFeedback,
+    NPSFeedback,
+    CSATFeedback,
+    CESFeedback,
 )
 from app.repositories.base_repository import BaseRepository
 
@@ -73,6 +76,12 @@ class FeedbackRepository(BaseRepository[Feedback]):
             model_cls = BugReportFeedback
         elif ftype == FeedbackType.FEATURE_REQUEST:
             model_cls = FeatureRequestFeedback
+        elif ftype == FeedbackType.NPS:
+            model_cls = NPSFeedback
+        elif ftype == FeedbackType.CSAT:
+            model_cls = CSATFeedback
+        elif ftype == FeedbackType.CES:
+            model_cls = CESFeedback
         else:
             model_cls = Feedback
 

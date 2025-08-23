@@ -44,9 +44,7 @@ export const OnboardingWizard: React.FC = () => {
         <div className="container mx-auto px-4 py-8 relative z-10">
           <div className="max-w-3xl mx-auto">
             <div className="mb-8 animate-fade-in">
-              <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
-                Welcome to Reflect
-              </h1>
+              <br />
               {currentStep !== 'welcome' && currentStep !== 'completion' && (
                 <div className="mt-6">
                   <ProgressBar />

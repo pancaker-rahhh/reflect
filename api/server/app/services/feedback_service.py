@@ -1,22 +1,35 @@
 from __future__ import annotations
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories.feedback_repository import feedback_repository
 from app.repositories.feedback_comment_repository import feedback_comment_repository
-from app.repositories.feedback_vote_repository import feedback_vote_repository
+
 from app.schemas.feedback_schema import (
     FeedbackUpdate,
     FeedbackCreatePayload,
     FeedbackResponsePayload,
+    GeneralFeedbackCreate,
+    SurveyFeedbackCreate,
+    ReviewFeedbackCreate,
+    BugReportFeedbackCreate,
+    FeatureRequestFeedbackCreate,
+    NPSFeedbackCreate,
+    CSATFeedbackCreate,
+    CESFeedbackCreate,
+    GeneralFeedbackResponse,
     SurveyFeedbackResponse,
     ReviewFeedbackResponse,
     BugReportFeedbackResponse,
     FeatureRequestFeedbackResponse,
+    NPSFeedbackResponse,
+    CSATFeedbackResponse,
+    CESFeedbackResponse,
 )
-from app.models.feedback_model import FeedbackType
-from app.models.feedback_model import FeedbackComment, FeedbackVote
-from app.core.exceptions import NotFoundError
+from app.models.feedback_model import FeedbackType, FeedbackPriority, FeedbackStatus
+from app.models.feedback_model import FeedbackComment
+from app.models.widget_model import WidgetType
+from app.core.exceptions import NotFoundError, ValidationError
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
@@ -39,6 +52,197 @@ class FeedbackService:
             )
 
         return self._convert_to_response(obj)
+
+    async def create_feedback_from_widget(
+        self,
+        db: AsyncSession,
+        widget_id: UUID,
+        project_id: UUID,
+        widget_type: WidgetType,
+        data: Dict[str, Any],
+        context: Dict[str, Any] = None,
+    ) -> FeedbackResponsePayload:
+        """
+        Create feedback based on widget type and provided data.
+        This method automatically determines the appropriate feedback type and creates the correct payload.
+        """
+        context = context or {}
+
+        # Base feedback data
+        base_data = {
+            'widget_id': widget_id,
+            'project_id': project_id,
+            'is_anonymous': True,
+            'context': context,
+            'feedback_metadata': {
+                'widget_type': widget_type.value,
+                'submission_method': 'widget',
+            },
+        }
+
+        # Create appropriate feedback based on widget type
+        if widget_type == WidgetType.REVIEW:
+            payload = self._create_review_feedback(base_data, data)
+        elif widget_type == WidgetType.BUG_REPORT:
+            payload = self._create_bug_report_feedback(base_data, data)
+        elif widget_type == WidgetType.FEATURE_REQUEST:
+            payload = self._create_feature_request_feedback(base_data, data)
+        elif widget_type == WidgetType.NPS:
+            payload = self._create_nps_feedback(base_data, data)
+        elif widget_type == WidgetType.CSAT:
+            payload = self._create_csat_feedback(base_data, data)
+        elif widget_type == WidgetType.CES:
+            payload = self._create_ces_feedback(base_data, data)
+        else:
+            # Default to general feedback
+            payload = self._create_general_feedback(base_data, data)
+
+        return await self.create_feedback(db, payload)
+
+    def _create_review_feedback(
+        self, base_data: Dict[str, Any], data: Dict[str, Any]
+    ) -> ReviewFeedbackCreate:
+        """Create review feedback with 5-star rating system"""
+        return ReviewFeedbackCreate(
+            **base_data,
+            feedback_type=FeedbackType.REVIEW,
+            overall_rating=data.get('rating', 0),  # 1-5 star rating
+            title=data.get('title', 'Product Review'),
+            message=data.get('message', ''),
+            pros=data.get('pros', ''),
+            cons=data.get('cons', ''),
+            is_published=data.get('is_published', False),
+        )
+
+    def _create_bug_report_feedback(
+        self, base_data: Dict[str, Any], data: Dict[str, Any]
+    ) -> BugReportFeedbackCreate:
+        """Create bug report feedback with detailed fields"""
+        # Convert severity string to FeedbackPriority enum
+        severity_str = data.get('severity', 'medium').lower()
+        try:
+            severity_level = FeedbackPriority(severity_str)
+        except ValueError:
+            # Default to medium if invalid severity provided
+            severity_level = FeedbackPriority.MEDIUM
+
+        return BugReportFeedbackCreate(
+            **base_data,
+            feedback_type=FeedbackType.BUG_REPORT,
+            title=data.get('title', 'Bug Report'),
+            message=data.get('description', ''),
+            severity_level=severity_level,
+            steps_to_reproduce=data.get('steps_to_reproduce', ''),
+            expected_behavior=data.get('expected_result', ''),
+            actual_behavior=data.get('actual_result', ''),
+            visual_proof=data.get('visual_proof') or {},
+        )
+
+    def _create_feature_request_feedback(
+        self, base_data: Dict[str, Any], data: Dict[str, Any]
+    ) -> FeatureRequestFeedbackCreate:
+        """Create feature request feedback with solution and benefits"""
+        return FeatureRequestFeedbackCreate(
+            **base_data,
+            feedback_type=FeedbackType.FEATURE_REQUEST,
+            title=data.get('title', 'Feature Request'),
+            message=data.get('description', ''),
+            suggested_solution=data.get('suggested_solution', ''),
+            benefits=data.get('benefits', ''),
+            use_case=data.get('use_case', ''),
+        )
+
+    def _create_nps_feedback(
+        self, base_data: Dict[str, Any], data: Dict[str, Any]
+    ) -> NPSFeedbackCreate:
+        """Create NPS feedback with 0-10 scale"""
+        nps_score = data.get('score', 0)
+        if not isinstance(nps_score, int) or nps_score < 0 or nps_score > 10:
+            raise ValidationError('NPS score must be an integer between 0 and 10')
+
+        # Determine promoter category
+        if nps_score >= 9:
+            promoter_category = 'promoter'
+        elif nps_score >= 7:
+            promoter_category = 'passive'
+        else:
+            promoter_category = 'detractor'
+
+        return NPSFeedbackCreate(
+            **base_data,
+            feedback_type=FeedbackType.NPS,
+            nps_score=nps_score,
+            promoter_category=promoter_category,
+            follow_up_comment=data.get('comment', ''),
+            title='NPS Survey Response',
+            message=data.get('comment', ''),
+        )
+
+    def _create_csat_feedback(
+        self, base_data: Dict[str, Any], data: Dict[str, Any]
+    ) -> CSATFeedbackCreate:
+        """Create CSAT feedback with 1-5 scale"""
+        csat_score = data.get('score', 1)
+        if not isinstance(csat_score, int) or csat_score < 1 or csat_score > 5:
+            raise ValidationError('CSAT score must be an integer between 1 and 5')
+
+        # Determine satisfaction level
+        satisfaction_levels = {
+            1: 'very_dissatisfied',
+            2: 'dissatisfied',
+            3: 'neutral',
+            4: 'satisfied',
+            5: 'very_satisfied',
+        }
+
+        return CSATFeedbackCreate(
+            **base_data,
+            feedback_type=FeedbackType.CSAT,
+            csat_score=csat_score,
+            satisfaction_level=satisfaction_levels.get(csat_score, 'neutral'),
+            follow_up_comment=data.get('comment', ''),
+            title='CSAT Survey Response',
+            message=data.get('comment', ''),
+        )
+
+    def _create_ces_feedback(
+        self, base_data: Dict[str, Any], data: Dict[str, Any]
+    ) -> CESFeedbackCreate:
+        """Create CES feedback with 1-5 scale"""
+        ces_score = data.get('score', 1)
+        if not isinstance(ces_score, int) or ces_score < 1 or ces_score > 5:
+            raise ValidationError('CES score must be an integer between 1 and 5')
+
+        # Determine ease level
+        ease_levels = {
+            1: 'very_difficult',
+            2: 'difficult',
+            3: 'neutral',
+            4: 'easy',
+            5: 'very_easy',
+        }
+
+        return CESFeedbackCreate(
+            **base_data,
+            feedback_type=FeedbackType.CES,
+            ces_score=ces_score,
+            ease_level=ease_levels.get(ces_score, 'neutral'),
+            follow_up_comment=data.get('comment', ''),
+            title='CES Survey Response',
+            message=data.get('comment', ''),
+        )
+
+    def _create_general_feedback(
+        self, base_data: Dict[str, Any], data: Dict[str, Any]
+    ) -> GeneralFeedbackCreate:
+        """Create general feedback as fallback"""
+        return GeneralFeedbackCreate(
+            **base_data,
+            feedback_type=FeedbackType.GENERAL,
+            title=data.get('title', 'General Feedback'),
+            message=data.get('message', ''),
+            rating=data.get('rating'),
+        )
 
     async def get_feedback(
         self, db: AsyncSession, feedback_id: UUID
@@ -106,52 +310,40 @@ class FeedbackService:
             db, feedback_id, skip, limit
         )
 
-    async def vote_feedback(
-        self,
-        db: AsyncSession,
-        feedback_id: UUID,
-        vote_type: str,
-        user_id: Optional[UUID] = None,
-        session_id: Optional[str] = None,
-    ) -> FeedbackVote:
+    async def upvote_feedback(self, db: AsyncSession, feedback_id: UUID) -> bool:
+        """
+        Simple upvote - increments the feedback_votes counter.
+
+        Args:
+            db: Database session
+            feedback_id: ID of the feedback to upvote
+
+        Returns:
+            bool: True if upvote was successful
+
+        Raises:
+            NotFoundError: If feedback not found
+            ValidationError: If feedback cannot be upvoted (archived/rejected)
+        """
         feedback = await feedback_repository.get(db, feedback_id)
         if not feedback:
             raise NotFoundError('Feedback not found')
 
-        if vote_type not in ['up', 'down']:
-            raise ValueError("Vote type must be 'up' or 'down'")
+        # Validate feedback is not deleted or archived
+        if feedback.status in [FeedbackStatus.ARCHIVED, FeedbackStatus.REJECTED]:
+            raise ValidationError('Cannot upvote archived or rejected feedback')
 
-        return await feedback_vote_repository.update_vote(
-            db, feedback_id, vote_type, user_id, session_id
-        )
+        # Use atomic increment to prevent race conditions
+        feedback.feedback_votes += 1
+        await db.commit()
+        await db.refresh(feedback)
 
-    async def remove_vote(
-        self,
-        db: AsyncSession,
-        feedback_id: UUID,
-        user_id: Optional[UUID] = None,
-        session_id: Optional[str] = None,
-    ) -> bool:
-        return await feedback_vote_repository.remove_vote(
-            db, feedback_id, user_id, session_id
-        )
-
-    async def get_vote_counts(self, db: AsyncSession, feedback_id: UUID) -> dict:
-        return await feedback_vote_repository.get_vote_counts(db, feedback_id)
-
-    async def get_user_vote(
-        self,
-        db: AsyncSession,
-        feedback_id: UUID,
-        user_id: Optional[UUID] = None,
-        session_id: Optional[str] = None,
-    ) -> Optional[FeedbackVote]:
-        return await feedback_vote_repository.get_user_vote(
-            db, feedback_id, user_id, session_id
-        )
+        return True
 
     def _convert_to_response(self, obj) -> FeedbackResponsePayload:
-        if obj.feedback_type == FeedbackType.SURVEY:
+        if obj.feedback_type == FeedbackType.GENERAL:
+            return GeneralFeedbackResponse.model_validate(obj)
+        elif obj.feedback_type == FeedbackType.SURVEY:
             return SurveyFeedbackResponse.model_validate(obj)
         elif obj.feedback_type == FeedbackType.REVIEW:
             return ReviewFeedbackResponse.model_validate(obj)
@@ -159,8 +351,14 @@ class FeedbackService:
             return BugReportFeedbackResponse.model_validate(obj)
         elif obj.feedback_type == FeedbackType.FEATURE_REQUEST:
             return FeatureRequestFeedbackResponse.model_validate(obj)
+        elif obj.feedback_type == FeedbackType.NPS:
+            return NPSFeedbackResponse.model_validate(obj)
+        elif obj.feedback_type == FeedbackType.CSAT:
+            return CSATFeedbackResponse.model_validate(obj)
+        elif obj.feedback_type == FeedbackType.CES:
+            return CESFeedbackResponse.model_validate(obj)
         else:
-            return SurveyFeedbackResponse.model_validate(obj)
+            return GeneralFeedbackResponse.model_validate(obj)
 
 
 feedback_service = FeedbackService()

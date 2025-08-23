@@ -40,7 +40,6 @@ class FeedbackCreate(FeedbackBase):
 class FeedbackUpdate(BaseModel):
     # Base fields
     status: Optional[FeedbackStatus] = None
-    priority: Optional[FeedbackPriority] = None
     title: Optional[str] = None
     message: Optional[str] = None
     rating: Optional[int] = None
@@ -69,17 +68,29 @@ class FeedbackUpdate(BaseModel):
     steps_to_reproduce: Optional[str] = None
     expected_behavior: Optional[str] = None
     actual_behavior: Optional[str] = None
-    environment_info: Optional[Dict[str, Any]] = None
     attachments: Optional[list] = None
+    visual_proof: Optional[Dict[str, Any]] = None
 
     # FeatureRequestFeedback fields
     use_case: Optional[str] = None
-    business_value: Optional[str] = None
     upvotes_count: Optional[int] = None
     downvotes_count: Optional[int] = None
-    estimated_effort: Optional[str] = None
     implementation_status: Optional[str] = None
-    roadmap_position: Optional[int] = None
+    suggested_solution: Optional[str] = None
+    benefits: Optional[str] = None
+
+    # NPSFeedback fields
+    nps_score: Optional[int] = None
+    promoter_category: Optional[str] = None
+    follow_up_comment: Optional[str] = None
+
+    # CSATFeedback fields
+    csat_score: Optional[int] = None
+    satisfaction_level: Optional[str] = None
+
+    # CESFeedback fields
+    ces_score: Optional[int] = None
+    ease_level: Optional[str] = None
 
 
 class FeedbackResponse(BaseModel):
@@ -88,10 +99,10 @@ class FeedbackResponse(BaseModel):
     project_id: UUID
     feedback_type: FeedbackType
     status: FeedbackStatus
-    priority: FeedbackPriority
     title: Optional[str]
     message: Optional[str]
     rating: Optional[int]
+    feedback_votes: int = 0
     feedback_metadata: Dict[str, Any]
     context: Dict[str, Any]
     submitter_name: Optional[str]
@@ -109,6 +120,10 @@ class FeedbackResponse(BaseModel):
 
 
 # Polymorphic create payloads
+class GeneralFeedbackCreate(FeedbackBase):
+    feedback_type: Literal[FeedbackType.GENERAL] = FeedbackType.GENERAL
+
+
 class SurveyFeedbackCreate(FeedbackBase):
     feedback_type: Literal[FeedbackType.SURVEY] = FeedbackType.SURVEY  # type: ignore[assignment]
     survey_type: Optional[str] = None
@@ -126,34 +141,62 @@ class ReviewFeedbackCreate(FeedbackBase):
 
 class BugReportFeedbackCreate(FeedbackBase):
     feedback_type: Literal[FeedbackType.BUG_REPORT] = FeedbackType.BUG_REPORT  # type: ignore[assignment]
-    severity_level: Optional[str] = None
+    severity_level: Optional[FeedbackPriority] = None
     steps_to_reproduce: Optional[str] = None
     expected_behavior: Optional[str] = None
     actual_behavior: Optional[str] = None
-    environment_info: Dict[str, Any] = Field(default_factory=dict)
+    visual_proof: Dict[str, Any] = Field(default_factory=dict)
 
 
 class FeatureRequestFeedbackCreate(FeedbackBase):
     feedback_type: Literal[FeedbackType.FEATURE_REQUEST] = FeedbackType.FEATURE_REQUEST  # type: ignore[assignment]
     use_case: Optional[str] = None
-    business_value: Optional[str] = None
-    effort_estimate: Optional[str] = None
-    impact_score: Optional[int] = None
+    suggested_solution: Optional[str] = None
+    benefits: Optional[str] = None
     implementation_status: str = 'backlog'
+
+
+class NPSFeedbackCreate(FeedbackBase):
+    feedback_type: Literal[FeedbackType.NPS] = FeedbackType.NPS  # type: ignore[assignment]
+    nps_score: int = Field(..., ge=0, le=10)
+    promoter_category: Optional[str] = None
+    follow_up_comment: Optional[str] = None
+
+
+class CSATFeedbackCreate(FeedbackBase):
+    feedback_type: Literal[FeedbackType.CSAT] = FeedbackType.CSAT  # type: ignore[assignment]
+    csat_score: int = Field(..., ge=1, le=5)
+    satisfaction_level: Optional[str] = None
+    follow_up_comment: Optional[str] = None
+
+
+class CESFeedbackCreate(FeedbackBase):
+    feedback_type: Literal[FeedbackType.CES] = FeedbackType.CES  # type: ignore[assignment]
+    ces_score: int = Field(..., ge=1, le=5)
+    ease_level: Optional[str] = None
+    follow_up_comment: Optional[str] = None
 
 
 FeedbackCreatePayload = Annotated[
     Union[
+        GeneralFeedbackCreate,
         SurveyFeedbackCreate,
         ReviewFeedbackCreate,
         BugReportFeedbackCreate,
         FeatureRequestFeedbackCreate,
+        NPSFeedbackCreate,
+        CSATFeedbackCreate,
+        CESFeedbackCreate,
     ],
     Field(discriminator='feedback_type'),
 ]
 
 
 # Polymorphic response payloads
+class GeneralFeedbackResponse(FeedbackResponse):
+    feedback_type: Literal[FeedbackType.GENERAL]
+
+
 class SurveyFeedbackResponse(FeedbackResponse):
     feedback_type: Literal[FeedbackType.SURVEY] = FeedbackType.SURVEY  # type: ignore[assignment]
 
@@ -168,28 +211,52 @@ class ReviewFeedbackResponse(FeedbackResponse):
 
 class BugReportFeedbackResponse(FeedbackResponse):
     feedback_type: Literal[FeedbackType.BUG_REPORT] = FeedbackType.BUG_REPORT  # type: ignore[assignment]
-    severity_level: Optional[str] = None
+    severity_level: Optional[FeedbackPriority] = None
     steps_to_reproduce: Optional[str] = None
     expected_behavior: Optional[str] = None
     actual_behavior: Optional[str] = None
-    environment_info: Dict[str, Any] = Field(default_factory=dict)
+    visual_proof: Dict[str, Any] = Field(default_factory=dict)
 
 
 class FeatureRequestFeedbackResponse(FeedbackResponse):
     feedback_type: Literal[FeedbackType.FEATURE_REQUEST] = FeedbackType.FEATURE_REQUEST  # type: ignore[assignment]
     use_case: Optional[str] = None
-    business_value: Optional[str] = None
-    effort_estimate: Optional[str] = None
-    impact_score: Optional[int] = None
+    suggested_solution: Optional[str] = None
+    benefits: Optional[str] = None
     implementation_status: str = 'backlog'
+
+
+class NPSFeedbackResponse(FeedbackResponse):
+    feedback_type: Literal[FeedbackType.NPS] = FeedbackType.NPS  # type: ignore[assignment]
+    nps_score: int
+    promoter_category: Optional[str] = None
+    follow_up_comment: Optional[str] = None
+
+
+class CSATFeedbackResponse(FeedbackResponse):
+    feedback_type: Literal[FeedbackType.CSAT] = FeedbackType.CSAT  # type: ignore[assignment]
+    csat_score: int
+    satisfaction_level: Optional[str] = None
+    follow_up_comment: Optional[str] = None
+
+
+class CESFeedbackResponse(FeedbackResponse):
+    feedback_type: Literal[FeedbackType.CES] = FeedbackType.CES  # type: ignore[assignment]
+    ces_score: int
+    ease_level: Optional[str] = None
+    follow_up_comment: Optional[str] = None
 
 
 FeedbackResponsePayload = Annotated[
     Union[
+        GeneralFeedbackResponse,
         SurveyFeedbackResponse,
         ReviewFeedbackResponse,
         BugReportFeedbackResponse,
         FeatureRequestFeedbackResponse,
+        NPSFeedbackResponse,
+        CSATFeedbackResponse,
+        CESFeedbackResponse,
     ],
     Field(discriminator='feedback_type'),
 ]
@@ -231,3 +298,17 @@ class FeedbackVoteCounts(BaseModel):
     upvotes: int
     downvotes: int
     total: int
+
+    class Config:
+        from_attributes = True
+
+
+class UpvoteResponse(BaseModel):
+    """Response model for upvote endpoint"""
+
+    success: bool
+    feedback_votes: int
+    message: Optional[str] = None
+
+    class Config:
+        from_attributes = True

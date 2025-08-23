@@ -64,9 +64,13 @@ class Settings(BaseSettings):
     def cors_origins_list(self) -> List[str]:
         if not self.CORS_ORIGINS or self.CORS_ORIGINS.strip() == '':
             return []
-        return [
+        origins = [
             origin.strip() for origin in self.CORS_ORIGINS.split(',') if origin.strip()
         ]
+        # In development, allow file:// protocol for widget testing
+        if self.ENV == 'development':
+            origins.append('null')  # file:// protocol origin
+        return origins
 
     @property
     def cors_headers_list(self) -> List[str]:

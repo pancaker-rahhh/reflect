@@ -14,6 +14,11 @@ class BaseRepository(Generic[ModelType]):
 
     async def get(self, db: AsyncSession, id: UUID) -> Optional[ModelType]:
         stmt = select(self.model).where(self.model.id == id)
+
+        # Automatically filter out soft-deleted records
+        if hasattr(self.model, 'deleted_at'):
+            stmt = stmt.where(self.model.deleted_at.is_(None))
+
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
 
@@ -21,6 +26,10 @@ class BaseRepository(Generic[ModelType]):
         self, db: AsyncSession, skip: int = 0, limit: int = 100, **filters
     ) -> List[ModelType]:
         stmt = select(self.model)
+
+        # Automatically filter out soft-deleted records
+        if hasattr(self.model, 'deleted_at'):
+            stmt = stmt.where(self.model.deleted_at.is_(None))
 
         for key, value in filters.items():
             if hasattr(self.model, key) and value is not None:

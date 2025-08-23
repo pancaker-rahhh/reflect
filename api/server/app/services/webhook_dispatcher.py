@@ -20,24 +20,24 @@ class WebhookEventDispatcher:
     ) -> Optional[Dict[str, Any]]:
         """Dispatch webhook for new feedback creation"""
 
+        feedback_data = {
+            'id': str(feedback.id),
+            'widget_id': str(feedback.widget_id),
+            'project_id': str(feedback.project_id),
+            'feedback_type': feedback.feedback_type.value,
+            'status': feedback.status.value,
+            'title': feedback.title,
+            'message': feedback.message,
+            'rating': feedback.rating,
+            'submitter_name': feedback.submitter_name,
+            'submitter_email': feedback.submitter_email,
+            'is_anonymous': feedback.is_anonymous,
+            'created_at': feedback.created_at.isoformat(),
+            'updated_at': feedback.updated_at.isoformat(),
+        }
+
         payload = {
-            'feedback': {
-                'id': str(feedback.id),
-                'type': feedback.feedback_type.value,
-                'title': feedback.title,
-                'message': feedback.message,
-                'rating': feedback.rating,
-                'status': feedback.status.value,
-                'priority': feedback.priority.value
-                if feedback.priority is not None
-                else None,
-                'submitter_name': feedback.submitter_name,
-                'submitter_email': feedback.submitter_email,
-                'is_anonymous': feedback.is_anonymous,
-                'created_at': feedback.created_at.isoformat()
-                if feedback.created_at
-                else None,
-            },
+            'feedback': feedback_data,
             'project': {
                 'id': str(feedback.project_id),
             },
@@ -75,9 +75,6 @@ class WebhookEventDispatcher:
                 'title': feedback.title,
                 'message': feedback.message,
                 'status': feedback.status.value,
-                'priority': feedback.priority.value
-                if feedback.priority is not None
-                else None,
                 'updated_at': feedback.updated_at.isoformat()
                 if feedback.updated_at
                 else None,

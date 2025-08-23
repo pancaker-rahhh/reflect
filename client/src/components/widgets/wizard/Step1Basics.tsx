@@ -1,4 +1,5 @@
 import { type UseFormReturn } from 'react-hook-form'
+import { type WidgetFormData } from '@/pages/WidgetCreate'
 import {
   Form,
   FormControl,
@@ -20,14 +21,14 @@ import {
 import { MessageSquare, Star, Bug, Lightbulb } from 'lucide-react'
 
 interface Step1BasicsProps {
-  form: UseFormReturn<any>
+  form: UseFormReturn<WidgetFormData>
 }
 
 const modules = [
   {
     id: 'feedback',
     label: 'Collect Feedback/Surveys',
-    description: 'Gather NPS, CSAT, and custom surveys',
+    description: 'Gather NPS, CSAT, CES and custom surveys',
     icon: MessageSquare,
   },
   {
@@ -59,7 +60,7 @@ export function Step1Basics({ form }: Step1BasicsProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Widget Name</FormLabel>
+              <FormLabel className="text-lg font-semibold mb-4">Widget Name</FormLabel>
               <FormDescription>
                 Internal name to identify this widget (not visible to users)
               </FormDescription>
@@ -72,63 +73,67 @@ export function Step1Basics({ form }: Step1BasicsProps) {
         />
 
         <div>
-          <h3 className="text-base font-semibold mb-4">Widget Modules</h3>
+          <h3 className="text-lg font-semibold mb-4">Widget Modules</h3>
           <div className="space-y-4">
-            {modules.map((module) => (
-              <FormField
-                key={module.id}
-                control={form.control}
-                name={`modules.${module.id}`}
-                render={({ field }) => (
-                  <FormItem className="flex items-start space-x-3 space-y-0 rounded-lg border p-4">
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none flex-1">
-                      <FormLabel className="flex items-center gap-2">
-                        <module.icon className="h-4 w-4" />
-                        {module.label}
-                      </FormLabel>
-                      <FormDescription>
-                        {module.description}
-                      </FormDescription>
-                    </div>
-                  </FormItem>
-                )}
-              />
-            ))}
+            {modules.map((module) => {
+              type ModuleFieldName =
+                | 'modules.feedback'
+                | 'modules.reviews'
+                | 'modules.bugReporting'
+                | 'modules.featureRequests'
+              const fieldName = `modules.${module.id}` as ModuleFieldName
+              return (
+                <FormField
+                  key={module.id}
+                  control={form.control}
+                  name={fieldName}
+                  render={({ field }) => (
+                    <FormItem className="flex items-start space-x-3 space-y-0 rounded-lg border p-4">
+                      <FormControl>
+                        <Switch checked={field.value as boolean} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <div className="space-y-1 leading-none flex-1">
+                        <FormLabel className="flex items-center gap-2">
+                          <module.icon className="h-4 w-4" />
+                          {module.label}
+                        </FormLabel>
+                        <FormDescription>{module.description}</FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              )
+            })}
           </div>
         </div>
 
-        <FormField
-          control={form.control}
-          name="primaryType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Primary Feedback Type</FormLabel>
-              <FormDescription>
-                Choose the main type of feedback to collect
-              </FormDescription>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a feedback type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="nps">NPS Survey</SelectItem>
-                  <SelectItem value="csat">CSAT Survey</SelectItem>
-                  <SelectItem value="ces">CES Survey</SelectItem>
-                  <SelectItem value="custom">Custom Survey</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {form.watch('modules.feedback') && (
+          <FormField
+            control={form.control}
+            name="primaryType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-lg font-semibold mb-4">Primary Feedback Type</FormLabel>
+                <FormDescription>Choose the main type of feedback to collect</FormDescription>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a feedback type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="FEEDBACK">General Feedback</SelectItem>
+                    <SelectItem value="NPS">NPS Survey</SelectItem>
+                    <SelectItem value="CSAT">CSAT Survey</SelectItem>
+                    <SelectItem value="CES">CES Survey</SelectItem>
+                    <SelectItem value="SURVEY">Custom Survey</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
       </div>
     </Form>
   )

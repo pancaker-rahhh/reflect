@@ -69,11 +69,15 @@ export const projectApi = {
     return apiClient.post<ProjectMember>(`/projects/${projectId}/members`, data)
   },
 
-  updateMember(projectId: string, userId: string, data: ProjectMemberUpdateRequest): Promise<ProjectMember> {
+  updateMember(
+    projectId: string,
+    userId: string,
+    data: ProjectMemberUpdateRequest
+  ): Promise<ProjectMember> {
     return apiClient.put<ProjectMember>(`/projects/${projectId}/members/${userId}`, data)
   },
 
   removeMember(projectId: string, userId: string): Promise<void> {
     return apiClient.delete<void>(`/projects/${projectId}/members/${userId}`)
-  }
+  },
 }
