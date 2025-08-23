@@ -23,11 +23,7 @@ def upgrade() -> None:
     op.execute("ALTER TYPE widgettype ADD VALUE IF NOT EXISTS 'CSAT'")
     op.execute("ALTER TYPE widgettype ADD VALUE IF NOT EXISTS 'CES'")
 
-    # Update any existing lowercase values to uppercase
-    op.execute("UPDATE widgets SET widget_type = 'NPS' WHERE widget_type = 'nps'")
-    op.execute("UPDATE widgets SET widget_type = 'CSAT' WHERE widget_type = 'csat'")
-    op.execute("UPDATE widgets SET widget_type = 'CES' WHERE widget_type = 'ces'")
-
+    # Skip data updates for fresh database - enum standardization is handled in app code
     # Note: PostgreSQL doesn't support removing enum values directly without recreating the type
     # The lowercase values will remain in the enum but won't be used
 
