@@ -205,7 +205,8 @@
 
   /* Enhanced micro-interactions */
   @keyframes pulse-glow {
-    0%, 100% {
+    0%,
+    100% {
       box-shadow: 0 0 5px rgba(139, 92, 246, 0.3);
     }
     50% {
@@ -214,7 +215,8 @@
   }
 
   @keyframes float {
-    0%, 100% {
+    0%,
+    100% {
       transform: translateY(0px);
     }
     50% {
@@ -262,7 +264,8 @@
 
   /* Enhanced loading states */
   .loading-shimmer {
-    background: linear-gradient(90deg,
+    background: linear-gradient(
+      90deg,
       hsl(var(--muted)) 25%,
       hsl(var(--muted-foreground) / 0.1) 50%,
       hsl(var(--muted)) 75%
@@ -318,7 +321,9 @@
 
   /* Smooth text transitions */
   .text-transition {
-    transition: color 0.3s ease, transform 0.3s ease;
+    transition:
+      color 0.3s ease,
+      transform 0.3s ease;
   }
 
   /* Enhanced button interactions */
@@ -337,7 +342,6 @@
   /* Floating animation for empty state icons */
   .animate-float {
     animation: float 3s ease-in-out infinite;
-  }
   }
 }
 
