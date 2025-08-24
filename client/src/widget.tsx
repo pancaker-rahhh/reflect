@@ -1,3 +1,11 @@
+import { createRoot } from 'react-dom/client'
+import { WidgetCore } from './components/widgets/core/WidgetCore'
+import type { 
+  WidgetConfiguration,
+  FeedbackData,
+  FeedbackType,
+} from './components/widgets/core/types'
+
 interface ReflectConfig {
   key: string
   theme?: 'light' | 'dark'
@@ -9,12 +17,24 @@ interface WidgetConfig {
     primary?: string
     background?: string
     text?: string
+    show_branding?: boolean
   }
   position?: string
-  modules?: {
-    nps?: boolean
-    csat?: boolean
-    ces?: boolean
+  widget_type?: string
+  configuration?: {
+    content?: {
+      headerTitle?: string
+      mainQuestion?: string
+      submitButtonText?: string
+      thankYouTitle?: string
+      thankYouMessage?: string
+    }
+    modules?: {
+      feedback?: boolean
+      reviews?: boolean
+      bugReporting?: boolean
+      featureRequests?: boolean
+    }
   }
 }
 
@@ -28,6 +48,7 @@ declare global {
   let isWidgetOpen = false
   let widgetContainer: HTMLDivElement | null = null
   let launcherContainer: HTMLDivElement | null = null
+  let reactRoot: ReturnType<typeof createRoot> | null = null
 
   function adjustColorBrightness(color: string, amount: number): string {
     const num = parseInt(color.replace('#', ''), 16)
@@ -49,17 +70,13 @@ declare global {
   }
 
   function injectWidgetStyles() {
-    const styleId = 'reflect-widget-styles'
-    if (document.getElementById(styleId)) return
-
     const style = document.createElement('style')
-    style.id = styleId
     style.textContent = `
       @keyframes reflect-pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.8; }
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
       }
-
+      
       @keyframes reflect-slideUp {
         from {
           opacity: 0;
@@ -70,7 +87,7 @@ declare global {
           transform: translateY(0);
         }
       }
-
+      
       @keyframes reflect-slideDown {
         from {
           opacity: 1;
@@ -99,8 +116,9 @@ declare global {
       <path d="M18 13a3 3 0 1 0-3.5-3.5"/>
     </svg>
   `
+
   const closeIcon = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <line x1="18" y1="6" x2="6" y2="18"></line>
       <line x1="6" y1="6" x2="18" y2="18"></line>
     </svg>
@@ -140,16 +158,78 @@ declare global {
       console.error('Reflect Widget: Failed to load.', error)
     })
 
+  // Convert backend config to WidgetConfiguration format
+  function transformWidgetConfig(backendConfig: WidgetConfig): WidgetConfiguration {
+    const theme = backendConfig.theme_configuration || {}
+    const content = backendConfig.configuration?.content || {}
+    const modules = backendConfig.configuration?.modules || {}
+    
+    return {
+      modules: {
+        feedback: modules.feedback ?? true,
+        reviews: modules.reviews ?? false,
+        bugReporting: modules.bugReporting ?? false,
+        featureRequests: modules.featureRequests ?? false,
+      },
+      primaryType: (backendConfig.widget_type?.toUpperCase() || 'FEEDBACK') as FeedbackType,
+      content: {
+        headerTitle: content.headerTitle || 'We value your feedback',
+        mainQuestion: content.mainQuestion || getDefaultQuestionForType(backendConfig.widget_type),
+        submitButtonText: content.submitButtonText || 'Submit Feedback',
+        thankYouTitle: content.thankYouTitle || 'Thank you!',
+        thankYouMessage: content.thankYouMessage || 'Your feedback helps us improve.',
+      },
+      appearance: {
+        theme: configTheme === 'dark' ? 'minimal-dark' : 'default',
+        position: (backendConfig.position || configPosition) as WidgetConfiguration['appearance']['position'],
+        colors: {
+          primary: theme.primary || '#3b82f6',
+          background: theme.background || (configTheme === 'dark' ? '#1f2937' : '#ffffff'),
+          text: theme.text || (configTheme === 'dark' ? '#f9fafb' : '#1f2937'),
+          buttonColor: theme.primary || '#3b82f6',
+          buttonTextColor: '#ffffff',
+        },
+        showBranding: theme.show_branding !== false,
+      },
+      behavior: {
+        triggerType: 'immediate',
+        urlTargeting: { includeUrls: [], excludeUrls: [] },
+        deviceTypes: { desktop: true, mobile: true, tablet: true },
+      },
+    }
+  }
+
+  function getDefaultQuestionForType(type?: string) {
+    switch (type) {
+      case 'nps':
+        return 'How likely are you to recommend us to a friend or colleague?'
+      case 'csat':
+        return 'How satisfied are you with our service?'
+      case 'ces':
+        return 'How easy was it to use our service?'
+      default:
+        return 'How can we improve?'
+    }
+  }
+
   function toggleWidget() {
     isWidgetOpen = !isWidgetOpen
     if (isWidgetOpen) {
       if (!widgetContainer) {
-        widgetContainer = createWidgetContainer()
-        document.body.appendChild(widgetContainer)
+        // Fetch fresh widget config and render React component
+        fetch(apiUrl)
+          .then((response) => response.json())
+          .then((config: WidgetConfig) => {
+            widgetContainer = createWidgetContainer(config)
+            document.body.appendChild(widgetContainer)
+            showWidget()
+          })
+          .catch((error) => {
+            console.error('Failed to load widget config:', error)
+          })
+      } else {
+        showWidget()
       }
-
-      widgetContainer.style.display = 'block'
-      widgetContainer.classList.remove('closing')
 
       if (launcherContainer) {
         launcherContainer.style.transform = 'rotate(90deg)'
@@ -161,15 +241,7 @@ declare global {
         }, 150)
       }
     } else {
-      if (widgetContainer) {
-        widgetContainer.classList.add('closing')
-        setTimeout(() => {
-          if (widgetContainer) {
-            widgetContainer.style.display = 'none'
-            widgetContainer.classList.remove('closing')
-          }
-        }, 300)
-      }
+      hideWidget()
 
       if (launcherContainer) {
         launcherContainer.style.transform = 'rotate(90deg)'
@@ -183,7 +255,26 @@ declare global {
     }
   }
 
-  function createWidgetContainer(): HTMLDivElement {
+  function showWidget() {
+    if (widgetContainer) {
+      widgetContainer.style.display = 'block'
+      widgetContainer.classList.remove('closing')
+    }
+  }
+
+  function hideWidget() {
+    if (widgetContainer) {
+      widgetContainer.classList.add('closing')
+      setTimeout(() => {
+        if (widgetContainer) {
+          widgetContainer.style.display = 'none'
+          widgetContainer.classList.remove('closing')
+        }
+      }, 300)
+    }
+  }
+
+  function createWidgetContainer(backendConfig: WidgetConfig): HTMLDivElement {
     const container = document.createElement('div')
     container.className = 'reflect-widget-container'
     container.id = 'reflect-widget-container'
@@ -211,39 +302,68 @@ declare global {
       lineHeight: '1.5',
     })
 
-    // Add widget content
-    container.innerHTML = createWidgetContent(theme)
+    // Apply positioning
+    const position = backendConfig.position || configPosition
+    if (position.includes('bottom')) container.style.bottom = '100px'
+    if (position.includes('top')) container.style.top = '100px'
+    if (position.includes('right')) container.style.right = '20px'
+    if (position.includes('left')) container.style.left = '20px'
 
-    // Add close button
-    const closeBtn = document.createElement('button')
-    closeBtn.innerHTML = closeIcon
-    closeBtn.onclick = toggleWidget
-    Object.assign(closeBtn.style, {
-      position: 'absolute',
-      top: '15px',
-      right: '15px',
-      background: 'none',
-      border: 'none',
-      cursor: 'pointer',
-      padding: '5px',
-      borderRadius: '50%',
-      width: '32px',
-      height: '32px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: themeStyles.text,
-      transition: 'background-color 0.2s',
-    })
-
-    closeBtn.onmouseover = () => {
-      closeBtn.style.backgroundColor = themeStyles.hoverBackground
+    // Create React root and render WidgetCore
+    reactRoot = createRoot(container)
+    
+    const widgetConfig = transformWidgetConfig(backendConfig)
+    
+    const handleSubmit = async (data: FeedbackData) => {
+      // Submit feedback via API
+      const isDevelopment =
+        window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      const apiBaseUrl = isDevelopment ? 'http://localhost:8000' : 'https://api.reflect.com'
+      
+      try {
+        const response = await fetch(`${apiBaseUrl}/api/v1/feedback`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            widgetKey: publicKey,
+            response: data.response,
+            rating: data.rating,
+            feedbackType: data.feedbackType.toLowerCase(),
+          }),
+        })
+        
+        if (!response.ok) {
+          throw new Error('Failed to submit feedback')
+        }
+      } catch (error) {
+        console.error('Error submitting feedback:', error)
+        throw error
+      }
     }
-    closeBtn.onmouseout = () => {
-      closeBtn.style.backgroundColor = 'transparent'
+
+    const handleClose = () => {
+      isWidgetOpen = false
+      hideWidget()
+      
+      if (launcherContainer) {
+        launcherContainer.style.transform = 'rotate(90deg)'
+        setTimeout(() => {
+          if (launcherContainer) {
+            launcherContainer.innerHTML = launcherIcon
+            launcherContainer.style.transform = 'rotate(0deg)'
+          }
+        }, 150)
+      }
     }
 
-    container.appendChild(closeBtn)
+    reactRoot.render(
+      <WidgetCore
+        config={widgetConfig}
+        mode="production"
+        onSubmit={handleSubmit}
+        onClose={handleClose}
+      />
+    )
 
     return container
   }
@@ -268,73 +388,6 @@ declare global {
     }
   }
 
-  function createWidgetContent(theme: string): string {
-    const themeStyles = getThemeStyles(theme)
-
-    return `
-      <div style="padding: 20px; height: 100%; box-sizing: border-box;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h2 style="margin: 0 0 10px 0; color: ${themeStyles.text}; font-size: 24px; font-weight: 600;">
-            How was your experience?
-          </h2>
-          <p style="margin: 0; color: ${themeStyles.secondary}; font-size: 16px;">
-            We'd love to hear your feedback
-          </p>
-        </div>
-        
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-          <button class="feedback-type-btn" data-type="nps" style="
-            padding: 15px 20px;
-            background: ${themeStyles.primary};
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: left;
-          ">
-            <div style="font-weight: 600; margin-bottom: 5px;">NPS Survey</div>
-            <div style="font-size: 14px; opacity: 0.9;">Rate your likelihood to recommend</div>
-          </button>
-          
-          <button class="feedback-type-btn" data-type="csat" style="
-            padding: 15px 20px;
-            background: ${themeStyles.primary};
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: left;
-          ">
-            <div style="font-weight: 600; margin-bottom: 5px;">Customer Satisfaction</div>
-            <div style="font-size: 14px; opacity: 0.9;">How satisfied are you with our service?</div>
-          </button>
-          
-          <button class="feedback-type-btn" data-type="ces" style="
-            padding: 15px 20px;
-            background: ${themeStyles.primary};
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: left;
-          ">
-            <div style="font-weight: 600; margin-bottom: 5px;">Customer Effort Score</div>
-            <div style="font-size: 14px; opacity: 0.9;">How easy was it to get help?</div>
-          </button>
-        </div>
-      </div>
-    `
-  }
-
   function renderLauncher(config: WidgetConfig) {
     launcherContainer = document.createElement('div')
     launcherContainer.id = 'reflect-widget-launcher'
@@ -357,6 +410,8 @@ declare global {
       justifyContent: 'center',
       boxShadow: '0 8px 25px rgba(0,0,0,0.2), 0 4px 10px rgba(0,0,0,0.1)',
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      border: 'none',
+      color: '#FFFFFF',
       animation: 'reflect-pulse 2s infinite',
     })
 

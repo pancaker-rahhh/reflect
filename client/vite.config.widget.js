@@ -1,11 +1,18 @@
 import { defineConfig } from 'vite'
-import { resolve } from 'path'
+import react from '@vitejs/plugin-react'
+import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
   build: {
     outDir: 'dist-widget',
     lib: {
-      entry: resolve(__dirname, 'src/widget.tsx'),
+      entry: fileURLToPath(new URL('./src/widget.tsx', import.meta.url)),
       name: 'ReflectWidget',
       fileName: 'widget',
       formats: ['iife']
@@ -14,24 +21,28 @@ export default defineConfig({
       output: {
         // Ensure we get a single file output
         entryFileNames: 'widget.js',
-        chunkFileNames: 'widget.js',
-        assetFileNames: 'widget.js',
-        // Bundle everything into a single file
-        manualChunks: undefined
-      }
+        chunkFileNames: '[name].js',
+        assetFileNames: '[name].[ext]',
+        // Bundle everything into a single file including React
+        manualChunks: undefined,
+        globals: {}
+      },
+      // Bundle React and React-DOM into the widget for standalone use
+      external: []
     },
     target: 'es2015',
-    minify: 'esbuild', // Use esbuild instead of terser
+    minify: 'esbuild',
     sourcemap: false,
     // Ensure all CSS is inlined
     cssCodeSplit: false
   },
   define: {
-    // Remove any process.env references that might cause issues
-    'process.env.NODE_ENV': '"production"'
+    'process.env.NODE_ENV': '"production"',
+    global: 'globalThis',
   },
-  // Don't include dev dependencies
-  optimizeDeps: {
-    exclude: ['@tanstack/react-query', 'react', 'react-dom']
+  esbuild: {
+    // Ensure React JSX is handled properly
+    jsxFactory: 'React.createElement',
+    jsxFragment: 'React.Fragment',
   }
 })
