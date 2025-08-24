@@ -17,7 +17,7 @@ import uuid
 from app.models.base_model import BaseModel
 
 if TYPE_CHECKING:
-    pass
+    from app.models.roadmap_model import RoadmapFeature
 
 
 class FeedbackType(str, enum.Enum):
@@ -53,13 +53,20 @@ class Feedback(BaseModel):
     project_id = Column(UUID(as_uuid=True), ForeignKey('projects.id'), nullable=False)
     form_id = Column(UUID(as_uuid=True), ForeignKey('feedback_forms.id'), nullable=True)
 
-    feedback_type = Column(SQLEnum(FeedbackType), nullable=False)
+    feedback_type = Column(
+        SQLEnum(
+            FeedbackType,
+            name='feedbacktype',
+            values_callable=lambda obj: [e.value for e in obj],
+        ),
+        nullable=False,
+    )
     status = Column(SQLEnum(FeedbackStatus), default=FeedbackStatus.NEW)
 
     title = Column(String(500))
     message = Column(Text)
     rating = Column(Integer)
-    feedback_votes = Column(Integer, default=0)  # Simple integer counter for upvotes
+    feedback_votes = Column(Integer, default=0)
 
     feedback_metadata = Column(JSONB, default=dict)
     context = Column(JSONB, default=dict)
@@ -86,11 +93,21 @@ class Feedback(BaseModel):
     )
     resolution_notes = Column(Text)
 
+    converted_to_roadmap_id = Column(
+        UUID(as_uuid=True), ForeignKey('roadmap_features.id'), nullable=True
+    )
+    conversion_date = Column(DateTimeColumn, nullable=True)
+    conversion_notes = Column(Text, nullable=True)
+    is_actionable = Column(Boolean, default=True)
+
     widget = relationship('Widget', back_populates='feedback')
     project = relationship('Project')
     form = relationship('FeedbackForm', back_populates='feedback_items')
     assigned_to = relationship('User', foreign_keys=[assigned_to_user_id])
     resolved_by = relationship('User', foreign_keys=[resolved_by_user_id])
+    converted_to_roadmap_feature: Mapped[Optional['RoadmapFeature']] = relationship(
+        foreign_keys=[converted_to_roadmap_id], back_populates='converted_feedback'
+    )
     comments = relationship(
         'FeedbackComment', back_populates='feedback', cascade='all, delete-orphan'
     )
@@ -99,6 +116,10 @@ class Feedback(BaseModel):
         'polymorphic_identity': 'feedback',
         'polymorphic_on': feedback_type,
     }
+
+
+class GeneralFeedback(Feedback):
+    __mapper_args__ = {'polymorphic_identity': FeedbackType.GENERAL}
 
 
 class SurveyFeedback(Feedback):

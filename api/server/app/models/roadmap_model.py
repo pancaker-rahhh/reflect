@@ -147,13 +147,6 @@ class RoadmapFeature(BaseModel):
         index=True,
     )
 
-    feedback_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey('feedback.id', ondelete='SET NULL'),
-        nullable=True,
-        index=True,
-    )
-
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
 
@@ -164,7 +157,11 @@ class RoadmapFeature(BaseModel):
     submitter_email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     column: Mapped['RoadmapColumn'] = relationship(back_populates='features')
-    feedback: Mapped[Optional['Feedback']] = relationship()
+    converted_feedback: Mapped[List['Feedback']] = relationship(
+        'Feedback',
+        foreign_keys='Feedback.converted_to_roadmap_id',
+        back_populates='converted_to_roadmap_feature',
+    )
     assignments: Mapped[List['RoadmapItemAssignment']] = relationship(
         'RoadmapItemAssignment',
         back_populates='roadmap_feature',

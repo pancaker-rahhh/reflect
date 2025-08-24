@@ -36,6 +36,7 @@ from app.schemas.roadmap_schema import (
 )
 from app.services.project_service import project_service, ProjectService
 from app.services.organization_service import organization_service
+from app.services.action_item_service import action_item_service
 import re
 
 
@@ -663,6 +664,66 @@ class RoadmapService(BaseRoadmapService):
     async def delete_tag(self, db: AsyncSession, user_id: UUID, tag_id: UUID) -> None:
         await self._validate_tag_access(db, user_id, tag_id)
         await self.tag_repo.delete(db, id=tag_id)
+
+    async def get_or_create_roadmap(
+        self, db: AsyncSession, user_id: UUID, project_id: UUID
+    ) -> Optional[Roadmap]:
+        roadmap = await self.get_roadmap_by_project_id(db, user_id, project_id)
+
+        if roadmap:
+            return roadmap
+
+        try:
+            await self.organization_service.check_project_access(
+                db, user_id, project_id, required_role='Admin'
+            )
+
+            roadmap_data = RoadmapCreate(project_id=project_id, name='Product Roadmap')
+
+            return await self.create_roadmap(db, user_id, roadmap_data)
+
+        except HTTPException:
+            return None
+
+    async def create_feature_from_feedback(
+        self,
+        db: AsyncSession,
+        user_id: UUID,
+        feedback_id: UUID,
+        priority: Optional[str] = None,
+        conversion_notes: Optional[str] = None,
+        custom_tags: Optional[List[str]] = None,
+    ) -> RoadmapFeature:
+        """Create a roadmap feature from feedback data."""
+        return await action_item_service.convert_feedback_to_roadmap_item(
+            db, feedback_id, user_id, priority, conversion_notes, custom_tags
+        )
+
+    async def auto_assign_priority(
+        self, feedback_type: str, rating: Optional[int] = None
+    ) -> str:
+        from app.models.feedback_model import FeedbackType, FeedbackPriority
+
+        try:
+            feedback_type_enum = FeedbackType(feedback_type)
+        except ValueError:
+            return FeedbackPriority.MEDIUM.value
+
+        suggested_priority = action_item_service._suggest_priority(
+            type(
+                'MockFeedback',
+                (),
+                {'feedback_type': feedback_type_enum, 'rating': rating},
+            )()
+        )
+
+        return suggested_priority.value
+
+    async def ensure_backlog_column_exists(
+        self, db: AsyncSession, project_id: UUID
+    ) -> RoadmapColumn:
+        """Ensure the default 'Backlog' column exists for the project."""
+        return await action_item_service._ensure_backlog_column_exists(db, project_id)
 
 
 roadmap_service = RoadmapService()
