@@ -7,7 +7,7 @@ import { DeviceFrame } from './DeviceFrame'
 import { PreviewControls } from './PreviewControls'
 import { useDebounce } from '@/hooks/useDebounce'
 import { cn } from '@/lib/utils'
-import {
+import type {
   WidgetConfiguration,
   WidgetState,
   FeedbackData,
@@ -20,11 +20,37 @@ export type DeviceType = 'desktop' | 'tablet' | 'mobile'
 // Transform WidgetFormData to WidgetConfiguration for WidgetCore
 function transformFormDataToConfig(formData: WidgetFormData): WidgetConfiguration {
   return {
-    modules: formData.modules,
-    primaryType: formData.primaryType as FeedbackType,
-    content: formData.content,
-    appearance: formData.appearance,
-    behavior: formData.behavior,
+    modules: formData.modules || { 
+      feedback: true, 
+      reviews: false, 
+      bugReporting: false, 
+      featureRequests: false 
+    },
+    primaryType: (formData.primaryType as FeedbackType) || 'FEEDBACK',
+    content: formData.content || {
+      headerTitle: 'We value your feedback',
+      mainQuestion: 'How can we improve?',
+      submitButtonText: 'Submit Feedback',
+      thankYouTitle: 'Thank you!',
+      thankYouMessage: 'Your feedback helps us improve.',
+    },
+    appearance: formData.appearance || {
+      theme: 'default',
+      position: 'bottom_right',
+      colors: {
+        primary: '#6B46C1',
+        background: '#FFFFFF',
+        text: '#1F2937',
+        buttonColor: '#6B46C1',
+        buttonTextColor: '#FFFFFF',
+      },
+      showBranding: true,
+    },
+    behavior: formData.behavior || {
+      triggerType: 'immediate',
+      urlTargeting: { includeUrls: [], excludeUrls: [] },
+      deviceTypes: { desktop: true, mobile: true, tablet: true },
+    },
   }
 }
 
@@ -35,7 +61,7 @@ function mapPreviewStateToWidgetState(previewState: PreviewState, config: Widget
       return { type: 'closed' }
     case 'open':
       // Check if multiple modules are enabled for initial menu display
-      const enabledModules = Object.entries(config.modules).filter(([, enabled]) => enabled)
+      const enabledModules = Object.entries(config.modules || {}).filter(([, enabled]) => enabled)
       if (enabledModules.length > 1) {
         const availableTypes = enabledModules.map(([key]) => {
           switch (key) {
@@ -72,13 +98,30 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
   // Watch specific form fields to minimize re-renders
   const formData = form.watch(['appearance', 'content', 'primaryType', 'modules', 'behavior'])
   
+  // Convert watched array to object structure
+  const structuredFormData = useMemo(() => {
+    if (!Array.isArray(formData) || formData.length < 5) return null
+    return {
+      appearance: formData[0],
+      content: formData[1],
+      primaryType: formData[2],
+      modules: formData[3],
+      behavior: formData[4],
+    } as Pick<WidgetFormData, 'appearance' | 'content' | 'primaryType' | 'modules' | 'behavior'>
+  }, [formData])
+  
   // Debounce form changes to prevent excessive re-renders
-  const debouncedFormData = useDebounce(formData, 300)
+  const debouncedFormData = useDebounce(structuredFormData, 300)
   
   // Memoize widget configuration to prevent recreation on every render
   const widgetConfig = useMemo(() => {
-    if (!debouncedFormData) return null
-    return transformFormDataToConfig(debouncedFormData as WidgetFormData)
+    if (!debouncedFormData || typeof debouncedFormData !== 'object') return null
+    // Ensure all required properties exist before transformation
+    if (!Array.isArray(debouncedFormData) && 
+        typeof debouncedFormData === 'object') {
+      return transformFormDataToConfig(debouncedFormData as WidgetFormData)
+    }
+    return null
   }, [debouncedFormData])
   
   // Memoize widget state mapping
@@ -97,7 +140,7 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
     return new Promise<void>((resolve) => {
       setTimeout(() => {
         // Check if widget has multiple modules to show menu or go to success
-        if (widgetConfig && Object.values(widgetConfig.modules).filter(Boolean).length > 1) {
+        if (widgetConfig && widgetConfig.modules && Object.values(widgetConfig.modules).filter(Boolean).length > 1) {
           setPreviewState('interactive')
         } else {
           setPreviewState('thankyou')

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { feedbackApi } from '@/lib/api/feedback'
 import { WidgetCore } from '@/components/widgets/core/WidgetCore'
-import { 
+import type { 
   WidgetConfiguration, 
   WidgetState, 
   FeedbackData, 

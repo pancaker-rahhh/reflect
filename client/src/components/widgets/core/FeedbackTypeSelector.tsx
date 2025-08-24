@@ -1,9 +1,9 @@
 import { cn } from '@/lib/utils'
-import {
+import type {
   FeedbackTypeSelectorProps,
   FeedbackType,
-  FEEDBACK_TYPE_INFO,
 } from './types'
+import { FEEDBACK_TYPE_INFO } from './types'
 
 interface EnhancedMenuButtonProps {
   onClick: () => void

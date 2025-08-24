@@ -4,14 +4,14 @@ import { NPSRating } from '@/components/widgets/scoring/NPSRating'
 import { CSATRating } from '@/components/widgets/scoring/CSATRating'
 import { CESRating } from '@/components/widgets/scoring/CESRating'
 import { cn } from '@/lib/utils'
-import {
+import type {
   WidgetCoreProps,
   WidgetState,
   FeedbackType,
   FeedbackData,
   WidgetConfiguration,
-  FEEDBACK_TYPE_INFO,
 } from './types'
+import { FEEDBACK_TYPE_INFO } from './types'
 
 const LoadingSpinner = ({
   size = 'md',
