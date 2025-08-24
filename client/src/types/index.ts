@@ -103,7 +103,15 @@ export interface Widget {
   updated_at: string
 }
 
-export type FeedbackType = 'survey' | 'review' | 'bug' | 'feature'
+export type FeedbackType =
+  | 'general'
+  | 'survey'
+  | 'review'
+  | 'bug_report'
+  | 'feature_request'
+  | 'nps'
+  | 'csat'
+  | 'ces'
 
 export interface BaseFeedback {
   id: string
@@ -134,27 +142,20 @@ export interface Review extends BaseFeedback {
 }
 
 export interface BugReport extends BaseFeedback {
-  type: 'bug'
-  title: string
-  description: string
+  type: 'bug_report'
   severity: 'low' | 'medium' | 'high' | 'critical'
-  status: 'new' | 'investigating' | 'confirmed' | 'resolved' | 'wont-fix'
-  browser?: string
-  os?: string
-  url?: string
-  screenshot?: string
+  stepsToReproduce?: string
+  expectedBehavior?: string
+  actualBehavior?: string
+  attachments?: string[]
 }
 
 export interface FeatureRequest extends BaseFeedback {
-  type: 'feature'
-  title: string
-  description: string
-  status: 'new' | 'under-review' | 'planned' | 'in-progress' | 'completed' | 'declined'
-  upvotes: number
-  roadmapColumnId?: string
-  submitterName?: string
-  submitterEmail?: string
-  tags?: RoadmapTag[]
+  type: 'feature_request'
+  useCase?: string
+  suggestedSolution?: string
+  benefits?: string
+  implementationStatus?: 'backlog' | 'planned' | 'in-progress' | 'completed'
 }
 
 export type Feedback = SurveyResponse | Review | BugReport | FeatureRequest
@@ -180,6 +181,7 @@ export interface RoadmapFeatureTag {
 export interface RoadmapFeature {
   id: string
   column_id: string
+  feedback_id?: string
   title: string
   description?: string
   order: number
@@ -234,6 +236,8 @@ export interface DashboardMetrics {
   bugReportsChange: number
   newFeatureRequests: number
   featureRequestsChange: number
+  pendingFeedbackReview?: number
+  feedbackConversionRate?: number
 }
 
 export interface RecentActivity {
@@ -242,6 +246,8 @@ export interface RecentActivity {
   summary: string
   submittedBy: string
   timestamp: Date
+  converted_to_roadmap_id?: string | null
+  is_actionable?: boolean
 }
 
 export interface NotificationSettings {
