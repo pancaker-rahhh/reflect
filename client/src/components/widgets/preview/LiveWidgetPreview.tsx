@@ -1,15 +1,63 @@
-import { useState } from 'react'
-import { UseFormReturn } from 'react-hook-form'
-import { Card } from '@/components/ui/card'
-import { WidgetFormData } from '@/pages/WidgetCreate'
+import { useState, useMemo, useCallback } from 'react'
+import type { UseFormReturn } from 'react-hook-form'
+import type { WidgetFormData } from '@/pages/WidgetCreate'
 import { TriggerIconPreview } from './TriggerIconPreview'
-import { WidgetRenderer } from './WidgetRenderer'
+import { WidgetCore } from '@/components/widgets/core/WidgetCore'
 import { DeviceFrame } from './DeviceFrame'
 import { PreviewControls } from './PreviewControls'
+import { useDebounce } from '@/hooks/useDebounce'
 import { cn } from '@/lib/utils'
+import {
+  WidgetConfiguration,
+  WidgetState,
+  FeedbackData,
+  FeedbackType,
+} from '@/components/widgets/core/types'
 
 export type PreviewState = 'closed' | 'open' | 'interactive' | 'thankyou'
 export type DeviceType = 'desktop' | 'tablet' | 'mobile'
+
+// Transform WidgetFormData to WidgetConfiguration for WidgetCore
+function transformFormDataToConfig(formData: WidgetFormData): WidgetConfiguration {
+  return {
+    modules: formData.modules,
+    primaryType: formData.primaryType as FeedbackType,
+    content: formData.content,
+    appearance: formData.appearance,
+    behavior: formData.behavior,
+  }
+}
+
+// Map preview state to widget state
+function mapPreviewStateToWidgetState(previewState: PreviewState, config: WidgetConfiguration): WidgetState {
+  switch (previewState) {
+    case 'closed':
+      return { type: 'closed' }
+    case 'open':
+      // Check if multiple modules are enabled for initial menu display
+      const enabledModules = Object.entries(config.modules).filter(([, enabled]) => enabled)
+      if (enabledModules.length > 1) {
+        const availableTypes = enabledModules.map(([key]) => {
+          switch (key) {
+            case 'feedback': return 'FEEDBACK' as FeedbackType
+            case 'reviews': return 'REVIEW' as FeedbackType
+            case 'bugReporting': return 'BUG_REPORT' as FeedbackType
+            case 'featureRequests': return 'FEATURE_REQUEST' as FeedbackType
+            default: return 'FEEDBACK' as FeedbackType
+          }
+        })
+        return { type: 'menu', availableTypes }
+      } else {
+        return { type: 'closed' } // Will show primary survey
+      }
+    case 'interactive':
+      return { type: 'active', feedbackType: config.primaryType }
+    case 'thankyou':
+      return { type: 'success' }
+    default:
+      return { type: 'closed' }
+  }
+}
 
 interface LiveWidgetPreviewProps {
   form: UseFormReturn<WidgetFormData>
@@ -19,27 +67,71 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
   const [previewState, setPreviewState] = useState<PreviewState>('closed')
   const [deviceType, setDeviceType] = useState<DeviceType>('desktop')
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [widgetState, setWidgetState] = useState<WidgetState>({ type: 'closed' })
 
-  // Subscribe to form changes
-  const formData = form.watch()
+  // Watch specific form fields to minimize re-renders
+  const formData = form.watch(['appearance', 'content', 'primaryType', 'modules', 'behavior'])
+  
+  // Debounce form changes to prevent excessive re-renders
+  const debouncedFormData = useDebounce(formData, 300)
+  
+  // Memoize widget configuration to prevent recreation on every render
+  const widgetConfig = useMemo(() => {
+    if (!debouncedFormData) return null
+    return transformFormDataToConfig(debouncedFormData as WidgetFormData)
+  }, [debouncedFormData])
+  
+  // Memoize widget state mapping
+  const mappedWidgetState = useMemo(() => {
+    if (!widgetConfig) return { type: 'closed' as const }
+    return mapPreviewStateToWidgetState(previewState, widgetConfig)
+  }, [previewState, widgetConfig])
 
-  const handleTriggerClick = () => {
-    setPreviewState(previewState === 'closed' ? 'open' : 'closed')
-  }
+  // Use useCallback to memoize event handlers and prevent child re-renders
+  const handleTriggerClick = useCallback(() => {
+    setPreviewState(current => current === 'closed' ? 'open' : 'closed')
+  }, [])
 
-  const handleWidgetInteraction = () => {
-    if (previewState === 'open') {
-      setPreviewState('interactive')
-    }
-  }
+  const handleWidgetSubmit = useCallback(async (data: FeedbackData) => {
+    // Mock submission delay for preview
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        // Check if widget has multiple modules to show menu or go to success
+        if (widgetConfig && Object.values(widgetConfig.modules).filter(Boolean).length > 1) {
+          setPreviewState('interactive')
+        } else {
+          setPreviewState('thankyou')
+        }
+        resolve()
+      }, 1000)
+    })
+  }, [widgetConfig])
 
-  const handleWidgetSubmit = () => {
-    setPreviewState('thankyou')
-  }
-
-  const handleStateReset = () => {
+  const handleWidgetClose = useCallback(() => {
     setPreviewState('closed')
-  }
+  }, [])
+
+  const handleWidgetStateChange = useCallback((newState: WidgetState) => {
+    setWidgetState(newState)
+    // Map widget state back to preview state for controls synchronization
+    switch (newState.type) {
+      case 'closed':
+        setPreviewState('closed')
+        break
+      case 'menu':
+      case 'active':
+        setPreviewState('interactive')
+        break
+      case 'success':
+        setPreviewState('thankyou')
+        break
+    }
+  }, [])
+
+  const handleStateReset = useCallback(() => {
+    setPreviewState('closed')
+    setWidgetState({ type: 'closed' })
+  }, [])
 
   return (
     <div className={cn(
@@ -86,21 +178,28 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
             </div>
 
             {/* Trigger Icon */}
-            <TriggerIconPreview
-              formData={formData}
-              onClick={handleTriggerClick}
-              isActive={previewState !== 'closed'}
-            />
+            {debouncedFormData && (
+              <TriggerIconPreview
+                formData={debouncedFormData as WidgetFormData}
+                onClick={handleTriggerClick}
+                isActive={previewState !== 'closed'}
+              />
+            )}
 
             {/* Widget Dialog */}
-            {previewState !== 'closed' && (
-              <WidgetRenderer
-                formData={formData}
-                state={previewState}
-                onInteraction={handleWidgetInteraction}
-                onSubmit={handleWidgetSubmit}
-                onClose={() => setPreviewState('closed')}
-              />
+            {previewState !== 'closed' && widgetConfig && (
+              <div className="absolute inset-0 flex items-center justify-center p-4">
+                <div className="w-full max-w-sm h-full max-h-[600px] bg-white rounded-2xl shadow-2xl overflow-hidden">
+                  <WidgetCore
+                    config={widgetConfig}
+                    mode="preview"
+                    state={mappedWidgetState}
+                    onSubmit={handleWidgetSubmit}
+                    onClose={handleWidgetClose}
+                    onStateChange={handleWidgetStateChange}
+                  />
+                </div>
+              </div>
             )}
           </div>
         </DeviceFrame>

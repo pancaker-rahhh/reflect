@@ -1,0 +1,551 @@
+import { useState, useEffect } from 'react'
+import { X, Check } from 'lucide-react'
+import { NPSRating } from '@/components/widgets/scoring/NPSRating'
+import { CSATRating } from '@/components/widgets/scoring/CSATRating'
+import { CESRating } from '@/components/widgets/scoring/CESRating'
+import { cn } from '@/lib/utils'
+import {
+  WidgetCoreProps,
+  WidgetState,
+  FeedbackType,
+  FeedbackData,
+  WidgetConfiguration,
+  FEEDBACK_TYPE_INFO,
+} from './types'
+
+const LoadingSpinner = ({
+  size = 'md',
+  color = '#6B46C1',
+}: {
+  size?: 'sm' | 'md' | 'lg'
+  color?: string
+}) => {
+  const sizeClasses = {
+    sm: 'w-4 h-4',
+    md: 'w-6 h-6',
+    lg: 'w-8 h-8',
+  }
+
+  return (
+    <div className="relative">
+      <div
+        className={`${sizeClasses[size]} border-2 border-gray-200 rounded-full animate-spin`}
+        style={{ borderTopColor: color }}
+      ></div>
+      <div
+        className={`absolute inset-0 ${sizeClasses[size]} border-2 border-transparent rounded-full animate-ping`}
+        style={{ borderTopColor: `${color}40` }}
+      ></div>
+    </div>
+  )
+}
+
+const SkeletonPulse = ({ className }: { className: string }) => (
+  <div
+    className={`bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse ${className}`}
+  ></div>
+)
+
+export function WidgetCore({ 
+  config, 
+  mode, 
+  state: externalState,
+  onSubmit, 
+  onClose, 
+  onStateChange 
+}: WidgetCoreProps) {
+  const [internalState, setInternalState] = useState<WidgetState>(
+    externalState || { type: 'closed' }
+  )
+  const [feedback, setFeedback] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [selectedScore, setSelectedScore] = useState<number | undefined>()
+  const [showConfetti, setShowConfetti] = useState(false)
+  const [hoveredScore, setHoveredScore] = useState<number | null>(null)
+  const [hoveredRating, setHoveredRating] = useState<number | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const currentState = externalState || internalState
+  
+  const updateState = (newState: WidgetState) => {
+    if (onStateChange) {
+      onStateChange(newState)
+    } else {
+      setInternalState(newState)
+    }
+  }
+
+  useEffect(() => {
+    if (currentState.type === 'success') {
+      setShowConfetti(true)
+      const timer = setTimeout(() => setShowConfetti(false), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [currentState.type])
+
+  const theme = config.appearance
+  const content = config.content
+  const modules = config.modules
+
+  const primaryColor = theme.colors.primary
+  const backgroundColor = theme.colors.background
+  const textColor = theme.colors.text
+  const buttonColor = theme.colors.buttonColor
+  const buttonTextColor = theme.colors.buttonTextColor
+
+  const getAvailableFeedbackTypes = (): FeedbackType[] => {
+    const types: FeedbackType[] = []
+    if (modules.feedback) types.push('FEEDBACK')
+    if (modules.reviews) types.push('REVIEW')
+    if (modules.bugReporting) types.push('BUG_REPORT')
+    if (modules.featureRequests) types.push('FEATURE_REQUEST')
+    return types
+  }
+
+  const handleSubmit = async (data: FeedbackData) => {
+    if (mode === 'preview') {
+      setIsSubmitting(true)
+      setTimeout(() => {
+        setIsSubmitting(false)
+        const availableTypes = getAvailableFeedbackTypes()
+        if (availableTypes.length > 1) {
+          updateState({ type: 'menu', availableTypes })
+        } else {
+          updateState({ type: 'success' })
+        }
+      }, 1000)
+    } else {
+      if (onSubmit) {
+        try {
+          setIsSubmitting(true)
+          await onSubmit(data)
+          const availableTypes = getAvailableFeedbackTypes()
+          if (availableTypes.length > 1) {
+            updateState({ type: 'menu', availableTypes })
+          } else {
+            updateState({ type: 'success' })
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Submission failed')
+          updateState({ type: 'error', message: error || 'Submission failed' })
+        } finally {
+          setIsSubmitting(false)
+        }
+      }
+    }
+  }
+
+  const handleScoreSubmission = async (score: number) => {
+    setSelectedScore(score)
+    const type = config.primaryType.toLowerCase()
+    await handleSubmit({
+      response: `${type}: ${score}`,
+      rating: score,
+      feedbackType: config.primaryType,
+    })
+  }
+
+  const handleTextSubmission = async () => {
+    if (!feedback.trim()) return
+    await handleSubmit({
+      response: feedback,
+      feedbackType: config.primaryType,
+    })
+  }
+
+  const handleFeedbackFormSubmit = async (feedbackType: FeedbackType) => {
+    if (!feedback.trim()) return
+    await handleSubmit({
+      response: feedback,
+      feedbackType,
+    })
+  }
+
+  const adjustColorBrightness = (color: string, amount: number): string => {
+    const num = parseInt(color.replace('#', ''), 16)
+    const amt = Math.round(2.55 * amount)
+    const R = (num >> 16) + amt
+    const B = ((num >> 8) & 0x00ff) + amt
+    const G = (num & 0x0000ff) + amt
+    return (
+      '#' +
+      (
+        0x1000000 +
+        (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+        (B < 255 ? (B < 1 ? 0 : B) : 255) * 0x100 +
+        (G < 255 ? (G < 1 ? 0 : G) : 255)
+      )
+        .toString(16)
+        .slice(1)
+    )
+  }
+
+  const renderLoading = () => (
+    <div className="p-6 space-y-6">
+      <div className="text-center space-y-3">
+        <SkeletonPulse className="mx-auto w-16 h-16 rounded-full" />
+        <div className="space-y-2">
+          <SkeletonPulse className="h-6 rounded-lg mx-auto w-3/4" />
+          <SkeletonPulse className="h-4 rounded-lg mx-auto w-1/2" />
+        </div>
+      </div>
+      <div className="space-y-4">
+        <div className="grid grid-cols-11 gap-2">
+          {[...Array(11)].map((_, i) => (
+            <SkeletonPulse
+              key={i}
+              className="aspect-square rounded-xl"
+              style={{ animationDelay: `${i * 50}ms` }}
+            />
+          ))}
+        </div>
+      </div>
+      <div className="flex justify-center">
+        <LoadingSpinner size="lg" color="#3B82F6" />
+      </div>
+      <div className="text-center">
+        <p className="text-sm text-gray-500 animate-pulse">Setting up your experience...</p>
+      </div>
+    </div>
+  )
+
+  const renderError = () => (
+    <div className="p-6 text-center space-y-4">
+      <div className="mx-auto w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+        <X className="w-8 h-8 text-red-500" />
+      </div>
+      <div className="space-y-2">
+        <h3 className="text-lg font-semibold text-red-600">Oops! Something went wrong</h3>
+        <p className="text-sm text-gray-600">
+          {currentState.type === 'error' ? currentState.message : 'We encountered an issue'}
+        </p>
+      </div>
+    </div>
+  )
+
+  const renderSuccess = () => (
+    <div className="p-8 text-center relative overflow-hidden">
+      {showConfetti && (
+        <div className="absolute inset-0 pointer-events-none">
+          {[...Array(20)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute animate-bounce"
+              style={{
+                left: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 2}s`,
+                animationDuration: `${1 + Math.random()}s`,
+              }}
+            >
+              <span className="text-2xl">
+                {['🎉', '✨', '🎊', '🌟', '💫'][Math.floor(Math.random() * 5)]}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+      
+      <div className="mb-6">
+        <div
+          className="mx-auto w-20 h-20 rounded-full flex items-center justify-center animate-pulse"
+          style={{
+            background: `linear-gradient(135deg, ${primaryColor}, ${adjustColorBrightness(primaryColor, -20)})`,
+            boxShadow: `0 10px 30px ${primaryColor}40`,
+          }}
+        >
+          <Check className="w-10 h-10 text-white" />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h3 className="text-2xl font-bold animate-pulse" style={{ color: primaryColor }}>
+          {content.thankYouTitle}
+        </h3>
+        <p className="text-lg opacity-80" style={{ color: textColor }}>
+          {content.thankYouMessage}
+        </p>
+      </div>
+
+      {theme.showBranding && (
+        <div className="mt-6 pt-4 border-t text-xs text-gray-500 text-center">
+          Powered by Reflect
+        </div>
+      )}
+    </div>
+  )
+
+  const renderPrimarySurvey = () => {
+    const renderScoringComponent = () => {
+      switch (config.primaryType) {
+        case 'NPS':
+          return (
+            <NPSRating
+              value={selectedScore}
+              onChange={handleScoreSubmission}
+              disabled={isSubmitting}
+            />
+          )
+        case 'CSAT':
+          return (
+            <CSATRating
+              value={selectedScore}
+              onChange={handleScoreSubmission}
+              disabled={isSubmitting}
+            />
+          )
+        case 'CES':
+          return (
+            <CESRating
+              value={selectedScore}
+              onChange={handleScoreSubmission}
+              disabled={isSubmitting}
+            />
+          )
+        default:
+          return (
+            <div className="space-y-4">
+              <textarea
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                placeholder="Tell us what you think..."
+                className="w-full h-32 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all"
+                style={{
+                  borderColor: feedback.trim() ? primaryColor : '#E5E7EB',
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  boxShadow: feedback.trim() ? `0 0 0 3px ${primaryColor}20` : undefined,
+                }}
+                disabled={isSubmitting}
+              />
+              <button
+                onClick={handleTextSubmission}
+                disabled={!feedback.trim() || isSubmitting}
+                className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ backgroundColor: buttonColor, color: buttonTextColor }}
+              >
+                {isSubmitting ? (
+                  <span className="inline-flex items-center space-x-2">
+                    <LoadingSpinner size="sm" color="currentColor" />
+                    <span>Submitting...</span>
+                  </span>
+                ) : (
+                  content.submitButtonText
+                )}
+              </button>
+            </div>
+          )
+      }
+    }
+
+    return (
+      <div className="p-6">
+        <div className="mb-6">
+          <h3 className="text-lg font-medium mb-2 text-center leading-tight" style={{ color: textColor }}>
+            {content.mainQuestion}
+          </h3>
+        </div>
+        {renderScoringComponent()}
+      </div>
+    )
+  }
+
+  const renderMenu = () => {
+    if (currentState.type !== 'menu') return null
+
+    const availableModules = currentState.availableTypes.map(type => {
+      const info = FEEDBACK_TYPE_INFO[type]
+      return {
+        type,
+        title: info.title,
+        description: info.description,
+        icon: info.icon,
+        color: '#6B46C1', // Default color, can be customized per type
+      }
+    })
+
+    return (
+      <div className="p-6 space-y-6">
+        <div className="text-center space-y-2">
+          <div className="text-3xl mb-2">🎯</div>
+          <h3 className="text-xl font-semibold" style={{ color: textColor }}>
+            What else can we help with?
+          </h3>
+          <p className="text-sm opacity-70" style={{ color: textColor }}>
+            Choose an option below to continue
+          </p>
+        </div>
+
+        <div className="grid gap-4">
+          {availableModules.map((module, index) => (
+            <button
+              key={module.type}
+              onClick={() => updateState({ type: 'active', feedbackType: module.type })}
+              className="w-full text-left p-5 rounded-2xl transition-all duration-300 transform hover:scale-105 border-2"
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                borderColor: '#E5E7EB',
+              }}
+            >
+              <div className="flex items-center space-x-4">
+                <div className="text-2xl">{module.icon}</div>
+                <div className="flex-1">
+                  <div className="font-semibold text-base" style={{ color: textColor }}>
+                    {module.title}
+                  </div>
+                  <div className="text-sm opacity-70" style={{ color: textColor }}>
+                    {module.description}
+                  </div>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        <div className="pt-6 border-t border-gray-100 text-center">
+          <button
+            onClick={() => updateState({ type: 'success' })}
+            className="text-sm font-medium opacity-70 hover:opacity-100 transition-all duration-200 px-4 py-2 rounded-lg hover:bg-gray-50"
+            style={{ color: textColor }}
+          >
+            ✨ I'm all set, thanks!
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  const renderFeedbackForm = () => {
+    if (currentState.type !== 'active') return null
+
+    const feedbackType = currentState.feedbackType
+    const info = FEEDBACK_TYPE_INFO[feedbackType]
+
+    const placeholders = {
+      BUG_REPORT: 'Describe the issue you encountered...',
+      FEATURE_REQUEST: 'What feature would you like to see?',
+      REVIEW: 'Share your experience...',
+      FEEDBACK: 'Tell us what you think...',
+    }
+
+    return (
+      <div className="p-6">
+        <div className="mb-4">
+          <button
+            onClick={() => {
+              const availableTypes = getAvailableFeedbackTypes()
+              updateState({ type: 'menu', availableTypes })
+            }}
+            className="flex items-center text-sm opacity-70 hover:opacity-100 transition-opacity mb-4"
+            style={{ color: textColor }}
+          >
+            ← Back to options
+          </button>
+          <h3 className="font-medium mb-2" style={{ color: textColor }}>
+            {info.title}
+          </h3>
+        </div>
+
+        <div className="space-y-4">
+          <textarea
+            value={feedback}
+            onChange={(e) => setFeedback(e.target.value)}
+            placeholder={placeholders[feedbackType as keyof typeof placeholders] || placeholders.FEEDBACK}
+            className="w-full h-32 p-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all"
+            style={{
+              borderColor: '#E5E7EB',
+              backgroundColor: backgroundColor,
+              color: textColor,
+            }}
+            disabled={isSubmitting}
+          />
+
+          <button
+            onClick={() => handleFeedbackFormSubmit(feedbackType)}
+            disabled={!feedback.trim() || isSubmitting}
+            className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: buttonColor, color: buttonTextColor }}
+          >
+            {isSubmitting ? 'Submitting...' : `Submit ${info.title}`}
+          </button>
+
+          {error && <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">{error}</div>}
+        </div>
+      </div>
+    )
+  }
+
+  const renderContent = () => {
+    switch (currentState.type) {
+      case 'loading':
+        return renderLoading()
+      case 'error':
+        return renderError()
+      case 'closed':
+        return renderPrimarySurvey()
+      case 'menu':
+        return renderMenu()
+      case 'active':
+        return renderFeedbackForm()
+      case 'success':
+        return renderSuccess()
+      default:
+        return renderError()
+    }
+  }
+
+  const isGlassmorphism = theme.theme === 'minimal-light' || theme.theme === 'minimal-dark'
+
+  return (
+    <div
+      className={cn(
+        'flex flex-col h-full font-sans antialiased relative',
+        isGlassmorphism && 'backdrop-blur-xl bg-white/10 border border-white/20'
+      )}
+      style={{
+        backgroundColor: isGlassmorphism ? 'rgba(255, 255, 255, 0.1)' : backgroundColor,
+        color: textColor,
+        backdropFilter: isGlassmorphism ? 'blur(20px)' : undefined,
+      }}
+    >
+      {/* Header */}
+      <div
+        className="p-4 text-center relative overflow-hidden"
+        style={{
+          background: theme.colors.headerGradientEnd
+            ? `linear-gradient(135deg, ${primaryColor} 0%, ${theme.colors.headerGradientEnd} 100%)`
+            : primaryColor,
+        }}
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold text-white flex-1 text-center">
+            {content.headerTitle}
+          </h2>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-1 hover:bg-white/20 rounded transition-colors ml-2"
+            >
+              <X className="w-4 h-4 text-white" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-grow overflow-auto">
+        {renderContent()}
+      </div>
+
+      {/* Branding */}
+      {theme.showBranding && (
+        <div className="p-3 text-center text-xs border-t border-gray-100">
+          <div className="opacity-60" style={{ color: textColor }}>
+            Powered by{' '}
+            <span className="font-medium" style={{ color: primaryColor }}>
+              Reflect
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

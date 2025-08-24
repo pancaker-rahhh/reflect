@@ -11,9 +11,6 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { NPSRating } from '@/components/widgets/scoring/NPSRating'
-import { CSATRating } from '@/components/widgets/scoring/CSATRating'
-import { CESRating } from '@/components/widgets/scoring/CESRating'
 import { type WidgetFormData } from '@/pages/WidgetCreate'
 
 interface Step2ContentProps {
@@ -118,30 +115,6 @@ export function Step2Content({ form }: Step2ContentProps) {
           )}
         />
 
-        {/* Interactive Scoring Preview */}
-        {isScoringType && (
-          <div className="space-y-4 rounded-lg border p-6 bg-gray-50">
-            <div className="flex items-center justify-end">
-              <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                Preview Only
-              </span>
-            </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <h4 className="font-medium mb-4 text-center">
-                {form.watch('content.mainQuestion') || getScoringDefaults().mainQuestion}
-              </h4>
-              {primaryType === 'NPS' && (
-                <NPSRating value={undefined} onChange={() => {}} disabled={true} />
-              )}
-              {primaryType === 'CSAT' && (
-                <CSATRating value={undefined} onChange={() => {}} disabled={true} />
-              )}
-              {primaryType === 'CES' && (
-                <CESRating value={undefined} onChange={() => {}} disabled={true} />
-              )}
-            </div>
-          </div>
-        )}
 
         <FormField
           control={form.control}

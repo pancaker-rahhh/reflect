@@ -1,7 +1,6 @@
 import { Monitor, Tablet, Smartphone, RotateCcw, Maximize2, Minimize2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { PreviewState, DeviceType } from './LiveWidgetPreview'
-import { cn } from '@/lib/utils'
+import type { PreviewState, DeviceType } from './LiveWidgetPreview'
 
 interface PreviewControlsProps {
   previewState: PreviewState

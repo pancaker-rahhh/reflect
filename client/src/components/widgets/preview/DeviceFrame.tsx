@@ -1,5 +1,4 @@
-import { DeviceType } from './LiveWidgetPreview'
-import { cn } from '@/lib/utils'
+import type { DeviceType } from './LiveWidgetPreview'
 
 interface DeviceFrameProps {
   deviceType: DeviceType

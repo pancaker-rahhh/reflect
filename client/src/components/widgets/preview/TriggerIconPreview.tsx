@@ -1,5 +1,5 @@
 import { MessageCircle, Star, Bug, Lightbulb } from 'lucide-react'
-import { WidgetFormData } from '@/pages/WidgetCreate'
+import type { WidgetFormData } from '@/pages/WidgetCreate'
 import { cn } from '@/lib/utils'
 
 interface TriggerIconPreviewProps {
@@ -27,7 +27,7 @@ export function TriggerIconPreview({ formData, onClick, isActive }: TriggerIconP
   }
 
   const getWidgetIcon = () => {
-    const { modules, primaryType } = formData
+    const { modules } = formData
     
     if (modules?.reviews) return <Star className="w-5 h-5" />
     if (modules?.bugReporting) return <Bug className="w-5 h-5" />
