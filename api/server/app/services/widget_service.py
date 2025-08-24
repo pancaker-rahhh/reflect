@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, cast
 from uuid import UUID
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,7 +18,7 @@ if ENVIRONMENT == 'production':
     CDN_WIDGET_SCRIPT_URL = 'https://cdn.reflect.com/widget.js'
 else:
     # For development, serve the static widget.js file from the client public directory
-    CDN_WIDGET_SCRIPT_URL = 'http://localhost:5173/widget.js'
+    CDN_WIDGET_SCRIPT_URL = 'http://localhost:5174/widget.js'
 
 
 class WidgetService:
@@ -46,8 +46,7 @@ class WidgetService:
         if not widget:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
 
-        project_id: UUID = widget.project_id
-        await self.project_service.get_project_and_check_access(db, user_id, project_id)
+        await self.project_service.get_project_and_check_access(db, user_id, widget.project_id)
         return widget
 
     async def list_widgets_by_project(
@@ -66,8 +65,9 @@ class WidgetService:
         widget_data = widget_in.model_dump()
 
         temp_widget = Widget(**widget_data)
-        widget_data['public_key'] = temp_widget.public_key
-        widget_data['embed_code'] = self._generate_embed_code(temp_widget.public_key)
+        public_key = temp_widget.public_key
+        widget_data['public_key'] = public_key
+        widget_data['embed_code'] = self._generate_embed_code(public_key)
 
         widget_data['status'] = WidgetStatus.ACTIVE
         widget_data['is_active'] = True
@@ -87,7 +87,7 @@ class WidgetService:
         widget = await self.get_widget_and_check_access(db, user_id, widget_id)
 
         # Prevent deletion of active widgets
-        if widget.is_active and widget.status == WidgetStatus.ACTIVE:
+        if bool(widget.is_active) and widget.status == WidgetStatus.ACTIVE:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='Cannot delete an active widget. Please deactivate the widget first before deleting.',
@@ -125,10 +125,7 @@ class WidgetService:
                 detail='Active widget not found for this key.',
             )
 
-        widget_is_active: bool = bool(widget.is_active)
-        widget_status: WidgetStatus = widget.status
-
-        if not widget_is_active or widget_status != WidgetStatus.ACTIVE:
+        if not bool(widget.is_active) or cast(WidgetStatus, widget.status) != WidgetStatus.ACTIVE:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail='Active widget not found for this key.',

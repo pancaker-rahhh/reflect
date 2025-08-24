@@ -80,31 +80,52 @@ declare global {
       @keyframes reflect-slideUp {
         from {
           opacity: 0;
-          transform: translateY(100%);
+          transform: translateY(100%) scale(0.95);
         }
         to {
           opacity: 1;
-          transform: translateY(0);
+          transform: translateY(0) scale(1);
         }
       }
       
       @keyframes reflect-slideDown {
         from {
           opacity: 1;
-          transform: translateY(0);
+          transform: translateY(0) scale(1);
         }
         to {
           opacity: 0;
-          transform: translateY(100%);
+          transform: translateY(100%) scale(0.95);
+        }
+      }
+
+      @keyframes reflect-fadeInScale {
+        from {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
         }
       }
 
       .reflect-widget-container {
-        animation: reflect-slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: reflect-slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
       }
 
       .reflect-widget-container.closing {
         animation: reflect-slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .reflect-widget-launcher {
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+      }
+
+      .reflect-widget-launcher:hover {
+        animation: none !important;
       }
     `
     document.head.appendChild(style)
@@ -163,17 +184,22 @@ declare global {
     const theme = backendConfig.theme_configuration || {}
     const content = backendConfig.configuration?.content || {}
     const modules = backendConfig.configuration?.modules || {}
+    const widgetType = backendConfig.widget_type?.toUpperCase()
+    
+    // Map widget types to modules properly
+    const defaultModules = getDefaultModulesForType(widgetType)
+    const finalModules = {
+      feedback: modules.feedback ?? defaultModules.feedback,
+      reviews: modules.reviews ?? defaultModules.reviews,
+      bugReporting: modules.bugReporting ?? defaultModules.bugReporting,
+      featureRequests: modules.featureRequests ?? defaultModules.featureRequests,
+    }
     
     return {
-      modules: {
-        feedback: modules.feedback ?? true,
-        reviews: modules.reviews ?? false,
-        bugReporting: modules.bugReporting ?? false,
-        featureRequests: modules.featureRequests ?? false,
-      },
-      primaryType: (backendConfig.widget_type?.toUpperCase() || 'FEEDBACK') as FeedbackType,
+      modules: finalModules,
+      primaryType: (widgetType || 'FEEDBACK') as FeedbackType,
       content: {
-        headerTitle: content.headerTitle || 'We value your feedback',
+        headerTitle: 'Feedback',
         mainQuestion: content.mainQuestion || getDefaultQuestionForType(backendConfig.widget_type),
         submitButtonText: content.submitButtonText || 'Submit Feedback',
         thankYouTitle: content.thankYouTitle || 'Thank you!',
@@ -199,14 +225,38 @@ declare global {
     }
   }
 
-  function getDefaultQuestionForType(type?: string) {
+  function getDefaultModulesForType(type?: string) {
     switch (type) {
-      case 'nps':
+      case 'REVIEW':
+        return { feedback: false, reviews: true, bugReporting: false, featureRequests: false }
+      case 'BUG_REPORT':
+        return { feedback: false, reviews: false, bugReporting: true, featureRequests: false }
+      case 'FEATURE_REQUEST':
+        return { feedback: false, reviews: false, bugReporting: false, featureRequests: true }
+      case 'NPS':
+      case 'CSAT':
+      case 'CES':
+      case 'SURVEY':
+        return { feedback: true, reviews: false, bugReporting: false, featureRequests: false }
+      default:
+        return { feedback: true, reviews: false, bugReporting: false, featureRequests: false }
+    }
+  }
+
+  function getDefaultQuestionForType(type?: string) {
+    switch (type?.toUpperCase()) {
+      case 'NPS':
         return 'How likely are you to recommend us to a friend or colleague?'
-      case 'csat':
+      case 'CSAT':
         return 'How satisfied are you with our service?'
-      case 'ces':
+      case 'CES':
         return 'How easy was it to use our service?'
+      case 'REVIEW':
+        return 'How would you rate your overall experience?'
+      case 'BUG_REPORT':
+        return 'Please describe the issue you encountered'
+      case 'FEATURE_REQUEST':
+        return 'What feature would you like to see added?'
       default:
         return 'How can we improve?'
     }
@@ -287,19 +337,23 @@ declare global {
       position: 'fixed',
       bottom: '100px',
       right: '20px',
-      width: '400px',
-      height: '500px',
-      border: 'none',
-      borderRadius: '20px',
-      background: themeStyles.background,
+      width: '420px',
+      maxWidth: 'calc(100vw - 40px)',
+      height: '550px',
+      maxHeight: 'calc(100vh - 120px)',
+      border: '1px solid rgba(255,255,255,0.2)',
+      borderRadius: '24px',
+      background: `linear-gradient(135deg, ${themeStyles.background}ee, ${themeStyles.background}f5)`,
       color: themeStyles.text,
-      boxShadow: '0 20px 40px rgba(0,0,0,0.15), 0 10px 20px rgba(0,0,0,0.1)',
+      boxShadow: '0 32px 64px rgba(0,0,0,0.12), 0 16px 32px rgba(0,0,0,0.08), 0 0 0 1px rgba(255,255,255,0.05)',
       display: 'none',
       zIndex: '9998',
       overflow: 'hidden',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
       fontSize: '14px',
       lineHeight: '1.5',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
     })
 
     // Apply positioning
@@ -312,7 +366,10 @@ declare global {
     // Create React root and render WidgetCore
     reactRoot = createRoot(container)
     
-    const widgetConfig = transformWidgetConfig(backendConfig)
+    const widgetConfig = {
+      ...transformWidgetConfig(backendConfig),
+      widgetKey: publicKey
+    }
     
     const handleSubmit = async (data: FeedbackData) => {
       // Submit feedback via API
@@ -391,6 +448,7 @@ declare global {
   function renderLauncher(config: WidgetConfig) {
     launcherContainer = document.createElement('div')
     launcherContainer.id = 'reflect-widget-launcher'
+    launcherContainer.className = 'reflect-widget-launcher'
     launcherContainer.onclick = toggleWidget
 
     const theme = config.theme_configuration || {}
@@ -402,17 +460,17 @@ declare global {
       zIndex: '9999',
       cursor: 'pointer',
       background: `linear-gradient(135deg, ${primaryColor}, ${darkerColor})`,
-      height: '64px',
-      width: '64px',
+      height: '68px',
+      width: '68px',
       borderRadius: '50%',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      boxShadow: '0 8px 25px rgba(0,0,0,0.2), 0 4px 10px rgba(0,0,0,0.1)',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      border: 'none',
+      boxShadow: '0 12px 32px rgba(0,0,0,0.15), 0 6px 16px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.1)',
+      transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+      border: '2px solid rgba(255,255,255,0.2)',
       color: '#FFFFFF',
-      animation: 'reflect-pulse 2s infinite',
+      animation: 'reflect-pulse 3s infinite',
     })
 
     launcherContainer.onmouseover = () => {

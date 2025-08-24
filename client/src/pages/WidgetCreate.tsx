@@ -21,7 +21,10 @@ const widgetSchema = z.object({
     reviews: z.boolean(),
     bugReporting: z.boolean(),
     featureRequests: z.boolean(),
-  }),
+  }).refine((modules) => {
+    // At least one module must be enabled
+    return Object.values(modules).some(Boolean)
+  }, { message: 'At least one module must be enabled' }),
   primaryType: z.enum([
     'FEEDBACK',
     'SURVEY',
@@ -42,6 +45,17 @@ const widgetSchema = z.object({
     npsScore: z.number().min(0).max(10).optional(),
     csatScore: z.number().min(1).max(5).optional(),
     cesScore: z.number().min(1).max(5).optional(),
+    // Review-specific fields
+    reviewPrompt: z.string().optional(),
+    requireReviewText: z.boolean().optional(),
+    // Bug report specific fields
+    bugCategories: z.array(z.string()).optional(),
+    bugSeverityLevels: z.array(z.string()).optional(),
+    requireStepsToReproduce: z.boolean().optional(),
+    // Feature request specific fields
+    featureCategories: z.array(z.string()).optional(),
+    priorityLevels: z.array(z.string()).optional(),
+    requireUseCase: z.boolean().optional(),
   }),
   appearance: z.object({
     theme: z.enum(['default', 'midnight', 'minimal-light', 'minimal-dark']),
@@ -69,6 +83,27 @@ const widgetSchema = z.object({
       tablet: z.boolean(),
     }),
   }),
+}).refine((data) => {
+  // Validate that primaryType is consistent with enabled modules
+  const enabledModules = Object.entries(data.modules).filter(([, enabled]) => enabled)
+  
+  if (enabledModules.length === 1) {
+    const [moduleKey] = enabledModules[0]
+    const moduleTypeMap: Record<string, string[]> = {
+      feedback: ['FEEDBACK', 'NPS', 'CSAT', 'CES', 'SURVEY'],
+      reviews: ['REVIEW'], 
+      bugReporting: ['BUG_REPORT'],
+      featureRequests: ['FEATURE_REQUEST']
+    }
+    
+    const allowedTypes = moduleTypeMap[moduleKey] || []
+    return allowedTypes.includes(data.primaryType)
+  }
+  
+  return true // Multi-module widgets can use any type as primary
+}, {
+  message: 'Primary type must match the enabled module',
+  path: ['primaryType']
 })
 
 export type WidgetFormData = z.infer<typeof widgetSchema>
@@ -121,6 +156,10 @@ export function WidgetCreate() {
             submitButtonText: 'Submit Feedback',
             thankYouTitle: 'Thank you!',
             thankYouMessage: 'Your feedback helps us improve.',
+            reviewPrompt: 'Share your thoughts about your experience',
+            requireReviewText: false,
+            requireStepsToReproduce: false,
+            requireUseCase: true,
           },
           appearance: {
             theme: 'default',
@@ -167,6 +206,11 @@ export function WidgetCreate() {
               thankYouTitle: widget.configuration?.content?.thankYouTitle || 'Thank you!',
               thankYouMessage:
                 widget.configuration?.content?.thankYouMessage || 'Your feedback helps us improve.',
+              // Type-specific fields
+              reviewPrompt: widget.configuration?.typeSpecificSettings?.reviewPrompt || widget.configuration?.content?.reviewPrompt || 'Share your thoughts about your experience',
+              requireReviewText: widget.configuration?.typeSpecificSettings?.requireReviewText || widget.configuration?.content?.requireReviewText || false,
+              requireStepsToReproduce: widget.configuration?.typeSpecificSettings?.requireStepsToReproduce || widget.configuration?.content?.requireStepsToReproduce || false,
+              requireUseCase: widget.configuration?.typeSpecificSettings?.requireUseCase || widget.configuration?.content?.requireUseCase || true,
             },
             appearance: {
               theme: widget.theme_configuration?.theme_name || 'default',

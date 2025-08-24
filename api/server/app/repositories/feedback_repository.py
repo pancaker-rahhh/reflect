@@ -113,5 +113,30 @@ class FeedbackRepository(BaseRepository[Feedback]):
         await db.commit()
         return True
 
+    async def get_by_widget_and_type(
+        self, db: AsyncSession, widget_id: UUID, feedback_type: FeedbackType
+    ) -> List[Feedback]:
+        """Get all feedback for a specific widget and type"""
+        from sqlalchemy import select
+        
+        # Use the base Feedback model and filter by feedback_type and widget_id
+        stmt = select(Feedback).where(
+            Feedback.widget_id == widget_id,
+            Feedback.feedback_type == feedback_type
+        )
+        result = await db.execute(stmt)
+        return list(result.scalars().all())
+
+    async def update_votes(self, db: AsyncSession, feedback_id: UUID, new_vote_count: int) -> bool:
+        """Update the vote count for a feedback item"""
+        obj = await self.get(db, feedback_id)
+        if not obj:
+            return False
+        
+        obj.votes = new_vote_count
+        db.add(obj)
+        await db.commit()
+        return True
+
 
 feedback_repository = FeedbackRepository()

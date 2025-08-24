@@ -82,6 +82,16 @@ export interface Widget {
       submitButtonText?: string
       thankYouTitle?: string
       thankYouMessage?: string
+      reviewPrompt?: string
+      requireReviewText?: boolean
+      requireStepsToReproduce?: boolean
+      requireUseCase?: boolean
+    }
+    typeSpecificSettings?: {
+      reviewPrompt?: string
+      requireReviewText?: boolean
+      requireStepsToReproduce?: boolean
+      requireUseCase?: boolean
     }
   }
   theme_configuration: {

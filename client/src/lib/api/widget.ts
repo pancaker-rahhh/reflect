@@ -10,6 +10,13 @@ function transformDataToPayload(data: WidgetFormData) {
     configuration: {
       modules: data.modules,
       content: data.content,
+      // Store type-specific settings
+      typeSpecificSettings: {
+        reviewPrompt: data.content?.reviewPrompt,
+        requireReviewText: data.content?.requireReviewText,
+        requireStepsToReproduce: data.content?.requireStepsToReproduce,
+        requireUseCase: data.content?.requireUseCase,
+      }
     },
     theme_configuration: {
       ...data.appearance.colors,

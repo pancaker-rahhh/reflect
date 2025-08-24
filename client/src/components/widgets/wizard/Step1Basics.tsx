@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react'
 import { type UseFormReturn } from 'react-hook-form'
 import { type WidgetFormData } from '@/pages/WidgetCreate'
 import {
@@ -24,7 +25,7 @@ interface Step1BasicsProps {
   form: UseFormReturn<WidgetFormData>
 }
 
-const modules = [
+const MODULE_DEFINITIONS = [
   {
     id: 'feedback',
     label: 'Collect Feedback/Surveys',
@@ -51,7 +52,109 @@ const modules = [
   },
 ]
 
+interface PrimaryTypeSelectorProps {
+  modules: Record<string, boolean> | undefined
+  form: UseFormReturn<WidgetFormData>
+}
+
+function PrimaryTypeSelector({ modules, form }: PrimaryTypeSelectorProps) {
+  const safeModules = modules || { feedback: true, reviews: false, bugReporting: false, featureRequests: false }
+  const enabledModules = Object.entries(safeModules).filter(([, enabled]) => Boolean(enabled))
+  const showSelector = enabledModules.length > 1 || (enabledModules.length === 1 && enabledModules[0][0] === 'feedback')
+  
+  if (!showSelector) return null
+
+  const moduleTypeMap: Record<string, { value: string; label: string }[]> = {
+    feedback: [
+      { value: 'FEEDBACK', label: 'General Feedback' },
+      { value: 'NPS', label: 'NPS Survey' },
+      { value: 'CSAT', label: 'CSAT Survey' },
+      { value: 'CES', label: 'CES Survey' },
+      { value: 'SURVEY', label: 'Custom Survey' }
+    ],
+    reviews: [{ value: 'REVIEW', label: 'Customer Review' }],
+    bugReporting: [{ value: 'BUG_REPORT', label: 'Bug Report' }],
+    featureRequests: [{ value: 'FEATURE_REQUEST', label: 'Feature Request' }]
+  }
+  
+  const allOptions: { value: string; label: string }[] = []
+  enabledModules.forEach(([moduleKey]) => {
+    const options = moduleTypeMap[moduleKey] || []
+    allOptions.push(...options)
+  })
+
+  return (
+    <FormField
+      control={form.control}
+      name="primaryType"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel className="text-lg font-semibold mb-4">
+            {enabledModules.length > 1 ? 'Primary Widget Type' : 'Feedback Type'}
+          </FormLabel>
+          <FormDescription>
+            {enabledModules.length > 1 
+              ? 'Choose the main type users will see first' 
+              : 'Choose the type of feedback to collect'
+            }
+          </FormDescription>
+          <Select onValueChange={field.onChange} value={field.value}>
+            <FormControl>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a type" />
+              </SelectTrigger>
+            </FormControl>
+            <SelectContent>
+              {allOptions.length > 0 
+                ? allOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))
+                : (
+                    <SelectItem value="FEEDBACK">
+                      General Feedback
+                    </SelectItem>
+                  )
+              }
+            </SelectContent>
+          </Select>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  )
+}
+
 export function Step1Basics({ form }: Step1BasicsProps) {
+  const modules = form.watch('modules') || { feedback: true, reviews: false, bugReporting: false, featureRequests: false }
+  
+  // Auto-select primaryType based on enabled modules
+  useEffect(() => {
+    if (!modules || typeof modules !== 'object') return
+    
+    const enabledModules = Object.entries(modules).filter(([, enabled]) => Boolean(enabled))
+    
+    if (enabledModules.length === 1) {
+      const [moduleKey] = enabledModules[0]
+      const moduleTypeMap: Record<string, string> = {
+        feedback: 'FEEDBACK',
+        reviews: 'REVIEW', 
+        bugReporting: 'BUG_REPORT',
+        featureRequests: 'FEATURE_REQUEST'
+      }
+      
+      const newPrimaryType = moduleTypeMap[moduleKey]
+      if (newPrimaryType && form.getValues('primaryType') !== newPrimaryType) {
+        form.setValue('primaryType', newPrimaryType as any)
+      }
+    } else if (enabledModules.length === 0) {
+      // Default to feedback if no modules selected
+      form.setValue('modules.feedback', true)
+      form.setValue('primaryType', 'FEEDBACK')
+    }
+  }, [modules, form])
+
   return (
     <Form {...form}>
       <div className="space-y-6">
@@ -75,7 +178,7 @@ export function Step1Basics({ form }: Step1BasicsProps) {
         <div>
           <h3 className="text-lg font-semibold mb-4">Widget Modules</h3>
           <div className="space-y-4">
-            {modules.map((module) => {
+            {MODULE_DEFINITIONS.map((module) => {
               type ModuleFieldName =
                 | 'modules.feedback'
                 | 'modules.reviews'
@@ -107,33 +210,7 @@ export function Step1Basics({ form }: Step1BasicsProps) {
           </div>
         </div>
 
-        {form.watch('modules.feedback') && (
-          <FormField
-            control={form.control}
-            name="primaryType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-lg font-semibold mb-4">Primary Feedback Type</FormLabel>
-                <FormDescription>Choose the main type of feedback to collect</FormDescription>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a feedback type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="FEEDBACK">General Feedback</SelectItem>
-                    <SelectItem value="NPS">NPS Survey</SelectItem>
-                    <SelectItem value="CSAT">CSAT Survey</SelectItem>
-                    <SelectItem value="CES">CES Survey</SelectItem>
-                    <SelectItem value="SURVEY">Custom Survey</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
+<PrimaryTypeSelector modules={modules} form={form} />
       </div>
     </Form>
   )

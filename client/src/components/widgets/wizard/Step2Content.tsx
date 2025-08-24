@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { Switch } from '@/components/ui/switch'
 import { type WidgetFormData } from '@/pages/WidgetCreate'
 
 interface Step2ContentProps {
@@ -21,7 +22,7 @@ export function Step2Content({ form }: Step2ContentProps) {
   const primaryType = form.watch('primaryType')
   const isScoringType = ['NPS', 'CSAT', 'CES'].includes(primaryType)
 
-  const getScoringDefaults = React.useCallback(() => {
+  const getTypeDefaults = React.useCallback(() => {
     switch (primaryType) {
       case 'NPS':
         return {
@@ -47,6 +48,38 @@ export function Step2Content({ form }: Step2ContentProps) {
           thankYouTitle: 'Thank you!',
           thankYouMessage: 'Your feedback helps us make our service easier to use.',
         }
+      case 'REVIEW':
+        return {
+          headerTitle: 'Share your experience',
+          mainQuestion: 'How would you rate your overall experience with us?',
+          submitButtonText: 'Submit Review',
+          thankYouTitle: 'Thanks for your review!',
+          thankYouMessage: 'Your review helps others make informed decisions.',
+        }
+      case 'BUG_REPORT':
+        return {
+          headerTitle: 'Report an Issue',
+          mainQuestion: 'Please describe the issue you encountered',
+          submitButtonText: 'Report Bug',
+          thankYouTitle: 'Bug report submitted!',
+          thankYouMessage: 'Thank you for helping us improve. We will investigate this issue.',
+        }
+      case 'FEATURE_REQUEST':
+        return {
+          headerTitle: 'Suggest a Feature',
+          mainQuestion: 'What feature would you like to see added?',
+          submitButtonText: 'Submit Request',
+          thankYouTitle: 'Thanks for your suggestion!',
+          thankYouMessage: 'We appreciate your input and will consider this feature for future updates.',
+        }
+      case 'SURVEY':
+        return {
+          headerTitle: 'Quick Survey',
+          mainQuestion: 'Help us understand your needs better',
+          submitButtonText: 'Complete Survey',
+          thankYouTitle: 'Survey completed!',
+          thankYouMessage: 'Thank you for taking the time to complete our survey.',
+        }
       default:
         return {
           headerTitle: 'We value your feedback',
@@ -60,15 +93,27 @@ export function Step2Content({ form }: Step2ContentProps) {
 
   // Update form defaults when primaryType changes
   React.useEffect(() => {
-    if (isScoringType) {
-      const defaults = getScoringDefaults()
+    const currentValues = form.getValues('content')
+    const defaults = getTypeDefaults()
+    
+    // Only update if the current values appear to be defaults (to avoid overriding user changes)
+    const isUsingDefaults = !currentValues?.headerTitle || 
+                           currentValues.headerTitle === 'We value your feedback' ||
+                           currentValues.headerTitle === 'How satisfied are you?' ||
+                           currentValues.headerTitle === 'Help us improve' ||
+                           currentValues.headerTitle === 'Share your experience' ||
+                           currentValues.headerTitle === 'Report an Issue' ||
+                           currentValues.headerTitle === 'Suggest a Feature' ||
+                           currentValues.headerTitle === 'Quick Survey'
+    
+    if (isUsingDefaults) {
       form.setValue('content.headerTitle', defaults.headerTitle)
       form.setValue('content.mainQuestion', defaults.mainQuestion)
       form.setValue('content.submitButtonText', defaults.submitButtonText)
       form.setValue('content.thankYouTitle', defaults.thankYouTitle)
       form.setValue('content.thankYouMessage', defaults.thankYouMessage)
     }
-  }, [primaryType, form, isScoringType, getScoringDefaults])
+  }, [primaryType, form, getTypeDefaults])
 
   return (
     <Form {...form}>
@@ -97,15 +142,7 @@ export function Step2Content({ form }: Step2ContentProps) {
               <FormDescription>The primary question you want to ask your users</FormDescription>
               <FormControl>
                 <Textarea
-                  placeholder={
-                    primaryType === 'NPS'
-                      ? 'How likely are you to recommend our product to a friend or colleague?'
-                      : primaryType === 'CSAT'
-                        ? 'Please rate your overall satisfaction with our service'
-                        : primaryType === 'CES'
-                          ? 'How easy was it to get the help you needed?'
-                          : 'How can we improve?'
-                  }
+                  placeholder={getTypeDefaults().mainQuestion}
                   className="min-h-[100px]"
                   {...field}
                 />
@@ -125,7 +162,7 @@ export function Step2Content({ form }: Step2ContentProps) {
               <FormDescription>Text displayed on the submit button</FormDescription>
               <FormControl>
                 <Input
-                  placeholder={isScoringType ? 'Submit Rating' : 'Submit Feedback'}
+                  placeholder={getTypeDefaults().submitButtonText}
                   {...field}
                 />
               </FormControl>
@@ -163,11 +200,7 @@ export function Step2Content({ form }: Step2ContentProps) {
                 </FormDescription>
                 <FormControl>
                   <Textarea
-                    placeholder={
-                      isScoringType
-                        ? 'Your rating helps us improve our product and service.'
-                        : 'Your feedback helps us improve our product and provide better service.'
-                    }
+                    placeholder={getTypeDefaults().thankYouMessage}
                     className="min-h-[80px]"
                     {...field}
                   />
@@ -177,6 +210,129 @@ export function Step2Content({ form }: Step2ContentProps) {
             )}
           />
         </div>
+
+        {/* Type-specific configuration sections */}
+        {primaryType === 'REVIEW' && (
+          <div className="space-y-4 rounded-lg border p-4">
+            <h4 className="font-medium flex items-center gap-2">
+              <span>⭐</span>
+              Review Settings
+            </h4>
+            
+            <FormField
+              control={form.control}
+              name="content.reviewPrompt"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Review Prompt (Optional)</FormLabel>
+                  <FormDescription className="text-sm">
+                    Additional text to encourage detailed reviews
+                  </FormDescription>
+                  <FormControl>
+                    <Input 
+                      placeholder="Share your thoughts about your experience"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="content.requireReviewText"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Require written review</FormLabel>
+                    <FormDescription>
+                      Force users to write a text review along with star rating
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
+
+        {primaryType === 'BUG_REPORT' && (
+          <div className="space-y-4 rounded-lg border p-4">
+            <h4 className="font-medium flex items-center gap-2">
+              <span>🐛</span>
+              Bug Report Settings
+            </h4>
+
+            <FormField
+              control={form.control}
+              name="content.requireStepsToReproduce"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Require reproduction steps</FormLabel>
+                    <FormDescription>
+                      Make the "Steps to Reproduce" field mandatory
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <p className="text-sm text-blue-700">
+                <strong>Note:</strong> Bug reports automatically include category selection, severity rating, title, and description fields.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {primaryType === 'FEATURE_REQUEST' && (
+          <div className="space-y-4 rounded-lg border p-4">
+            <h4 className="font-medium flex items-center gap-2">
+              <span>✨</span>
+              Feature Request Settings
+            </h4>
+
+            <FormField
+              control={form.control}
+              name="content.requireUseCase"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Require use case description</FormLabel>
+                    <FormDescription>
+                      Make the "Use Case & Benefits" field mandatory
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            
+            <div className="bg-green-50 p-3 rounded-lg">
+              <p className="text-sm text-green-700">
+                <strong>Note:</strong> Feature requests automatically include title, category, priority, description, and use case fields.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </Form>
   )

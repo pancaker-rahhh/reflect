@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Module Widget Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+            background: #f8f9ff;
+            border-radius: 0 8px 8px 0;
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        .widget-info {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Multi-Module Widget Test</h1>
+        
+        <div class="widget-info">
+            <h3>🚀 Testing Enhanced Widget Features</h3>
+            <p><strong>New Features Implemented:</strong></p>
+            <ul>
+                <li>✅ Multi-module menu system (shows all 4 options when enabled)</li>
+                <li>⭐ Enhanced Review form with star ratings and visual feedback</li>
+                <li>🐛 Improved Bug Report form with categories and severity levels</li>
+                <li>✨ Feature Request form with existing features list and upvoting</li>
+                <li>🎨 Modern, glassmorphism design with smooth animations</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>📋 Test Scenarios</h2>
+            <p>Click the widget launcher (bottom right) to test:</p>
+            <ol>
+                <li><strong>Multi-Module Menu:</strong> Should show 4 options with colorful cards</li>
+                <li><strong>Review System:</strong> Click "Give Review" → Interactive star rating with emoji feedback</li>
+                <li><strong>Bug Reports:</strong> Click "Report Bug" → Categorized form with severity levels</li>
+                <li><strong>Feature Requests:</strong> Click "Request Feature" → See existing features with upvoting</li>
+                <li><strong>General Feedback:</strong> Traditional text-based feedback option</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h2>🎨 Design Improvements</h2>
+            <ul>
+                <li>Modern glassmorphism effects with backdrop blur</li>
+                <li>Smooth spring animations for interactions</li>
+                <li>Enhanced launcher with better shadows and scaling</li>
+                <li>Type-specific color coding for better UX</li>
+                <li>Mobile-responsive design</li>
+            </ul>
+        </div>
+
+        <p><em>The widget will automatically show the multi-module menu since all feedback types are enabled!</em></p>
+    </div>
+
+    <!-- Widget Configuration -->
+    <script>
+        window.reflectConfig = {
+            key: 'test-widget-key-123',
+            theme: 'light',
+            position: 'bottom-right'
+        }
+    </script>
+
+    <!-- Mock Widget Data -->
+    <script>
+        // Mock the API response for testing
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options) {
+            // Mock widget config endpoint
+            if (url.includes('/api/v1/public/widgets/')) {
+                if (url.includes('/features')) {
+                    // Mock feature requests endpoint
+                    return Promise.resolve({
+                        ok: true,
+                        json: () => Promise.resolve([
+                            {
+                                id: '1',
+                                title: 'Dark Mode Support',
+                                description: 'Add a dark theme option for better nighttime usage',
+                                category: 'ui_ux',
+                                priority: 'medium',
+                                upvotes: 23,
+                                hasUserUpvoted: false
+                            },
+                            {
+                                id: '2',
+                                title: 'Mobile App',
+                                description: 'Create a mobile application for iOS and Android',
+                                category: 'functionality',
+                                priority: 'high',
+                                upvotes: 45,
+                                hasUserUpvoted: false
+                            },
+                            {
+                                id: '3',
+                                title: 'Advanced Analytics',
+                                description: 'More detailed reporting and analytics dashboard',
+                                category: 'analytics',
+                                priority: 'medium',
+                                upvotes: 12,
+                                hasUserUpvoted: false
+                            }
+                        ])
+                    });
+                } else {
+                    // Mock main widget config
+                    return Promise.resolve({
+                        ok: true,
+                        json: () => Promise.resolve({
+                            widget_type: 'NPS',
+                            position: 'bottom_right',
+                            configuration: {
+                                modules: {
+                                    feedback: true,
+                                    reviews: true,
+                                    bugReporting: true,
+                                    featureRequests: true
+                                },
+                                content: {
+                                    headerTitle: 'We value your feedback',
+                                    mainQuestion: 'How can we help you today?',
+                                    submitButtonText: 'Submit',
+                                    thankYouTitle: 'Thank you!',
+                                    thankYouMessage: 'Your feedback helps us improve.'
+                                }
+                            },
+                            theme_configuration: {
+                                primary: '#667eea',
+                                background: '#ffffff',
+                                text: '#1f2937',
+                                buttonColor: '#667eea',
+                                buttonTextColor: '#ffffff'
+                            }
+                        })
+                    });
+                }
+            }
+            
+            // Mock upvote endpoint
+            if (url.includes('/api/v1/public/features/upvote')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: () => Promise.resolve({
+                        success: true,
+                        newVoteCount: Math.floor(Math.random() * 50) + 10
+                    })
+                });
+            }
+            
+            // Mock feedback submission
+            if (url.includes('/api/v1/feedback')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: () => Promise.resolve({ id: 'feedback-123', success: true })
+                });
+            }
+            
+            return originalFetch.apply(this, arguments);
+        };
+    </script>
+
+    <!-- Load Widget -->
+    <script src="./dist/widget.js"></script>
+</body>
+</html>

@@ -8,7 +8,8 @@ from app.services.feedback_service import feedback_service
 from app.models.widget_model import WidgetType
 from app.models.feedback_model import FeedbackType
 from pydantic import BaseModel
-from typing import Optional, Dict, Any, Union
+from typing import Optional, Dict, Any, Union, List
+from app.repositories.feedback_repository import feedback_repository
 
 public_router = APIRouter()
 
@@ -153,3 +154,86 @@ async def submit_public_feedback(
         data=feedback_data,
         context=context,
     )
+
+
+class FeatureRequestPublic(BaseModel):
+    id: str
+    title: str
+    description: str
+    category: str
+    priority: str
+    upvotes: int
+    hasUserUpvoted: bool = False
+
+
+class UpvoteRequest(BaseModel):
+    widgetKey: str
+    featureId: str
+
+
+@public_router.get('/widgets/{public_key}/features', response_model=List[FeatureRequestPublic])
+async def get_widget_feature_requests(
+    public_key: str,
+    db: AsyncSession = Depends(get_db),
+    widget_service: WidgetService = Depends(lambda: widget_service),
+):
+    """Get all feature requests for a specific widget"""
+    # Get widget configuration
+    widget = await widget_service.get_public_widget_by_key(db, public_key)
+    
+    # Get all feature requests for this widget
+    features = await feedback_repository.get_by_widget_and_type(
+        db, widget_id=widget.id, feedback_type=FeedbackType.FEATURE_REQUEST
+    )
+    
+    # Transform to public format
+    feature_requests = []
+    for feature in features:
+        # Parse context for category and priority
+        context = feature.context or {}
+        
+        feature_requests.append(FeatureRequestPublic(
+            id=str(feature.id),
+            title=feature.title or 'Untitled Feature',
+            description=feature.message or '',
+            category=context.get('category', 'other'),
+            priority=context.get('priority', 'medium'),
+            upvotes=feature.votes or 0,
+            hasUserUpvoted=False  # TODO: Implement user tracking for upvotes
+        ))
+    
+    # Sort by upvotes descending
+    feature_requests.sort(key=lambda x: x.upvotes, reverse=True)
+    
+    return feature_requests
+
+
+@public_router.post('/features/upvote')
+async def upvote_feature_request(
+    payload: UpvoteRequest,
+    db: AsyncSession = Depends(get_db),
+    widget_service: WidgetService = Depends(lambda: widget_service),
+):
+    """Upvote or remove upvote from a feature request"""
+    # Get widget to verify access
+    widget = await widget_service.get_public_widget_by_key(db, payload.widgetKey)
+    
+    # Get the feature request  
+    feature = await feedback_repository.get(db, payload.featureId)
+    
+    if not feature or feature.widget_id != widget.id:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Feature request not found")
+    
+    # For now, simply increment/decrement votes
+    # TODO: Implement proper user tracking to prevent duplicate votes
+    current_votes = feature.votes or 0
+    
+    # Since we don't have user tracking yet, we'll just increment
+    # In a real implementation, you'd check if user already voted
+    new_votes = current_votes + 1
+    
+    # Update the votes
+    await feedback_repository.update_votes(db, feature.id, new_votes)
+    
+    return {"success": True, "newVoteCount": new_votes}
