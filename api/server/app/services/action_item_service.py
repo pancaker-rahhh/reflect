@@ -61,7 +61,7 @@ class ActionItemService:
         db: AsyncSession,
         feedback_id: UUID,
         user_id: UUID,
-        priority: Optional[FeedbackPriority] = None,
+        priority: Optional[str] = None,
         conversion_notes: Optional[str] = None,
         custom_tags: Optional[List[str]] = None,
     ) -> RoadmapFeature:
@@ -79,6 +79,14 @@ class ActionItemService:
 
         auto_tags = self._generate_tags_from_feedback_type(feedback.feedback_type)
         all_tags = auto_tags + (custom_tags or [])
+        suggested_priority = self._suggest_priority(feedback)
+        if priority:
+            try:
+                final_priority = FeedbackPriority(priority.lower())
+            except ValueError:
+                final_priority = suggested_priority
+        else:
+            final_priority = suggested_priority
 
         feature_data = {
             'column_id': backlog_column.id,
@@ -90,6 +98,7 @@ class ActionItemService:
             'vote_count': feedback.feedback_votes or 0,
             'submitter_name': current_user.name or current_user.email,
             'submitter_email': current_user.email,
+            'priority': final_priority.value,
         }
 
         feature = await roadmap_feature_repository.create(db, **feature_data)

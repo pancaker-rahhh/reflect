@@ -133,6 +133,7 @@ class RoadmapFeatureTag(BaseModel):
 
     feature: Mapped['RoadmapFeature'] = relationship(back_populates='feature_tags')
     tag: Mapped['RoadmapTag'] = relationship(back_populates='feature_tags')
+    priority: Mapped[Optional[str]] = mapped_column(String(20), default='medium')
 
     __table_args__ = (UniqueConstraint('feature_id', 'tag_id', name='uq_feature_tag'),)
 
