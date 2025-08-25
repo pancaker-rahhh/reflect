@@ -57,6 +57,25 @@ async def list_feedback(
     )
 
 
+def _convert_feedback_to_dict(item) -> Dict[str, Any]:
+    return {
+        'id': str(item.id),
+        'type': item.feedback_type.value
+        if hasattr(item.feedback_type, 'value')
+        else str(item.feedback_type),
+        'status': item.status.value
+        if hasattr(item.status, 'value')
+        else str(item.status),
+        'summary': item.title
+        or item.message
+        or f'Feedback: {item.feedback_type.value}',
+        'submittedBy': item.submitter_name or 'Anonymous',
+        'timestamp': item.created_at.isoformat() if item.created_at else None,
+        'feedback_votes': item.feedback_votes,
+        'is_actionable': item.is_actionable,
+    }
+
+
 @feedback_router.get('/actionable', response_model=List[Dict[str, Any]])
 async def get_actionable_feedback(
     project_id: Optional[UUID] = Query(
@@ -66,42 +85,14 @@ async def get_actionable_feedback(
     limit: int = Query(default=100, ge=1, le=1000),
     db: AsyncSession = Depends(get_db),
 ) -> List[Dict[str, Any]]:
-    try:
-        if project_id:
-            actionable_feedback = await feedback_service.get_actionable_feedback(
-                db, project_id, skip, limit
-            )
+    if not project_id:
+        return []
 
-            result = []
-            for item in actionable_feedback:
-                item_dict = {
-                    'id': str(item.id),
-                    'type': item.feedback_type.value
-                    if hasattr(item.feedback_type, 'value')
-                    else str(item.feedback_type),
-                    'status': item.status.value
-                    if hasattr(item.status, 'value')
-                    else str(item.status),
-                    'summary': item.title
-                    or item.message
-                    or f'Feedback: {item.feedback_type.value}',
-                    'submittedBy': item.submitter_name or 'Anonymous',
-                    'timestamp': item.created_at.isoformat()
-                    if item.created_at
-                    else None,
-                    'feedback_votes': item.feedback_votes,
-                    'is_actionable': item.is_actionable,
-                }
-                result.append(item_dict)
-            return result
-        else:
-            return []
-    except Exception as e:
-        logger.error(f'Error getting actionable feedback: {str(e)}')
-        import traceback
+    actionable_feedback = await feedback_service.get_actionable_feedback(
+        db, project_id, skip, limit
+    )
 
-        logger.error(f'Full traceback: {traceback.format_exc()}')
-        raise HTTPException(status_code=500, detail='Failed to get actionable feedback')
+    return [_convert_feedback_to_dict(item) for item in actionable_feedback]
 
 
 @feedback_router.get('/chart-data', response_model=List[Dict[str, Any]])
@@ -193,7 +184,6 @@ async def get_comments(
     return [FeedbackCommentResponse.model_validate(c) for c in comments]
 
 
-# Simple upvote endpoint
 @feedback_router.post(
     '/{feedback_id}/upvote',
     response_model=UpvoteResponse,
@@ -231,7 +221,6 @@ class FeedbackConversionRequest(BaseModel):
     custom_tags: Optional[List[str]] = None
 
 
-# Feedback conversion endpoints
 @feedback_router.post(
     '/{feedback_id}/convert',
     response_model=Dict[str, Any],
