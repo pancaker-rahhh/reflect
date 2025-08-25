@@ -16,7 +16,6 @@ export {
 export {
   organizationApi,
   invitationApi,
-  type Organization,
   type OrganizationCreateRequest,
   type InvitationRequest,
   type BulkInvitationRequest,
@@ -33,6 +32,13 @@ export {
   type RoadmapTagUpdateRequest,
   type FeatureOrderUpdateRequest,
 } from './roadmap'
+export {
+  feedbackApi,
+  type FeedbackPayload,
+  type ConversionData,
+  type ConversionPreview,
+} from './feedback'
+export { dashboardApi } from './dashboard'
 
 // Re-export client and error handling for advanced usage
 export { apiClient } from '../client'
@@ -43,6 +49,8 @@ import { userApi } from './user'
 import { projectApi } from './project'
 import { widgetApi } from './widget'
 import { roadmapApi } from './roadmap'
+import { feedbackApi } from './feedback'
+import { dashboardApi } from './dashboard'
 import type { UserProfileUpdateRequest } from './user'
 import type { ProjectCreateRequest } from './project'
 import type { WidgetCreateRequest } from './widget'
@@ -100,4 +108,16 @@ export const api = {
   getPublicRoadmapTags: (roadmapId: string) => roadmapApi.getPublicRoadmapTags(roadmapId),
   updateRoadmapTag: (tagId: string, data: any) => roadmapApi.updateTag(tagId, data),
   deleteRoadmapTag: (tagId: string) => roadmapApi.deleteTag(tagId),
+
+  // Feedback APIs
+  getActionableFeedback: () => feedbackApi.getActionableFeedback(),
+  getConversionPreview: (feedbackId: string) => feedbackApi.getConversionPreview(feedbackId),
+  convertToRoadmap: (feedbackId: string, conversionData: any) =>
+    feedbackApi.convertToRoadmap(feedbackId, conversionData),
+
+  // Dashboard APIs
+  getDashboardMetrics: (timeRange?: string) => dashboardApi.getDashboardMetrics(timeRange),
+  getRecentActivity: (projectId?: string) => dashboardApi.getRecentActivity(projectId),
+  getFeedbackData: (projectId?: string, timeRange?: string) =>
+    dashboardApi.getFeedbackData(projectId, timeRange),
 }

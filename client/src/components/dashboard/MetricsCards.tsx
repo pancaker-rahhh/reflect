@@ -1,4 +1,13 @@
-import { TrendingUp, TrendingDown, MessageSquare, Star, Bug, Lightbulb } from 'lucide-react'
+import {
+  TrendingUp,
+  TrendingDown,
+  MessageSquare,
+  Star,
+  Bug,
+  Lightbulb,
+  Clock,
+  BarChart3,
+} from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import type { DashboardMetrics } from '@/types'
@@ -8,7 +17,15 @@ interface MetricsCardsProps {
   metrics: DashboardMetrics
 }
 
-function AnimatedNumber({ value, decimals = 0 }: { value: number; decimals?: number }) {
+function AnimatedNumber({
+  value,
+  decimals = 0,
+  suffix = '',
+}: {
+  value: number
+  decimals?: number
+  suffix?: string
+}) {
   const [displayValue, setDisplayValue] = useState(0)
   const displayValueRef = useRef(0)
 
@@ -20,10 +37,10 @@ function AnimatedNumber({ value, decimals = 0 }: { value: number; decimals?: num
     const animate = () => {
       const now = Date.now()
       const progress = Math.min((now - startTime) / duration, 1)
-      
+
       const easeOutCubic = 1 - Math.pow(1 - progress, 3)
       const current = startValue + (value - startValue) * easeOutCubic
-      
+
       displayValueRef.current = current
       setDisplayValue(current)
 
@@ -35,7 +52,12 @@ function AnimatedNumber({ value, decimals = 0 }: { value: number; decimals?: num
     requestAnimationFrame(animate)
   }, [value])
 
-  return <>{displayValue.toFixed(decimals)}</>
+  return (
+    <>
+      {displayValue.toFixed(decimals)}
+      {suffix}
+    </>
+  )
 }
 
 export function MetricsCards({ metrics }: MetricsCardsProps) {
@@ -45,7 +67,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       value: metrics.totalFeedback,
       change: metrics.feedbackChange,
       icon: MessageSquare,
-      color: 'text-blue-600'
+      color: 'text-blue-600',
     },
     {
       title: 'Average Rating',
@@ -53,22 +75,38 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       change: metrics.ratingChange,
       icon: Star,
       color: 'text-yellow-600',
-      decimals: 1
+      decimals: 1,
     },
     {
       title: 'New Bug Reports',
       value: metrics.newBugReports,
       change: metrics.bugReportsChange,
       icon: Bug,
-      color: 'text-red-600'
+      color: 'text-red-600',
     },
     {
       title: 'New Feature Requests',
       value: metrics.newFeatureRequests,
       change: metrics.featureRequestsChange,
       icon: Lightbulb,
-      color: 'text-purple-600'
-    }
+      color: 'text-purple-600',
+    },
+    {
+      title: 'Pending Feedback Review',
+      value: metrics.pendingFeedbackReview || 0,
+      change: 0,
+      icon: Clock,
+      color: 'text-orange-600',
+    },
+    {
+      title: 'Feedback Conversion Rate',
+      value: metrics.feedbackConversionRate || 0,
+      change: 0,
+      icon: BarChart3,
+      color: 'text-green-600',
+      decimals: 1,
+      suffix: '%',
+    },
   ]
 
   return (
@@ -76,18 +114,26 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       {cards.map((card) => (
         <Card key={card.title} className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{card.title}</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {card.title}
+            </CardTitle>
             <card.icon className={cn('h-5 w-5', card.color)} />
           </CardHeader>
           <CardContent className="pt-2">
             <div className="text-3xl font-bold tracking-tight">
-              <AnimatedNumber value={card.value} decimals={card.decimals} />
+              <AnimatedNumber value={card.value} decimals={card.decimals} suffix={card.suffix} />
             </div>
             <p className="text-sm text-muted-foreground mt-2">
-              <span className={cn(
-                'inline-flex items-center',
-                card.change > 0 ? 'text-green-600' : card.change < 0 ? 'text-red-600' : 'text-gray-600'
-              )}>
+              <span
+                className={cn(
+                  'inline-flex items-center',
+                  card.change > 0
+                    ? 'text-green-600'
+                    : card.change < 0
+                      ? 'text-red-600'
+                      : 'text-gray-600'
+                )}
+              >
                 {card.change > 0 ? (
                   <TrendingUp className="mr-1 h-3 w-3" />
                 ) : card.change < 0 ? (

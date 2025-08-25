@@ -1,8 +1,10 @@
 from __future__ import annotations
-from typing import Optional, Any, Dict, Union, Annotated
+from typing import List, Optional, Any, Dict, Union, Annotated
 from typing_extensions import Literal
 from uuid import UUID
-from pydantic import BaseModel, Field, EmailStr
+from datetime import datetime
+from pydantic import BaseModel, Field, EmailStr, ConfigDict
+from ipaddress import IPv4Address, IPv6Address
 from app.models.feedback_model import (
     FeedbackType,
     FeedbackStatus,
@@ -25,7 +27,7 @@ class FeedbackBase(BaseModel):
     submitter_email: Optional[EmailStr] = None
     submitter_id: Optional[str] = None
 
-    ip_address: Optional[str] = None
+    ip_address: Optional[Union[IPv4Address, IPv6Address]] = None
     user_agent: Optional[str] = None
     browser_info: Dict[str, Any] = Field(default_factory=dict)
 
@@ -94,6 +96,8 @@ class FeedbackUpdate(BaseModel):
 
 
 class FeedbackResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: UUID
     widget_id: UUID
     project_id: UUID
@@ -108,15 +112,23 @@ class FeedbackResponse(BaseModel):
     submitter_name: Optional[str]
     submitter_email: Optional[EmailStr]
     submitter_id: Optional[str]
+    ip_address: Optional[Union[IPv4Address, IPv6Address]]
+    user_agent: Optional[str]
+    browser_info: Dict[str, Any]
     is_anonymous: bool
     is_internal: bool
     is_spam: bool
     is_flagged: bool
     assigned_to_user_id: Optional[UUID]
+    resolved_at: Optional[datetime]
+    resolved_by_user_id: Optional[UUID]
     resolution_notes: Optional[str]
-
-    class Config:
-        from_attributes = True
+    converted_to_roadmap_id: Optional[UUID]
+    conversion_date: Optional[datetime]
+    conversion_notes: Optional[str]
+    is_actionable: bool
+    created_at: datetime
+    updated_at: datetime
 
 
 # Polymorphic create payloads
@@ -199,6 +211,9 @@ class GeneralFeedbackResponse(FeedbackResponse):
 
 class SurveyFeedbackResponse(FeedbackResponse):
     feedback_type: Literal[FeedbackType.SURVEY] = FeedbackType.SURVEY  # type: ignore[assignment]
+    survey_type: Optional[str] = None
+    score: Optional[int] = None
+    response_data: Dict[str, Any] = Field(default_factory=dict)
 
 
 class ReviewFeedbackResponse(FeedbackResponse):
@@ -312,3 +327,8 @@ class UpvoteResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class FeedbackConversionRequest(BaseModel):
+    priority: Optional[str] = None
+    conversion_notes: Optional[str] = None
+    custom_tags: Optional[List[str]] = None

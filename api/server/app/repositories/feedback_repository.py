@@ -1,6 +1,8 @@
 from typing import List, Optional, Any
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+from sqlalchemy import select
 from app.models.feedback_model import (
     Feedback,
     FeedbackStatus,
@@ -112,6 +114,19 @@ class FeedbackRepository(BaseRepository[Feedback]):
         await db.delete(obj)
         await db.commit()
         return True
+
+    async def list_by_project(
+        self, db: AsyncSession, project_id: UUID, skip: int = 0, limit: int = 100
+    ) -> List[Feedback]:
+        query = (
+            select(Feedback)
+            .options(selectinload(Feedback.widget), selectinload(Feedback.project))
+            .where(Feedback.project_id == project_id)
+            .offset(skip)
+            .limit(limit)
+        )
+        result = await db.execute(query)
+        return result.scalars().all()
 
 
 feedback_repository = FeedbackRepository()
