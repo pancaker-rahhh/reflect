@@ -17,7 +17,6 @@ async def get_dashboard_metrics(
     # No auth for testing
     db: AsyncSession = Depends(get_db),
 ) -> Dict[str, Any]:
-    """Get dashboard metrics."""
     try:
         return {
             'totalFeedback': 0,
