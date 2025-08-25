@@ -5,7 +5,7 @@ import type { WidgetFormData } from '@/pages/WidgetCreate'
 function transformDataToPayload(data: WidgetFormData) {
   return {
     name: data.name,
-    widget_type: data.primaryType,
+    widget_type: data.primaryType || 'FEEDBACK', // Default to FEEDBACK if primaryType is empty
     position: data.appearance.position,
     configuration: {
       modules: data.modules,

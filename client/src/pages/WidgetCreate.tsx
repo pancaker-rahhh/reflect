@@ -28,13 +28,11 @@ const widgetSchema = z.object({
   primaryType: z.enum([
     'FEEDBACK',
     'SURVEY',
-    'REVIEW',
-    'BUG_REPORT',
-    'FEATURE_REQUEST',
     'NPS',
     'CSAT',
     'CES',
-  ]),
+    '',
+  ]).optional(),
   content: z.object({
     headerTitle: z.string().min(1, 'Header title is required'),
     mainQuestion: z.string().min(1, 'Main question is required'),
@@ -84,25 +82,17 @@ const widgetSchema = z.object({
     }),
   }),
 }).refine((data) => {
-  // Validate that primaryType is consistent with enabled modules
-  const enabledModules = Object.entries(data.modules).filter(([, enabled]) => enabled)
-  
-  if (enabledModules.length === 1) {
-    const [moduleKey] = enabledModules[0]
-    const moduleTypeMap: Record<string, string[]> = {
-      feedback: ['FEEDBACK', 'NPS', 'CSAT', 'CES', 'SURVEY'],
-      reviews: ['REVIEW'], 
-      bugReporting: ['BUG_REPORT'],
-      featureRequests: ['FEATURE_REQUEST']
-    }
-    
-    const allowedTypes = moduleTypeMap[moduleKey] || []
-    return allowedTypes.includes(data.primaryType)
+  // Validate that primaryType is only set when feedback module is enabled
+  if (!data.modules.feedback) {
+    // If feedback is disabled, primaryType should be empty
+    return !data.primaryType || data.primaryType === ''
   }
   
-  return true // Multi-module widgets can use any type as primary
+  // If feedback is enabled, primaryType should be a valid feedback type
+  const validFeedbackTypes = ['FEEDBACK', 'NPS', 'CSAT', 'CES', 'SURVEY']
+  return data.primaryType && validFeedbackTypes.includes(data.primaryType)
 }, {
-  message: 'Primary type must match the enabled module',
+  message: 'Primary type is only available when feedback module is enabled',
   path: ['primaryType']
 })
 

@@ -4,16 +4,6 @@ import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
 import { organizationApi } from '@/lib/api/organization'
 
-interface Organization {
-  id: string
-  name: string
-  subscription?: {
-    plan: 'free' | 'pro'
-    widgetLimit: number
-    responseLimit: number
-  }
-}
-
 export function FreeTierAlert() {
   const { data: organizations } = useQuery({
     queryKey: ['organizations', 'my'],
@@ -23,12 +13,12 @@ export function FreeTierAlert() {
   const currentOrganization = organizations?.[0]
 
   const isFreeTier =
-    currentOrganization?.subscription?.plan === 'free' || !currentOrganization?.subscription
+    currentOrganization?.subscription_tier === 'free' || !currentOrganization?.subscription_tier
 
   if (!isFreeTier) return null
 
-  const widgetLimit = currentOrganization?.subscription?.widgetLimit || 1
-  const responseLimit = currentOrganization?.subscription?.responseLimit || 100
+  const widgetLimit = 1 // Free tier default
+  const responseLimit = 100 // Free tier default
 
   return (
     <Alert className="border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/30">
