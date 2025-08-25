@@ -98,11 +98,9 @@ export function FeatureRequestForm({
     }
     
     try {
-      const isDevelopment = window.location.hostname === 'localhost' || 
-                           window.location.hostname === '127.0.0.1'
-      const apiBaseUrl = isDevelopment ? 'http://localhost:8000' : 'https://api.reflect.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
       
-      const response = await fetch(`${apiBaseUrl}/api/v1/public/widgets/${widgetKey}/features`)
+      const response = await fetch(`${apiBaseUrl}/public/widgets/${widgetKey}/features`)
       
       if (response.ok) {
         const features = await response.json()
@@ -143,11 +141,9 @@ export function FeatureRequestForm({
     if (!widgetKey) return
     
     try {
-      const isDevelopment = window.location.hostname === 'localhost' || 
-                           window.location.hostname === '127.0.0.1'
-      const apiBaseUrl = isDevelopment ? 'http://localhost:8000' : 'https://api.reflect.com'
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
       
-      const response = await fetch(`${apiBaseUrl}/api/v1/public/features/upvote`, {
+      const response = await fetch(`${apiBaseUrl}/public/features/upvote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

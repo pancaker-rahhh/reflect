@@ -8,6 +8,7 @@ interface PositionSelectorProps {
 const positions = [
   { value: 'top_left', label: 'Top Left', className: 'top-2 left-2' },
   { value: 'top_right', label: 'Top Right', className: 'top-2 right-2' },
+  { value: 'center', label: 'Center', className: 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' },
   { value: 'bottom_left', label: 'Bottom Left', className: 'bottom-2 left-2' },
   { value: 'bottom_right', label: 'Bottom Right', className: 'bottom-2 right-2' },
 ]

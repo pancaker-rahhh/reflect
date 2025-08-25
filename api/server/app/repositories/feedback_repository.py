@@ -133,7 +133,7 @@ class FeedbackRepository(BaseRepository[Feedback]):
         if not obj:
             return False
         
-        obj.votes = new_vote_count
+        obj.feedback_votes = new_vote_count  # Use correct field name
         db.add(obj)
         await db.commit()
         return True

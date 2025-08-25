@@ -38,10 +38,6 @@ export function DeviceFrame({ deviceType, children }: DeviceFrameProps) {
   return (
     <div className={frameStyles.container}>
       <div className={frameStyles.frame}>
-        {/* Mobile Notch */}
-        {frameStyles.notch && deviceType === 'mobile' && (
-          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-gray-900 rounded-b-2xl z-10" />
-        )}
         
         {/* Screen */}
         <div className={frameStyles.screen}>

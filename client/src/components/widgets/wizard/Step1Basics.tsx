@@ -134,19 +134,27 @@ export function Step1Basics({ form }: Step1BasicsProps) {
     if (!modules || typeof modules !== 'object') return
     
     const enabledModules = Object.entries(modules).filter(([, enabled]) => Boolean(enabled))
+    const currentPrimaryType = form.getValues('primaryType')
     
     if (enabledModules.length === 1) {
       const [moduleKey] = enabledModules[0]
-      const moduleTypeMap: Record<string, string> = {
-        feedback: 'FEEDBACK',
-        reviews: 'REVIEW', 
-        bugReporting: 'BUG_REPORT',
-        featureRequests: 'FEATURE_REQUEST'
+      
+      // For single-module selection, only auto-select if primaryType is not already set appropriately
+      const moduleTypeMap: Record<string, string[]> = {
+        feedback: ['FEEDBACK', 'NPS', 'CSAT', 'CES', 'SURVEY'],
+        reviews: ['REVIEW'], 
+        bugReporting: ['BUG_REPORT'],
+        featureRequests: ['FEATURE_REQUEST']
       }
       
-      const newPrimaryType = moduleTypeMap[moduleKey]
-      if (newPrimaryType && form.getValues('primaryType') !== newPrimaryType) {
-        form.setValue('primaryType', newPrimaryType as any)
+      const allowedTypes = moduleTypeMap[moduleKey] || []
+      
+      // If current primaryType is not valid for the enabled module, set default
+      if (!currentPrimaryType || !allowedTypes.includes(currentPrimaryType)) {
+        const defaultType = moduleKey === 'feedback' ? 'FEEDBACK' : allowedTypes[0]
+        if (defaultType) {
+          form.setValue('primaryType', defaultType as any)
+        }
       }
     } else if (enabledModules.length === 0) {
       // Default to feedback if no modules selected

@@ -1,4 +1,4 @@
-import { createRoot } from 'react-dom/client'
+import { render } from 'preact'
 import { WidgetCore } from './components/widgets/core/WidgetCore'
 import type { 
   WidgetConfiguration,
@@ -48,7 +48,6 @@ declare global {
   let isWidgetOpen = false
   let widgetContainer: HTMLDivElement | null = null
   let launcherContainer: HTMLDivElement | null = null
-  let reactRoot: ReturnType<typeof createRoot> | null = null
 
   function adjustColorBrightness(color: string, amount: number): string {
     const num = parseInt(color.replace('#', ''), 16)
@@ -145,6 +144,21 @@ declare global {
     </svg>
   `
 
+  // Global error handler for the widget
+  window.addEventListener('error', (event) => {
+    if (event.error && event.error.message && event.error.message.includes('Reflect Widget')) {
+      console.error('Reflect Widget: Unhandled error', event.error)
+      // Could send error to analytics service here
+    }
+  })
+
+  window.addEventListener('unhandledrejection', (event) => {
+    if (event.reason && typeof event.reason === 'string' && event.reason.includes('Reflect Widget')) {
+      console.error('Reflect Widget: Unhandled promise rejection', event.reason)
+      // Could send error to analytics service here
+    }
+  })
+
   if (!window.reflectConfig || !window.reflectConfig.key) {
     console.error(
       'Reflect Widget: Configuration object (window.reflectConfig) not found or public key is missing.'
@@ -157,26 +171,39 @@ declare global {
   const configPosition = window.reflectConfig.position || 'bottom-right'
 
   // Use environment-based URLs
-  const isDevelopment =
-    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  const apiBaseUrl = isDevelopment ? 'http://localhost:8000' : 'https://api.reflect.com'
-
-  const apiUrl = `${apiBaseUrl}/api/v1/public/widgets/${publicKey}`
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+  const apiUrl = `${apiBaseUrl}/public/widgets/${publicKey}`
 
   injectWidgetStyles()
 
-  fetch(apiUrl)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`Widget configuration not found. Status: ${response.status}`)
-      }
-      return response.json()
-    })
+  // Add retry logic with exponential backoff
+  function fetchConfigWithRetry(retries = 3, delay = 1000): Promise<WidgetConfig> {
+    return fetch(apiUrl)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Widget configuration not found. Status: ${response.status}`)
+        }
+        return response.json()
+      })
+      .catch((error) => {
+        if (retries > 0) {
+          console.warn(`Reflect Widget: Retrying config fetch. Attempts left: ${retries}`)
+          return new Promise((resolve) => {
+            setTimeout(() => resolve(fetchConfigWithRetry(retries - 1, delay * 2)), delay)
+          })
+        }
+        throw error
+      })
+  }
+
+  fetchConfigWithRetry()
     .then((config: WidgetConfig) => {
       renderLauncher(config)
     })
     .catch((error) => {
-      console.error('Reflect Widget: Failed to load.', error)
+      console.error('Reflect Widget: Failed to load configuration after retries.', error)
+      // Show minimal fallback widget
+      renderFallbackLauncher()
     })
 
   // Convert backend config to WidgetConfiguration format
@@ -363,39 +390,56 @@ declare global {
     if (position.includes('right')) container.style.right = '20px'
     if (position.includes('left')) container.style.left = '20px'
 
-    // Create React root and render WidgetCore
-    reactRoot = createRoot(container)
-    
+    // Create Preact render target
     const widgetConfig = {
       ...transformWidgetConfig(backendConfig),
       widgetKey: publicKey
     }
     
     const handleSubmit = async (data: FeedbackData) => {
-      // Submit feedback via API
-      const isDevelopment =
-        window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      const apiBaseUrl = isDevelopment ? 'http://localhost:8000' : 'https://api.reflect.com'
-      
-      try {
-        const response = await fetch(`${apiBaseUrl}/api/v1/feedback`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            widgetKey: publicKey,
-            response: data.response,
-            rating: data.rating,
-            feedbackType: data.feedbackType.toLowerCase(),
-          }),
-        })
-        
-        if (!response.ok) {
-          throw new Error('Failed to submit feedback')
+      // Submit feedback via API with retry logic      
+      async function submitWithRetry(retries = 2): Promise<void> {
+        try {
+          const controller = new AbortController()
+          const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+          
+          const response = await fetch(`${apiBaseUrl}/feedback`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              widgetKey: publicKey,
+              response: data.response,
+              rating: data.rating,
+              feedbackType: data.feedbackType.toLowerCase(),
+            }),
+            signal: controller.signal
+          })
+          
+          clearTimeout(timeoutId)
+          
+          if (!response.ok) {
+            const errorText = await response.text().catch(() => 'Unknown error')
+            throw new Error(`HTTP ${response.status}: ${errorText}`)
+          }
+          
+          // Success
+          return
+        } catch (error) {
+          if (error instanceof Error && error.name === 'AbortError') {
+            throw new Error('Request timed out. Please check your internet connection.')
+          }
+          
+          if (retries > 0) {
+            console.warn(`Feedback submission failed, retrying... (${retries} attempts left)`)
+            await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second
+            return submitWithRetry(retries - 1)
+          }
+          
+          throw error
         }
-      } catch (error) {
-        console.error('Error submitting feedback:', error)
-        throw error
       }
+      
+      return submitWithRetry()
     }
 
     const handleClose = () => {
@@ -413,13 +457,14 @@ declare global {
       }
     }
 
-    reactRoot.render(
+    render(
       <WidgetCore
         config={widgetConfig}
         mode="production"
         onSubmit={handleSubmit}
         onClose={handleClose}
-      />
+      />,
+      container
     )
 
     return container
@@ -508,6 +553,41 @@ declare global {
     if (position.includes('left')) launcherContainer.style.left = '20px'
 
     launcherContainer.innerHTML = launcherIcon
+
+    document.body.appendChild(launcherContainer)
+  }
+
+  function renderFallbackLauncher() {
+    // Minimal fallback widget when config fails to load
+    launcherContainer = document.createElement('div')
+    launcherContainer.id = 'reflect-widget-launcher-fallback'
+    launcherContainer.className = 'reflect-widget-launcher'
+    launcherContainer.onclick = () => {
+      alert('Widget temporarily unavailable. Please refresh the page or try again later.')
+    }
+
+    Object.assign(launcherContainer.style, {
+      position: 'fixed',
+      zIndex: '9999',
+      cursor: 'pointer',
+      background: '#e74c3c',
+      height: '56px',
+      width: '56px',
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      transition: 'all 0.3s ease',
+      border: '2px solid rgba(255,255,255,0.2)',
+      color: '#FFFFFF',
+      fontSize: '24px',
+      bottom: '20px',
+      right: '20px',
+    })
+
+    launcherContainer.innerHTML = '⚠️'
+    launcherContainer.title = 'Widget Error - Click for details'
 
     document.body.appendChild(launcherContainer)
   }

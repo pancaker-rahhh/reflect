@@ -58,10 +58,40 @@ class WidgetRead(WidgetBase):
 
 
 class WidgetReadPublic(BaseModel):
-    widget_type: WidgetType
-    position: WidgetPosition
+    widget_type: str
+    position: str
     configuration: dict
     theme_configuration: dict
     targeting_rules: list
 
     model_config = ConfigDict(from_attributes=True)
+    
+    @classmethod
+    def from_widget(cls, widget) -> 'WidgetReadPublic':
+        """Transform Widget model to format expected by widget client"""
+        # Transform theme_configuration to match widget client expectations
+        theme_config = widget.theme_configuration or {}
+        transformed_theme = {
+            'primary': theme_config.get('primary_color', theme_config.get('primary', '#6366F1')),
+            'background': theme_config.get('background', '#ffffff'),
+            'text': theme_config.get('text', '#1f2937'),
+            'show_branding': theme_config.get('show_branding', True)
+        }
+        
+        # Transform position enum to string
+        position_map = {
+            'BOTTOM_RIGHT': 'bottom_right',
+            'BOTTOM_LEFT': 'bottom_left', 
+            'TOP_RIGHT': 'top_right',
+            'TOP_LEFT': 'top_left',
+            'CENTER': 'center'
+        }
+        position_str = position_map.get(str(widget.position), 'bottom_right')
+        
+        return cls(
+            widget_type=str(widget.widget_type),
+            position=position_str,
+            configuration=widget.configuration or {},
+            theme_configuration=transformed_theme,
+            targeting_rules=widget.targeting_rules or []
+        )

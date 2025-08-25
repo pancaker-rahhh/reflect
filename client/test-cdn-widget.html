@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDN Widget Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .status {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4caf50;
+        }
+        .code-block {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 CDN Widget System Test</h1>
+        
+        <div class="status">
+            <h3>✅ Testing New CDN Architecture</h3>
+            <p>This page tests the new CDN-based widget loading system with:</p>
+            <ul>
+                <li>Dynamic loader script from CDN server (port 3001)</li>
+                <li>Proper configuration fetching</li>
+                <li>Widget versioning support</li>
+                <li>Cache-friendly serving</li>
+            </ul>
+        </div>
+
+        <div class="test-info">
+            <h3>📝 How it works:</h3>
+            <ol>
+                <li>The loader script is fetched from the CDN server</li>
+                <li>It reads widget configuration from data attributes</li>
+                <li>Fetches widget config from API via CDN proxy</li>
+                <li>Dynamically loads the appropriate widget version</li>
+                <li>Renders the widget with proper error handling</li>
+            </ol>
+        </div>
+
+        <div class="code-block">
+            <strong>Embed Code Used:</strong><br/>
+            &lt;script<br/>
+            &nbsp;&nbsp;defer<br/>
+            &nbsp;&nbsp;src="http://localhost:3001/cdn/loader.js"<br/>
+            &nbsp;&nbsp;data-widget-id="test-widget-key-123"<br/>
+            &nbsp;&nbsp;data-theme="light"<br/>
+            &nbsp;&nbsp;data-position="bottom-right"<br/>
+            &gt;&lt;/script&gt;
+        </div>
+
+        <p><strong>Expected Behavior:</strong> The widget should load from the CDN server and display in the bottom-right corner with all features working.</p>
+        
+        <p><em>Check the browser console for loader messages and widget status.</em></p>
+    </div>
+
+    <!-- New CDN-based widget loading -->
+    <script
+        defer
+        src="http://localhost:3001/cdn/loader.js"
+        data-widget-id="test-widget-key-123"
+        data-theme="light"
+        data-position="bottom-right"
+    ></script>
+</body>
+</html>

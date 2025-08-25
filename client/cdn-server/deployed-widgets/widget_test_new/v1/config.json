@@ -1,0 +1,10 @@
+{
+  "public_key": "widget_test_new",
+  "version": 1,
+  "widget_type": "FEEDBACK",
+  "position": "bottom_right",
+  "configuration": {
+    "test": true
+  },
+  "is_active": true
+}

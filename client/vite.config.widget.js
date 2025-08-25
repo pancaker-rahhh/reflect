@@ -1,12 +1,13 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      'react': 'preact/compat',
+      'react-dom': 'preact/compat',
     },
   },
   build: {
@@ -41,8 +42,8 @@ export default defineConfig({
     global: 'globalThis',
   },
   esbuild: {
-    // Ensure React JSX is handled properly
-    jsxFactory: 'React.createElement',
-    jsxFragment: 'React.Fragment',
+    // Configure JSX for Preact
+    jsxFactory: 'h',
+    jsxFragment: 'Fragment',
   }
 })

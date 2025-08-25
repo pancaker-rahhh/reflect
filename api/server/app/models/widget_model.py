@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, Text, ForeignKey, Enum as SQLEnum
+from sqlalchemy import Column, String, Boolean, Text, Integer, ForeignKey, Enum as SQLEnum, DateTime as DateTimeColumn
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from uuid import uuid4
@@ -52,6 +52,11 @@ class Widget(BaseModel):
 
     position = Column(SQLEnum(WidgetPosition), default=WidgetPosition.BOTTOM_RIGHT)
     is_active = Column(Boolean, default=False)
+    
+    # Versioning fields
+    version = Column(Integer, default=1, nullable=False)
+    published_at = Column(DateTimeColumn, nullable=True)
+    cdn_url = Column(String(500), nullable=True)
 
     project = relationship('Project', back_populates='widgets')
     feedback = relationship('Feedback', back_populates='widget')

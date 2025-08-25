@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react'
-import { X, Check } from 'lucide-react'
+import { useState, useEffect } from 'preact/hooks'
 import { NPSRating } from '@/components/widgets/scoring/NPSRating'
 import { CSATRating } from '@/components/widgets/scoring/CSATRating'
 import { CESRating } from '@/components/widgets/scoring/CESRating'
@@ -263,7 +262,9 @@ export function WidgetCore({
   const renderError = () => (
     <div className="p-6 text-center space-y-4">
       <div className="mx-auto w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
-        <X className="w-8 h-8 text-red-500" />
+        <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
       </div>
       <div className="space-y-2">
         <h3 className="text-lg font-semibold text-red-600">Oops! Something went wrong</h3>
@@ -304,7 +305,9 @@ export function WidgetCore({
             boxShadow: `0 10px 30px ${primaryColor}40`,
           }}
         >
-          <Check className="w-10 h-10 text-white" />
+          <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
         </div>
       </div>
 
@@ -757,7 +760,9 @@ export function WidgetCore({
               onClick={onClose}
               className="p-1 hover:bg-white/20 rounded transition-colors ml-2"
             >
-              <X className="w-4 h-4 text-white" />
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           )}
         </div>

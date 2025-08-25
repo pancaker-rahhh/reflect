@@ -59,7 +59,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSyncing(true);
         try {
           // Make direct API call with known session
-          const response = await fetch('http://localhost:8000/api/v1/users/sync', {
+          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+          const response = await fetch(`${apiBaseUrl}/users/sync`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

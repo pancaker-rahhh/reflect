@@ -16,6 +16,8 @@ from app.router.api_router import api_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     setup_logging()
+    # Import all models to ensure SQLAlchemy relationships are properly configured
+    import app.models  # noqa
     yield
     await engine.dispose()
 
