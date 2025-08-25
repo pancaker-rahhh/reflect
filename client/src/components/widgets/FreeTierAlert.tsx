@@ -2,7 +2,7 @@ import { AlertCircle, Zap } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
-import { apiClient } from '@/lib/client'
+import { organizationApi } from '@/lib/api/organization'
 
 interface Organization {
   id: string
@@ -17,7 +17,7 @@ interface Organization {
 export function FreeTierAlert() {
   const { data: organizations } = useQuery({
     queryKey: ['organizations', 'my'],
-    queryFn: () => apiClient.get<Organization[]>('/organizations/my'),
+    queryFn: () => organizationApi.getMy(),
   })
 
   const currentOrganization = organizations?.[0]
