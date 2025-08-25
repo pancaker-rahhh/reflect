@@ -17,7 +17,7 @@ import uuid
 from app.models.base_model import BaseModel
 
 if TYPE_CHECKING:
-    from app.models.roadmap_model import RoadmapFeature
+    from app.models.roadmap_model import RoadmapActionItem
 
 
 class FeedbackType(str, enum.Enum):
@@ -93,8 +93,8 @@ class Feedback(BaseModel):
     )
     resolution_notes = Column(Text)
 
-    converted_to_roadmap_id = Column(
-        UUID(as_uuid=True), ForeignKey('roadmap_features.id'), nullable=True
+    converted_to_action_item_id = Column(
+        UUID(as_uuid=True), ForeignKey('roadmap_action_items.id'), nullable=True
     )
     conversion_date = Column(DateTimeColumn, nullable=True)
     conversion_notes = Column(Text, nullable=True)
@@ -105,8 +105,8 @@ class Feedback(BaseModel):
     form = relationship('FeedbackForm', back_populates='feedback_items')
     assigned_to = relationship('User', foreign_keys=[assigned_to_user_id])
     resolved_by = relationship('User', foreign_keys=[resolved_by_user_id])
-    converted_to_roadmap_feature: Mapped[Optional['RoadmapFeature']] = relationship(
-        foreign_keys=[converted_to_roadmap_id], back_populates='converted_feedback'
+    converted_to_action_item: Mapped[Optional['RoadmapActionItem']] = relationship(
+        foreign_keys=[converted_to_action_item_id], back_populates='converted_feedback'
     )
     comments = relationship(
         'FeedbackComment', back_populates='feedback', cascade='all, delete-orphan'
