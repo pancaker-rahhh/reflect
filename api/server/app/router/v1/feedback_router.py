@@ -3,11 +3,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, BackgroundTasks, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
-from pydantic import BaseModel
-
 from app.db import get_db
 from app.core.auth import get_current_token_data
 from app.schemas.feedback_schema import (
+    FeedbackConversionRequest,
     FeedbackUpdate,
     FeedbackResponsePayload,
     FeedbackCreatePayload,
@@ -213,12 +212,6 @@ async def upvote_feedback(
     except Exception as e:
         logger.error(f'Unexpected error during upvote: {str(e)}')
         raise HTTPException(status_code=500, detail='Internal server error')
-
-
-class FeedbackConversionRequest(BaseModel):
-    priority: Optional[str] = None
-    conversion_notes: Optional[str] = None
-    custom_tags: Optional[List[str]] = None
 
 
 @feedback_router.post(

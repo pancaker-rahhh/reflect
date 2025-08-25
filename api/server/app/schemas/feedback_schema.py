@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Optional, Any, Dict, Union, Annotated
+from typing import List, Optional, Any, Dict, Union, Annotated
 from typing_extensions import Literal
 from uuid import UUID
 from datetime import datetime
@@ -327,3 +327,8 @@ class UpvoteResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class FeedbackConversionRequest(BaseModel):
+    priority: Optional[str] = None
+    conversion_notes: Optional[str] = None
+    custom_tags: Optional[List[str]] = None
