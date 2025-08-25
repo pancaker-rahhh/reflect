@@ -1,7 +1,8 @@
 from uuid import UUID
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
+import re
 from app.models.roadmap_model import (
     Roadmap,
     RoadmapColumn,
@@ -37,7 +38,6 @@ from app.schemas.roadmap_schema import (
 from app.services.project_service import project_service, ProjectService
 from app.services.organization_service import organization_service
 from app.services.action_item_service import action_item_service
-import re
 
 
 class BaseRoadmapService:
@@ -50,7 +50,7 @@ class BaseRoadmapService:
         user_id: UUID,
         feature_id: UUID,
         required_role: str = 'Admin',
-    ) -> tuple[Roadmap, RoadmapColumn, RoadmapFeature]:
+    ) -> Tuple[Roadmap, RoadmapColumn, RoadmapFeature]:
         feature = await roadmap_feature_repository.get(db, id=feature_id)
         if not feature:
             raise HTTPException(
@@ -81,7 +81,7 @@ class BaseRoadmapService:
         user_id: UUID,
         column_id: UUID,
         required_role: str = 'Admin',
-    ) -> tuple[RoadmapColumn, Roadmap]:
+    ) -> Tuple[RoadmapColumn, Roadmap]:
         column = await roadmap_column_repository.get(db, id=column_id)
         if not column:
             raise HTTPException(
@@ -125,7 +125,7 @@ class BaseRoadmapService:
         user_id: UUID,
         tag_id: UUID,
         required_role: str = 'Admin',
-    ) -> tuple[RoadmapTag, Roadmap]:
+    ) -> Tuple[RoadmapTag, Roadmap]:
         tag = await roadmap_tag_repository.get(db, id=tag_id)
         if not tag:
             raise HTTPException(
@@ -167,6 +167,14 @@ class BaseRoadmapService:
             logger.warning(
                 f'Failed to dispatch {webhook_type} webhook for feature {feature_id}: {str(e)}'
             )
+
+    def _handle_unique_constraint_error(self, e: Exception, entity_name: str) -> None:
+        if 'uq_roadmap_' in str(e) and 'name' in str(e):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f'A {entity_name} with this name already exists',
+            )
+        raise
 
 
 class RoadmapService(BaseRoadmapService):
@@ -309,9 +317,10 @@ class RoadmapService(BaseRoadmapService):
 
     async def create_column(
         self, db: AsyncSession, user_id: UUID, column_in: RoadmapColumnCreate
-    ) -> RoadmapColumnRead:  # The return type is the Pydantic model
+    ) -> RoadmapColumnRead:
         await self._validate_roadmap_ownership(db, user_id, column_in.roadmap_id)
 
+        # Check for existing column with same name
         existing_column = await self.column_repo.get_by_name_and_roadmap(
             db, roadmap_id=column_in.roadmap_id, name=column_in.name
         )
@@ -321,6 +330,7 @@ class RoadmapService(BaseRoadmapService):
                 detail='A column with this name already exists in this roadmap',
             )
 
+        # Prepare column data with auto-generated order if needed
         column_data = column_in.model_dump()
         if column_data.get('order') is None:
             next_order = await self.column_repo.get_next_order(db, column_in.roadmap_id)
@@ -328,8 +338,7 @@ class RoadmapService(BaseRoadmapService):
 
         try:
             new_column_orm = await self.column_repo.create(db, **column_data)
-
-            pydantic_column = RoadmapColumnRead(
+            return RoadmapColumnRead(
                 id=new_column_orm.id,
                 roadmap_id=new_column_orm.roadmap_id,
                 name=new_column_orm.name,
@@ -338,15 +347,8 @@ class RoadmapService(BaseRoadmapService):
                 order=new_column_orm.order,
                 features=[],
             )
-
-            return pydantic_column
-
         except Exception as e:
-            if 'uq_roadmap_column_name' in str(e):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail='A column with this name already exists for this roadmap',
-                )
+            self._handle_unique_constraint_error(e, 'column')
             raise
 
     async def update_column(
@@ -358,6 +360,7 @@ class RoadmapService(BaseRoadmapService):
     ) -> RoadmapColumn:
         column, _ = await self._validate_column_access(db, user_id, column_id)
 
+        # Check for name conflicts if name is being changed
         if column_in.name and column_in.name != column.name:
             existing_column = await self.column_repo.get_by_name_and_roadmap(
                 db, roadmap_id=column.roadmap_id, name=column_in.name
@@ -373,11 +376,7 @@ class RoadmapService(BaseRoadmapService):
                 db, id=column_id, **column_in.model_dump(exclude_unset=True)
             )
         except Exception as e:
-            if 'uq_roadmap_column_name' in str(e):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail='A column with this name already exists in this roadmap',
-                )
+            self._handle_unique_constraint_error(e, 'column')
             raise
 
         updated_column = await self.column_repo.get_with_features(db, id=column_id)
@@ -396,7 +395,7 @@ class RoadmapService(BaseRoadmapService):
     async def create_feature(
         self, db: AsyncSession, user_id: UUID, feature_in: RoadmapFeatureCreate
     ) -> RoadmapFeature:
-        column, _ = await self._validate_column_access(
+        _, _ = await self._validate_column_access(
             db, user_id, feature_in.column_id
         )
 
@@ -432,7 +431,7 @@ class RoadmapService(BaseRoadmapService):
         feature_id: UUID,
         feature_in: RoadmapFeatureUpdate,
     ) -> RoadmapFeature:
-        _, _, feature = await self._validate_feature_access(db, user_id, feature_id)
+        _, _, _ = await self._validate_feature_access(db, user_id, feature_id)
 
         tag_ids = feature_in.tag_ids
         updated_fields = feature_in.model_dump(exclude_unset=True, exclude={'tag_ids'})
@@ -514,7 +513,6 @@ class RoadmapService(BaseRoadmapService):
     async def upvote_feature(
         self, db: AsyncSession, feature_id: UUID
     ) -> RoadmapFeature:
-        """Upvote a feature (public endpoint)."""
         feature = await self.feature_repo.get(db, id=feature_id)
         if not feature:
             raise HTTPException(
@@ -605,11 +603,7 @@ class RoadmapService(BaseRoadmapService):
         try:
             return await self.tag_repo.create(db, **tag_in.model_dump())
         except Exception as e:
-            if 'uq_roadmap_tag_name' in str(e):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail='A tag with this name already exists for this roadmap',
-                )
+            self._handle_unique_constraint_error(e, 'tag')
             raise
 
     async def get_tags_by_roadmap(
@@ -652,11 +646,7 @@ class RoadmapService(BaseRoadmapService):
                 db, id=tag_id, **tag_in.model_dump(exclude_unset=True)
             )
         except Exception as e:
-            if 'uq_roadmap_tag_name' in str(e):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail='A tag with this name already exists for this roadmap',
-                )
+            self._handle_unique_constraint_error(e, 'tag')
             raise
 
         return await self.tag_repo.get(db, id=tag_id)
@@ -694,7 +684,6 @@ class RoadmapService(BaseRoadmapService):
         conversion_notes: Optional[str] = None,
         custom_tags: Optional[List[str]] = None,
     ) -> RoadmapFeature:
-        """Create a roadmap feature from feedback data."""
         return await action_item_service.convert_feedback_to_roadmap_item(
             db, feedback_id, user_id, priority, conversion_notes, custom_tags
         )
@@ -709,20 +698,19 @@ class RoadmapService(BaseRoadmapService):
         except ValueError:
             return FeedbackPriority.MEDIUM.value
 
-        suggested_priority = action_item_service._suggest_priority(
-            type(
-                'MockFeedback',
-                (),
-                {'feedback_type': feedback_type_enum, 'rating': rating},
-            )()
-        )
+        # Create a mock feedback object for priority calculation
+        mock_feedback = type(
+            'MockFeedback',
+            (),
+            {'feedback_type': feedback_type_enum, 'rating': rating},
+        )()
 
+        suggested_priority = action_item_service._suggest_priority(mock_feedback)
         return suggested_priority.value
 
     async def ensure_backlog_column_exists(
         self, db: AsyncSession, project_id: UUID
     ) -> RoadmapColumn:
-        """Ensure the default 'Backlog' column exists for the project."""
         return await action_item_service._ensure_backlog_column_exists(db, project_id)
 
 

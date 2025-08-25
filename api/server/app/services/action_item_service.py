@@ -5,7 +5,6 @@ from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy import select
-
 from app.models.feedback_model import (
     Feedback,
     FeedbackType,
@@ -56,6 +55,16 @@ class ActionItemService:
         FeedbackType.SURVEY: FeedbackPriority.LOW,
     }
 
+    FEEDBACK_TYPE_MODELS = {
+        FeedbackType.SURVEY: SurveyFeedback,
+        FeedbackType.REVIEW: ReviewFeedback,
+        FeedbackType.BUG_REPORT: BugReportFeedback,
+        FeedbackType.FEATURE_REQUEST: FeatureRequestFeedback,
+        FeedbackType.NPS: NPSFeedback,
+        FeedbackType.CSAT: CSATFeedback,
+        FeedbackType.CES: CESFeedback,
+    }
+
     async def convert_feedback_to_roadmap_item(
         self,
         db: AsyncSession,
@@ -79,14 +88,7 @@ class ActionItemService:
 
         auto_tags = self._generate_tags_from_feedback_type(feedback.feedback_type)
         all_tags = auto_tags + (custom_tags or [])
-        suggested_priority = self._suggest_priority(feedback)
-        if priority:
-            try:
-                final_priority = FeedbackPriority(priority.lower())
-            except ValueError:
-                final_priority = suggested_priority
-        else:
-            final_priority = suggested_priority
+        final_priority = self._determine_priority(priority, feedback)
 
         feature_data = {
             'column_id': backlog_column.id,
@@ -305,7 +307,7 @@ class ActionItemService:
     ) -> None:
         update_data = {
             'converted_to_roadmap_id': roadmap_item_id,
-            'conversion_date': datetime.utcnow(),
+            'conversion_date': datetime.now(datetime.UTC),
             'conversion_notes': conversion_notes,
             'status': FeedbackStatus.IN_PROGRESS,
         }
@@ -331,29 +333,21 @@ class ActionItemService:
         result = await db.execute(query)
         actionable_feedback = result.scalars().all()
 
-        reloaded_feedback = []
-        for feedback in actionable_feedback:
-            if feedback.feedback_type == FeedbackType.SURVEY:
-                specific_feedback = await db.get(SurveyFeedback, feedback.id)
-            elif feedback.feedback_type == FeedbackType.REVIEW:
-                specific_feedback = await db.get(ReviewFeedback, feedback.id)
-            elif feedback.feedback_type == FeedbackType.BUG_REPORT:
-                specific_feedback = await db.get(BugReportFeedback, feedback.id)
-            elif feedback.feedback_type == FeedbackType.FEATURE_REQUEST:
-                specific_feedback = await db.get(FeatureRequestFeedback, feedback.id)
-            elif feedback.feedback_type == FeedbackType.NPS:
-                specific_feedback = await db.get(NPSFeedback, feedback.id)
-            elif feedback.feedback_type == FeedbackType.CSAT:
-                specific_feedback = await db.get(CSATFeedback, feedback.id)
-            elif feedback.feedback_type == FeedbackType.CES:
-                specific_feedback = await db.get(CESFeedback, feedback.id)
-            else:
-                specific_feedback = feedback
+        return [
+            await self._get_typed_feedback(db, feedback)
+            for feedback in actionable_feedback
+        ]
 
-            if specific_feedback:
-                reloaded_feedback.append(specific_feedback)
+    async def _get_typed_feedback(
+        self, db: AsyncSession, feedback: Feedback
+    ) -> Feedback:
+        specific_model = self.FEEDBACK_TYPE_MODELS.get(feedback.feedback_type)
 
-        return reloaded_feedback
+        if specific_model:
+            specific_feedback = await db.get(specific_model, feedback.id)
+            return specific_feedback if specific_feedback else feedback
+
+        return feedback
 
     async def get_conversion_preview(
         self, db: AsyncSession, feedback_id: UUID
