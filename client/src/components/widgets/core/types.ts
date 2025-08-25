@@ -80,6 +80,7 @@ export interface FeedbackData {
   response: string
   rating?: number
   feedbackType: FeedbackType
+  typeSpecificData?: any
 }
 
 export interface WidgetCoreProps {

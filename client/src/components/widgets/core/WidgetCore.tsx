@@ -152,7 +152,52 @@ export function WidgetCore({
     return types
   }
 
+  const validateFeedbackData = (data: FeedbackData): string | null => {
+    // Basic validation
+    if (!data.response || !data.response.trim()) {
+      return 'Feedback message is required'
+    }
+    
+    if (data.response.length > 5000) {
+      return 'Feedback message is too long (maximum 5000 characters)'
+    }
+    
+    // Type-specific validation
+    if (data.typeSpecificData) {
+      const typeData = data.typeSpecificData
+      
+      if (data.feedbackType === 'REVIEW' && data.rating && (data.rating < 1 || data.rating > 5)) {
+        return 'Rating must be between 1 and 5 stars'
+      }
+      
+      if (data.feedbackType === 'NPS' && typeData.nps_score && (typeData.nps_score < 0 || typeData.nps_score > 10)) {
+        return 'NPS score must be between 0 and 10'
+      }
+      
+      if ((data.feedbackType === 'CSAT' || data.feedbackType === 'CES') && typeData.score && (typeData.score < 1 || typeData.score > 5)) {
+        return 'Score must be between 1 and 5'
+      }
+      
+      if (data.feedbackType === 'BUG_REPORT' && typeData.title && !typeData.title.trim()) {
+        return 'Bug title is required'
+      }
+      
+      if (data.feedbackType === 'FEATURE_REQUEST' && typeData.title && !typeData.title.trim()) {
+        return 'Feature title is required'
+      }
+    }
+    
+    return null // No validation errors
+  }
+
   const handleSubmit = async (data: FeedbackData) => {
+    // Client-side validation
+    const validationError = validateFeedbackData(data)
+    if (validationError) {
+      setError(validationError)
+      updateState({ type: 'error', message: validationError })
+      return
+    }
     if (mode === 'preview') {
       setIsSubmitting(true)
       setTimeout(() => {
@@ -188,10 +233,41 @@ export function WidgetCore({
   const handleScoreSubmission = async (score: number) => {
     setSelectedScore(score)
     const type = config.primaryType.toLowerCase()
+    
+    // Prepare type-specific data for score-based feedback
+    const typeSpecificData: any = {
+      score: score,
+      comment: '', // Could be extended to collect comments
+    }
+    
+    // Add type-specific fields based on feedback type
+    if (config.primaryType === 'NPS') {
+      typeSpecificData.nps_score = score
+      if (score >= 9) {
+        typeSpecificData.promoter_category = 'promoter'
+      } else if (score >= 7) {
+        typeSpecificData.promoter_category = 'passive'
+      } else {
+        typeSpecificData.promoter_category = 'detractor'
+      }
+      typeSpecificData.follow_up_comment = ''
+    } else if (config.primaryType === 'CSAT') {
+      typeSpecificData.csat_score = score
+      const levels = ['', 'very_dissatisfied', 'dissatisfied', 'neutral', 'satisfied', 'very_satisfied']
+      typeSpecificData.satisfaction_level = levels[score] || 'neutral'
+      typeSpecificData.follow_up_comment = ''
+    } else if (config.primaryType === 'CES') {
+      typeSpecificData.ces_score = score
+      const levels = ['', 'very_difficult', 'difficult', 'neutral', 'easy', 'very_easy']
+      typeSpecificData.ease_level = levels[score] || 'neutral'
+      typeSpecificData.follow_up_comment = ''
+    }
+    
     await handleSubmit({
       response: `${type}: ${score}`,
       rating: score,
       feedbackType: config.primaryType,
+      typeSpecificData,
     })
   }
 
@@ -200,6 +276,10 @@ export function WidgetCore({
     await handleSubmit({
       response: feedback,
       feedbackType: config.primaryType,
+      typeSpecificData: {
+        title: 'General Feedback',
+        message: feedback,
+      }
     })
   }
 
@@ -208,6 +288,10 @@ export function WidgetCore({
     await handleSubmit({
       response: feedback,
       feedbackType,
+      typeSpecificData: {
+        title: `${feedbackType} Feedback`,
+        message: feedback,
+      }
     })
   }
 
@@ -363,6 +447,11 @@ export function WidgetCore({
                   response: `Rating: ${data.rating}/5${data.review ? ` - ${data.review}` : ''}`,
                   rating: data.rating,
                   feedbackType: config.primaryType,
+                  typeSpecificData: {
+                    overall_rating: data.rating,
+                    pros: data.review || '',
+                    cons: '', // ReviewForm doesn't collect cons separately
+                  }
                 })
               }}
               isSubmitting={isSubmitting}
@@ -385,6 +474,14 @@ export function WidgetCore({
                 await handleSubmit({
                   response,
                   feedbackType: config.primaryType,
+                  typeSpecificData: {
+                    title: data.title,
+                    severity: data.severity,
+                    steps_to_reproduce: data.stepsToReproduce || '',
+                    expected_result: '', // BugReportForm doesn't collect this
+                    actual_result: data.description,
+                    visual_proof: {},
+                  }
                 })
               }}
               isSubmitting={isSubmitting}
@@ -407,6 +504,12 @@ export function WidgetCore({
                 await handleSubmit({
                   response,
                   feedbackType: config.primaryType,
+                  typeSpecificData: {
+                    title: data.title,
+                    suggested_solution: data.description, // Use description as solution
+                    benefits: `Priority: ${data.priority}, Category: ${data.category}`,
+                    use_case: data.useCase,
+                  }
                 })
               }}
               isSubmitting={isSubmitting}
@@ -591,6 +694,11 @@ export function WidgetCore({
                   response: `Rating: ${data.rating}/5${data.review ? ` - ${data.review}` : ''}`,
                   rating: data.rating,
                   feedbackType,
+                  typeSpecificData: {
+                    overall_rating: data.rating,
+                    pros: data.review || '',
+                    cons: '',
+                  }
                 })
               }}
               isSubmitting={isSubmitting}
@@ -613,6 +721,14 @@ export function WidgetCore({
                 await handleSubmit({
                   response,
                   feedbackType,
+                  typeSpecificData: {
+                    title: data.title,
+                    severity: data.severity,
+                    steps_to_reproduce: data.stepsToReproduce || '',
+                    expected_result: '',
+                    actual_result: data.description,
+                    visual_proof: {},
+                  }
                 })
               }}
               isSubmitting={isSubmitting}
@@ -635,6 +751,12 @@ export function WidgetCore({
                 await handleSubmit({
                   response,
                   feedbackType,
+                  typeSpecificData: {
+                    title: data.title,
+                    suggested_solution: data.description,
+                    benefits: `Priority: ${data.priority}, Category: ${data.category}`,
+                    use_case: data.useCase,
+                  }
                 })
               }}
               onUpvote={async (featureId) => {

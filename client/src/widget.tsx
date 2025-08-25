@@ -411,6 +411,8 @@ declare global {
               response: data.response,
               rating: data.rating,
               feedbackType: data.feedbackType.toLowerCase(),
+              // Include type-specific data
+              ...data.typeSpecificData || {},
             }),
             signal: controller.signal
           })
@@ -429,9 +431,43 @@ declare global {
             throw new Error('Request timed out. Please check your internet connection.')
           }
           
+          // Handle specific HTTP errors with user-friendly messages
+          if (error instanceof Error && error.message.includes('HTTP')) {
+            const statusMatch = error.message.match(/HTTP (\d+)/)
+            if (statusMatch) {
+              const status = parseInt(statusMatch[1])
+              if (status === 400) {
+                throw new Error('Invalid feedback data. Please check your input and try again.')
+              } else if (status === 404) {
+                throw new Error('Widget configuration not found. Please contact support.')
+              } else if (status === 429) {
+                throw new Error('Too many requests. Please wait a moment and try again.')
+              } else if (status >= 500) {
+                // Server errors should be retried
+                if (retries > 0) {
+                  console.warn(`Server error (${status}), retrying... (${retries} attempts left)`)
+                  await new Promise(resolve => setTimeout(resolve, 2000)) // Wait 2 seconds for server errors
+                  return submitWithRetry(retries - 1)
+                }
+                throw new Error('Server temporarily unavailable. Please try again later.')
+              }
+            }
+          }
+          
+          // Network errors should be retried
+          if (error instanceof TypeError && error.message.includes('fetch')) {
+            if (retries > 0) {
+              console.warn(`Network error, retrying... (${retries} attempts left)`)
+              await new Promise(resolve => setTimeout(resolve, 1000))
+              return submitWithRetry(retries - 1)
+            }
+            throw new Error('Network error. Please check your internet connection.')
+          }
+          
+          // Generic retry logic for other errors
           if (retries > 0) {
             console.warn(`Feedback submission failed, retrying... (${retries} attempts left)`)
-            await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second
+            await new Promise(resolve => setTimeout(resolve, 1000))
             return submitWithRetry(retries - 1)
           }
           
