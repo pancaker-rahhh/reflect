@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { api } from '@/services(mock)/api'
+import { api } from '@/lib/api'
 import { MetricsCards } from '@/components/dashboard/MetricsCards'
 import { TimeRangeFilter } from '@/components/dashboard/TimeRangeFilter'
 import { RecentActivityTable } from '@/components/dashboard/RecentActivityTable'
@@ -20,25 +20,24 @@ export function Dashboard() {
 
   const { data: metrics, isLoading: metricsLoading } = useQuery({
     queryKey: ['dashboard-metrics', timeRange],
-    queryFn: () => api.getDashboardMetrics()
+    queryFn: () => api.getDashboardMetrics(),
   })
 
   const { data: recentActivity, isLoading: activityLoading } = useQuery({
-    queryKey: ['recent-activity'],
-    queryFn: () => api.getRecentActivity()
+    queryKey: ['recent-activity', currentProject?.id],
+    queryFn: () => api.getRecentActivity(currentProject?.id),
+    enabled: !!currentProject?.id,
   })
 
   const { data: feedback, isLoading: feedbackLoading } = useQuery({
     queryKey: ['feedback'],
-    queryFn: () => api.getFeedback()
+    queryFn: () => api.getFeedbackData(),
   })
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-base text-muted-foreground">
-          Summary for webapp for all time
-        </p>
+        <p className="text-base text-muted-foreground">Summary for webapp for all time</p>
         <TimeRangeFilter value={timeRange} onChange={setTimeRange} />
       </div>
 
@@ -58,7 +57,9 @@ export function Dashboard() {
           {activityLoading ? (
             <Skeleton className="h-96" />
           ) : (
-            recentActivity && <RecentActivityTable activities={recentActivity} />
+            recentActivity && (
+              <RecentActivityTable activities={recentActivity} projectId={currentProject?.id} />
+            )
           )}
         </div>
 

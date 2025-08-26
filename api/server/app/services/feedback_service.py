@@ -1,16 +1,17 @@
 from __future__ import annotations
 from typing import List, Optional, Dict, Any
 from uuid import UUID
+from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories.feedback_repository import feedback_repository
 from app.repositories.feedback_comment_repository import feedback_comment_repository
+from app.services.action_item_service import action_item_service
 
 from app.schemas.feedback_schema import (
     FeedbackUpdate,
     FeedbackCreatePayload,
     FeedbackResponsePayload,
     GeneralFeedbackCreate,
-    SurveyFeedbackCreate,
     ReviewFeedbackCreate,
     BugReportFeedbackCreate,
     FeatureRequestFeedbackCreate,
@@ -26,7 +27,20 @@ from app.schemas.feedback_schema import (
     CSATFeedbackResponse,
     CESFeedbackResponse,
 )
-from app.models.feedback_model import FeedbackType, FeedbackPriority, FeedbackStatus
+from app.models.feedback_model import (
+    Feedback,
+    GeneralFeedback,
+    SurveyFeedback,
+    ReviewFeedback,
+    BugReportFeedback,
+    FeatureRequestFeedback,
+    NPSFeedback,
+    CSATFeedback,
+    CESFeedback,
+    FeedbackStatus,
+    FeedbackType,
+    FeedbackPriority,
+)
 from app.models.feedback_model import FeedbackComment
 from app.models.widget_model import WidgetType
 from app.core.exceptions import NotFoundError, ValidationError
@@ -340,24 +354,78 @@ class FeedbackService:
 
         return True
 
-    def _convert_to_response(self, obj) -> FeedbackResponsePayload:
-        if obj.feedback_type == FeedbackType.GENERAL:
-            return GeneralFeedbackResponse.model_validate(obj)
-        elif obj.feedback_type == FeedbackType.SURVEY:
-            return SurveyFeedbackResponse.model_validate(obj)
-        elif obj.feedback_type == FeedbackType.REVIEW:
-            return ReviewFeedbackResponse.model_validate(obj)
-        elif obj.feedback_type == FeedbackType.BUG_REPORT:
+    async def get_actionable_feedback(
+        self, db: AsyncSession, project_id: UUID, skip: int = 0, limit: int = 100
+    ) -> List[FeedbackResponsePayload]:
+        actionable_feedback = await action_item_service.get_actionable_feedback(
+            db, project_id, skip, limit
+        )
+        return [self._convert_to_response(f) for f in actionable_feedback]
+
+    async def mark_feedback_converted(
+        self,
+        db: AsyncSession,
+        feedback_id: UUID,
+        roadmap_item_id: UUID,
+        conversion_notes: Optional[str] = None,
+    ) -> FeedbackResponsePayload:
+        feedback = await feedback_repository.get(db, id=feedback_id)
+        if not feedback:
+            raise NotFoundError(f'Feedback {feedback_id} not found')
+
+        update_data = {
+            'converted_to_roadmap_id': roadmap_item_id,
+            'conversion_date': datetime.utcnow(),
+            'conversion_notes': conversion_notes,
+            'status': FeedbackStatus.IN_PROGRESS,
+        }
+
+        updated_feedback = await feedback_repository.update_polymorphic(
+            db, feedback_id, **update_data
+        )
+        return self._convert_to_response(updated_feedback)
+
+    async def get_feedback_conversion_status(
+        self, db: AsyncSession, feedback_id: UUID
+    ) -> Dict[str, Any]:
+        feedback = await feedback_repository.get(db, id=feedback_id)
+        if not feedback:
+            raise NotFoundError(f'Feedback {feedback_id} not found')
+
+        return {
+            'is_converted': bool(feedback.converted_to_roadmap_id),
+            'converted_to_roadmap_id': feedback.converted_to_roadmap_id,
+            'conversion_date': feedback.conversion_date,
+            'conversion_notes': feedback.conversion_notes,
+            'is_actionable': feedback.is_actionable,
+        }
+
+    def _convert_to_response(self, obj: Feedback) -> FeedbackResponsePayload:
+        if isinstance(obj, BugReportFeedback):
             return BugReportFeedbackResponse.model_validate(obj)
-        elif obj.feedback_type == FeedbackType.FEATURE_REQUEST:
+        elif isinstance(obj, FeatureRequestFeedback):
             return FeatureRequestFeedbackResponse.model_validate(obj)
-        elif obj.feedback_type == FeedbackType.NPS:
+        elif isinstance(obj, ReviewFeedback):
+            return ReviewFeedbackResponse.model_validate(obj)
+        elif isinstance(obj, SurveyFeedback):
+            return SurveyFeedbackResponse.model_validate(obj)
+        elif isinstance(obj, NPSFeedback):
             return NPSFeedbackResponse.model_validate(obj)
-        elif obj.feedback_type == FeedbackType.CSAT:
+        elif isinstance(obj, CSATFeedback):
             return CSATFeedbackResponse.model_validate(obj)
-        elif obj.feedback_type == FeedbackType.CES:
+        elif isinstance(obj, CESFeedback):
             return CESFeedbackResponse.model_validate(obj)
+
+        elif isinstance(obj, (Feedback, GeneralFeedback)):
+            if obj.feedback_type != FeedbackType.GENERAL:
+                logger.warning(
+                    f"Feedback item {obj.id} with type '{obj.feedback_type.value}' is being treated as GeneralFeedback. "
+                    'This indicates an orphaned record in the database where subclass data is missing.'
+                )
+            return GeneralFeedbackResponse.model_validate(obj)
+
         else:
+            logger.error(f'Unknown feedback instance type for ID {obj.id}: {type(obj)}')
             return GeneralFeedbackResponse.model_validate(obj)
 
 

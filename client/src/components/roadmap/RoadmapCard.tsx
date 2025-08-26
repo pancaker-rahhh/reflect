@@ -14,6 +14,7 @@ import {
   MoreHorizontal,
   Clock,
   Calendar,
+  MessageSquare,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/use-toast'
@@ -186,6 +187,24 @@ export function RoadmapCard({
                   +{remainingTagsCount}
                 </Badge>
               )}
+            </div>
+          )}
+
+          {feature.feedback_id && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground group-hover:text-muted-foreground/80 transition-all duration-300">
+              <MessageSquare className="h-3 w-3 text-blue-500" />
+              <span className="text-blue-600 font-medium">From Feedback</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 px-2 text-xs hover:bg-blue-50 hover:text-blue-700"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  window.open(`/feedback/${feature.feedback_id}`, '_blank')
+                }}
+              >
+                View Source
+              </Button>
             </div>
           )}
 
