@@ -215,12 +215,18 @@ declare global {
     
     // Map widget types to modules properly
     const defaultModules = getDefaultModulesForType(widgetType)
+    
+    // If any modules are explicitly configured, respect that configuration
+    // Don't let single-widget defaults override multi-widget configurations
+    const hasExplicitModuleConfig = Object.values(modules).some(v => v === true)
+    
     const finalModules = {
-      feedback: modules.feedback ?? defaultModules.feedback,
-      reviews: modules.reviews ?? defaultModules.reviews,
-      bugReporting: modules.bugReporting ?? defaultModules.bugReporting,
-      featureRequests: modules.featureRequests ?? defaultModules.featureRequests,
+      feedback: modules.feedback ?? (hasExplicitModuleConfig ? false : defaultModules.feedback),
+      reviews: modules.reviews ?? (hasExplicitModuleConfig ? false : defaultModules.reviews),
+      bugReporting: modules.bugReporting ?? (hasExplicitModuleConfig ? false : defaultModules.bugReporting),
+      featureRequests: modules.featureRequests ?? (hasExplicitModuleConfig ? false : defaultModules.featureRequests),
     }
+    
     
     return {
       modules: finalModules,
@@ -292,21 +298,27 @@ declare global {
   function toggleWidget() {
     isWidgetOpen = !isWidgetOpen
     if (isWidgetOpen) {
-      if (!widgetContainer) {
-        // Fetch fresh widget config and render React component
-        fetch(apiUrl)
-          .then((response) => response.json())
-          .then((config: WidgetConfig) => {
-            widgetContainer = createWidgetContainer(config)
-            document.body.appendChild(widgetContainer)
+      // Always fetch fresh config to ensure consistent state
+      fetch(apiUrl)
+        .then((response) => response.json())
+        .then((config: WidgetConfig) => {
+          // Remove existing widget if it exists
+          if (widgetContainer) {
+            widgetContainer.remove()
+            widgetContainer = null
+          }
+          // Create fresh widget container
+          widgetContainer = createWidgetContainer(config)
+          document.body.appendChild(widgetContainer)
+          showWidget()
+        })
+        .catch((error) => {
+          console.error('Failed to load widget config:', error)
+          // If config fails, try to show existing widget
+          if (widgetContainer) {
             showWidget()
-          })
-          .catch((error) => {
-            console.error('Failed to load widget config:', error)
-          })
-      } else {
-        showWidget()
-      }
+          }
+        })
 
       if (launcherContainer) {
         launcherContainer.style.transform = 'rotate(90deg)'
@@ -364,21 +376,21 @@ declare global {
       position: 'fixed',
       bottom: '100px',
       right: '20px',
-      width: '420px',
+      width: '380px',
       maxWidth: 'calc(100vw - 40px)',
-      height: '550px',
+      height: '520px',
       maxHeight: 'calc(100vh - 120px)',
       border: '1px solid rgba(255,255,255,0.2)',
-      borderRadius: '24px',
+      borderRadius: '20px',
       background: `linear-gradient(135deg, ${themeStyles.background}ee, ${themeStyles.background}f5)`,
       color: themeStyles.text,
-      boxShadow: '0 32px 64px rgba(0,0,0,0.12), 0 16px 32px rgba(0,0,0,0.08), 0 0 0 1px rgba(255,255,255,0.05)',
+      boxShadow: '0 24px 48px rgba(0,0,0,0.1), 0 12px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(255,255,255,0.05)',
       display: 'none',
       zIndex: '9998',
       overflow: 'hidden',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-      fontSize: '14px',
-      lineHeight: '1.5',
+      fontSize: '13px',
+      lineHeight: '1.4',
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
     })
@@ -403,7 +415,7 @@ declare global {
           const controller = new AbortController()
           const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
           
-          const response = await fetch(`${apiBaseUrl}/feedback`, {
+          const response = await fetch(`${apiBaseUrl}/public/feedback`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
