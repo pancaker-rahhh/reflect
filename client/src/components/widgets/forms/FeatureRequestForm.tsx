@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { Lightbulb, Users, Zap, Target, ChevronUp, Plus, List } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Lightbulb, ChevronUp, Plus, List } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ExistingFeature {
@@ -72,7 +72,6 @@ const categoryOptions = [
 
 export function FeatureRequestForm({ 
   onSubmit, 
-  onUpvote,
   widgetKey,
   isSubmitting, 
   colors, 
@@ -86,6 +85,7 @@ export function FeatureRequestForm({
   const [view, setView] = useState<'list' | 'create'>('list')
   const [existingFeatures, setExistingFeatures] = useState<ExistingFeature[]>([])
   const [isLoadingFeatures, setIsLoadingFeatures] = useState(true)
+  const [votingFeatures, setVotingFeatures] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     loadExistingFeatures()
@@ -138,10 +138,13 @@ export function FeatureRequestForm({
   }
 
   const handleUpvote = async (featureId: string) => {
-    if (!widgetKey) return
+    if (!widgetKey || votingFeatures.has(featureId)) return
+    
+    // Add feature to voting set to prevent duplicate clicks
+    setVotingFeatures(prev => new Set([...prev, featureId]))
     
     try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
       
       const response = await fetch(`${apiBaseUrl}/public/features/upvote`, {
         method: 'POST',
@@ -155,13 +158,13 @@ export function FeatureRequestForm({
       if (response.ok) {
         const result = await response.json()
         
-        // Update local state with new vote count
+        // Update local state with exact response from server
         setExistingFeatures(prev => prev.map(feature => 
           feature.id === featureId 
             ? { 
                 ...feature, 
                 upvotes: result.newVoteCount,
-                hasUserUpvoted: !feature.hasUserUpvoted 
+                hasUserUpvoted: result.hasUserVoted
               }
             : feature
         ))
@@ -170,6 +173,13 @@ export function FeatureRequestForm({
       }
     } catch (error) {
       console.error('Failed to upvote feature:', error)
+    } finally {
+      // Remove feature from voting set
+      setVotingFeatures(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(featureId)
+        return newSet
+      })
     }
   }
 
@@ -261,16 +271,23 @@ export function FeatureRequestForm({
                 </div>
                 <button
                   onClick={() => handleUpvote(feature.id)}
+                  disabled={votingFeatures.has(feature.id)}
                   className={cn(
-                    'flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all hover:scale-105',
-                    feature.hasUserUpvoted ? 'bg-blue-100' : 'bg-gray-100'
+                    'flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all',
+                    !votingFeatures.has(feature.id) && 'hover:scale-105',
+                    feature.hasUserUpvoted ? 'bg-blue-100' : 'bg-gray-100',
+                    votingFeatures.has(feature.id) && 'opacity-50 cursor-not-allowed'
                   )}
                   style={{
                     backgroundColor: feature.hasUserUpvoted ? `${colors.primary}20` : '#F3F4F6',
                     color: feature.hasUserUpvoted ? colors.primary : colors.text
                   }}
                 >
-                  <ChevronUp className="w-4 h-4" />
+                  {votingFeatures.has(feature.id) ? (
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <ChevronUp className="w-4 h-4" />
+                  )}
                   <span className="text-xs font-semibold">{feature.upvotes}</span>
                 </button>
               </div>

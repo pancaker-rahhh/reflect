@@ -34,14 +34,13 @@ class VotingService:
             await db.delete(existing_vote)
             await db.commit()
             
-            # Update vote count
+            # Update vote count using actual count from database
             current_count = await self._get_vote_count(db, feedback_id)
-            new_count = max(0, current_count - 1)  # Ensure no negative votes
-            await feedback_repository.update_votes(db, feedback_id, new_count)
+            await feedback_repository.update_votes(db, feedback_id, current_count)
             
             return {
                 'action': 'removed',
-                'newVoteCount': new_count,
+                'newVoteCount': current_count,
                 'hasUserVoted': False
             }
         else:
@@ -54,14 +53,13 @@ class VotingService:
                 db.add(new_vote)
                 await db.commit()
                 
-                # Update vote count
+                # Update vote count using actual count from database
                 current_count = await self._get_vote_count(db, feedback_id)
-                new_count = current_count + 1
-                await feedback_repository.update_votes(db, feedback_id, new_count)
+                await feedback_repository.update_votes(db, feedback_id, current_count)
                 
                 return {
                     'action': 'added',
-                    'newVoteCount': new_count,
+                    'newVoteCount': current_count,
                     'hasUserVoted': True
                 }
                 
