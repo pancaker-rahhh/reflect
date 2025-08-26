@@ -8,6 +8,7 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       'react': 'preact/compat',
       'react-dom': 'preact/compat',
+      'react/jsx-runtime': 'preact/jsx-runtime',
     },
   },
   build: {
@@ -45,5 +46,6 @@ export default defineConfig({
     // Configure JSX for Preact
     jsxFactory: 'h',
     jsxFragment: 'Fragment',
+    jsxInject: `import { h, Fragment } from 'preact'`,
   }
 })

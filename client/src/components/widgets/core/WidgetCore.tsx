@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'preact/hooks'
+import { useState, useEffect } from 'react'
 import { NPSRating } from '@/components/widgets/scoring/NPSRating'
 import { CSATRating } from '@/components/widgets/scoring/CSATRating'
 import { CESRating } from '@/components/widgets/scoring/CESRating'
@@ -11,7 +11,6 @@ import type {
   WidgetState,
   FeedbackType,
   FeedbackData,
-  WidgetConfiguration,
 } from './types'
 import { FEEDBACK_TYPE_INFO } from './types'
 
@@ -42,9 +41,10 @@ const LoadingSpinner = ({
   )
 }
 
-const SkeletonPulse = ({ className }: { className: string }) => (
+const SkeletonPulse = ({ className, style }: { className: string; style?: any }) => (
   <div
     className={`bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse ${className}`}
+    style={style}
   ></div>
 )
 
@@ -64,7 +64,7 @@ export function WidgetCore({
     
     // Always add the primary type first if it's enabled
     const primaryType = config.primaryType || 'FEEDBACK'
-    const primaryModuleMap: Record<string, string> = {
+    const primaryModuleMap: Record<string, keyof typeof config.modules> = {
       'FEEDBACK': 'feedback',
       'NPS': 'feedback', 
       'CSAT': 'feedback',
@@ -97,19 +97,14 @@ export function WidgetCore({
       }
     })
     
-    
-    // Count total enabled modules to determine if we should show menu
-    const enabledModulesCount = Object.values(config.modules || {}).filter(Boolean).length
-    
-    // Show menu if we have multiple enabled modules OR multiple available types
-    // This ensures that even with a primary type, if multiple options are configured, we show the menu
-    if (enabledModulesCount > 1 || availableTypes.length > 1) {
+    // Simple logic: Show menu if multiple types, otherwise show the single type
+    if (availableTypes.length > 1) {
       return { type: 'menu', availableTypes }
     } else if (availableTypes.length === 1) {
       return { type: 'active', feedbackType: availableTypes[0] }
     }
     
-    return { type: 'closed' }
+    return { type: 'active', feedbackType: 'FEEDBACK' }
   }
 
   const [internalState, setInternalState] = useState<WidgetState>(getInitialState())
@@ -117,8 +112,6 @@ export function WidgetCore({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedScore, setSelectedScore] = useState<number | undefined>()
   const [showConfetti, setShowConfetti] = useState(false)
-  const [hoveredScore, setHoveredScore] = useState<number | null>(null)
-  const [hoveredRating, setHoveredRating] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const currentState = externalState || internalState
@@ -277,29 +270,6 @@ export function WidgetCore({
     })
   }
 
-  const handleTextSubmission = async () => {
-    if (!feedback.trim()) return
-    await handleSubmit({
-      response: feedback,
-      feedbackType: config.primaryType,
-      typeSpecificData: {
-        title: 'General Feedback',
-        message: feedback,
-      }
-    })
-  }
-
-  const handleFeedbackFormSubmit = async (feedbackType: FeedbackType) => {
-    if (!feedback.trim()) return
-    await handleSubmit({
-      response: feedback,
-      feedbackType,
-      typeSpecificData: {
-        title: `${feedbackType} Feedback`,
-        message: feedback,
-      }
-    })
-  }
 
   const adjustColorBrightness = (color: string, amount: number): string => {
     const num = parseInt(color.replace('#', ''), 16)
@@ -418,9 +388,12 @@ export function WidgetCore({
     </div>
   )
 
-  const renderPrimarySurvey = () => {
-    const renderScoringComponent = () => {
-      switch (config.primaryType) {
+  // Unified rendering function for all feedback types - clean and extensible
+  const renderFeedbackType = (feedbackType: FeedbackType) => {
+    const info = FEEDBACK_TYPE_INFO[feedbackType]
+    
+    const renderComponent = () => {
+      switch (feedbackType) {
         case 'NPS':
           return (
             <NPSRating
@@ -445,253 +418,6 @@ export function WidgetCore({
               disabled={isSubmitting}
             />
           )
-        case 'REVIEW':
-          return (
-            <ReviewForm
-              onSubmit={async (data) => {
-                await handleSubmit({
-                  response: `Rating: ${data.rating}/5${data.review ? ` - ${data.review}` : ''}`,
-                  rating: data.rating,
-                  feedbackType: config.primaryType,
-                  typeSpecificData: {
-                    overall_rating: data.rating,
-                    pros: data.review || '',
-                    cons: '', // ReviewForm doesn't collect cons separately
-                  }
-                })
-              }}
-              isSubmitting={isSubmitting}
-              colors={theme.colors}
-              content={content}
-            />
-          )
-        case 'BUG_REPORT':
-          return (
-            <BugReportForm
-              onSubmit={async (data) => {
-                const response = [
-                  `Title: ${data.title}`,
-                  `Category: ${data.category}`,
-                  `Severity: ${data.severity}`,
-                  `Description: ${data.description}`,
-                  data.stepsToReproduce ? `Steps: ${data.stepsToReproduce}` : null
-                ].filter(Boolean).join('\n')
-                
-                await handleSubmit({
-                  response,
-                  feedbackType: config.primaryType,
-                  typeSpecificData: {
-                    title: data.title,
-                    severity: data.severity,
-                    steps_to_reproduce: data.stepsToReproduce || '',
-                    expected_result: '', // BugReportForm doesn't collect this
-                    actual_result: data.description,
-                    visual_proof: {},
-                  }
-                })
-              }}
-              isSubmitting={isSubmitting}
-              colors={theme.colors}
-              content={content}
-            />
-          )
-        case 'FEATURE_REQUEST':
-          return (
-            <FeatureRequestForm
-              onSubmit={async (data) => {
-                const response = [
-                  `Title: ${data.title}`,
-                  `Category: ${data.category}`,
-                  `Priority: ${data.priority}`,
-                  `Description: ${data.description}`,
-                  `Use Case: ${data.useCase}`
-                ].join('\n')
-                
-                await handleSubmit({
-                  response,
-                  feedbackType: config.primaryType,
-                  typeSpecificData: {
-                    title: data.title,
-                    suggested_solution: data.description, // Use description as solution
-                    benefits: `Priority: ${data.priority}, Category: ${data.category}`,
-                    use_case: data.useCase,
-                  }
-                })
-              }}
-              isSubmitting={isSubmitting}
-              colors={theme.colors}
-              content={content}
-            />
-          )
-        default:
-          return (
-            <div className="space-y-4">
-              <textarea
-                value={feedback}
-                onChange={(e) => setFeedback(e.target.value)}
-                placeholder="Tell us what you think..."
-                className="w-full h-32 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all"
-                style={{
-                  borderColor: feedback.trim() ? primaryColor : '#E5E7EB',
-                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                  boxShadow: feedback.trim() ? `0 0 0 3px ${primaryColor}20` : undefined,
-                }}
-                disabled={isSubmitting}
-              />
-              <button
-                onClick={handleTextSubmission}
-                disabled={!feedback.trim() || isSubmitting}
-                className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: buttonColor, color: buttonTextColor }}
-              >
-                {isSubmitting ? (
-                  <span className="inline-flex items-center space-x-2">
-                    <LoadingSpinner size="sm" color="currentColor" />
-                    <span>Submitting...</span>
-                  </span>
-                ) : (
-                  content.submitButtonText
-                )}
-              </button>
-            </div>
-          )
-      }
-    }
-
-    return (
-      <div className="p-5">
-        <div className="mb-4">
-          <h3 className="text-base font-medium mb-2 text-center leading-tight" style={{ color: textColor }}>
-            {content.mainQuestion}
-          </h3>
-        </div>
-        {renderScoringComponent()}
-      </div>
-    )
-  }
-
-  const renderMenu = () => {
-    if (currentState.type !== 'menu') return null
-
-    const availableModules = currentState.availableTypes.map((type, index) => {
-      const info = FEEDBACK_TYPE_INFO[type]
-      const colors = {
-        'FEEDBACK': { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
-        'NPS': { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
-        'CSAT': { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
-        'CES': { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
-        'SURVEY': { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
-        'REVIEW': { bg: '#FEF3C7', border: '#FDE68A', icon: '#F59E0B' },
-        'BUG_REPORT': { bg: '#FEE2E2', border: '#FECACA', icon: '#EF4444' },
-        'FEATURE_REQUEST': { bg: '#D1FAE5', border: '#A7F3D0', icon: '#10B981' },
-      }
-      
-      // Override title for primary type (first in array)
-      let title = info.title
-      if (index === 0) {
-        // Use primary type specific titles
-        const primaryTitles: Record<string, string> = {
-          'FEEDBACK': 'Give Feedback',
-          'NPS': 'Rate Us (NPS)',
-          'CSAT': 'Rate Satisfaction',
-          'CES': 'Rate Experience',
-          'SURVEY': 'Take Survey',
-          'REVIEW': 'Write Review',
-          'BUG_REPORT': 'Report Issue',
-          'FEATURE_REQUEST': 'Suggest Feature'
-        }
-        title = primaryTitles[type] || title
-      }
-      
-      return {
-        type,
-        title,
-        description: info.description,
-        icon: info.icon,
-        color: colors[type as keyof typeof colors] || colors.FEEDBACK,
-        isPrimary: index === 0
-      }
-    })
-
-    return (
-      <div className="p-5 space-y-5">
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 mx-auto rounded-full flex items-center justify-center" 
-               style={{ backgroundColor: `${primaryColor}15`, border: `2px solid ${primaryColor}30` }}>
-            <span className="text-2xl">🎯</span>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-1" style={{ color: textColor }}>
-              How can we help you today?
-            </h3>
-            <p className="text-xs opacity-70" style={{ color: textColor }}>
-              Choose what you'd like to share with us
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          {availableModules.map((module, index) => (
-            <button
-              key={module.type}
-              onClick={() => updateState({ type: 'active', feedbackType: module.type })}
-              className="w-full text-left p-3 rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-md border-2 group"
-              style={{
-                backgroundColor: module.color.bg,
-                borderColor: module.color.border,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = module.color.icon
-                e.currentTarget.style.backgroundColor = `${module.color.bg}CC`
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = module.color.border
-                e.currentTarget.style.backgroundColor = module.color.bg
-              }}
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-                     style={{ backgroundColor: `${module.color.icon}15`, color: module.color.icon }}>
-                  {module.icon}
-                </div>
-                <div className="flex-1">
-                  <div className="font-semibold text-sm group-hover:translate-x-1 transition-transform duration-200" 
-                       style={{ color: textColor }}>
-                    {module.title}
-                  </div>
-                  <div className="text-xs opacity-70 mt-0.5" style={{ color: textColor }}>
-                    {module.description}
-                  </div>
-                </div>
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="9,18 15,12 9,6"></polyline>
-                  </svg>
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  const renderFeedbackForm = () => {
-    if (currentState.type !== 'active') return null
-
-    const feedbackType = currentState.feedbackType
-    const info = FEEDBACK_TYPE_INFO[feedbackType]
-
-    const handleSpecificFormSubmit = async (data: any) => {
-      await handleSubmit({
-        response: typeof data === 'string' ? data : JSON.stringify(data),
-        rating: data.rating,
-        feedbackType,
-      })
-    }
-
-    const renderTypeSpecificForm = () => {
-      switch (feedbackType) {
         case 'REVIEW':
           return (
             <ReviewForm
@@ -766,7 +492,6 @@ export function WidgetCore({
                 })
               }}
               onUpvote={async (featureId) => {
-                // Handle upvote functionality - will need API endpoint
                 console.log('Upvote feature:', featureId)
               }}
               widgetKey={mode === 'production' ? (config as any).widgetKey : undefined}
@@ -775,67 +500,193 @@ export function WidgetCore({
               content={content}
             />
           )
+        case 'FEEDBACK':
+        case 'SURVEY':
         default:
-          // Default text input for FEEDBACK and other types
-          const placeholders = {
-            BUG_REPORT: 'Describe the issue you encountered...',
-            FEATURE_REQUEST: 'What feature would you like to see?',
-            REVIEW: 'Share your experience...',
-            FEEDBACK: 'Tell us what you think...',
-          }
-
           return (
             <div className="space-y-4">
               <textarea
                 value={feedback}
                 onChange={(e) => setFeedback(e.target.value)}
-                placeholder={placeholders[feedbackType as keyof typeof placeholders] || placeholders.FEEDBACK}
-                className="w-full h-32 p-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all"
+                placeholder="Tell us what you think..."
+                className="w-full h-32 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all"
                 style={{
-                  borderColor: '#E5E7EB',
-                  backgroundColor: backgroundColor,
-                  color: textColor,
+                  borderColor: feedback.trim() ? primaryColor : '#E5E7EB',
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  boxShadow: feedback.trim() ? `0 0 0 3px ${primaryColor}20` : undefined,
                 }}
                 disabled={isSubmitting}
               />
-
               <button
-                onClick={() => handleFeedbackFormSubmit(feedbackType)}
+                onClick={async () => {
+                  if (!feedback.trim()) return
+                  await handleSubmit({
+                    response: feedback,
+                    feedbackType,
+                    typeSpecificData: {
+                      title: `${feedbackType} Feedback`,
+                      message: feedback,
+                    }
+                  })
+                }}
                 disabled={!feedback.trim() || isSubmitting}
                 className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: buttonColor, color: buttonTextColor }}
               >
-                {isSubmitting ? 'Submitting...' : `Submit ${info.title}`}
+                {isSubmitting ? (
+                  <span className="inline-flex items-center space-x-2">
+                    <LoadingSpinner size="sm" color="currentColor" />
+                    <span>Submitting...</span>
+                  </span>
+                ) : (
+                  content.submitButtonText
+                )}
               </button>
             </div>
           )
       }
     }
 
+    // Check if we should show back button (when multiple types are available)
+    const availableTypes = getAvailableFeedbackTypes()
+    const showBackButton = availableTypes.length > 1
+    
     return (
       <div className="p-5">
-        <div className="mb-3">
-          <button
-            onClick={() => {
-              const availableTypes = getAvailableFeedbackTypes()
-              updateState({ type: 'menu', availableTypes })
-            }}
-            className="flex items-center text-xs opacity-70 hover:opacity-100 transition-opacity mb-3"
-            style={{ color: textColor }}
-          >
-            ← Back to options
-          </button>
-          <h3 className="font-medium mb-2 text-sm" style={{ color: textColor }}>
-            {info.title}
+        {showBackButton && (
+          <div className="mb-3">
+            <button
+              onClick={() => updateState({ type: 'menu', availableTypes })}
+              className="flex items-center text-xs opacity-70 hover:opacity-100 transition-opacity mb-3"
+              style={{ color: textColor }}
+            >
+              ← Back to options
+            </button>
+            <h3 className="font-medium mb-2 text-sm" style={{ color: textColor }}>
+              {info.title}
+            </h3>
+          </div>
+        )}
+        
+        <div className="mb-4">
+          <h3 className="text-base font-medium mb-2 text-center leading-tight" style={{ color: textColor }}>
+            {content.mainQuestion}
           </h3>
         </div>
-
-        {renderTypeSpecificForm()}
-
+        
+        {renderComponent()}
+        
         {error && <div className="text-xs text-red-600 bg-red-50 p-2 rounded-lg">{error}</div>}
       </div>
     )
   }
+
+  const renderMenu = () => {
+    if (currentState.type !== 'menu') return null
+
+    const availableModules = currentState.availableTypes.map((type, index) => {
+      const info = FEEDBACK_TYPE_INFO[type]
+      const colors = {
+        'FEEDBACK': { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
+        'NPS': { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
+        'CSAT': { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
+        'CES': { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
+        'SURVEY': { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
+        'REVIEW': { bg: '#FEF3C7', border: '#FDE68A', icon: '#F59E0B' },
+        'BUG_REPORT': { bg: '#FEE2E2', border: '#FECACA', icon: '#EF4444' },
+        'FEATURE_REQUEST': { bg: '#D1FAE5', border: '#A7F3D0', icon: '#10B981' },
+      }
+      
+      // Override title for primary type (first in array)
+      let title = info.title
+      if (index === 0) {
+        // Use primary type specific titles
+        const primaryTitles: Record<string, string> = {
+          'FEEDBACK': 'Give Feedback',
+          'NPS': 'Rate Us (NPS)',
+          'CSAT': 'Rate Satisfaction',
+          'CES': 'Rate Experience',
+          'SURVEY': 'Take Survey',
+          'REVIEW': 'Write Review',
+          'BUG_REPORT': 'Report Issue',
+          'FEATURE_REQUEST': 'Suggest Feature'
+        }
+        title = primaryTitles[type] || title
+      }
+      
+      return {
+        type,
+        title,
+        description: info.description,
+        icon: info.icon,
+        color: colors[type as keyof typeof colors] || colors.FEEDBACK,
+        isPrimary: index === 0
+      }
+    })
+
+    return (
+      <div className="p-5 space-y-5">
+        <div className="text-center space-y-2">
+          <div className="w-12 h-12 mx-auto rounded-full flex items-center justify-center" 
+               style={{ backgroundColor: `${primaryColor}15`, border: `2px solid ${primaryColor}30` }}>
+            <span className="text-2xl">🎯</span>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold mb-1" style={{ color: textColor }}>
+              How can we help you today?
+            </h3>
+            <p className="text-xs opacity-70" style={{ color: textColor }}>
+              Choose what you'd like to share with us
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          {availableModules.map((module) => (
+            <button
+              key={module.type}
+              onClick={() => updateState({ type: 'active', feedbackType: module.type })}
+              className="w-full text-left p-3 rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-md border-2 group"
+              style={{
+                backgroundColor: module.color.bg,
+                borderColor: module.color.border,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = module.color.icon
+                e.currentTarget.style.backgroundColor = `${module.color.bg}CC`
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = module.color.border
+                e.currentTarget.style.backgroundColor = module.color.bg
+              }}
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
+                     style={{ backgroundColor: `${module.color.icon}15`, color: module.color.icon }}>
+                  {module.icon}
+                </div>
+                <div className="flex-1">
+                  <div className="font-semibold text-sm group-hover:translate-x-1 transition-transform duration-200" 
+                       style={{ color: textColor }}>
+                    {module.title}
+                  </div>
+                  <div className="text-xs opacity-70 mt-0.5" style={{ color: textColor }}>
+                    {module.description}
+                  </div>
+                </div>
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="9,18 15,12 9,6"></polyline>
+                  </svg>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
 
   const renderContent = () => {
     switch (currentState.type) {
@@ -843,12 +694,11 @@ export function WidgetCore({
         return renderLoading()
       case 'error':
         return renderError()
-      case 'closed':
-        return renderPrimarySurvey()
       case 'menu':
         return renderMenu()
       case 'active':
-        return renderFeedbackForm()
+        // Use unified rendering for all feedback types
+        return renderFeedbackType(currentState.feedbackType)
       case 'success':
         return renderSuccess()
       default:

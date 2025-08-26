@@ -65,7 +65,7 @@ function mapPreviewStateToWidgetState(previewState: PreviewState, config: Widget
       if (enabledModules.length > 1) {
         const availableTypes = enabledModules.map(([key]) => {
           switch (key) {
-            case 'feedback': return 'FEEDBACK' as FeedbackType
+            case 'feedback': return config.primaryType || 'FEEDBACK' as FeedbackType // Use actual primary type
             case 'reviews': return 'REVIEW' as FeedbackType
             case 'bugReporting': return 'BUG_REPORT' as FeedbackType
             case 'featureRequests': return 'FEATURE_REQUEST' as FeedbackType
@@ -74,7 +74,8 @@ function mapPreviewStateToWidgetState(previewState: PreviewState, config: Widget
         })
         return { type: 'menu', availableTypes }
       } else {
-        return { type: 'closed' } // Will show primary survey
+        // For single module, directly show the primary type
+        return { type: 'active', feedbackType: config.primaryType }
       }
     case 'interactive':
       return { type: 'active', feedbackType: config.primaryType }

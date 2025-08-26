@@ -1,4 +1,4 @@
-import { render } from 'preact'
+import { createRoot } from 'react-dom/client'
 import { WidgetCore } from './components/widgets/core/WidgetCore'
 import type { 
   WidgetConfiguration,
@@ -216,15 +216,12 @@ declare global {
     // Map widget types to modules properly
     const defaultModules = getDefaultModulesForType(widgetType)
     
-    // If any modules are explicitly configured, respect that configuration
-    // Don't let single-widget defaults override multi-widget configurations
-    const hasExplicitModuleConfig = Object.values(modules).some(v => v === true)
-    
+    // Use explicit modules if provided, otherwise fall back to defaults based on widget type
     const finalModules = {
-      feedback: modules.feedback ?? (hasExplicitModuleConfig ? false : defaultModules.feedback),
-      reviews: modules.reviews ?? (hasExplicitModuleConfig ? false : defaultModules.reviews),
-      bugReporting: modules.bugReporting ?? (hasExplicitModuleConfig ? false : defaultModules.bugReporting),
-      featureRequests: modules.featureRequests ?? (hasExplicitModuleConfig ? false : defaultModules.featureRequests),
+      feedback: modules.feedback !== undefined ? modules.feedback : defaultModules.feedback,
+      reviews: modules.reviews !== undefined ? modules.reviews : defaultModules.reviews,
+      bugReporting: modules.bugReporting !== undefined ? modules.bugReporting : defaultModules.bugReporting,
+      featureRequests: modules.featureRequests !== undefined ? modules.featureRequests : defaultModules.featureRequests,
     }
     
     
@@ -402,7 +399,7 @@ declare global {
     if (position.includes('right')) container.style.right = '20px'
     if (position.includes('left')) container.style.left = '20px'
 
-    // Create Preact render target
+    // Create React render target
     const widgetConfig = {
       ...transformWidgetConfig(backendConfig),
       widgetKey: publicKey
@@ -505,15 +502,27 @@ declare global {
       }
     }
 
-    render(
-      <WidgetCore
-        config={widgetConfig}
-        mode="production"
-        onSubmit={handleSubmit}
-        onClose={handleClose}
-      />,
-      container
-    )
+    try {
+      const root = createRoot(container)
+      root.render(
+        <WidgetCore
+          config={widgetConfig}
+          mode="production"
+          onSubmit={handleSubmit}
+          onClose={handleClose}
+        />
+      )
+    } catch (error) {
+      console.error('Reflect Widget: Error rendering widget:', error)
+      // Fallback to simple text widget if hooks fail
+      container.innerHTML = `
+        <div style="padding: 20px; text-align: center;">
+          <h3>Feedback Widget</h3>
+          <p>There was an issue loading the widget. Please refresh the page.</p>
+          <small>Error: ${error.message}</small>
+        </div>
+      `
+    }
 
     return container
   }
