@@ -98,8 +98,12 @@ export function WidgetCore({
     })
     
     
-    // Show menu if we have multiple options, otherwise go directly to the form
-    if (availableTypes.length > 1) {
+    // Count total enabled modules to determine if we should show menu
+    const enabledModulesCount = Object.values(config.modules || {}).filter(Boolean).length
+    
+    // Show menu if we have multiple enabled modules OR multiple available types
+    // This ensures that even with a primary type, if multiple options are configured, we show the menu
+    if (enabledModulesCount > 1 || availableTypes.length > 1) {
       return { type: 'menu', availableTypes }
     } else if (availableTypes.length === 1) {
       return { type: 'active', feedbackType: availableTypes[0] }
