@@ -40,12 +40,7 @@ app.use('/cdn', (req, res, next) => {
   next();
 });
 
-// Serve widget files from dist directory
-app.use('/cdn/widgets', express.static(path.join(__dirname, '../public'), {
-  maxAge: '1h',
-  etag: true,
-  lastModified: true
-}));
+// Static serving removed - only serve from deployed-widgets directory
 
 // Serve versioned widgets
 app.get('/cdn/widgets/:widgetId/v:version/widget.js', async (req, res) => {
@@ -64,16 +59,9 @@ app.get('/cdn/widgets/:widgetId/v:version/widget.js', async (req, res) => {
       });
       return res.sendFile(deployedWidgetPath);
     } catch (accessError) {
-      // Fallback to public widget.js
-      const fallbackWidgetPath = path.join(__dirname, '../public/widget.js');
-      
-      res.set({
-        'Content-Type': 'application/javascript',
-        'Cache-Control': 'public, max-age=86400',
-        'ETag': `"${widgetId}-v${version}-fallback"`,
-      });
-      
-      return res.sendFile(fallbackWidgetPath);
+      // No fallback - only serve from deployed widgets
+      res.status(404).send('// Widget version not found');
+      return;
     }
   } catch (error) {
     console.error('Error serving versioned widget:', error);
@@ -158,14 +146,15 @@ app.post('/cdn/deploy', async (req, res) => {
     const configPath = path.join(versionDir, 'config.json');
     await fs.writeFile(configPath, JSON.stringify(widgetConfig, null, 2));
     
-    // Copy widget.js file to versioned location
-    const sourceWidgetPath = path.join(__dirname, '../public/widget.js');
+    // Copy widget.js file from build output to versioned location
+    const sourceWidgetPath = path.join(__dirname, '../dist-widget/widget.js');
     const targetWidgetPath = path.join(versionDir, 'widget.js');
     
     try {
       await fs.copyFile(sourceWidgetPath, targetWidgetPath);
     } catch (copyError) {
-      console.warn('Widget.js file not found, deployment will use CDN fallback');
+      console.error('Widget.js file not found in dist-widget directory. Please run build first.');
+      return res.status(400).json({ error: 'Widget build not found. Please run npm run build:widget first.' });
     }
     
     console.log(`Widget ${public_key} v${version} deployed successfully`);
