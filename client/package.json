@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:widget": "vite build --config vite.config.widget.js",
+    "build:widget": "node build-widget-with-css.js",
+    "build:widget-base": "vite build --config vite.config.widget.js",
     "dev:widget": "vite --config vite.config.widget.js",
+    "start:cdn": "cd cdn-server && npm start",
     "lint": "eslint .",
     "preview": "vite preview"
   },

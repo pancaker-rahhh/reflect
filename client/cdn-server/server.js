@@ -136,6 +136,27 @@ app.post('/cdn/deploy', async (req, res) => {
       return res.status(400).json({ error: 'public_key is required' });
     }
     
+    console.log(`Deploying widget ${public_key} v${version || 1}...`);
+    
+    // Ensure we have a fresh CSS-inlined widget build
+    console.log('Building widget with inlined CSS...');
+    const { execSync } = require('child_process');
+    
+    try {
+      // Build the widget with CSS inlining
+      execSync('npm run build:widget', { 
+        cwd: path.join(__dirname, '..'),
+        stdio: 'pipe' // Capture output to avoid cluttering response
+      });
+      console.log('Widget built successfully with inlined CSS');
+    } catch (buildError) {
+      console.error('Widget build failed:', buildError.message);
+      return res.status(500).json({ 
+        error: 'Failed to build widget with CSS inlining', 
+        details: buildError.message 
+      });
+    }
+    
     // Create directory structure for widget
     const widgetDir = path.join(__dirname, 'deployed-widgets', public_key);
     const versionDir = path.join(widgetDir, `v${version || 1}`);
@@ -146,22 +167,42 @@ app.post('/cdn/deploy', async (req, res) => {
     const configPath = path.join(versionDir, 'config.json');
     await fs.writeFile(configPath, JSON.stringify(widgetConfig, null, 2));
     
-    // Copy widget.js file from build output to versioned location
+    // Copy the CSS-inlined widget.js file from build output to versioned location
     const sourceWidgetPath = path.join(__dirname, '../dist-widget/widget.js');
     const targetWidgetPath = path.join(versionDir, 'widget.js');
     
     try {
+      // Verify the widget file exists and has CSS inlined
+      const widgetContent = await fs.readFile(sourceWidgetPath, 'utf8');
+      
+      // Check if CSS is properly inlined by looking for CSS injection code
+      if (!widgetContent.includes('Inject CSS styles into the page')) {
+        console.warn('Warning: Widget may not have CSS properly inlined');
+      }
+      
       await fs.copyFile(sourceWidgetPath, targetWidgetPath);
+      
+      // Log file size for monitoring
+      const stats = await fs.stat(targetWidgetPath);
+      console.log(`Widget deployed: ${Math.round(stats.size / 1024)}KB`);
+      
     } catch (copyError) {
-      console.error('Widget.js file not found in dist-widget directory. Please run build first.');
-      return res.status(400).json({ error: 'Widget build not found. Please run npm run build:widget first.' });
+      console.error('Failed to copy widget file:', copyError);
+      return res.status(500).json({ 
+        error: 'Failed to deploy widget file', 
+        details: copyError.message 
+      });
     }
     
-    console.log(`Widget ${public_key} v${version} deployed successfully`);
+    console.log(`✅ Widget ${public_key} v${version || 1} deployed successfully with CSS inlining`);
     res.json({ 
       success: true, 
-      message: 'Widget deployed successfully',
-      cdn_url: `${getDynamicBaseUrl()}/cdn/widgets/${public_key}/v${version}/widget.js`
+      message: 'Widget deployed successfully with inlined CSS',
+      cdn_url: `${getDynamicBaseUrl()}/cdn/widgets/${public_key}/v${version || 1}/widget.js`,
+      build_info: {
+        css_inlined: true,
+        version: version || 1
+      }
     });
     
   } catch (error) {

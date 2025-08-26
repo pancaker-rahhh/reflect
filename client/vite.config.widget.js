@@ -3,6 +3,9 @@ import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
   plugins: [],
+  css: {
+    postcss: './postcss.config.js',
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -24,10 +27,18 @@ export default defineConfig({
         // Ensure we get a single file output
         entryFileNames: 'widget.js',
         chunkFileNames: '[name].js',
-        assetFileNames: '[name].[ext]',
+        assetFileNames: (assetInfo) => {
+          // Force CSS assets to be treated differently
+          if (assetInfo.name && assetInfo.name.endsWith('.css')) {
+            return '[name].css'
+          }
+          return '[name].[ext]'
+        },
         // Bundle everything into a single file including React
         manualChunks: undefined,
-        globals: {}
+        globals: {},
+        // Inline assets to avoid separate CSS file
+        inlineDynamicImports: true
       },
       // Bundle React and React-DOM into the widget for standalone use
       external: []
@@ -36,7 +47,9 @@ export default defineConfig({
     minify: 'esbuild',
     sourcemap: false,
     // Ensure all CSS is inlined
-    cssCodeSplit: false
+    cssCodeSplit: false,
+    // Force inline CSS
+    assetsInlineLimit: 100000000
   },
   define: {
     'process.env.NODE_ENV': '"production"',

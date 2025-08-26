@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import { WidgetCore } from './components/widgets/core/WidgetCore'
+import './widget.css'
 import type { 
   WidgetConfiguration,
   FeedbackData,
