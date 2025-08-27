@@ -306,7 +306,7 @@ class ActionItemService:
         conversion_notes: Optional[str],
     ) -> None:
         update_data = {
-            'converted_to_action_item_id ': roadmap_item_id,
+            'converted_to_action_item_id': roadmap_item_id,
             'conversion_date': datetime.now(datetime.UTC),
             'conversion_notes': conversion_notes,
             'status': FeedbackStatus.IN_PROGRESS,
