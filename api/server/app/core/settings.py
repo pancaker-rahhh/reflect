@@ -56,6 +56,16 @@ class Settings(BaseSettings):
     POSTHOG_HOST: str = 'https://app.posthog.com'
     SENTRY_DSN: Optional[str] = None
 
+    # Cloudflare R2 & CDN Configuration
+    R2_ACCOUNT_ID: Optional[str] = None
+    R2_ACCESS_KEY_ID: Optional[str] = None
+    R2_SECRET_ACCESS_KEY: Optional[str] = None
+    R2_BUCKET_NAME: str = 'reflect-widgets'
+    R2_ENDPOINT_URL: Optional[str] = None
+    CDN_BASE_URL: str = 'http://localhost:3001'  # Default for dev
+    CDN_ZONE_ID: Optional[str] = None
+    CDN_API_TOKEN: Optional[str] = None
+
     model_config = SettingsConfigDict(
         env_file='.env', case_sensitive=True, extra='ignore'
     )
@@ -83,6 +93,15 @@ class Settings(BaseSettings):
         return [
             header.strip() for header in self.CORS_HEADERS.split(',') if header.strip()
         ]
+
+    @property
+    def r2_endpoint_url(self) -> str:
+        """Generate R2 endpoint URL from account ID"""
+        if self.R2_ENDPOINT_URL:
+            return self.R2_ENDPOINT_URL
+        if self.R2_ACCOUNT_ID:
+            return f'https://{self.R2_ACCOUNT_ID}.r2.cloudflarestorage.com'
+        return ''
 
     @field_validator('DATABASE_URL', mode='before')
     @classmethod
