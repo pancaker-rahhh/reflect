@@ -1,5 +1,6 @@
 import uuid
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List, Optional, Dict, Any
+from datetime import datetime
 from sqlalchemy import (
     String,
     Boolean,
@@ -7,11 +8,14 @@ from sqlalchemy import (
     Integer,
     Text,
     UniqueConstraint,
+    DateTime,
+    Index,
 )
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.models.base_model import BaseModel
+from app.models.integration_model import Integration, IntegrationType
 
 if TYPE_CHECKING:
     from app.models.project_model import Project
@@ -142,6 +146,49 @@ class RoadmapActionItemTag(BaseModel):
     )
 
 
+class RoadmapActionItemIntegration(BaseModel):
+    __tablename__ = 'roadmap_action_item_integrations'
+
+    action_item_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey('roadmap_action_items.id', ondelete='CASCADE'),
+        nullable=False,
+        index=True,
+    )
+
+    integration_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey('integrations.id', ondelete='CASCADE'),
+        nullable=False,
+        index=True,
+    )
+
+    external_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    external_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    external_status: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+
+    integration_metadata: Mapped[Dict[str, Any]] = mapped_column(JSONB, default=dict)
+
+    last_synced_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    sync_status: Mapped[str] = mapped_column(
+        String(50), default='synced'
+    )  # synced, pending, error
+
+    action_item: Mapped['RoadmapActionItem'] = relationship(
+        back_populates='integrations'
+    )
+    integration: Mapped['Integration'] = relationship()
+
+    __table_args__ = (
+        UniqueConstraint(
+            'action_item_id', 'integration_id', name='uq_action_item_integration'
+        ),
+        Index('idx_action_item_integration_external_id', 'external_id'),
+    )
+
+
 class RoadmapActionItem(BaseModel):
     __tablename__ = 'roadmap_action_items'
 
@@ -160,6 +207,12 @@ class RoadmapActionItem(BaseModel):
 
     submitter_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     submitter_email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
+    integrations: Mapped[List['RoadmapActionItemIntegration']] = relationship(
+        'RoadmapActionItemIntegration',
+        back_populates='action_item',
+        cascade='all, delete-orphan',
+    )
 
     column: Mapped['RoadmapColumn'] = relationship(back_populates='action_items')
     converted_feedback: Mapped[List['Feedback']] = relationship(
@@ -187,6 +240,24 @@ class RoadmapActionItem(BaseModel):
             for action_item_tag in self.action_item_tags
             if action_item_tag and action_item_tag.tag
         ]
+
+    @property
+    def jira_integration(self) -> Optional['RoadmapActionItemIntegration']:
+        for integration in self.integrations:
+            if integration.integration.integration_type == IntegrationType.JIRA:
+                return integration
+        return None
+
+    def get_integration(
+        self, integration_type: str
+    ) -> Optional['RoadmapActionItemIntegration']:
+        for integration in self.integrations:
+            if integration.integration.integration_type == integration_type:
+                return integration
+        return None
+
+    def is_synced_with(self, integration_type: str) -> bool:
+        return self.get_integration(integration_type) is not None
 
 
 class RoadmapItemAssignment(BaseModel):
