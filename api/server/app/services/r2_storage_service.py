@@ -1,0 +1,148 @@
+import boto3
+import json
+import httpx
+from typing import Dict, Any, List, Optional
+from botocore.exceptions import ClientError
+from app.core.settings import get_settings
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
+settings = get_settings()
+
+class R2StorageService:
+    def __init__(self):
+        self.s3_client = None
+        self._initialize_s3_client()
+    
+    def _initialize_s3_client(self):
+        """Initialize S3 client for R2 if credentials are available"""
+        if not all([settings.R2_ACCOUNT_ID, settings.R2_ACCESS_KEY_ID, settings.R2_SECRET_ACCESS_KEY]):
+            logger.warning("R2 credentials not configured, using fallback CDN")
+            return
+            
+        try:
+            self.s3_client = boto3.client(
+                's3',
+                endpoint_url=settings.r2_endpoint_url,
+                aws_access_key_id=settings.R2_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.R2_SECRET_ACCESS_KEY,
+                region_name='auto'
+            )
+        except Exception as e:
+            logger.error(f"Failed to initialize R2 client: {str(e)}")
+    
+    async def upload_widget_files(self, public_key: str, version: int, 
+                                widget_js_content: str, config: Dict[str, Any]) -> Dict[str, str]:
+        """Upload widget files to R2 and return CDN URLs"""
+        if not self.s3_client:
+            raise Exception("R2 client not initialized")
+        
+        try:
+            # Define file paths
+            widget_key = f"widgets/{public_key}/v{version}/widget.js"
+            config_key = f"widgets/{public_key}/v{version}/config.json"
+            
+            # Upload widget.js
+            self.s3_client.put_object(
+                Bucket=settings.R2_BUCKET_NAME,
+                Key=widget_key,
+                Body=widget_js_content.encode('utf-8'),
+                ContentType='application/javascript',
+                CacheControl='public, max-age=31536000, immutable',  # 1 year cache
+                Metadata={'version': str(version), 'public_key': public_key}
+            )
+            
+            # Upload config.json
+            self.s3_client.put_object(
+                Bucket=settings.R2_BUCKET_NAME,
+                Key=config_key,
+                Body=json.dumps(config, indent=2).encode('utf-8'),
+                ContentType='application/json',
+                CacheControl='public, max-age=3600'  # 1 hour cache
+            )
+            
+            # Return CDN URLs
+            widget_url = f"{settings.CDN_BASE_URL}/{widget_key}"
+            config_url = f"{settings.CDN_BASE_URL}/{config_key}"
+            
+            logger.info(f"Successfully uploaded widget {public_key} v{version} to R2")
+            
+            return {
+                'widget_url': widget_url,
+                'config_url': config_url,
+                'widget_key': widget_key,
+                'config_key': config_key
+            }
+            
+        except ClientError as e:
+            logger.error(f"R2 upload failed for {public_key}: {str(e)}")
+            raise Exception(f"Failed to upload widget to R2: {str(e)}")
+    
+    async def delete_widget_files(self, public_key: str, version: int) -> bool:
+        """Delete widget files from R2"""
+        if not self.s3_client:
+            return False
+            
+        try:
+            widget_key = f"widgets/{public_key}/v{version}/widget.js"
+            config_key = f"widgets/{public_key}/v{version}/config.json"
+            
+            # Delete both files
+            self.s3_client.delete_objects(
+                Bucket=settings.R2_BUCKET_NAME,
+                Delete={
+                    'Objects': [
+                        {'Key': widget_key},
+                        {'Key': config_key}
+                    ]
+                }
+            )
+            
+            logger.info(f"Deleted widget {public_key} v{version} from R2")
+            return True
+            
+        except ClientError as e:
+            logger.error(f"Failed to delete widget {public_key} from R2: {str(e)}")
+            return False
+    
+    async def purge_cdn_cache(self, file_paths: List[str]) -> bool:
+        """Purge Cloudflare CDN cache for specific paths"""
+        if not settings.CDN_ZONE_ID or not settings.CDN_API_TOKEN:
+            logger.warning("Cloudflare credentials not configured, skipping cache purge")
+            return True
+        
+        try:
+            headers = {
+                'Authorization': f'Bearer {settings.CDN_API_TOKEN}',
+                'Content-Type': 'application/json'
+            }
+            
+            # Convert file paths to full URLs
+            urls = [f"{settings.CDN_BASE_URL}/{path}" for path in file_paths]
+            
+            data = {
+                'files': urls
+            }
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f'https://api.cloudflare.com/client/v4/zones/{settings.CDN_ZONE_ID}/purge_cache',
+                    headers=headers,
+                    json=data,
+                    timeout=30.0
+                )
+                
+                if response.status_code == 200:
+                    logger.info(f"Successfully purged CDN cache for {len(urls)} files")
+                    return True
+                else:
+                    logger.error(f"CDN cache purge failed: {response.status_code} {response.text}")
+                    return False
+                    
+        except Exception as e:
+            logger.error(f"CDN cache purge error: {str(e)}")
+            return False
+
+
+# Singleton instance
+r2_storage_service = R2StorageService()
