@@ -267,7 +267,8 @@ class JiraAuthService:
                 }
 
             jira_version = self.detect_jira_instance_type(base_url)
-            decrypted_auth = self._decrypt_auth_data(auth_data)
+            # For connection testing, use raw auth data (not encrypted)
+            # decrypted_auth = self._decrypt_auth_data(auth_data)
 
             connectivity_test = await self._test_connectivity(base_url)
             if not connectivity_test['success']:
@@ -278,9 +279,7 @@ class JiraAuthService:
                     'details': connectivity_test['details'],
                 }
 
-            auth_test = await self._test_authentication(
-                base_url, decrypted_auth, auth_type
-            )
+            auth_test = await self._test_authentication(base_url, auth_data, auth_type)
             if not auth_test['success']:
                 return {
                     'status': 'error',
@@ -290,7 +289,7 @@ class JiraAuthService:
                 }
 
             permission_test = await self._test_permissions(
-                base_url, decrypted_auth, auth_type
+                base_url, auth_data, auth_type
             )
             if not permission_test['success']:
                 return {
@@ -384,13 +383,19 @@ class JiraAuthService:
                 f'{base_url}/rest/api/3/project', headers=headers
             ) as response:
                 if response.status == 200:
-                    projects = await response.json()
+                    projects_data = await response.json()
+                    if isinstance(projects_data, dict):
+                        project_count = len(projects_data.get('values', []))
+                    else:
+                        project_count = (
+                            len(projects_data) if isinstance(projects_data, list) else 0
+                        )
                     return {
                         'success': True,
                         'permissions': {
                             'can_read_projects': True,
                             'can_create_issues': True,
-                            'project_count': len(projects),
+                            'project_count': project_count,
                         },
                     }
                 elif response.status == 403:

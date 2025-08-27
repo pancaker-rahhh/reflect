@@ -82,6 +82,7 @@ class IntegrationSetupService:
         project_id: UUID,
         config: JiraConfig,
         auth_data: Dict[str, Any],
+        created_by: UUID,
     ) -> Dict[str, Any]:
         try:
             integration_data = {
@@ -103,6 +104,7 @@ class IntegrationSetupService:
                 },
                 'auth_data': auth_data,
                 'is_active': True,
+                'created_by': created_by,
             }
 
             integration = await integration_repository.create(db, **integration_data)

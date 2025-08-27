@@ -3,20 +3,20 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.db import get_db
 from app.core.auth import get_current_user
 from app.models.user_model import User
 from app.services.action_item_service import action_item_service
 from app.services.integration_setup_service import integration_setup_service
 from app.services.jira_integration_service import jira_integration_service
-from app.schemas.roadmap_schema import RoadmapFeatureCreate
+from app.schemas.roadmap_schema import RoadmapActionItemCreate
 
 router = APIRouter(prefix='/roadmap', tags=['Roadmap Enhanced'])
 
 
 @router.post('/features')
 async def create_action_item_with_jira(
-    feature_data: RoadmapFeatureCreate,
+    feature_data: RoadmapActionItemCreate,
     jira_integration_id: Optional[UUID] = Body(None, embed=True),
     jira_config: Optional[Dict[str, Any]] = Body(None, embed=True),
     push_to_jira: bool = Body(False, embed=True),

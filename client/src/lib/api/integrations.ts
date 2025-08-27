@@ -57,12 +57,10 @@ export interface JiraProject {
 
 export interface JiraProjectsResponse {
   success: boolean
-  data: {
-    projects: JiraProject[]
-    total_count: number
-  }
+  projects: JiraProject[]
+  total_count: number
   message: string
-  errors: string[]
+  cached?: boolean
 }
 
 export interface JiraIssueType {
@@ -75,12 +73,8 @@ export interface JiraIssueType {
 
 export interface JiraIssueTypesResponse {
   success: boolean
-  data: {
-    issue_types: JiraIssueType[]
-    total_count: number
-  }
+  issue_types: JiraIssueType[]
   message: string
-  errors: string[]
 }
 
 export interface JiraPriority {
@@ -92,12 +86,8 @@ export interface JiraPriority {
 
 export interface JiraPrioritiesResponse {
   success: boolean
-  data: {
-    priorities: JiraPriority[]
-    total_count: number
-  }
+  priorities: JiraPriority[]
   message: string
-  errors: string[]
 }
 
 export interface JiraComponent {
@@ -122,13 +112,12 @@ export interface JiraComponentsResponse {
 }
 
 export interface JiraIntegrationCreateRequest {
+  project_id: string
+  name: string
   jira_url: string
   auth_type: 'api_token' | 'basic_auth' | 'oauth2'
-  email?: string
-  api_token?: string
-  username?: string
-  password?: string
-  jira_config: JiraConfig
+  auth_data: Record<string, any>
+  config: Record<string, any>
 }
 
 export interface JiraIntegrationResponse {
@@ -172,8 +161,9 @@ export interface BulkJiraCreateResponse {
 }
 
 export const integrationsApi = {
-  getIntegrations: async (): Promise<any[]> => {
-    return apiClient.get<any[]>('/integrations')
+  getIntegrations: async (projectId?: string): Promise<any[]> => {
+    const params = projectId ? `?project_id=${projectId}` : ''
+    return apiClient.get<any[]>(`/integrations${params}`)
   },
 
   testJiraConnection: async (
@@ -192,7 +182,7 @@ export const integrationsApi = {
       auth_type,
       ...auth_data,
     })
-    return apiClient.get<JiraProjectsResponse>(`/integrations/jira/projects?${params}`)
+    return apiClient.get<JiraProjectsResponse>(`/integrations/jira/discover/projects?${params}`)
   },
 
   createJiraIntegration: async (

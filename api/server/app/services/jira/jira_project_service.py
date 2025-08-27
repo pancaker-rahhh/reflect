@@ -48,9 +48,7 @@ class JiraProjectService:
                     }
 
             base_url = self._get_api_base_url(config)
-            headers = jira_auth_service._get_auth_headers(
-                jira_auth_service._decrypt_auth_data(auth_data), auth_type
-            )
+            headers = jira_auth_service._get_auth_headers(auth_data, auth_type)
             session = await jira_auth_service.get_session()
 
             all_projects = []
@@ -69,7 +67,16 @@ class JiraProjectService:
                 ) as response:
                     if response.status == 200:
                         projects_data = await response.json()
-                        projects = projects_data.get('values', [])
+                        logger.info(f'Projects data: {projects_data}')
+                        if isinstance(projects_data, dict):
+                            projects = projects_data.get('values', [])
+                        elif isinstance(projects_data, list):
+                            projects = projects_data
+                        else:
+                            logger.error(
+                                f'Unexpected projects data type: {type(projects_data)}'
+                            )
+                            projects = []
                         all_projects.extend(projects)
 
                         if len(projects) < max_results:
@@ -89,7 +96,11 @@ class JiraProjectService:
                 )
                 enriched_projects.append(
                     {
-                        **project,
+                        'key': project.get('key'),
+                        'name': project.get('name'),
+                        'project_type': project.get('projectTypeKey', 'unknown'),
+                        'lead': project.get('lead'),
+                        'avatar_urls': project.get('avatarUrls'),
                         'issue_types': project_details.get('issue_types', []),
                         'components': project_details.get('components', []),
                         'workflow_statuses': project_details.get(
@@ -119,6 +130,9 @@ class JiraProjectService:
 
         except Exception as e:
             logger.error(f'Project discovery failed: {str(e)}')
+            import traceback
+
+            logger.error(f'Traceback: {traceback.format_exc()}')
             return {
                 'status': 'error',
                 'message': f'Project discovery failed: {str(e)}',
@@ -189,9 +203,7 @@ class JiraProjectService:
     ) -> Dict[str, Any]:
         try:
             base_url = self._get_api_base_url(config)
-            headers = jira_auth_service._get_auth_headers(
-                jira_auth_service._decrypt_auth_data(auth_data), auth_type
-            )
+            headers = jira_auth_service._get_auth_headers(auth_data, auth_type)
             session = await jira_auth_service.get_session()
 
             async with session.get(

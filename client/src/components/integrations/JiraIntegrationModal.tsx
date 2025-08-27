@@ -47,13 +47,13 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
   const projectsQuery = useJiraProjects(
     jiraUrl,
     authType,
-    { email, api_token: apiToken, username, password },
+    { username: email, api_token: apiToken, password },
     connectionTest.data?.success || false
   )
 
   const handleTestConnection = async () => {
     const authData =
-      authType === 'api_token' ? { email, api_token: apiToken } : { username, password }
+      authType === 'api_token' ? { username: email, api_token: apiToken } : { username, password }
 
     await connectionTest.mutateAsync({
       jira_url: jiraUrl,
@@ -66,10 +66,9 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
     if (!selectedProject) return
 
     const authData =
-      authType === 'api_token' ? { email, api_token: apiToken } : { username, password }
+      authType === 'api_token' ? { username: email, api_token: apiToken } : { username, password }
 
-    const jiraConfig: JiraConfig = {
-      jira_url: jiraUrl,
+    const config = {
       project_key: selectedProject.key,
       default_issue_type: issueType,
       default_priority: priority,
@@ -78,10 +77,12 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
     }
 
     await createIntegration.mutateAsync({
+      project_id: projectId,
+      name: `JIRA Integration - ${selectedProject.key}`,
       jira_url: jiraUrl,
       auth_type: authType,
-      jira_config: jiraConfig,
-      ...authData,
+      auth_data: authData,
+      config: config,
     })
 
     setStep('complete')
@@ -240,16 +241,6 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm">{connectionTest.data.message}</p>
-                  {connectionTest.data.success && connectionTest.data.user_info && (
-                    <div className="mt-2 p-2 bg-muted rounded">
-                      <p className="text-xs font-medium">
-                        Connected as: {connectionTest.data.user_info.display_name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {connectionTest.data.user_info.email}
-                      </p>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             )}
@@ -260,9 +251,7 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
                   <Label>Select JIRA Project</Label>
                   <Select
                     onValueChange={(projectKey) => {
-                      const project = projectsQuery.data.data.projects.find(
-                        (p) => p.key === projectKey
-                      )
+                      const project = projectsQuery.data.projects.find((p) => p.key === projectKey)
                       setSelectedProject(project || null)
                     }}
                   >
@@ -270,7 +259,7 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
                       <SelectValue placeholder="Choose a project" />
                     </SelectTrigger>
                     <SelectContent>
-                      {projectsQuery.data.data.projects.map((project) => (
+                      {projectsQuery.data.projects.map((project) => (
                         <SelectItem key={project.key} value={project.key}>
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-xs">{project.key}</span>

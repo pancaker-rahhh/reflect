@@ -143,5 +143,5 @@ export const api = {
     dashboardApi.getFeedbackData(projectId, timeRange),
 
   // Integration APIs
-  getIntegrations: () => integrationsApi.getIntegrations(),
+  getIntegrations: (projectId?: string) => integrationsApi.getIntegrations(projectId),
 }

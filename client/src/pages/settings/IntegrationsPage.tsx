@@ -8,19 +8,24 @@ import { ExternalLink, Plus, Settings, Trash2, TestTube } from 'lucide-react'
 import { JiraIntegrationModal } from '@/components/integrations/JiraIntegrationModal'
 import { useDeleteJiraIntegration } from '@/hooks/useJiraIntegration'
 import { useToast } from '@/components/ui/use-toast'
+import { useAppContext } from '@/context/AppContext'
 
 export function IntegrationsPage() {
   const [isJiraModalOpen, setIsJiraModalOpen] = useState(false)
+  const { currentProject } = useAppContext()
   const { toast } = useToast()
 
   const { data: integrations = [], isLoading } = useQuery({
-    queryKey: ['integrations'],
-    queryFn: () => api.getIntegrations(),
+    queryKey: ['integrations', currentProject?.id],
+    queryFn: () => api.getIntegrations(currentProject?.id),
+    enabled: !!currentProject?.id,
   })
 
   const deleteIntegration = useDeleteJiraIntegration()
 
-  const jiraIntegrations = integrations.filter((integration: any) => integration.type === 'JIRA')
+  const jiraIntegrations = integrations.filter(
+    (integration: any) => integration.integration_type?.toLowerCase() === 'jira'
+  )
 
   const handleDeleteIntegration = async (integrationId: string) => {
     try {
@@ -56,7 +61,7 @@ export function IntegrationsPage() {
                   </CardDescription>
                 </div>
               </div>
-              <Button onClick={() => setIsJiraModalOpen(true)}>
+              <Button onClick={() => setIsJiraModalOpen(true)} disabled={!currentProject?.id}>
                 <Plus className="h-4 w-4 mr-2" />
                 Connect JIRA
               </Button>
@@ -75,7 +80,7 @@ export function IntegrationsPage() {
                 <p className="text-muted-foreground mb-4">
                   Connect your JIRA instance to automatically create issues from action items
                 </p>
-                <Button onClick={() => setIsJiraModalOpen(true)}>
+                <Button onClick={() => setIsJiraModalOpen(true)} disabled={!currentProject?.id}>
                   <Plus className="h-4 w-4 mr-2" />
                   Connect JIRA
                 </Button>
@@ -174,7 +179,7 @@ export function IntegrationsPage() {
       <JiraIntegrationModal
         isOpen={isJiraModalOpen}
         onClose={() => setIsJiraModalOpen(false)}
-        projectId=""
+        projectId={currentProject?.id || ''}
       />
     </div>
   )
