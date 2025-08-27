@@ -3,14 +3,11 @@ from uuid import UUID
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# The User model is no longer needed for type hints in method signatures
-# from app.models.user_model import User
 from app.models.widget_model import Widget, WidgetStatus
 from app.repositories.widget_repository import widget_repository, WidgetRepository
 from app.schemas.widget_schema import WidgetCreate, WidgetUpdate
 from app.services.project_service import project_service, ProjectService
 
-# Use environment-based URLs
 import os
 from app.services.cdn_deployment_service import cdn_deployment_service
 from app.core.settings import get_settings
@@ -31,7 +28,6 @@ class WidgetService:
         self.project_service = project_service
 
     def _generate_embed_code(self, public_key: str) -> str:
-        # Use static CDN URL that never changes
         widget_cdn_url = self._get_cdn_url(public_key)
         
         embed_code = (
@@ -78,7 +74,6 @@ class WidgetService:
 
         widget = await self.repository.create(db, **widget_data)
         
-        # Deploy widget to R2 + CDN after creation
         await self._deploy_to_cdn(widget)
         
         return widget
@@ -89,12 +84,10 @@ class WidgetService:
         widget = await self.get_widget_and_check_access(db, user_id, widget_id)
         update_data = widget_in.model_dump(exclude_unset=True)
         
-        # Check if configuration changes require redeployment
         configuration_changed = any(key in update_data for key in ['configuration', 'theme_configuration', 'widget_type', 'position'])
         
         updated_widget = await self.repository.update(db, id=widget_id, **update_data)
         
-        # Deploy to R2 + CDN if configuration changed (updates the same file)
         if configuration_changed:
             await self._deploy_to_cdn(updated_widget)
             logger.info(f"Widget {updated_widget.public_key} updated and redeployed to R2 + CDN")
@@ -106,19 +99,12 @@ class WidgetService:
     ) -> Widget:
         widget = await self.get_widget_and_check_access(db, user_id, widget_id)
 
-        # Prevent deletion of active widgets
         if bool(widget.is_active) and widget.status == WidgetStatus.ACTIVE:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='Cannot delete an active widget. Please deactivate the widget first before deleting.',
             )
 
-        # Use soft delete to preserve feedback data
-        # TODO: Implement scheduled cleanup task to permanently delete old soft-deleted widgets
-        # - Retention period: 30 days (configurable)
-        # - Cleanup frequency: Weekly background task
-        # - Should also delete associated feedback data when permanently removing widgets
-        # - Consider using Celery or similar task queue for scheduled cleanup
         return await self.repository.soft_delete(db, id=widget_id)
 
     async def set_widget_activation(
@@ -155,7 +141,6 @@ class WidgetService:
     async def get_public_widget_config(
         self, db: AsyncSession, public_key: str
     ):
-        """Get widget configuration formatted for public client consumption"""
         from app.schemas.widget_schema import WidgetReadPublic
         
         widget = await self.get_public_widget_by_key(db, public_key)
@@ -163,17 +148,15 @@ class WidgetService:
 
 
     def _get_cdn_url(self, public_key: str) -> str:
-        """Generate CDN URL for widget"""
         return f'{settings.CDN_BASE_URL}/widgets/{public_key}/widget.js'
     
     async def _deploy_to_cdn(self, widget) -> bool:
-        """Deploy widget to Cloudflare R2 + CDN"""
         try:
             success = await cdn_deployment_service.deploy_widget(widget)
             if success:
-                logger.info(f"Widget {widget.public_key} v{widget.version} deployed successfully")
+                logger.info(f"Widget {widget.public_key} deployed successfully")
             else:
-                logger.error(f"Failed to deploy widget {widget.public_key} v{widget.version}")
+                logger.error(f"Failed to deploy widget {widget.public_key}")
             return success
         except Exception as e:
             logger.error(f"CDN deployment error for {widget.public_key}: {str(e)}")

@@ -15,26 +15,17 @@ class CDNDeploymentService:
         self.r2_service = r2_service
     
     async def deploy_widget(self, widget) -> bool:
-        """Deploy widget to R2 + CDN with embedded configuration"""
         try:
-            # 1. Build base widget with CSS inlining
             base_widget_content = await self._build_widget_content()
-            
-            # 2. Prepare widget config
             config = self._prepare_widget_config(widget)
-            
-            # 3. Inject configuration into widget content
             widget_content_with_config = self._inject_config_into_widget(base_widget_content, config)
             
-            # 4. Upload only the complete widget file to R2 (no separate config file needed)
             upload_result = await self.r2_service.upload_widget_file(
                 widget.public_key, 
                 widget_content_with_config
             )
             
-            # 5. Purge CDN cache for this widget
             cache_paths = [upload_result['widget_key']]
-            
             await self.r2_service.purge_cdn_cache(cache_paths)
             
             logger.info(f"Successfully deployed widget {widget.public_key} with embedded configuration")
@@ -45,16 +36,13 @@ class CDNDeploymentService:
             return False
     
     async def _build_widget_content(self) -> str:
-        """Build widget with inlined CSS and return content"""
         try:
-            # Get the client directory path (assuming API is in api/server/)
-            api_root = Path(__file__).parent.parent.parent.parent.parent  # Go up to repo root
+            api_root = Path(__file__).parent.parent.parent.parent.parent
             client_dir = api_root / 'client'
             
             if not client_dir.exists():
                 raise Exception(f"Client directory not found at {client_dir}")
             
-            # Run the widget build command
             result = subprocess.run(
                 ['npm', 'run', 'build:widget'],
                 cwd=str(client_dir),
@@ -66,7 +54,6 @@ class CDNDeploymentService:
             if result.returncode != 0:
                 raise Exception(f"Widget build failed: {result.stderr}")
             
-            # Read the built widget file
             widget_file = client_dir / 'dist-widget' / 'widget.js'
             if not widget_file.exists():
                 raise Exception(f"Built widget file not found at {widget_file}")
@@ -84,7 +71,6 @@ class CDNDeploymentService:
             raise
     
     def _prepare_widget_config(self, widget) -> Dict[str, Any]:
-        """Prepare widget configuration for embedding in widget file"""
         return {
             'public_key': widget.public_key,
             'widget_type': str(widget.widget_type),
@@ -99,14 +85,10 @@ class CDNDeploymentService:
         }
     
     def _inject_config_into_widget(self, widget_content: str, config: Dict[str, Any]) -> str:
-        """Inject configuration directly into widget JavaScript file"""
         import json
         
-        # Convert config to JSON string with proper escaping
         config_json = json.dumps(config, indent=2)
         
-        # Define the configuration injection marker and replacement
-        config_marker = "// WIDGET_CONFIG_PLACEHOLDER"
         config_injection = f"""// Embedded widget configuration (injected at deployment time)
 window.__REFLECT_WIDGET_CONFIG__ = {config_json};
 
@@ -125,10 +107,8 @@ window.fetch = function(url) {{
   return originalFetch.apply(this, arguments);
 }};"""
         
-        # Try to inject at the beginning of the widget IIFE
         iife_start = widget_content.find(';(function () {')
         if iife_start != -1:
-            # Insert after the IIFE opening
             insertion_point = widget_content.find('{', iife_start) + 1
             widget_with_config = (
                 widget_content[:insertion_point] + 
@@ -136,12 +116,10 @@ window.fetch = function(url) {{
                 widget_content[insertion_point:]
             )
         else:
-            # Fallback: inject at the very beginning
             widget_with_config = config_injection + '\n\n' + widget_content
         
         logger.info(f"Successfully injected configuration into widget for {config['public_key']}")
         return widget_with_config
 
 
-# Singleton instance  
 cdn_deployment_service = CDNDeploymentService()

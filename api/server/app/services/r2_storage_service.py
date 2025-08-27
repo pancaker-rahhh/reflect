@@ -15,7 +15,6 @@ class R2StorageService:
         self._initialize_s3_client()
     
     def _initialize_s3_client(self):
-        """Initialize S3 client for R2 if credentials are available"""
         if not all([settings.R2_ACCOUNT_ID, settings.R2_ACCESS_KEY_ID, settings.R2_SECRET_ACCESS_KEY]):
             logger.warning("R2 credentials not configured, using fallback CDN")
             return
@@ -33,35 +32,30 @@ class R2StorageService:
     
     async def upload_widget_files(self, public_key: str, 
                                 widget_js_content: str, config: Dict[str, Any]) -> Dict[str, str]:
-        """Upload widget files to R2 and return CDN URLs"""
         if not self.s3_client:
             raise Exception("R2 client not initialized")
         
         try:
-            # Define file paths (no versioning)
             widget_key = f"widgets/{public_key}/widget.js"
             config_key = f"widgets/{public_key}/config.json"
             
-            # Upload widget.js
             self.s3_client.put_object(
                 Bucket=settings.R2_BUCKET_NAME,
                 Key=widget_key,
                 Body=widget_js_content.encode('utf-8'),
                 ContentType='application/javascript',
-                CacheControl='public, max-age=3600',  # 1 hour cache (allow updates)
+                CacheControl='public, max-age=3600',
                 Metadata={'public_key': public_key}
             )
             
-            # Upload config.json
             self.s3_client.put_object(
                 Bucket=settings.R2_BUCKET_NAME,
                 Key=config_key,
                 Body=json.dumps(config, indent=2).encode('utf-8'),
                 ContentType='application/json',
-                CacheControl='public, max-age=3600'  # 1 hour cache
+                CacheControl='public, max-age=3600'
             )
             
-            # Return CDN URLs
             widget_url = f"{settings.CDN_BASE_URL}/{widget_key}"
             config_url = f"{settings.CDN_BASE_URL}/{config_key}"
             
@@ -79,25 +73,21 @@ class R2StorageService:
             raise Exception(f"Failed to upload widget to R2: {str(e)}")
     
     async def upload_widget_file(self, public_key: str, widget_js_content: str) -> Dict[str, str]:
-        """Upload single widget file with embedded configuration to R2"""
         if not self.s3_client:
             raise Exception("R2 client not initialized")
         
         try:
-            # Define file path (no separate config file needed)
             widget_key = f"widgets/{public_key}/widget.js"
             
-            # Upload widget.js with embedded configuration
             self.s3_client.put_object(
                 Bucket=settings.R2_BUCKET_NAME,
                 Key=widget_key,
                 Body=widget_js_content.encode('utf-8'),
                 ContentType='application/javascript',
-                CacheControl='public, max-age=3600',  # 1 hour cache (allow updates)
+                CacheControl='public, max-age=3600',
                 Metadata={'public_key': public_key, 'type': 'widget_with_config'}
             )
             
-            # Return CDN URL
             widget_url = f"{settings.CDN_BASE_URL}/{widget_key}"
             
             logger.info(f"Successfully uploaded widget {public_key} with embedded config to R2")
@@ -112,14 +102,12 @@ class R2StorageService:
             raise Exception(f"Failed to upload widget to R2: {str(e)}")
     
     async def delete_widget_files(self, public_key: str) -> bool:
-        """Delete widget file from R2"""
         if not self.s3_client:
             return False
             
         try:
             widget_key = f"widgets/{public_key}/widget.js"
             
-            # Delete widget file (config is now embedded, so no separate config file)
             self.s3_client.delete_object(
                 Bucket=settings.R2_BUCKET_NAME,
                 Key=widget_key
@@ -133,7 +121,6 @@ class R2StorageService:
             return False
     
     async def purge_cdn_cache(self, file_paths: List[str]) -> bool:
-        """Purge Cloudflare CDN cache for specific paths"""
         if not settings.CDN_ZONE_ID or not settings.CDN_API_TOKEN:
             logger.warning("Cloudflare credentials not configured, skipping cache purge")
             return True
@@ -144,7 +131,6 @@ class R2StorageService:
                 'Content-Type': 'application/json'
             }
             
-            # Convert file paths to full URLs
             urls = [f"{settings.CDN_BASE_URL}/{path}" for path in file_paths]
             
             data = {
@@ -171,5 +157,4 @@ class R2StorageService:
             return False
 
 
-# Singleton instance
 r2_storage_service = R2StorageService()

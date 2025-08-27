@@ -47,7 +47,7 @@ class Settings(BaseSettings):
 
     # Logging
     LOG_LEVEL: str = 'INFO'
-    LOG_SQL: bool = False  # Set to True to log SQL queries
+    LOG_SQL: bool = False
 
     # Optional: Monitoring
     AXIOM_TOKEN: Optional[str] = None
@@ -62,7 +62,7 @@ class Settings(BaseSettings):
     R2_SECRET_ACCESS_KEY: Optional[str] = None
     R2_BUCKET_NAME: str = 'reflect-widgets'
     R2_ENDPOINT_URL: Optional[str] = None
-    CDN_BASE_URL: str = 'https://cdn.example.com'  # Configure with your R2 domain
+    CDN_BASE_URL: str = 'https://cdn.example.com'
     CDN_ZONE_ID: Optional[str] = None
     CDN_API_TOKEN: Optional[str] = None
 
@@ -77,9 +77,8 @@ class Settings(BaseSettings):
         origins = [
             origin.strip() for origin in self.CORS_ORIGINS.split(',') if origin.strip()
         ]
-        # In development, allow file:// protocol for widget testing
         if self.ENV == 'development':
-            origins.append('null')  # file:// protocol origin
+            origins.append('null')
         return origins
 
     @property
@@ -96,7 +95,6 @@ class Settings(BaseSettings):
 
     @property
     def r2_endpoint_url(self) -> str:
-        """Generate R2 endpoint URL from account ID"""
         if self.R2_ENDPOINT_URL:
             return self.R2_ENDPOINT_URL
         if self.R2_ACCOUNT_ID:
