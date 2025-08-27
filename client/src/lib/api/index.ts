@@ -26,8 +26,8 @@ export {
   type RoadmapUpdateRequest,
   type RoadmapColumnCreateRequest,
   type RoadmapColumnUpdateRequest,
-  type RoadmapFeatureCreateRequest,
-  type RoadmapFeatureUpdateRequest,
+  type RoadmapActionItemCreateRequest,
+  type RoadmapActionItemUpdateRequest,
   type RoadmapTagCreateRequest,
   type RoadmapTagUpdateRequest,
   type FeatureOrderUpdateRequest,
@@ -96,9 +96,10 @@ export const api = {
   deleteRoadmapColumn: (columnId: string) => roadmapApi.deleteColumn(columnId),
 
   // Feature APIs
-  createRoadmapFeature: (data: any) => roadmapApi.createFeature(data),
-  updateRoadmapFeature: (featureId: string, data: any) => roadmapApi.updateFeature(featureId, data),
-  deleteRoadmapFeature: (featureId: string) => roadmapApi.deleteFeature(featureId),
+  createRoadmapActionItem: (data: any) => roadmapApi.createFeature(data),
+  updateRoadmapActionItem: (featureId: string, data: any) =>
+    roadmapApi.updateFeature(featureId, data),
+  deleteRoadmapActionItem: (featureId: string) => roadmapApi.deleteFeature(featureId),
   updateFeaturesOrder: (updates: any[]) => roadmapApi.updateFeaturesOrder(updates),
   upvoteFeature: (featureId: string) => roadmapApi.upvoteFeature(featureId),
 

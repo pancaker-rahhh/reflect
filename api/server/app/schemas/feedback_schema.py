@@ -123,7 +123,7 @@ class FeedbackResponse(BaseModel):
     resolved_at: Optional[datetime]
     resolved_by_user_id: Optional[UUID]
     resolution_notes: Optional[str]
-    converted_to_roadmap_id: Optional[UUID]
+    converted_to_action_item_id: Optional[UUID]
     conversion_date: Optional[datetime]
     conversion_notes: Optional[str]
     is_actionable: bool
@@ -327,6 +327,7 @@ class UpvoteResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class FeedbackConversionRequest(BaseModel):
     priority: Optional[str] = None

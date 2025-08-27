@@ -6,7 +6,7 @@ import re
 from app.models.roadmap_model import (
     Roadmap,
     RoadmapColumn,
-    RoadmapFeature,
+    RoadmapActionItem,
     RoadmapItemAssignment,
     RoadmapTag,
 )
@@ -16,20 +16,20 @@ from app.repositories.roadmap_repository import (
     roadmap_column_repository,
     RoadmapColumnRepository,
     roadmap_feature_repository,
-    RoadmapFeatureRepository,
+    RoadmapActionItemRepository,
     roadmap_assignment_repository,
     roadmap_tag_repository,
     RoadmapTagRepository,
     roadmap_feature_tag_repository,
-    RoadmapFeatureTagRepository,
+    RoadmapActionItemTagRepository,
 )
 from app.schemas.roadmap_schema import (
     RoadmapUpdate,
     RoadmapColumnCreate,
     RoadmapColumnUpdate,
     RoadmapColumnRead,
-    RoadmapFeatureCreate,
-    RoadmapFeatureUpdate,
+    RoadmapActionItemCreate,
+    RoadmapActionItemUpdate,
     RoadmapAssignmentCreate,
     RoadmapTagCreate,
     RoadmapTagUpdate,
@@ -50,7 +50,7 @@ class BaseRoadmapService:
         user_id: UUID,
         feature_id: UUID,
         required_role: str = 'Admin',
-    ) -> Tuple[Roadmap, RoadmapColumn, RoadmapFeature]:
+    ) -> Tuple[Roadmap, RoadmapColumn, RoadmapActionItem]:
         feature = await roadmap_feature_repository.get(db, id=feature_id)
         if not feature:
             raise HTTPException(
@@ -182,9 +182,9 @@ class RoadmapService(BaseRoadmapService):
         self,
         roadmap_repo: RoadmapRepository = roadmap_repository,
         column_repo: RoadmapColumnRepository = roadmap_column_repository,
-        feature_repo: RoadmapFeatureRepository = roadmap_feature_repository,
+        feature_repo: RoadmapActionItemRepository = roadmap_feature_repository,
         tag_repo: RoadmapTagRepository = roadmap_tag_repository,
-        feature_tag_repo: RoadmapFeatureTagRepository = roadmap_feature_tag_repository,
+        feature_tag_repo: RoadmapActionItemTagRepository = roadmap_feature_tag_repository,
         project_serv: ProjectService = project_service,
     ):
         super().__init__()
@@ -393,11 +393,9 @@ class RoadmapService(BaseRoadmapService):
         return None
 
     async def create_feature(
-        self, db: AsyncSession, user_id: UUID, feature_in: RoadmapFeatureCreate
-    ) -> RoadmapFeature:
-        _, _ = await self._validate_column_access(
-            db, user_id, feature_in.column_id
-        )
+        self, db: AsyncSession, user_id: UUID, feature_in: RoadmapActionItemCreate
+    ) -> RoadmapActionItem:
+        _, _ = await self._validate_column_access(db, user_id, feature_in.column_id)
 
         tag_ids = feature_in.tag_ids or []
         feature_data = feature_in.model_dump(exclude={'tag_ids'})
@@ -429,8 +427,8 @@ class RoadmapService(BaseRoadmapService):
         db: AsyncSession,
         user_id: UUID,
         feature_id: UUID,
-        feature_in: RoadmapFeatureUpdate,
-    ) -> RoadmapFeature:
+        feature_in: RoadmapActionItemUpdate,
+    ) -> RoadmapActionItem:
         _, _, _ = await self._validate_feature_access(db, user_id, feature_id)
 
         tag_ids = feature_in.tag_ids
@@ -512,7 +510,7 @@ class RoadmapService(BaseRoadmapService):
 
     async def upvote_feature(
         self, db: AsyncSession, feature_id: UUID
-    ) -> RoadmapFeature:
+    ) -> RoadmapActionItem:
         feature = await self.feature_repo.get(db, id=feature_id)
         if not feature:
             raise HTTPException(
@@ -683,7 +681,7 @@ class RoadmapService(BaseRoadmapService):
         priority: Optional[str] = None,
         conversion_notes: Optional[str] = None,
         custom_tags: Optional[List[str]] = None,
-    ) -> RoadmapFeature:
+    ) -> RoadmapActionItem:
         return await action_item_service.convert_feedback_to_roadmap_item(
             db, feedback_id, user_id, priority, conversion_notes, custom_tags
         )

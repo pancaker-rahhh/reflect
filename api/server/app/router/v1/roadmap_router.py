@@ -13,9 +13,9 @@ from app.schemas.roadmap_schema import (
     RoadmapColumnCreate,
     RoadmapColumnUpdate,
     RoadmapColumnRead,
-    RoadmapFeatureCreate,
-    RoadmapFeatureUpdate,
-    RoadmapFeatureRead,
+    RoadmapActionItemCreate,
+    RoadmapActionItemUpdate,
+    RoadmapActionItemRead,
     RoadmapTagCreate,
     RoadmapTagUpdate,
     RoadmapTagRead,
@@ -270,11 +270,11 @@ async def delete_roadmap_tag(
 
 @router.post(
     '/features',
-    response_model=RoadmapFeatureRead,
+    response_model=RoadmapActionItemRead,
     status_code=status.HTTP_201_CREATED,
 )
 async def create_roadmap_feature(
-    feature_in: RoadmapFeatureCreate,
+    feature_in: RoadmapActionItemCreate,
     db: AsyncSession = Depends(get_db),
     current_user: TokenData = Depends(get_current_token_data),
     service: RoadmapService = Depends(lambda: roadmap_service),
@@ -319,10 +319,10 @@ async def update_features_order(
         )
 
 
-@router.put('/features/{feature_id}', response_model=RoadmapFeatureRead)
+@router.put('/features/{feature_id}', response_model=RoadmapActionItemRead)
 async def update_roadmap_feature(
     feature_id: UUID,
-    feature_in: RoadmapFeatureUpdate,
+    feature_in: RoadmapActionItemUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: TokenData = Depends(get_current_token_data),
     service: RoadmapService = Depends(lambda: roadmap_service),
@@ -500,7 +500,7 @@ async def get_public_roadmap_tags(
         )
 
 
-@public_router.post('/features/{feature_id}/vote', response_model=RoadmapFeatureRead)
+@public_router.post('/features/{feature_id}/vote', response_model=RoadmapActionItemRead)
 async def upvote_roadmap_feature(
     feature_id: UUID,
     db: AsyncSession = Depends(get_db),

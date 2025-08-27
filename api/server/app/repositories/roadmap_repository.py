@@ -7,10 +7,10 @@ from sqlalchemy.exc import IntegrityError
 from app.models.roadmap_model import (
     Roadmap,
     RoadmapColumn,
-    RoadmapFeature,
+    RoadmapActionItem,
     RoadmapItemAssignment,
     RoadmapTag,
-    RoadmapFeatureTag,
+    RoadmapActionItemTag,
 )
 from app.repositories.base_repository import BaseRepository
 from app.core.logging import get_logger
@@ -59,9 +59,11 @@ class RoadmapTagRepository(BaseRepository[RoadmapTag]):
             stmt = (
                 select(
                     RoadmapTag,
-                    func.count(RoadmapFeatureTag.feature_id).label('feature_count'),
+                    func.count(RoadmapActionItemTag.feature_id).label('feature_count'),
                 )
-                .outerjoin(RoadmapFeatureTag, RoadmapTag.id == RoadmapFeatureTag.tag_id)
+                .outerjoin(
+                    RoadmapActionItemTag, RoadmapTag.id == RoadmapActionItemTag.tag_id
+                )
                 .where(RoadmapTag.roadmap_id == roadmap_id)
                 .group_by(RoadmapTag.id)
                 .order_by(RoadmapTag.name)
@@ -98,9 +100,9 @@ class RoadmapTagRepository(BaseRepository[RoadmapTag]):
 roadmap_tag_repository = RoadmapTagRepository()
 
 
-class RoadmapFeatureTagRepository(BaseRepository[RoadmapFeatureTag]):
+class RoadmapActionItemTagRepository(BaseRepository[RoadmapActionItemTag]):
     def __init__(self):
-        super().__init__(RoadmapFeatureTag)
+        super().__init__(RoadmapActionItemTag)
 
     async def get_tags_for_feature(
         self, db: AsyncSession, feature_id: UUID
@@ -108,8 +110,10 @@ class RoadmapFeatureTagRepository(BaseRepository[RoadmapFeatureTag]):
         try:
             stmt = (
                 select(RoadmapTag)
-                .join(RoadmapFeatureTag, RoadmapFeatureTag.tag_id == RoadmapTag.id)
-                .where(RoadmapFeatureTag.feature_id == feature_id)
+                .join(
+                    RoadmapActionItemTag, RoadmapActionItemTag.tag_id == RoadmapTag.id
+                )
+                .where(RoadmapActionItemTag.feature_id == feature_id)
                 .order_by(RoadmapTag.name)
             )
             result = await db.execute(stmt)
@@ -120,15 +124,16 @@ class RoadmapFeatureTagRepository(BaseRepository[RoadmapFeatureTag]):
 
     async def get_features_for_tag(
         self, db: AsyncSession, tag_id: UUID
-    ) -> List[RoadmapFeature]:
+    ) -> List[RoadmapActionItem]:
         try:
             stmt = (
-                select(RoadmapFeature)
+                select(RoadmapActionItem)
                 .join(
-                    RoadmapFeatureTag, RoadmapFeatureTag.feature_id == RoadmapFeature.id
+                    RoadmapActionItemTag,
+                    RoadmapActionItemTag.feature_id == RoadmapActionItem.id,
                 )
-                .where(RoadmapFeatureTag.tag_id == tag_id)
-                .order_by(RoadmapFeature.order)
+                .where(RoadmapActionItemTag.tag_id == tag_id)
+                .order_by(RoadmapActionItem.order)
             )
             result = await db.execute(stmt)
             return list(result.scalars().all())
@@ -138,13 +143,13 @@ class RoadmapFeatureTagRepository(BaseRepository[RoadmapFeatureTag]):
 
     async def add_tag_to_feature(
         self, db: AsyncSession, feature_id: UUID, tag_id: UUID
-    ) -> RoadmapFeatureTag:
+    ) -> RoadmapActionItemTag:
         try:
             existing = await self.get_by_ids(db, feature_id, tag_id)
             if existing:
                 return existing
 
-            feature_tag = RoadmapFeatureTag(feature_id=feature_id, tag_id=tag_id)
+            feature_tag = RoadmapActionItemTag(feature_id=feature_id, tag_id=tag_id)
             return await self.create(
                 db,
                 **{'feature_id': feature_tag.feature_id, 'tag_id': feature_tag.tag_id},
@@ -175,12 +180,12 @@ class RoadmapFeatureTagRepository(BaseRepository[RoadmapFeatureTag]):
 
     async def get_by_ids(
         self, db: AsyncSession, feature_id: UUID, tag_id: UUID
-    ) -> Optional[RoadmapFeatureTag]:
+    ) -> Optional[RoadmapActionItemTag]:
         try:
-            stmt = select(RoadmapFeatureTag).where(
+            stmt = select(RoadmapActionItemTag).where(
                 and_(
-                    RoadmapFeatureTag.feature_id == feature_id,
-                    RoadmapFeatureTag.tag_id == tag_id,
+                    RoadmapActionItemTag.feature_id == feature_id,
+                    RoadmapActionItemTag.tag_id == tag_id,
                 )
             )
             result = await db.execute(stmt)
@@ -191,17 +196,17 @@ class RoadmapFeatureTagRepository(BaseRepository[RoadmapFeatureTag]):
 
     async def bulk_add_tags_to_feature(
         self, db: AsyncSession, feature_id: UUID, tag_ids: List[UUID]
-    ) -> List[RoadmapFeatureTag]:
+    ) -> List[RoadmapActionItemTag]:
         try:
-            existing_stmt = select(RoadmapFeatureTag.tag_id).where(
-                RoadmapFeatureTag.feature_id == feature_id
+            existing_stmt = select(RoadmapActionItemTag.tag_id).where(
+                RoadmapActionItemTag.feature_id == feature_id
             )
             existing_result = await db.execute(existing_stmt)
             existing_tag_ids = {row[0] for row in existing_result.all()}
 
             new_tag_ids = [tid for tid in tag_ids if tid not in existing_tag_ids]
             new_relationships = [
-                RoadmapFeatureTag(feature_id=feature_id, tag_id=tag_id)
+                RoadmapActionItemTag(feature_id=feature_id, tag_id=tag_id)
                 for tag_id in new_tag_ids
             ]
 
@@ -223,23 +228,23 @@ class RoadmapFeatureTagRepository(BaseRepository[RoadmapFeatureTag]):
             raise
 
 
-roadmap_feature_tag_repository = RoadmapFeatureTagRepository()
+roadmap_feature_tag_repository = RoadmapActionItemTagRepository()
 
 
-class RoadmapFeatureRepository(BaseRepository[RoadmapFeature]):
+class RoadmapActionItemRepository(BaseRepository[RoadmapActionItem]):
     def __init__(self):
-        super().__init__(RoadmapFeature)
+        super().__init__(RoadmapActionItem)
 
     async def get_with_tags(
         self, db: AsyncSession, id: UUID
-    ) -> Optional[RoadmapFeature]:
+    ) -> Optional[RoadmapActionItem]:
         try:
             stmt = (
-                select(RoadmapFeature)
-                .where(RoadmapFeature.id == id)
+                select(RoadmapActionItem)
+                .where(RoadmapActionItem.id == id)
                 .options(
-                    selectinload(RoadmapFeature.feature_tags).selectinload(
-                        RoadmapFeatureTag.tag
+                    selectinload(RoadmapActionItem.action_item_tags).selectinload(
+                        RoadmapActionItemTag.tag
                     )
                 )
             )
@@ -251,12 +256,12 @@ class RoadmapFeatureRepository(BaseRepository[RoadmapFeature]):
 
     async def get_by_column(
         self, db: AsyncSession, column_id: UUID
-    ) -> List[RoadmapFeature]:
+    ) -> List[RoadmapActionItem]:
         try:
             stmt = (
-                select(RoadmapFeature)
-                .where(RoadmapFeature.column_id == column_id)
-                .order_by(RoadmapFeature.order)
+                select(RoadmapActionItem)
+                .where(RoadmapActionItem.column_id == column_id)
+                .order_by(RoadmapActionItem.order)
             )
             result = await db.execute(stmt)
             return list(result.scalars().all())
@@ -266,13 +271,13 @@ class RoadmapFeatureRepository(BaseRepository[RoadmapFeature]):
 
     async def get_by_roadmap(
         self, db: AsyncSession, roadmap_id: UUID
-    ) -> List[RoadmapFeature]:
+    ) -> List[RoadmapActionItem]:
         try:
             stmt = (
-                select(RoadmapFeature)
-                .join(RoadmapColumn, RoadmapFeature.column_id == RoadmapColumn.id)
+                select(RoadmapActionItem)
+                .join(RoadmapColumn, RoadmapActionItem.column_id == RoadmapColumn.id)
                 .where(RoadmapColumn.roadmap_id == roadmap_id)
-                .order_by(RoadmapColumn.order, RoadmapFeature.order)
+                .order_by(RoadmapColumn.order, RoadmapActionItem.order)
             )
             result = await db.execute(stmt)
             return list(result.scalars().all())
@@ -286,7 +291,7 @@ class RoadmapFeatureRepository(BaseRepository[RoadmapFeature]):
         feature_id: UUID,
         new_order: int,
         new_column_id: Optional[UUID] = None,
-    ) -> RoadmapFeature:
+    ) -> RoadmapActionItem:
         try:
             update_data = {'order': new_order}
             if new_column_id:
@@ -299,7 +304,7 @@ class RoadmapFeatureRepository(BaseRepository[RoadmapFeature]):
 
     async def bulk_update_order(
         self, db: AsyncSession, updates: List[Dict[str, Any]]
-    ) -> List[RoadmapFeature]:
+    ) -> List[RoadmapActionItem]:
         try:
             updated_features = []
             for update in updates:
@@ -324,8 +329,8 @@ class RoadmapFeatureRepository(BaseRepository[RoadmapFeature]):
 
     async def get_next_order(self, db: AsyncSession, column_id: UUID) -> int:
         try:
-            stmt = select(func.coalesce(func.max(RoadmapFeature.order), -1)).where(
-                RoadmapFeature.column_id == column_id
+            stmt = select(func.coalesce(func.max(RoadmapActionItem.order), -1)).where(
+                RoadmapActionItem.column_id == column_id
             )
             result = await db.execute(stmt)
             max_order = result.scalar_one()
@@ -335,7 +340,7 @@ class RoadmapFeatureRepository(BaseRepository[RoadmapFeature]):
             raise
 
 
-roadmap_feature_repository = RoadmapFeatureRepository()
+roadmap_feature_repository = RoadmapActionItemRepository()
 
 
 class RoadmapColumnRepository(BaseRepository[RoadmapColumn]):
@@ -349,7 +354,7 @@ class RoadmapColumnRepository(BaseRepository[RoadmapColumn]):
             stmt = (
                 select(RoadmapColumn)
                 .where(RoadmapColumn.id == id)
-                .options(selectinload(RoadmapColumn.features))
+                .options(selectinload(RoadmapColumn.action_items))
             )
             result = await db.execute(stmt)
             return result.scalar_one_or_none()
@@ -365,9 +370,9 @@ class RoadmapColumnRepository(BaseRepository[RoadmapColumn]):
                 select(RoadmapColumn)
                 .where(RoadmapColumn.id == id)
                 .options(
-                    selectinload(RoadmapColumn.features)
-                    .selectinload(RoadmapFeature.feature_tags)
-                    .selectinload(RoadmapFeatureTag.tag)
+                    selectinload(RoadmapColumn.action_items)
+                    .selectinload(RoadmapActionItem.action_item_tags)
+                    .selectinload(RoadmapActionItemTag.tag)
                 )
             )
             result = await db.execute(stmt)
@@ -455,9 +460,9 @@ class RoadmapRepository(BaseRepository[Roadmap]):
                 .where(Roadmap.project_id == project_id)
                 .options(
                     selectinload(Roadmap.columns)
-                    .selectinload(RoadmapColumn.features)
-                    .selectinload(RoadmapFeature.feature_tags)
-                    .selectinload(RoadmapFeatureTag.tag)
+                    .selectinload(RoadmapColumn.action_items)
+                    .selectinload(RoadmapActionItem.action_item_tags)
+                    .selectinload(RoadmapActionItemTag.tag)
                 )
                 .options(selectinload(Roadmap.tags))
             )
@@ -480,9 +485,9 @@ class RoadmapRepository(BaseRepository[Roadmap]):
                 )
                 .options(
                     selectinload(Roadmap.columns)
-                    .selectinload(RoadmapColumn.features)
-                    .selectinload(RoadmapFeature.feature_tags)
-                    .selectinload(RoadmapFeatureTag.tag)
+                    .selectinload(RoadmapColumn.action_items)
+                    .selectinload(RoadmapActionItem.action_item_tags)
+                    .selectinload(RoadmapActionItemTag.tag)
                 )
                 .options(selectinload(Roadmap.tags))
             )
@@ -505,9 +510,9 @@ class RoadmapRepository(BaseRepository[Roadmap]):
                 )
                 .options(
                     selectinload(Roadmap.columns)
-                    .selectinload(RoadmapColumn.features)
-                    .selectinload(RoadmapFeature.feature_tags)
-                    .selectinload(RoadmapFeatureTag.tag)
+                    .selectinload(RoadmapColumn.action_items)
+                    .selectinload(RoadmapActionItem.action_item_tags)
+                    .selectinload(RoadmapActionItemTag.tag)
                 )
                 .options(selectinload(Roadmap.tags))
             )
@@ -528,9 +533,9 @@ class RoadmapRepository(BaseRepository[Roadmap]):
                 .where(Roadmap.id == roadmap_id)
                 .options(
                     selectinload(Roadmap.columns)
-                    .selectinload(RoadmapColumn.features)
-                    .selectinload(RoadmapFeature.feature_tags)
-                    .selectinload(RoadmapFeatureTag.tag)
+                    .selectinload(RoadmapColumn.action_items)
+                    .selectinload(RoadmapActionItem.action_item_tags)
+                    .selectinload(RoadmapActionItemTag.tag)
                 )
                 .options(selectinload(Roadmap.tags))
             )
@@ -549,7 +554,9 @@ class RoadmapRepository(BaseRepository[Roadmap]):
                 .join(Roadmap.project)
                 .where(Roadmap.project.has(organization_id=organization_id))
                 .options(
-                    selectinload(Roadmap.columns).selectinload(RoadmapColumn.features)
+                    selectinload(Roadmap.columns).selectinload(
+                        RoadmapColumn.action_items
+                    )
                 )
                 .order_by(Roadmap.created_at.desc())
             )
@@ -594,9 +601,12 @@ class RoadmapRepository(BaseRepository[Roadmap]):
         try:
             feature_stats_stmt = (
                 select(
-                    RoadmapColumn.status, func.count(RoadmapFeature.id).label('count')
+                    RoadmapColumn.status,
+                    func.count(RoadmapActionItem.id).label('count'),
                 )
-                .outerjoin(RoadmapFeature, RoadmapColumn.id == RoadmapFeature.column_id)
+                .outerjoin(
+                    RoadmapActionItem, RoadmapColumn.id == RoadmapActionItem.column_id
+                )
                 .where(RoadmapColumn.roadmap_id == roadmap_id)
                 .group_by(RoadmapColumn.status)
             )
@@ -605,8 +615,8 @@ class RoadmapRepository(BaseRepository[Roadmap]):
             feature_stats = {row[0]: row[1] for row in feature_stats_result.all()}
 
             total_votes_stmt = (
-                select(func.sum(RoadmapFeature.vote_count))
-                .join(RoadmapColumn, RoadmapFeature.column_id == RoadmapColumn.id)
+                select(func.sum(RoadmapActionItem.vote_count))
+                .join(RoadmapColumn, RoadmapActionItem.column_id == RoadmapColumn.id)
                 .where(RoadmapColumn.roadmap_id == roadmap_id)
             )
 
@@ -614,10 +624,10 @@ class RoadmapRepository(BaseRepository[Roadmap]):
             total_votes = total_votes_result.scalar_one() or 0
 
             most_voted_stmt = (
-                select(RoadmapFeature)
-                .join(RoadmapColumn, RoadmapFeature.column_id == RoadmapColumn.id)
+                select(RoadmapActionItem)
+                .join(RoadmapColumn, RoadmapActionItem.column_id == RoadmapColumn.id)
                 .where(RoadmapColumn.roadmap_id == roadmap_id)
-                .order_by(RoadmapFeature.vote_count.desc())
+                .order_by(RoadmapActionItem.vote_count.desc())
                 .limit(1)
             )
 
@@ -687,7 +697,7 @@ class RoadmapAssignmentRepository(BaseRepository[RoadmapItemAssignment]):
                 .where(RoadmapItemAssignment.user_id == user_id)
                 .options(
                     selectinload(RoadmapItemAssignment.roadmap_feature).selectinload(
-                        RoadmapFeature.column
+                        RoadmapActionItem.column
                     )
                 )
                 .order_by(RoadmapItemAssignment.created_at.desc())

@@ -179,7 +179,7 @@ export interface RoadmapTag {
   updated_at: Date | string
 }
 
-export interface RoadmapFeatureTag {
+export interface RoadmapActionItemTag {
   id: string
   feature_id: string
   tag_id: string
@@ -188,7 +188,7 @@ export interface RoadmapFeatureTag {
   updated_at: Date | string
 }
 
-export interface RoadmapFeature {
+export interface RoadmapActionItem {
   id: string
   column_id: string
   feedback_id?: string
@@ -199,7 +199,7 @@ export interface RoadmapFeature {
   submitter_name?: string
   submitter_email?: string
   tags: RoadmapTag[]
-  feature_tags?: RoadmapFeatureTag[]
+  feature_tags?: RoadmapActionItemTag[]
   created_at: Date | string
   updated_at: Date | string
 }
@@ -211,7 +211,7 @@ export interface RoadmapColumn {
   status: 'new' | 'in-progress' | 'planned' | 'under-review'
   color: string
   order: number
-  features: RoadmapFeature[]
+  features: RoadmapActionItem[]
 }
 
 export interface Roadmap {
@@ -256,7 +256,7 @@ export interface RecentActivity {
   summary: string
   submittedBy: string
   timestamp: Date
-  converted_to_roadmap_id?: string | null
+  converted_to_action_item_id?: string | null
   is_actionable?: boolean
 }
 

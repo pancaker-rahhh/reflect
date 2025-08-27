@@ -90,7 +90,7 @@ export function RecentActivityTable({ activities, projectId }: RecentActivityTab
           </thead>
           <tbody>
             {activities.map((activity) => {
-              const isConverted = activity.converted_to_roadmap_id
+              const isConverted = activity.converted_to_action_item_id
               const isActionable = activity.is_actionable !== false
 
               return (

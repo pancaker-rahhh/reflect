@@ -8,7 +8,7 @@ import { SkeletonLoader } from '@/components/ui/SkeletonLoader'
 import { MapPin, Calendar, Tag, ExternalLink, ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Link } from 'react-router-dom'
-import type { RoadmapFeature } from '@/types'
+import type { RoadmapActionItem } from '@/types'
 
 export function PublicRoadmap() {
   const { publicSlug, subdomain } = useParams<{ publicSlug?: string; subdomain?: string }>()

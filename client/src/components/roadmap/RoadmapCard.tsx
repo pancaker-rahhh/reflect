@@ -18,10 +18,10 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/use-toast'
-import type { RoadmapFeature, RoadmapColumn } from '@/types'
+import type { RoadmapActionItem, RoadmapColumn } from '@/types'
 
 interface RoadmapCardProps {
-  feature: RoadmapFeature
+  feature: RoadmapActionItem
   columnId: string
   roadmapId: string
   columns: RoadmapColumn[]
@@ -63,7 +63,7 @@ export function RoadmapCard({
   })
 
   const deleteFeatureMutation = useMutation({
-    mutationFn: (featureId: string) => api.deleteRoadmapFeature(featureId),
+    mutationFn: (featureId: string) => api.deleteRoadmapActionItem(featureId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmap'] })
       toast({
