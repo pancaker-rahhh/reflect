@@ -31,16 +31,16 @@ class R2StorageService:
         except Exception as e:
             logger.error(f"Failed to initialize R2 client: {str(e)}")
     
-    async def upload_widget_files(self, public_key: str, version: int, 
+    async def upload_widget_files(self, public_key: str, 
                                 widget_js_content: str, config: Dict[str, Any]) -> Dict[str, str]:
         """Upload widget files to R2 and return CDN URLs"""
         if not self.s3_client:
             raise Exception("R2 client not initialized")
         
         try:
-            # Define file paths
-            widget_key = f"widgets/{public_key}/v{version}/widget.js"
-            config_key = f"widgets/{public_key}/v{version}/config.json"
+            # Define file paths (no versioning)
+            widget_key = f"widgets/{public_key}/widget.js"
+            config_key = f"widgets/{public_key}/config.json"
             
             # Upload widget.js
             self.s3_client.put_object(
@@ -48,8 +48,8 @@ class R2StorageService:
                 Key=widget_key,
                 Body=widget_js_content.encode('utf-8'),
                 ContentType='application/javascript',
-                CacheControl='public, max-age=31536000, immutable',  # 1 year cache
-                Metadata={'version': str(version), 'public_key': public_key}
+                CacheControl='public, max-age=3600',  # 1 hour cache (allow updates)
+                Metadata={'public_key': public_key}
             )
             
             # Upload config.json
@@ -65,7 +65,7 @@ class R2StorageService:
             widget_url = f"{settings.CDN_BASE_URL}/{widget_key}"
             config_url = f"{settings.CDN_BASE_URL}/{config_key}"
             
-            logger.info(f"Successfully uploaded widget {public_key} v{version} to R2")
+            logger.info(f"Successfully uploaded widget {public_key} to R2")
             
             return {
                 'widget_url': widget_url,
@@ -78,14 +78,14 @@ class R2StorageService:
             logger.error(f"R2 upload failed for {public_key}: {str(e)}")
             raise Exception(f"Failed to upload widget to R2: {str(e)}")
     
-    async def delete_widget_files(self, public_key: str, version: int) -> bool:
+    async def delete_widget_files(self, public_key: str) -> bool:
         """Delete widget files from R2"""
         if not self.s3_client:
             return False
             
         try:
-            widget_key = f"widgets/{public_key}/v{version}/widget.js"
-            config_key = f"widgets/{public_key}/v{version}/config.json"
+            widget_key = f"widgets/{public_key}/widget.js"
+            config_key = f"widgets/{public_key}/config.json"
             
             # Delete both files
             self.s3_client.delete_objects(
@@ -98,7 +98,7 @@ class R2StorageService:
                 }
             )
             
-            logger.info(f"Deleted widget {public_key} v{version} from R2")
+            logger.info(f"Deleted widget {public_key} from R2")
             return True
             
         except ClientError as e:

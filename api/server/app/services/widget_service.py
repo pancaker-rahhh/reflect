@@ -30,9 +30,9 @@ class WidgetService:
         self.repository = repository
         self.project_service = project_service
 
-    def _generate_embed_code(self, public_key: str, version: int = 1) -> str:
-        # Use the versioned CDN URL for the specific widget
-        widget_cdn_url = self._get_cdn_url(public_key, version)
+    def _generate_embed_code(self, public_key: str) -> str:
+        # Use static CDN URL that never changes
+        widget_cdn_url = self._get_cdn_url(public_key)
         
         embed_code = (
             f'<script>\n'
@@ -69,18 +69,16 @@ class WidgetService:
 
         temp_widget = Widget(**widget_data)
         public_key = temp_widget.public_key
-        version = 1
         
         widget_data['public_key'] = public_key
-        widget_data['version'] = version
-        widget_data['embed_code'] = self._generate_embed_code(public_key, version)
+        widget_data['embed_code'] = self._generate_embed_code(public_key)
         widget_data['status'] = WidgetStatus.ACTIVE
         widget_data['is_active'] = True
-        widget_data['cdn_url'] = self._get_cdn_url(public_key, version)
+        widget_data['cdn_url'] = self._get_cdn_url(public_key)
 
         widget = await self.repository.create(db, **widget_data)
         
-        # Deploy widget to CDN after creation
+        # Deploy widget to R2 + CDN after creation
         await self._deploy_to_cdn(widget)
         
         return widget
@@ -91,16 +89,17 @@ class WidgetService:
         widget = await self.get_widget_and_check_access(db, user_id, widget_id)
         update_data = widget_in.model_dump(exclude_unset=True)
         
-        # Increment version for configuration changes
-        if any(key in update_data for key in ['configuration', 'theme_configuration', 'widget_type', 'position']):
-            new_version = (widget.version or 1) + 1
-            update_data['version'] = new_version
-            
-            # Update CDN URL and embed code for new version
-            update_data['cdn_url'] = self._get_cdn_url(widget.public_key, new_version)
-            update_data['embed_code'] = self._generate_embed_code(widget.public_key, new_version)
+        # Check if configuration changes require redeployment
+        configuration_changed = any(key in update_data for key in ['configuration', 'theme_configuration', 'widget_type', 'position'])
         
-        return await self.repository.update(db, id=widget_id, **update_data)
+        updated_widget = await self.repository.update(db, id=widget_id, **update_data)
+        
+        # Deploy to R2 + CDN if configuration changed (updates the same file)
+        if configuration_changed:
+            await self._deploy_to_cdn(updated_widget)
+            logger.info(f"Widget {updated_widget.public_key} updated and redeployed to R2 + CDN")
+        
+        return updated_widget
 
     async def delete_widget(
         self, db: AsyncSession, user_id: UUID, widget_id: UUID
@@ -163,9 +162,9 @@ class WidgetService:
         return WidgetReadPublic.from_widget(widget)
 
 
-    def _get_cdn_url(self, public_key: str, version: int) -> str:
+    def _get_cdn_url(self, public_key: str) -> str:
         """Generate CDN URL for widget"""
-        return f'{settings.CDN_BASE_URL}/widgets/{public_key}/v{version}/widget.js'
+        return f'{settings.CDN_BASE_URL}/widgets/{public_key}/widget.js'
     
     async def _deploy_to_cdn(self, widget) -> bool:
         """Deploy widget to Cloudflare R2 + CDN"""

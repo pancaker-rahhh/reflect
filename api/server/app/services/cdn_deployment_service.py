@@ -26,7 +26,6 @@ class CDNDeploymentService:
             # 3. Upload to R2
             upload_result = await self.r2_service.upload_widget_files(
                 widget.public_key, 
-                widget.version, 
                 widget_content, 
                 config
             )
@@ -34,13 +33,12 @@ class CDNDeploymentService:
             # 4. Purge CDN cache for this widget
             cache_paths = [
                 upload_result['widget_key'],
-                upload_result['config_key'],
-                f"widgets/{widget.public_key}/config.json"  # Also purge latest config
+                upload_result['config_key']
             ]
             
             await self.r2_service.purge_cdn_cache(cache_paths)
             
-            logger.info(f"Successfully deployed widget {widget.public_key} v{widget.version}")
+            logger.info(f"Successfully deployed widget {widget.public_key}")
             return True
             
         except Exception as e:
@@ -90,7 +88,6 @@ class CDNDeploymentService:
         """Prepare widget configuration for CDN storage"""
         return {
             'public_key': widget.public_key,
-            'version': widget.version,
             'widget_type': str(widget.widget_type),
             'position': str(widget.position),
             'configuration': widget.configuration or {},
