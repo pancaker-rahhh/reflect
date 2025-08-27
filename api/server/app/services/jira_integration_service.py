@@ -141,6 +141,83 @@ class JiraIntegrationService:
             logger.error(f'Failed to sync action item to JIRA: {str(e)}')
             return {'status': 'error', 'message': str(e)}
 
+    async def sync_all_action_items(
+        self, db: AsyncSession, integration: Integration
+    ) -> Dict[str, Any]:
+        try:
+            from app.repositories.roadmap_repository import (
+                roadmap_action_item_integration_repository,
+            )
+
+            existing_integrations = (
+                await roadmap_action_item_integration_repository.get_by_integration(
+                    db, integration.id
+                )
+            )
+
+            sync_results = []
+            errors = []
+            total_synced = 0
+
+            for integration_record in existing_integrations:
+                try:
+                    result = await self.sync_action_item_to_jira(
+                        db, integration, integration_record.action_item_id, True
+                    )
+
+                    if result.get('status') == 'success':
+                        sync_results.append(
+                            {
+                                'action_item_id': str(
+                                    integration_record.action_item_id
+                                ),
+                                'issue_key': result.get('external_id'),
+                                'status': 'synced',
+                            }
+                        )
+                        total_synced += 1
+                    else:
+                        sync_results.append(
+                            {
+                                'action_item_id': str(
+                                    integration_record.action_item_id
+                                ),
+                                'status': 'failed',
+                                'error': result.get('message'),
+                            }
+                        )
+                        errors.append(
+                            f"Action item {integration_record.action_item_id}: {result.get('message')}"
+                        )
+
+                except Exception as e:
+                    sync_results.append(
+                        {
+                            'action_item_id': str(integration_record.action_item_id),
+                            'status': 'failed',
+                            'error': str(e),
+                        }
+                    )
+                    errors.append(
+                        f'Action item {integration_record.action_item_id}: {str(e)}'
+                    )
+
+            return {
+                'status': 'success',
+                'message': f'Sync completed. {total_synced} synced, {len(errors)} failed.',
+                'sync_results': sync_results,
+                'total_synced': total_synced,
+                'errors': errors,
+            }
+
+        except Exception as e:
+            logger.error(f'Failed to sync all action items: {str(e)}')
+            return {
+                'status': 'error',
+                'message': f'Sync failed: {str(e)}',
+                'details': {'exception': str(e)},
+            }
+
     def get_oauth_authorization_url(
         self,
         base_url: str,
