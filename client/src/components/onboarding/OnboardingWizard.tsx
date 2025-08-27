@@ -10,17 +10,20 @@ import { TeamSetupStep } from './steps/TeamSetupStep';
 import { CompletionStepEnhanced } from './steps/CompletionStepEnhanced';
 import { ProgressBar } from './shared/ProgressBar';
 import { StepNavigation } from './shared/StepNavigation';
+import { isFeatureEnabled } from '../../lib/featureFlags';
 import '../../styles/onboarding.css';
 
 export const OnboardingWizard: React.FC = () => {
   const { currentStep, userType, isLoading, error } = useOnboarding();
+  const skipUserTypeSelection = isFeatureEnabled('SKIP_USER_TYPE_SELECTION');
 
   const renderStep = () => {
     switch (currentStep) {
       case 'welcome':
         return <WelcomeStep />;
       case 'user-type':
-        return <UserTypeStep />;
+        // Skip user type step if feature flag is enabled
+        return skipUserTypeSelection ? null : <UserTypeStep />;
       case 'profile':
         return <ProfileStep />;
       case 'organization':

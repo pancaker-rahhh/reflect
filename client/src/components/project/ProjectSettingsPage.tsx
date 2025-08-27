@@ -30,6 +30,8 @@ import { DeleteProjectModal } from './DeleteProjectModal';
 import { DeleteMemberModal } from './DeleteMemberModal';
 import { CreateProjectModal } from './CreateProjectModal';
 import { ProjectTeamSection } from './ProjectTeamSection';
+import { ComingSoon } from '../shared/ComingSoon';
+import { isFeatureEnabled } from '../../lib/featureFlags';
 import type { Project } from '@/types';
 
 interface ProjectSettingsPageProps {
@@ -429,38 +431,50 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
     </div>
   );
 
-  const renderTeamSettings = () => (
-    <ProjectTeamSection
-      members={allTeamMembers}
-      currentUserId={currentUser?.id}
-      onAddMember={() => setShowMemberModal(true)}
-      onRemoveMember={handleRemoveMember}
-      onRoleChange={async (member, newRole) => {
-        try {
-          // Prevent role changes for organization owners
-          if ((member as any).is_organization_owner) {
-            setMessage({ type: 'error', text: 'Cannot change role of organization owner' });
-            setTimeout(() => setMessage(null), 3000);
-            return;
-          }
-          
-          const projectIdToUse = currentProject?.id || projectId;
-          if (!projectIdToUse) return;
+  const renderTeamSettings = () => {
+    if (!isFeatureEnabled('ENABLE_TEAM_FEATURES')) {
+      return (
+        <ComingSoon 
+          title="Team Management"
+          description="Team collaboration features are coming soon. You'll be able to invite team members and manage their roles."
+          icon={<Users className="w-8 h-8 text-gray-400" />}
+        />
+      );
+    }
 
-          await projectApi.updateMember(projectIdToUse, member.user_id, { role: newRole });
-          setMessage({ type: 'success', text: 'Member role updated successfully' });
-          
-          // Refresh project members
-          await loadProjectMembers();
-          setTimeout(() => setMessage(null), 3000);
-        } catch (error) {
-          console.error('Failed to update member role:', error);
-          setMessage({ type: 'error', text: 'Failed to update member role' });
-          setTimeout(() => setMessage(null), 3000);
-        }
-      }}
-    />
-  );
+    return (
+      <ProjectTeamSection
+        members={allTeamMembers}
+        currentUserId={currentUser?.id}
+        onAddMember={() => setShowMemberModal(true)}
+        onRemoveMember={handleRemoveMember}
+        onRoleChange={async (member, newRole) => {
+          try {
+            // Prevent role changes for organization owners
+            if ((member as any).is_organization_owner) {
+              setMessage({ type: 'error', text: 'Cannot change role of organization owner' });
+              setTimeout(() => setMessage(null), 3000);
+              return;
+            }
+            
+            const projectIdToUse = currentProject?.id || projectId;
+            if (!projectIdToUse) return;
+
+            await projectApi.updateMember(projectIdToUse, member.user_id, { role: newRole });
+            setMessage({ type: 'success', text: 'Member role updated successfully' });
+            
+            // Refresh project members
+            await loadProjectMembers();
+            setTimeout(() => setMessage(null), 3000);
+          } catch (error) {
+            console.error('Failed to update member role:', error);
+            setMessage({ type: 'error', text: 'Failed to update member role' });
+            setTimeout(() => setMessage(null), 3000);
+          }
+        }}
+      />
+    );
+  };
 
   const renderApiKeysSettings = () => (
     <div className="p-6">

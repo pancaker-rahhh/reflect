@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
 import { useOnboardingKeyboard } from '../../../hooks/useOnboardingKeyboard';
 import { onboardingDataService } from '../../../services/onboardingDataService';
+import { isFeatureEnabled } from '../../../lib/featureFlags';
 import { 
   CheckCircle, 
   ArrowRight, 
@@ -44,6 +45,7 @@ export const CompletionStepEnhanced: React.FC = () => {
     goToStep
   } = useOnboarding();
   
+  const skipUserTypeSelection = isFeatureEnabled('SKIP_USER_TYPE_SELECTION');
   const [isReviewing, setIsReviewing] = useState(true);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     profile: {},
@@ -97,7 +99,13 @@ export const CompletionStepEnhanced: React.FC = () => {
     await completeOnboarding();
   };
 
-  const sections = [
+  const sections: Array<{
+    id: string;
+    title: string;
+    icon: React.ComponentType<any>;
+    step: 'profile' | 'organization' | 'project' | 'team-setup';
+    fields: Array<{ label: string; value: string | undefined }>;
+  }> = [
     {
       id: 'profile',
       title: 'Your Profile',
@@ -196,13 +204,15 @@ export const CompletionStepEnhanced: React.FC = () => {
                     </div>
                   </div>
                   
-                  <button
-                    onClick={() => handleEdit(section.step)}
-                    className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors group"
-                    title="Edit this section"
-                  >
-                    <Edit2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                  </button>
+                  {!skipUserTypeSelection && (
+                    <button
+                      onClick={() => handleEdit(section.step)}
+                      className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors group"
+                      title="Edit this section"
+                    >
+                      <Edit2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -215,8 +225,11 @@ export const CompletionStepEnhanced: React.FC = () => {
             <div>
               <h4 className="font-semibold text-gray-900 mb-1">Everything look good?</h4>
               <p className="text-sm text-gray-600">
-                You can always change these settings later from your dashboard.
-                Click the edit buttons above to make changes now, or continue to finish setup.
+                {skipUserTypeSelection ? (
+                  'You can always change these information from your settings page later.'
+                ) : (
+                  'You can always change these settings later from your dashboard. Click the edit buttons above to make changes now, or continue to finish setup.'
+                )}
               </p>
             </div>
           </div>
