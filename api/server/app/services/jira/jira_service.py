@@ -11,7 +11,7 @@ from app.models.integration_model import Integration, IntegrationType
 logger = get_logger(__name__)
 
 
-class JiraIntegrationService:
+class JiraService:
     def __init__(self):
         self.auth_service = jira_auth_service
         self.project_service = jira_project_service
@@ -181,4 +181,4 @@ class JiraIntegrationService:
         await self.auth_service.close()
 
 
-jira_integration_service = JiraIntegrationService()
+jira_service = JiraService()

@@ -11,6 +11,7 @@ from app.models.roadmap_model import (
     RoadmapItemAssignment,
     RoadmapTag,
     RoadmapActionItemTag,
+    RoadmapActionItemIntegration,
 )
 from app.repositories.base_repository import BaseRepository
 from app.core.logging import get_logger
@@ -731,3 +732,87 @@ class RoadmapAssignmentRepository(BaseRepository[RoadmapItemAssignment]):
 
 
 roadmap_assignment_repository = RoadmapAssignmentRepository()
+
+
+class RoadmapActionItemIntegrationRepository(
+    BaseRepository[RoadmapActionItemIntegration]
+):
+    def __init__(self):
+        super().__init__(RoadmapActionItemIntegration)
+
+    async def get_by_action_item(
+        self, db: AsyncSession, action_item_id: UUID
+    ) -> List[RoadmapActionItemIntegration]:
+        try:
+            stmt = (
+                select(RoadmapActionItemIntegration)
+                .where(RoadmapActionItemIntegration.action_item_id == action_item_id)
+                .options(selectinload(RoadmapActionItemIntegration.integration))
+            )
+            result = await db.execute(stmt)
+            return list(result.scalars().all())
+        except Exception as e:
+            logger.error(
+                f'Error fetching integrations for action item {action_item_id}: {str(e)}'
+            )
+            raise
+
+    async def get_by_integration(
+        self, db: AsyncSession, integration_id: UUID
+    ) -> List[RoadmapActionItemIntegration]:
+        try:
+            stmt = (
+                select(RoadmapActionItemIntegration)
+                .where(RoadmapActionItemIntegration.integration_id == integration_id)
+                .options(selectinload(RoadmapActionItemIntegration.action_item))
+            )
+            result = await db.execute(stmt)
+            return list(result.scalars().all())
+        except Exception as e:
+            logger.error(
+                f'Error fetching action items for integration {integration_id}: {str(e)}'
+            )
+            raise
+
+    async def get_by_external_id(
+        self, db: AsyncSession, integration_id: UUID, external_id: str
+    ) -> Optional[RoadmapActionItemIntegration]:
+        try:
+            stmt = select(RoadmapActionItemIntegration).where(
+                and_(
+                    RoadmapActionItemIntegration.integration_id == integration_id,
+                    RoadmapActionItemIntegration.external_id == external_id,
+                )
+            )
+            result = await db.execute(stmt)
+            return result.scalar_one_or_none()
+        except Exception as e:
+            logger.error(
+                f'Error fetching integration by external_id {external_id}: {str(e)}'
+            )
+            raise
+
+    async def get_active_integrations(
+        self, db: AsyncSession, action_item_id: UUID
+    ) -> List[RoadmapActionItemIntegration]:
+        try:
+            stmt = (
+                select(RoadmapActionItemIntegration)
+                .where(
+                    and_(
+                        RoadmapActionItemIntegration.action_item_id == action_item_id,
+                        RoadmapActionItemIntegration.sync_status == 'synced',
+                    )
+                )
+                .options(selectinload(RoadmapActionItemIntegration.integration))
+            )
+            result = await db.execute(stmt)
+            return list(result.scalars().all())
+        except Exception as e:
+            logger.error(
+                f'Error fetching active integrations for action item {action_item_id}: {str(e)}'
+            )
+            raise
+
+
+roadmap_action_item_integration_repository = RoadmapActionItemIntegrationRepository()
