@@ -19,6 +19,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/use-toast'
 import type { RoadmapActionItem, RoadmapColumn } from '@/types'
+import { Checkbox } from '@/components/ui/checkbox'
 
 interface RoadmapCardProps {
   feature: RoadmapActionItem
@@ -28,6 +29,9 @@ interface RoadmapCardProps {
   onDragStart: (e: React.DragEvent, featureId: string, columnId: string) => void
   onDragEnd: () => void
   isDragged: boolean
+  isSelectionMode: boolean
+  onToggleSelection?: (feature: RoadmapActionItem) => void
+  isSelected: boolean
 }
 
 export function RoadmapCard({
@@ -38,6 +42,9 @@ export function RoadmapCard({
   onDragStart,
   onDragEnd,
   isDragged,
+  isSelectionMode,
+  onToggleSelection,
+  isSelected,
 }: RoadmapCardProps) {
   const [showDetail, setShowDetail] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -95,6 +102,21 @@ export function RoadmapCard({
     deleteFeatureMutation.mutate(feature.id)
   }
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (isSelectionMode) {
+      e.preventDefault()
+      e.stopPropagation()
+      onToggleSelection?.(feature)
+    } else {
+      setShowDetail(true)
+    }
+  }
+
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onToggleSelection?.(feature)
+  }
+
   // Limit tags to show to prevent overflow
   const maxVisibleTags = 2
   const visibleTags = feature.tags?.slice(0, maxVisibleTags) || []
@@ -106,12 +128,14 @@ export function RoadmapCard({
       <Card
         className={cn(
           'group relative cursor-pointer transition-all duration-300 ease-out hover:shadow-xl hover:scale-[1.02] border-border/50 bg-card/50 hover:bg-card overflow-hidden',
-          isDragged && 'opacity-50 scale-95 rotate-1'
+          isDragged && 'opacity-50 scale-95 rotate-1',
+          isSelectionMode && 'hover:ring-2 hover:ring-primary/20',
+          isSelected && 'ring-2 ring-primary border-primary/50 bg-primary/5'
         )}
-        draggable
-        onDragStart={(e) => onDragStart(e, feature.id, columnId)}
+        draggable={!isSelectionMode}
+        onDragStart={(e) => !isSelectionMode && onDragStart(e, feature.id, columnId)}
         onDragEnd={onDragEnd}
-        onClick={() => setShowDetail(true)}
+        onClick={handleCardClick}
       >
         {/* Enhanced hover indicator with gradient animation */}
         <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:via-primary/10 group-hover:to-primary/5 transition-all duration-500 opacity-0 group-hover:opacity-100" />
@@ -120,30 +144,43 @@ export function RoadmapCard({
         <div className="absolute inset-0 rounded-lg border-2 border-transparent group-hover:border-primary/20 transition-all duration-300" />
 
         {/* Quick Actions - Enhanced hover animation */}
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 transform translate-y-2 group-hover:translate-y-0 scale-95 group-hover:scale-100">
-          <div className="flex items-center gap-1 bg-background/95 backdrop-blur-sm rounded-lg border border-border/50 p-1 shadow-xl">
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-6 w-6 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 hover:scale-110"
-              onClick={(e) => {
-                e.stopPropagation()
-                setShowDetail(true)
-              }}
-            >
-              <Edit3 className="h-3 w-3" />
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive transition-all duration-200 hover:scale-110"
-              onClick={handleDelete}
-              disabled={deleteFeatureMutation.isPending}
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
+        {!isSelectionMode && (
+          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 transform translate-y-2 group-hover:translate-y-0 scale-95 group-hover:scale-100">
+            <div className="flex items-center gap-1 bg-background/95 backdrop-blur-sm rounded-lg border border-border/50 p-1 shadow-xl">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 w-6 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 hover:scale-110"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowDetail(true)
+                }}
+              >
+                <Edit3 className="h-3 w-3" />
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive transition-all duration-200 hover:scale-110"
+                onClick={handleDelete}
+                disabled={deleteFeatureMutation.isPending}
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
+
+        {isSelectionMode && (
+          <div className="absolute top-2 left-2 z-10">
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={() => onToggleSelection?.(feature)}
+              onClick={handleCheckboxClick}
+              className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+            />
+          </div>
+        )}
 
         <div className="p-4 space-y-4 relative z-10">
           {/* Header with Enhanced Drag Handle */}
@@ -151,7 +188,9 @@ export function RoadmapCard({
             <h4 className="font-semibold text-sm leading-tight text-foreground line-clamp-2 flex-1 group-hover:text-primary/80 transition-all duration-300 group-hover:scale-[1.02] origin-left">
               {feature.title}
             </h4>
-            <GripVertical className="h-4 w-4 text-muted-foreground/60 flex-shrink-0 group-hover:text-muted-foreground transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
+            {!isSelectionMode && (
+              <GripVertical className="h-4 w-4 text-muted-foreground/60 flex-shrink-0 group-hover:text-muted-foreground transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
+            )}
           </div>
 
           {/* Description with enhanced hover effect */}
