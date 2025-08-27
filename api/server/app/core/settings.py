@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # CORS
-    CORS_ORIGINS: str = 'http://localhost:3000,http://localhost:5173,http://localhost:5174,http://localhost:3001'
+    CORS_ORIGINS: str = 'http://localhost:3000,http://localhost:5173,http://localhost:5174'
     CORS_HEADERS: str = '*'
 
     # Frontend & Email Configuration
@@ -62,7 +62,7 @@ class Settings(BaseSettings):
     R2_SECRET_ACCESS_KEY: Optional[str] = None
     R2_BUCKET_NAME: str = 'reflect-widgets'
     R2_ENDPOINT_URL: Optional[str] = None
-    CDN_BASE_URL: str = 'http://localhost:3001'  # Default for dev
+    CDN_BASE_URL: str = 'https://cdn.example.com'  # Configure with your R2 domain
     CDN_ZONE_ID: Optional[str] = None
     CDN_API_TOKEN: Optional[str] = None
 
