@@ -46,5 +46,41 @@ Some hooks (such as Dockerfile linting) require Docker to be installed and runni
 
 ---
 
+## CDN Server Setup
+
+To test widgets in external environments, you can run a local CDN server that serves widgets with proper CSS inlining.
+
+### Quick Start
+
+```sh
+cd client
+./start-cdn.sh
+```
+
+The CDN server will start on `http://localhost:3001` and automatically:
+- Install dependencies if needed
+- Enable CSS inlining for perfect styling
+- Set up proper CORS headers
+- Provide caching and compression
+
+### Manual Setup
+
+If you prefer to set up the CDN server manually:
+
+```sh
+cd client/cdn-server
+npm install
+npm start
+```
+
+### Available Endpoints
+
+- **Health Check**: `http://localhost:3001/health`
+- **Loader Script**: `http://localhost:3001/cdn/loader.js`
+- **Widget Config**: `http://localhost:3001/cdn/widgets/{widgetId}/config.json`
+- **Versioned Widgets**: `http://localhost:3001/cdn/widgets/{widgetId}/v{version}/widget.js`
+
+---
+
 ## Client Setup
 

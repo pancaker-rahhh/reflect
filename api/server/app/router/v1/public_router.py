@@ -8,19 +8,23 @@ from app.services.feedback_service import feedback_service
 from app.models.widget_model import WidgetType
 from app.models.feedback_model import FeedbackType
 from pydantic import BaseModel
-from typing import Optional, Dict, Any, Union
+from typing import Optional, Dict, Any, Union, List
+from app.repositories.feedback_repository import feedback_repository
 
 public_router = APIRouter()
 
 
 class PublicFeedbackPayload(BaseModel):
+    # Primary fields from widget client
     widgetKey: str
+    response: Optional[str] = None
+    rating: Optional[int] = None  
+    feedbackType: Optional[str] = None
+    
+    # Legacy/alternative fields for backward compatibility
     widgetType: Optional[str] = None
-
-    # General fields
     title: Optional[str] = None
     message: Optional[str] = None
-    rating: Optional[int] = None
 
     # Review specific fields
     overall_rating: Optional[int] = None
@@ -58,7 +62,7 @@ async def get_public_widget_config(
     db: AsyncSession = Depends(get_db),
     service: WidgetService = Depends(lambda: widget_service),
 ):
-    return await service.get_public_widget_by_key(db, public_key=public_key)
+    return await service.get_public_widget_config(db, public_key=public_key)
 
 
 @public_router.post(
@@ -76,9 +80,11 @@ async def submit_public_feedback(
     widget = await widget_service.get_public_widget_by_key(db, payload.widgetKey)
 
     # Determine widget type from payload or widget configuration
-    if payload.widgetType:
+    widget_type_str = payload.feedbackType or payload.widgetType
+    if widget_type_str:
         try:
-            widget_type = WidgetType(payload.widgetType)
+            # Convert to uppercase for enum matching
+            widget_type = WidgetType(widget_type_str.upper())
         except ValueError:
             # If invalid widget type provided, use the widget's configured type
             widget_type = widget.widget_type
@@ -99,7 +105,7 @@ async def submit_public_feedback(
     # Prepare feedback data based on widget type
     feedback_data = {
         'title': payload.title,
-        'message': payload.message,
+        'message': payload.response or payload.message,  # Use 'response' field primarily
         'rating': payload.rating,
     }
 
@@ -153,3 +159,104 @@ async def submit_public_feedback(
         data=feedback_data,
         context=context,
     )
+
+
+class FeatureRequestPublic(BaseModel):
+    id: str
+    title: str
+    description: str
+    category: str
+    priority: str
+    upvotes: int
+    hasUserUpvoted: bool = False
+
+
+class UpvoteRequest(BaseModel):
+    widgetKey: str
+    featureId: str
+
+
+@public_router.get('/widgets/{public_key}/features', response_model=List[FeatureRequestPublic])
+async def get_widget_feature_requests(
+    public_key: str,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    widget_service: WidgetService = Depends(lambda: widget_service),
+):
+    """Get all feature requests for a specific widget"""
+    from app.services.voting_service import voting_service
+    
+    # Get widget configuration
+    widget = await widget_service.get_public_widget_by_key(db, public_key)
+    
+    # Get all feature requests for this widget
+    features = await feedback_repository.get_by_widget_and_type(
+        db, widget_id=widget.id, feedback_type=FeedbackType.FEATURE_REQUEST
+    )
+    
+    # Get voter information for user vote status
+    voter_ip = request.client.host if request.client else '127.0.0.1'
+    voter_user_agent = request.headers.get('user-agent', '')
+    
+    # Transform to public format
+    feature_requests = []
+    for feature in features:
+        # Parse context for category and priority
+        context = feature.context or {}
+        
+        # Check if current user has voted
+        has_user_voted = await voting_service.get_user_vote_status(
+            db, feature.id, voter_ip, voter_user_agent
+        )
+        
+        feature_requests.append(FeatureRequestPublic(
+            id=str(feature.id),
+            title=feature.title or 'Untitled Feature',
+            description=feature.message or '',
+            category=context.get('category', 'other'),
+            priority=context.get('priority', 'medium'),
+            upvotes=feature.feedback_votes or 0,  # Use correct field
+            hasUserUpvoted=has_user_voted
+        ))
+    
+    # Sort by upvotes descending
+    feature_requests.sort(key=lambda x: x.upvotes, reverse=True)
+    
+    return feature_requests
+
+
+@public_router.post('/features/upvote')
+async def upvote_feature_request(
+    payload: UpvoteRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    widget_service: WidgetService = Depends(lambda: widget_service),
+):
+    """Upvote or remove upvote from a feature request"""
+    from app.services.voting_service import voting_service
+    
+    # Get widget to verify access
+    widget = await widget_service.get_public_widget_by_key(db, payload.widgetKey)
+    
+    # Get the feature request  
+    feature = await feedback_repository.get(db, payload.featureId)
+    
+    if not feature or feature.widget_id != widget.id:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Feature request not found")
+    
+    # Get voter information from request
+    voter_ip = request.client.host if request.client else '127.0.0.1'
+    voter_user_agent = request.headers.get('user-agent', '')
+    
+    # Handle the vote with proper duplicate prevention
+    vote_result = await voting_service.vote_for_feature(
+        db, feature.id, voter_ip, voter_user_agent
+    )
+    
+    return {
+        "success": True, 
+        "newVoteCount": vote_result['newVoteCount'],
+        "hasUserVoted": vote_result['hasUserVoted'],
+        "action": vote_result['action']
+    }

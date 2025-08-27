@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING, Optional
+from sqlalchemy import event
 from sqlalchemy import (
     Column,
     String,
@@ -111,6 +112,7 @@ class Feedback(BaseModel):
     comments = relationship(
         'FeedbackComment', back_populates='feedback', cascade='all, delete-orphan'
     )
+    votes = relationship('FeatureVote', back_populates='feedback', cascade='all, delete-orphan')
 
     __mapper_args__ = {
         'polymorphic_identity': 'feedback',

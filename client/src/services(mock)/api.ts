@@ -57,7 +57,8 @@ class ApiService {
 
   // Organizations - REAL API CALLS
   async getOrganizations(): Promise<Organization[]> {
-    return this.request<Organization[]>('/organizations/my')
+    const response = await this.request<{ organizations: Organization[] }>('/organizations')
+    return response.organizations || []
   }
 
   async getOrganization(id: string): Promise<Organization> {

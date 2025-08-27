@@ -51,10 +51,10 @@ export const organizationApi = {
   /**
    * Get simplified list of user's organizations
    */
-  getMy: (): Promise<Organization[]> =>
-    apiClient
-      .get<OrganizationListResponse>('/organizations?limit=10')
-      .then((res) => res.organizations),
+  async getMy(): Promise<Organization[]> {
+    const response = await apiClient.get<OrganizationListResponse>('/organizations')
+    return response?.organizations || []
+  },
 
   /**
    * Get current user's organization (newer method)

@@ -1,0 +1,157 @@
+export type FeedbackType = 
+  | 'FEEDBACK'
+  | 'SURVEY'
+  | 'REVIEW'
+  | 'BUG_REPORT'
+  | 'FEATURE_REQUEST'
+  | 'NPS'
+  | 'CSAT'
+  | 'CES'
+
+export type WidgetMode = 'preview' | 'production'
+
+export type WidgetState = 
+  | { type: 'loading' }
+  | { type: 'error'; message: string }
+  | { type: 'closed' }
+  | { type: 'menu'; availableTypes: FeedbackType[] }
+  | { type: 'active'; feedbackType: FeedbackType }
+  | { type: 'submitting' }
+  | { type: 'success' }
+
+export interface ModuleConfig {
+  feedback: boolean
+  reviews: boolean
+  bugReporting: boolean
+  featureRequests: boolean
+}
+
+export interface ContentConfig {
+  headerTitle: string
+  mainQuestion: string
+  submitButtonText: string
+  thankYouTitle: string
+  thankYouMessage: string
+  npsScore?: number
+  csatScore?: number
+  cesScore?: number
+}
+
+export interface AppearanceColors {
+  primary: string
+  headerGradientEnd?: string
+  background: string
+  text: string
+  buttonColor: string
+  buttonTextColor: string
+}
+
+export interface AppearanceConfig {
+  theme: 'default' | 'midnight' | 'minimal-light' | 'minimal-dark'
+  position: 'bottom_right' | 'bottom_left' | 'top_right' | 'top_left' | 'center'
+  colors: AppearanceColors
+  showBranding: boolean
+}
+
+export interface BehaviorConfig {
+  triggerType: 'immediate' | 'delay' | 'exit-intent' | 'scroll'
+  triggerDelay?: number
+  urlTargeting: {
+    includeUrls: string[]
+    excludeUrls: string[]
+  }
+  deviceTypes: {
+    desktop: boolean
+    mobile: boolean
+    tablet: boolean
+  }
+}
+
+export interface WidgetConfiguration {
+  modules: ModuleConfig
+  primaryType: FeedbackType
+  content: ContentConfig
+  appearance: AppearanceConfig
+  behavior: BehaviorConfig
+  publicKey?: string
+}
+
+export interface FeedbackData {
+  response: string
+  rating?: number
+  feedbackType: FeedbackType
+  typeSpecificData?: any
+}
+
+export interface WidgetCoreProps {
+  config: WidgetConfiguration
+  mode: WidgetMode
+  state?: WidgetState
+  onSubmit?: (data: FeedbackData) => Promise<void>
+  onClose?: () => void
+  onStateChange?: (state: WidgetState) => void
+}
+
+export interface FeedbackTypeSelectorProps {
+  availableTypes: FeedbackType[]
+  onSelectType: (type: FeedbackType) => void
+  config: WidgetConfiguration
+}
+
+export interface FeedbackTypeInfo {
+  type: FeedbackType
+  title: string
+  description: string
+  icon: string
+}
+
+export const FEEDBACK_TYPE_INFO: Record<FeedbackType, FeedbackTypeInfo> = {
+  FEEDBACK: {
+    type: 'FEEDBACK',
+    title: 'General Feedback',
+    description: 'Share your thoughts and suggestions',
+    icon: '💬'
+  },
+  SURVEY: {
+    type: 'SURVEY',
+    title: 'Survey',
+    description: 'Answer a quick survey',
+    icon: '📝'
+  },
+  REVIEW: {
+    type: 'REVIEW',
+    title: 'Leave a Review',
+    description: 'Rate your experience',
+    icon: '⭐'
+  },
+  BUG_REPORT: {
+    type: 'BUG_REPORT',
+    title: 'Report a Bug',
+    description: 'Tell us about any issues you found',
+    icon: '🐛'
+  },
+  FEATURE_REQUEST: {
+    type: 'FEATURE_REQUEST',
+    title: 'Request Feature',
+    description: 'Suggest new features or improvements',
+    icon: '✨'
+  },
+  NPS: {
+    type: 'NPS',
+    title: 'Rate Recommendation',
+    description: 'How likely are you to recommend us?',
+    icon: '📊'
+  },
+  CSAT: {
+    type: 'CSAT',
+    title: 'Satisfaction Rating',
+    description: 'How satisfied are you with our service?',
+    icon: '😊'
+  },
+  CES: {
+    type: 'CES',
+    title: 'Effort Rating',
+    description: 'How easy was it to get help?',
+    icon: '⚡'
+  }
+}

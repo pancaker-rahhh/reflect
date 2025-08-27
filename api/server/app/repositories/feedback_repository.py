@@ -1,8 +1,6 @@
 from typing import List, Optional, Any
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
-from sqlalchemy import select
 from app.models.feedback_model import (
     Feedback,
     FeedbackStatus,
@@ -115,18 +113,30 @@ class FeedbackRepository(BaseRepository[Feedback]):
         await db.commit()
         return True
 
-    async def list_by_project(
-        self, db: AsyncSession, project_id: UUID, skip: int = 0, limit: int = 100
+    async def get_by_widget_and_type(
+        self, db: AsyncSession, widget_id: UUID, feedback_type: FeedbackType
     ) -> List[Feedback]:
-        query = (
-            select(Feedback)
-            .options(selectinload(Feedback.widget), selectinload(Feedback.project))
-            .where(Feedback.project_id == project_id)
-            .offset(skip)
-            .limit(limit)
+        """Get all feedback for a specific widget and type"""
+        from sqlalchemy import select
+        
+        # Use the base Feedback model and filter by feedback_type and widget_id
+        stmt = select(Feedback).where(
+            Feedback.widget_id == widget_id,
+            Feedback.feedback_type == feedback_type
         )
-        result = await db.execute(query)
-        return result.scalars().all()
+        result = await db.execute(stmt)
+        return list(result.scalars().all())
+
+    async def update_votes(self, db: AsyncSession, feedback_id: UUID, new_vote_count: int) -> bool:
+        """Update the vote count for a feedback item"""
+        obj = await self.get(db, feedback_id)
+        if not obj:
+            return False
+        
+        obj.feedback_votes = new_vote_count  # Use correct field name
+        db.add(obj)
+        await db.commit()
+        return True
 
 
 feedback_repository = FeedbackRepository()
