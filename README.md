@@ -46,39 +46,24 @@ Some hooks (such as Dockerfile linting) require Docker to be installed and runni
 
 ---
 
-## CDN Server Setup
+## CDN & Widget Deployment
 
-To test widgets in external environments, you can run a local CDN server that serves widgets with proper CSS inlining.
+Reflect uses **Cloudflare R2 + CDN** for widget storage and delivery, providing global performance and reliability.
 
-### Quick Start
 
-```sh
-cd client
-./start-cdn.sh
-```
+### Features
 
-The CDN server will start on `http://localhost:3001` and automatically:
-- Install dependencies if needed
-- Enable CSS inlining for perfect styling
-- Set up proper CORS headers
-- Provide caching and compression
+- **Automatic Deployment**: Widgets are automatically deployed to R2 + CDN when created or updated
+- **CSS Inlining**: Built widgets include inlined CSS for perfect styling on any website
+- **Static URLs**: Embed codes never change - updates deploy to the same URL
+- **Global CDN**: Fast widget loading worldwide via Cloudflare's network
+- **Cache Management**: Automatic cache purging when widgets are updated
 
-### Manual Setup
+### Widget URLs
 
-If you prefer to set up the CDN server manually:
-
-```sh
-cd client/cdn-server
-npm install
-npm start
-```
-
-### Available Endpoints
-
-- **Health Check**: `http://localhost:3001/health`
-- **Loader Script**: `http://localhost:3001/cdn/loader.js`
-- **Widget Config**: `http://localhost:3001/cdn/widgets/{widgetId}/config.json`
-- **Versioned Widgets**: `http://localhost:3001/cdn/widgets/{widgetId}/v{version}/widget.js`
+Widgets are served from static URLs:
+- **Widget JS**: `https://your-domain.r2.dev/widgets/{public_key}/widget.js`
+- **Widget Config**: `https://your-domain.r2.dev/widgets/{public_key}/config.json`
 
 ---
 

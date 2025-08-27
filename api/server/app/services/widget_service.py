@@ -3,22 +3,19 @@ from uuid import UUID
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# The User model is no longer needed for type hints in method signatures
-# from app.models.user_model import User
 from app.models.widget_model import Widget, WidgetStatus
 from app.repositories.widget_repository import widget_repository, WidgetRepository
 from app.schemas.widget_schema import WidgetCreate, WidgetUpdate
 from app.services.project_service import project_service, ProjectService
 
-# Use environment-based URLs
 import os
+from app.services.cdn_deployment_service import cdn_deployment_service
+from app.core.settings import get_settings
+from app.core.logging import get_logger
 
-ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
-if ENVIRONMENT == 'production':
-    CDN_WIDGET_SCRIPT_URL = 'https://cdn.reflect.com/widget.js'
-else:
-    # For development, serve the static widget.js file from the client public directory
-    CDN_WIDGET_SCRIPT_URL = 'http://localhost:5174/widget.js'
+logger = get_logger(__name__)
+settings = get_settings()
+ENVIRONMENT = settings.ENV
 
 
 class WidgetService:
@@ -30,9 +27,8 @@ class WidgetService:
         self.repository = repository
         self.project_service = project_service
 
-    def _generate_embed_code(self, public_key: str, version: int = 1) -> str:
-        # Use the versioned CDN URL for the specific widget
-        widget_cdn_url = self._get_cdn_url(public_key, version)
+    def _generate_embed_code(self, public_key: str) -> str:
+        widget_cdn_url = self._get_cdn_url(public_key)
         
         embed_code = (
             f'<script>\n'
@@ -69,18 +65,15 @@ class WidgetService:
 
         temp_widget = Widget(**widget_data)
         public_key = temp_widget.public_key
-        version = 1
         
         widget_data['public_key'] = public_key
-        widget_data['version'] = version
-        widget_data['embed_code'] = self._generate_embed_code(public_key, version)
+        widget_data['embed_code'] = self._generate_embed_code(public_key)
         widget_data['status'] = WidgetStatus.ACTIVE
         widget_data['is_active'] = True
-        widget_data['cdn_url'] = self._get_cdn_url(public_key, version)
+        widget_data['cdn_url'] = self._get_cdn_url(public_key)
 
         widget = await self.repository.create(db, **widget_data)
         
-        # Deploy widget to CDN after creation
         await self._deploy_to_cdn(widget)
         
         return widget
@@ -91,35 +84,27 @@ class WidgetService:
         widget = await self.get_widget_and_check_access(db, user_id, widget_id)
         update_data = widget_in.model_dump(exclude_unset=True)
         
-        # Increment version for configuration changes
-        if any(key in update_data for key in ['configuration', 'theme_configuration', 'widget_type', 'position']):
-            new_version = (widget.version or 1) + 1
-            update_data['version'] = new_version
-            
-            # Update CDN URL and embed code for new version
-            update_data['cdn_url'] = self._get_cdn_url(widget.public_key, new_version)
-            update_data['embed_code'] = self._generate_embed_code(widget.public_key, new_version)
+        configuration_changed = any(key in update_data for key in ['configuration', 'theme_configuration', 'widget_type', 'position'])
         
-        return await self.repository.update(db, id=widget_id, **update_data)
+        updated_widget = await self.repository.update(db, id=widget_id, **update_data)
+        
+        if configuration_changed:
+            await self._deploy_to_cdn(updated_widget)
+            logger.info(f"Widget {updated_widget.public_key} updated and redeployed to R2 + CDN")
+        
+        return updated_widget
 
     async def delete_widget(
         self, db: AsyncSession, user_id: UUID, widget_id: UUID
     ) -> Widget:
         widget = await self.get_widget_and_check_access(db, user_id, widget_id)
 
-        # Prevent deletion of active widgets
         if bool(widget.is_active) and widget.status == WidgetStatus.ACTIVE:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='Cannot delete an active widget. Please deactivate the widget first before deleting.',
             )
 
-        # Use soft delete to preserve feedback data
-        # TODO: Implement scheduled cleanup task to permanently delete old soft-deleted widgets
-        # - Retention period: 30 days (configurable)
-        # - Cleanup frequency: Weekly background task
-        # - Should also delete associated feedback data when permanently removing widgets
-        # - Consider using Celery or similar task queue for scheduled cleanup
         return await self.repository.soft_delete(db, id=widget_id)
 
     async def set_widget_activation(
@@ -156,61 +141,25 @@ class WidgetService:
     async def get_public_widget_config(
         self, db: AsyncSession, public_key: str
     ):
-        """Get widget configuration formatted for public client consumption"""
         from app.schemas.widget_schema import WidgetReadPublic
         
         widget = await self.get_public_widget_by_key(db, public_key)
         return WidgetReadPublic.from_widget(widget)
 
 
-    def _get_cdn_url(self, public_key: str, version: int) -> str:
-        """Generate CDN URL for widget"""
-        if ENVIRONMENT == 'production':
-            return f'https://cdn.reflect.com/widgets/{public_key}/v{version}/widget.js'
-        else:
-            return f'http://localhost:3001/cdn/widgets/{public_key}/v{version}/widget.js'
+    def _get_cdn_url(self, public_key: str) -> str:
+        return f'{settings.CDN_BASE_URL}/widgets/{public_key}/widget.js'
     
     async def _deploy_to_cdn(self, widget) -> bool:
-        """Deploy widget configuration and files to CDN"""
-        import aiohttp
-        import json
-        
         try:
-            # In development, send widget config to local CDN server
-            if ENVIRONMENT != 'production':
-                cdn_deploy_url = 'http://localhost:3001/cdn/deploy'
-                
-                widget_config = {
-                    'public_key': widget.public_key,
-                    'version': widget.version,
-                    'widget_type': str(widget.widget_type),
-                    'position': str(widget.position),
-                    'configuration': widget.configuration or {},
-                    'theme_configuration': widget.theme_configuration or {},
-                    'targeting_rules': widget.targeting_rules or [],
-                    'is_active': widget.is_active,
-                    'cdn_url': widget.cdn_url
-                }
-                
-                async with aiohttp.ClientSession() as session:
-                    async with session.post(
-                        cdn_deploy_url, 
-                        json=widget_config,
-                        timeout=aiohttp.ClientTimeout(total=10)
-                    ) as response:
-                        if response.status == 200:
-                            print(f"Widget {widget.public_key} deployed to CDN successfully")
-                            return True
-                        else:
-                            print(f"CDN deployment failed with status {response.status}")
-                            return False
+            success = await cdn_deployment_service.deploy_widget(widget)
+            if success:
+                logger.info(f"Widget {widget.public_key} deployed successfully")
             else:
-                # In production, implement actual CDN deployment logic
-                # This would typically involve uploading files to AWS S3, CloudFront, etc.
-                return True
-                
+                logger.error(f"Failed to deploy widget {widget.public_key}")
+            return success
         except Exception as e:
-            print(f"CDN deployment error: {str(e)}")
+            logger.error(f"CDN deployment error for {widget.public_key}: {str(e)}")
             return False
 
 

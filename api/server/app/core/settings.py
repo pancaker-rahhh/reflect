@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # CORS
-    CORS_ORIGINS: str = 'http://localhost:3000,http://localhost:5173,http://localhost:5174,http://localhost:3001'
+    CORS_ORIGINS: str = 'http://localhost:3000,http://localhost:5173,http://localhost:5174'
     CORS_HEADERS: str = '*'
 
     # Frontend & Email Configuration
@@ -47,7 +47,7 @@ class Settings(BaseSettings):
 
     # Logging
     LOG_LEVEL: str = 'INFO'
-    LOG_SQL: bool = False  # Set to True to log SQL queries
+    LOG_SQL: bool = False
 
     # Optional: Monitoring
     AXIOM_TOKEN: Optional[str] = None
@@ -55,6 +55,16 @@ class Settings(BaseSettings):
     POSTHOG_API_KEY: Optional[str] = None
     POSTHOG_HOST: str = 'https://app.posthog.com'
     SENTRY_DSN: Optional[str] = None
+
+    # Cloudflare R2 & CDN Configuration
+    R2_ACCOUNT_ID: Optional[str] = None
+    R2_ACCESS_KEY_ID: Optional[str] = None
+    R2_SECRET_ACCESS_KEY: Optional[str] = None
+    R2_BUCKET_NAME: str = 'reflect-widgets'
+    R2_ENDPOINT_URL: Optional[str] = None
+    CDN_BASE_URL: str = 'https://cdn.example.com'
+    CDN_ZONE_ID: Optional[str] = None
+    CDN_API_TOKEN: Optional[str] = None
 
     model_config = SettingsConfigDict(
         env_file='.env', case_sensitive=True, extra='ignore'
@@ -67,9 +77,8 @@ class Settings(BaseSettings):
         origins = [
             origin.strip() for origin in self.CORS_ORIGINS.split(',') if origin.strip()
         ]
-        # In development, allow file:// protocol for widget testing
         if self.ENV == 'development':
-            origins.append('null')  # file:// protocol origin
+            origins.append('null')
         return origins
 
     @property
@@ -83,6 +92,14 @@ class Settings(BaseSettings):
         return [
             header.strip() for header in self.CORS_HEADERS.split(',') if header.strip()
         ]
+
+    @property
+    def r2_endpoint_url(self) -> str:
+        if self.R2_ENDPOINT_URL:
+            return self.R2_ENDPOINT_URL
+        if self.R2_ACCOUNT_ID:
+            return f'https://{self.R2_ACCOUNT_ID}.r2.cloudflarestorage.com'
+        return ''
 
     @field_validator('DATABASE_URL', mode='before')
     @classmethod
