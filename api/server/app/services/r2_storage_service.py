@@ -78,24 +78,51 @@ class R2StorageService:
             logger.error(f"R2 upload failed for {public_key}: {str(e)}")
             raise Exception(f"Failed to upload widget to R2: {str(e)}")
     
+    async def upload_widget_file(self, public_key: str, widget_js_content: str) -> Dict[str, str]:
+        """Upload single widget file with embedded configuration to R2"""
+        if not self.s3_client:
+            raise Exception("R2 client not initialized")
+        
+        try:
+            # Define file path (no separate config file needed)
+            widget_key = f"widgets/{public_key}/widget.js"
+            
+            # Upload widget.js with embedded configuration
+            self.s3_client.put_object(
+                Bucket=settings.R2_BUCKET_NAME,
+                Key=widget_key,
+                Body=widget_js_content.encode('utf-8'),
+                ContentType='application/javascript',
+                CacheControl='public, max-age=3600',  # 1 hour cache (allow updates)
+                Metadata={'public_key': public_key, 'type': 'widget_with_config'}
+            )
+            
+            # Return CDN URL
+            widget_url = f"{settings.CDN_BASE_URL}/{widget_key}"
+            
+            logger.info(f"Successfully uploaded widget {public_key} with embedded config to R2")
+            
+            return {
+                'widget_url': widget_url,
+                'widget_key': widget_key
+            }
+            
+        except ClientError as e:
+            logger.error(f"R2 upload failed for {public_key}: {str(e)}")
+            raise Exception(f"Failed to upload widget to R2: {str(e)}")
+    
     async def delete_widget_files(self, public_key: str) -> bool:
-        """Delete widget files from R2"""
+        """Delete widget file from R2"""
         if not self.s3_client:
             return False
             
         try:
             widget_key = f"widgets/{public_key}/widget.js"
-            config_key = f"widgets/{public_key}/config.json"
             
-            # Delete both files
-            self.s3_client.delete_objects(
+            # Delete widget file (config is now embedded, so no separate config file)
+            self.s3_client.delete_object(
                 Bucket=settings.R2_BUCKET_NAME,
-                Delete={
-                    'Objects': [
-                        {'Key': widget_key},
-                        {'Key': config_key}
-                    ]
-                }
+                Key=widget_key
             )
             
             logger.info(f"Deleted widget {public_key} from R2")

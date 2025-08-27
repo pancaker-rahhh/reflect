@@ -15,30 +15,29 @@ class CDNDeploymentService:
         self.r2_service = r2_service
     
     async def deploy_widget(self, widget) -> bool:
-        """Deploy widget to R2 + CDN"""
+        """Deploy widget to R2 + CDN with embedded configuration"""
         try:
-            # 1. Build widget with CSS inlining
-            widget_content = await self._build_widget_content()
+            # 1. Build base widget with CSS inlining
+            base_widget_content = await self._build_widget_content()
             
             # 2. Prepare widget config
             config = self._prepare_widget_config(widget)
             
-            # 3. Upload to R2
-            upload_result = await self.r2_service.upload_widget_files(
+            # 3. Inject configuration into widget content
+            widget_content_with_config = self._inject_config_into_widget(base_widget_content, config)
+            
+            # 4. Upload only the complete widget file to R2 (no separate config file needed)
+            upload_result = await self.r2_service.upload_widget_file(
                 widget.public_key, 
-                widget_content, 
-                config
+                widget_content_with_config
             )
             
-            # 4. Purge CDN cache for this widget
-            cache_paths = [
-                upload_result['widget_key'],
-                upload_result['config_key']
-            ]
+            # 5. Purge CDN cache for this widget
+            cache_paths = [upload_result['widget_key']]
             
             await self.r2_service.purge_cdn_cache(cache_paths)
             
-            logger.info(f"Successfully deployed widget {widget.public_key}")
+            logger.info(f"Successfully deployed widget {widget.public_key} with embedded configuration")
             return True
             
         except Exception as e:
@@ -85,7 +84,7 @@ class CDNDeploymentService:
             raise
     
     def _prepare_widget_config(self, widget) -> Dict[str, Any]:
-        """Prepare widget configuration for CDN storage"""
+        """Prepare widget configuration for embedding in widget file"""
         return {
             'public_key': widget.public_key,
             'widget_type': str(widget.widget_type),
@@ -98,6 +97,50 @@ class CDNDeploymentService:
             'created_at': widget.created_at.isoformat() if widget.created_at else None,
             'updated_at': widget.updated_at.isoformat() if widget.updated_at else None
         }
+    
+    def _inject_config_into_widget(self, widget_content: str, config: Dict[str, Any]) -> str:
+        """Inject configuration directly into widget JavaScript file"""
+        import json
+        
+        # Convert config to JSON string with proper escaping
+        config_json = json.dumps(config, indent=2)
+        
+        # Define the configuration injection marker and replacement
+        config_marker = "// WIDGET_CONFIG_PLACEHOLDER"
+        config_injection = f"""// Embedded widget configuration (injected at deployment time)
+window.__REFLECT_WIDGET_CONFIG__ = {config_json};
+
+// Override the fetch-based config loading with embedded config
+const originalFetch = window.fetch;
+window.fetch = function(url) {{
+  // Intercept widget config requests and return embedded config
+  if (url.includes('/public/widgets/')) {{
+    return Promise.resolve({{
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve(window.__REFLECT_WIDGET_CONFIG__)
+    }});
+  }}
+  // Pass through all other fetch requests
+  return originalFetch.apply(this, arguments);
+}};"""
+        
+        # Try to inject at the beginning of the widget IIFE
+        iife_start = widget_content.find(';(function () {')
+        if iife_start != -1:
+            # Insert after the IIFE opening
+            insertion_point = widget_content.find('{', iife_start) + 1
+            widget_with_config = (
+                widget_content[:insertion_point] + 
+                '\n' + config_injection + '\n' + 
+                widget_content[insertion_point:]
+            )
+        else:
+            # Fallback: inject at the very beginning
+            widget_with_config = config_injection + '\n\n' + widget_content
+        
+        logger.info(f"Successfully injected configuration into widget for {config['public_key']}")
+        return widget_with_config
 
 
 # Singleton instance  
