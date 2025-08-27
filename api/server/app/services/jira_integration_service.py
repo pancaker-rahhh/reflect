@@ -257,5 +257,102 @@ class JiraIntegrationService:
     async def close(self):
         await self.auth_service.close()
 
+    async def get_priorities(
+        self,
+        config: Dict[str, Any],
+        auth_data: Dict[str, Any],
+        auth_type: JiraAuthType = JiraAuthType.API_TOKEN,
+    ) -> Dict[str, Any]:
+        try:
+            base_url = self.auth_service._get_api_base_url(config)
+            headers = self.auth_service._get_auth_headers(
+                self.auth_service._decrypt_auth_data(auth_data), auth_type
+            )
+            session = await self.auth_service.get_session()
+
+            async with session.get(f'{base_url}/priority', headers=headers) as response:
+                if response.status == 200:
+                    priorities_data = await response.json()
+                    priorities = [
+                        {
+                            'id': p.get('id'),
+                            'name': p.get('name'),
+                            'description': p.get('description'),
+                            'icon_url': p.get('iconUrl'),
+                        }
+                        for p in priorities_data
+                    ]
+
+                    return {
+                        'status': 'success',
+                        'message': f'Found {len(priorities)} priorities',
+                        'data': {'priorities': priorities},
+                    }
+                else:
+                    return {
+                        'status': 'error',
+                        'message': f'Failed to get priorities: {response.status}',
+                        'details': {'status_code': response.status},
+                    }
+
+        except Exception as e:
+            logger.error(f'Failed to get priorities: {str(e)}')
+            return {
+                'status': 'error',
+                'message': f'Failed to get priorities: {str(e)}',
+                'details': {'exception': str(e)},
+            }
+
+    async def search_users(
+        self,
+        config: Dict[str, Any],
+        auth_data: Dict[str, Any],
+        query: str,
+        auth_type: JiraAuthType = JiraAuthType.API_TOKEN,
+    ) -> Dict[str, Any]:
+        try:
+            base_url = self.auth_service._get_api_base_url(config)
+            headers = self.auth_service._get_auth_headers(
+                self.auth_service._decrypt_auth_data(auth_data), auth_type
+            )
+            session = await self.auth_service.get_session()
+
+            params = {'query': query, 'maxResults': 50}
+            async with session.get(
+                f'{base_url}/user/search', headers=headers, params=params
+            ) as response:
+                if response.status == 200:
+                    users_data = await response.json()
+                    users = [
+                        {
+                            'account_id': u.get('accountId'),
+                            'name': u.get('name'),
+                            'display_name': u.get('displayName'),
+                            'email': u.get('emailAddress'),
+                            'active': u.get('active', True),
+                        }
+                        for u in users_data
+                    ]
+
+                    return {
+                        'status': 'success',
+                        'message': f'Found {len(users)} users',
+                        'data': {'users': users},
+                    }
+                else:
+                    return {
+                        'status': 'error',
+                        'message': f'Failed to search users: {response.status}',
+                        'details': {'status_code': response.status},
+                    }
+
+        except Exception as e:
+            logger.error(f'Failed to search users: {str(e)}')
+            return {
+                'status': 'error',
+                'message': f'Failed to search users: {str(e)}',
+                'details': {'exception': str(e)},
+            }
+
 
 jira_integration_service = JiraIntegrationService()
