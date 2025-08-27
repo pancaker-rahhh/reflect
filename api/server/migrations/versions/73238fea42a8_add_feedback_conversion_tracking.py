@@ -52,7 +52,7 @@ def upgrade() -> None:
     op.drop_column('feature_request_feedback', 'impact_score')
     op.drop_column('feature_request_feedback', 'business_value')
     op.add_column(
-        'feedback', sa.Column('converted_to_roadmap_id', sa.UUID(), nullable=True)
+        'feedback', sa.Column('converted_to_action_item_id ', sa.UUID(), nullable=True)
     )
     op.add_column(
         'feedback', sa.Column('conversion_date', sa.DateTime(), nullable=True)
@@ -67,7 +67,7 @@ def upgrade() -> None:
         existing_server_default=sa.text('0'),
     )
     op.create_foreign_key(
-        None, 'feedback', 'roadmap_features', ['converted_to_roadmap_id'], ['id']
+        None, 'feedback', 'roadmap_features', ['converted_to_action_item_id '], ['id']
     )
     op.add_column(
         'feedback_forms', sa.Column('form_type', sa.String(length=50), nullable=False)
@@ -316,7 +316,7 @@ def downgrade() -> None:
     op.drop_column('integration_mappings', 'mapping_type')
     op.drop_column('feedback_forms', 'form_type')
     op.drop_constraint(
-        'feedback_converted_to_roadmap_id_fkey', 'feedback', type_='foreignkey'
+        'feedback_converted_to_action_item_id _fkey', 'feedback', type_='foreignkey'
     )  # Adjusted to be specific
     op.alter_column(
         'feedback',
@@ -328,7 +328,7 @@ def downgrade() -> None:
     op.drop_column('feedback', 'is_actionable')
     op.drop_column('feedback', 'conversion_notes')
     op.drop_column('feedback', 'conversion_date')
-    op.drop_column('feedback', 'converted_to_roadmap_id')
+    op.drop_column('feedback', 'converted_to_action_item_id ')
     op.add_column(
         'feature_request_feedback',
         sa.Column('business_value', sa.TEXT(), autoincrement=False, nullable=True),

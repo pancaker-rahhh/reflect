@@ -62,7 +62,7 @@ class RoadmapTagRead(RoadmapTagBase):
         json_encoders = {datetime: lambda v: v.isoformat()}
 
 
-class RoadmapFeatureBase(BaseModel):
+class RoadmapActionItemBase(BaseModel):
     title: str = Field(..., min_length=3, max_length=255, description='Feature title')
     description: Optional[str] = Field(
         None, max_length=2000, description='Feature description'
@@ -98,7 +98,7 @@ class RoadmapFeatureBase(BaseModel):
         return v
 
 
-class RoadmapFeatureCreate(RoadmapFeatureBase):
+class RoadmapActionItemCreate(RoadmapActionItemBase):
     column_id: UUID = Field(
         ..., description='ID of the column where the feature will be placed'
     )
@@ -114,7 +114,7 @@ class RoadmapFeatureCreate(RoadmapFeatureBase):
         return v or []
 
 
-class RoadmapFeatureUpdate(BaseModel):
+class RoadmapActionItemUpdate(BaseModel):
     title: Optional[str] = Field(
         None, min_length=3, max_length=255, description='Feature title'
     )
@@ -172,7 +172,7 @@ class RoadmapFeatureUpdate(BaseModel):
         return v
 
 
-class RoadmapFeatureRead(RoadmapFeatureBase):
+class RoadmapActionItemRead(RoadmapActionItemBase):
     id: UUID = Field(..., description='Unique identifier for the feature')
     column_id: UUID = Field(
         ..., description='ID of the column where the feature is located'
@@ -303,7 +303,7 @@ class RoadmapColumnRead(RoadmapColumnBase):
         ..., description='ID of the roadmap this column belongs to'
     )
     order: int = Field(..., ge=0, description='Column order within the roadmap')
-    features: List[RoadmapFeatureRead] = Field(
+    features: List[RoadmapActionItemRead] = Field(
         default_factory=list, description='List of features in this column'
     )
 
@@ -489,12 +489,12 @@ class RoadmapAssignmentResponse(BaseModel):
         json_encoders = {datetime: lambda v: v.isoformat()}
 
 
-class RoadmapFeatureTagCreate(BaseModel):
+class RoadmapActionItemTagCreate(BaseModel):
     feature_id: UUID = Field(..., description='ID of the roadmap feature')
     tag_id: UUID = Field(..., description='ID of the tag to associate')
 
 
-class RoadmapFeatureTagResponse(BaseModel):
+class RoadmapActionItemTagResponse(BaseModel):
     feature_id: UUID = Field(..., description='ID of the roadmap feature')
     tag_id: UUID = Field(..., description='ID of the associated tag')
     created_at: datetime = Field(
@@ -562,7 +562,7 @@ class RoadmapStats(BaseModel):
     average_votes_per_feature: float = Field(
         ..., description='Average votes per feature'
     )
-    most_voted_feature: Optional[RoadmapFeatureRead] = Field(
+    most_voted_feature: Optional[RoadmapActionItemRead] = Field(
         None, description='Feature with the most votes'
     )
 

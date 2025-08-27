@@ -18,7 +18,7 @@ from app.models.feedback_model import (
     CSATFeedback,
     CESFeedback,
 )
-from app.models.roadmap_model import RoadmapFeature, RoadmapColumn
+from app.models.roadmap_model import RoadmapActionItem, RoadmapColumn
 from app.repositories.roadmap_repository import (
     roadmap_feature_repository,
     roadmap_column_repository,
@@ -73,7 +73,7 @@ class ActionItemService:
         priority: Optional[str] = None,
         conversion_notes: Optional[str] = None,
         custom_tags: Optional[List[str]] = None,
-    ) -> RoadmapFeature:
+    ) -> RoadmapActionItem:
         feedback = await self._get_and_validate_feedback(db, feedback_id)
 
         from app.repositories.user_repository import user_repository
@@ -128,7 +128,7 @@ class ActionItemService:
                 f'Feedback {feedback_id} cannot be converted to action item'
             )
 
-        if feedback.converted_to_roadmap_id:
+        if feedback.converted_to_action_item_id:
             raise ValidationError(f'Feedback {feedback_id} has already been converted')
 
         return feedback
@@ -306,7 +306,7 @@ class ActionItemService:
         conversion_notes: Optional[str],
     ) -> None:
         update_data = {
-            'converted_to_roadmap_id': roadmap_item_id,
+            'converted_to_action_item_id ': roadmap_item_id,
             'conversion_date': datetime.now(datetime.UTC),
             'conversion_notes': conversion_notes,
             'status': FeedbackStatus.IN_PROGRESS,
@@ -323,7 +323,7 @@ class ActionItemService:
             .where(
                 Feedback.project_id == project_id,
                 Feedback.is_actionable.is_(True),
-                Feedback.converted_to_roadmap_id.is_(None),
+                Feedback.converted_to_action_item_id.is_(None),
             )
             .order_by(Feedback.created_at.desc())
             .offset(skip)

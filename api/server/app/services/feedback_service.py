@@ -374,7 +374,7 @@ class FeedbackService:
             raise NotFoundError(f'Feedback {feedback_id} not found')
 
         update_data = {
-            'converted_to_roadmap_id': roadmap_item_id,
+            'converted_to_action_item_id ': roadmap_item_id,
             'conversion_date': datetime.utcnow(),
             'conversion_notes': conversion_notes,
             'status': FeedbackStatus.IN_PROGRESS,
@@ -393,8 +393,8 @@ class FeedbackService:
             raise NotFoundError(f'Feedback {feedback_id} not found')
 
         return {
-            'is_converted': bool(feedback.converted_to_roadmap_id),
-            'converted_to_roadmap_id': feedback.converted_to_roadmap_id,
+            'is_converted': bool(feedback.converted_to_action_item_id),
+            'converted_to_action_item_id ': feedback.converted_to_action_item_id,
             'conversion_date': feedback.conversion_date,
             'conversion_notes': feedback.conversion_notes,
             'is_actionable': feedback.is_actionable,

@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.webhook_model import WebhookEventType
 from app.models.feedback_model import Feedback
-from app.models.roadmap_model import RoadmapFeature
+from app.models.roadmap_model import RoadmapActionItem
 from app.models.project_model import Project
 from app.services.webhook_service import webhook_service
 from app.core.logging import get_logger
@@ -103,7 +103,7 @@ class WebhookEventDispatcher:
             return None
 
     async def dispatch_feature_created(
-        self, db: AsyncSession, feature: RoadmapFeature
+        self, db: AsyncSession, feature: RoadmapActionItem
     ) -> Optional[Dict[str, Any]]:
         """Dispatch webhook for new roadmap feature creation"""
 
@@ -151,7 +151,10 @@ class WebhookEventDispatcher:
             return None
 
     async def dispatch_feature_updated(
-        self, db: AsyncSession, feature: RoadmapFeature, updated_fields: Dict[str, Any]
+        self,
+        db: AsyncSession,
+        feature: RoadmapActionItem,
+        updated_fields: Dict[str, Any],
     ) -> Optional[Dict[str, Any]]:
         """Dispatch webhook for roadmap feature updates"""
 

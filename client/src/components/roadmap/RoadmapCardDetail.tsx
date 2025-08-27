@@ -41,12 +41,12 @@ import {
 } from 'lucide-react'
 import { safeFormat } from '@/lib/date'
 import { cn } from '@/lib/utils'
-import type { RoadmapFeature, RoadmapColumn } from '@/types'
+import type { RoadmapActionItem, RoadmapColumn } from '@/types'
 
 interface RoadmapCardDetailProps {
   isOpen: boolean
   onClose: () => void
-  feature?: RoadmapFeature | null
+  feature?: RoadmapActionItem | null
   roadmapId: string
   columns: RoadmapColumn[]
   onDelete?: (featureId: string) => void
@@ -118,7 +118,7 @@ export function RoadmapCardDetail({
   const updateFeatureMutation = useMutation({
     mutationFn: (data: typeof formData & { id: string }) => {
       const { id, ...updateData } = data
-      return api.updateRoadmapFeature(id, updateData)
+      return api.updateRoadmapActionItem(id, updateData)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmap'] })
@@ -127,7 +127,7 @@ export function RoadmapCardDetail({
   })
 
   const deleteFeatureMutation = useMutation({
-    mutationFn: (featureId: string) => api.deleteRoadmapFeature(featureId),
+    mutationFn: (featureId: string) => api.deleteRoadmapActionItem(featureId),
     onSuccess: (_, featureId) => {
       queryClient.invalidateQueries({ queryKey: ['roadmap'] })
       if (onDelete) onDelete(featureId)

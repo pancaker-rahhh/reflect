@@ -1,6 +1,6 @@
 import { apiClient } from '../client'
 import { ApiException } from '../errors'
-import type { Roadmap, RoadmapColumn, RoadmapTag, RoadmapFeature } from '@/types'
+import type { Roadmap, RoadmapColumn, RoadmapTag, RoadmapActionItem } from '@/types'
 
 export interface RoadmapUpdateRequest {
   name?: string
@@ -32,7 +32,7 @@ export interface RoadmapColumnUpdateRequest {
   order?: number
 }
 
-export interface RoadmapFeatureCreateRequest {
+export interface RoadmapActionItemCreateRequest {
   column_id: string
   title: string
   description?: string
@@ -41,7 +41,7 @@ export interface RoadmapFeatureCreateRequest {
   submitter_email?: string
 }
 
-export interface RoadmapFeatureUpdateRequest {
+export interface RoadmapActionItemUpdateRequest {
   title?: string
   description?: string
   columnId?: string
@@ -115,15 +115,15 @@ export const roadmapApi = {
   },
 
   // Feature endpoints
-  createFeature: async (data: RoadmapFeatureCreateRequest): Promise<RoadmapFeature> => {
-    return apiClient.post<RoadmapFeature>('/roadmap/features', data)
+  createFeature: async (data: RoadmapActionItemCreateRequest): Promise<RoadmapActionItem> => {
+    return apiClient.post<RoadmapActionItem>('/roadmap/features', data)
   },
 
   updateFeature: async (
     featureId: string,
-    data: RoadmapFeatureUpdateRequest
-  ): Promise<RoadmapFeature> => {
-    return apiClient.put<RoadmapFeature>(`/roadmap/features/${featureId}`, data)
+    data: RoadmapActionItemUpdateRequest
+  ): Promise<RoadmapActionItem> => {
+    return apiClient.put<RoadmapActionItem>(`/roadmap/features/${featureId}`, data)
   },
 
   deleteFeature: async (featureId: string): Promise<void> => {
@@ -136,8 +136,8 @@ export const roadmapApi = {
     return apiClient.put<{ status: string }>('/roadmap/features/order', updates)
   },
 
-  upvoteFeature: async (featureId: string): Promise<RoadmapFeature> => {
-    return apiClient.post<RoadmapFeature>(`/public/features/${featureId}/vote`)
+  upvoteFeature: async (featureId: string): Promise<RoadmapActionItem> => {
+    return apiClient.post<RoadmapActionItem>(`/public/features/${featureId}/vote`)
   },
 
   // Tag endpoints

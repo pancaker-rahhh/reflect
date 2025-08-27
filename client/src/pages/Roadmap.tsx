@@ -111,7 +111,7 @@ export function RoadmapPage() {
       tag_ids?: string[]
       submitter_name?: string
       submitter_email?: string
-    }) => api.createRoadmapFeature(data),
+    }) => api.createRoadmapActionItem(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmap'] })
       setAddFeatureModalOpen(false)

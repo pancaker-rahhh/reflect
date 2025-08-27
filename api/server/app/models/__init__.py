@@ -25,7 +25,7 @@ from app.models.feature_vote_model import FeatureVote
 from app.models.roadmap_model import (
     Roadmap,
     RoadmapColumn,
-    RoadmapFeature,
+    RoadmapActionItem,
     RoadmapItemAssignment,
 )
 from app.models.integration_model import Integration, IntegrationMapping
@@ -56,7 +56,7 @@ __all__ = [
     'FeatureVote',
     'Roadmap',
     'RoadmapColumn',
-    'RoadmapFeature',
+    'RoadmapActionItem',
     'RoadmapItemAssignment',
     'Integration',
     'IntegrationMapping',
