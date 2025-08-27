@@ -12,13 +12,13 @@ from app.services.project_service import project_service, ProjectService
 
 # Use environment-based URLs
 import os
+from app.services.cdn_deployment_service import cdn_deployment_service
+from app.core.settings import get_settings
+from app.core.logging import get_logger
 
-ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
-if ENVIRONMENT == 'production':
-    CDN_WIDGET_SCRIPT_URL = 'https://cdn.reflect.com/widget.js'
-else:
-    # For development, serve the static widget.js file from the client public directory
-    CDN_WIDGET_SCRIPT_URL = 'http://localhost:5174/widget.js'
+logger = get_logger(__name__)
+settings = get_settings()
+ENVIRONMENT = settings.ENV
 
 
 class WidgetService:
@@ -165,52 +165,19 @@ class WidgetService:
 
     def _get_cdn_url(self, public_key: str, version: int) -> str:
         """Generate CDN URL for widget"""
-        if ENVIRONMENT == 'production':
-            return f'https://cdn.reflect.com/widgets/{public_key}/v{version}/widget.js'
-        else:
-            return f'http://localhost:3001/cdn/widgets/{public_key}/v{version}/widget.js'
+        return f'{settings.CDN_BASE_URL}/widgets/{public_key}/v{version}/widget.js'
     
     async def _deploy_to_cdn(self, widget) -> bool:
-        """Deploy widget configuration and files to CDN"""
-        import aiohttp
-        import json
-        
+        """Deploy widget to Cloudflare R2 + CDN"""
         try:
-            # In development, send widget config to local CDN server
-            if ENVIRONMENT != 'production':
-                cdn_deploy_url = 'http://localhost:3001/cdn/deploy'
-                
-                widget_config = {
-                    'public_key': widget.public_key,
-                    'version': widget.version,
-                    'widget_type': str(widget.widget_type),
-                    'position': str(widget.position),
-                    'configuration': widget.configuration or {},
-                    'theme_configuration': widget.theme_configuration or {},
-                    'targeting_rules': widget.targeting_rules or [],
-                    'is_active': widget.is_active,
-                    'cdn_url': widget.cdn_url
-                }
-                
-                async with aiohttp.ClientSession() as session:
-                    async with session.post(
-                        cdn_deploy_url, 
-                        json=widget_config,
-                        timeout=aiohttp.ClientTimeout(total=10)
-                    ) as response:
-                        if response.status == 200:
-                            print(f"Widget {widget.public_key} deployed to CDN successfully")
-                            return True
-                        else:
-                            print(f"CDN deployment failed with status {response.status}")
-                            return False
+            success = await cdn_deployment_service.deploy_widget(widget)
+            if success:
+                logger.info(f"Widget {widget.public_key} v{widget.version} deployed successfully")
             else:
-                # In production, implement actual CDN deployment logic
-                # This would typically involve uploading files to AWS S3, CloudFront, etc.
-                return True
-                
+                logger.error(f"Failed to deploy widget {widget.public_key} v{widget.version}")
+            return success
         except Exception as e:
-            print(f"CDN deployment error: {str(e)}")
+            logger.error(f"CDN deployment error for {widget.public_key}: {str(e)}")
             return False
 
 
