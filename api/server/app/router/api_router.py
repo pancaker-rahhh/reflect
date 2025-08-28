@@ -14,7 +14,7 @@ from app.router.v1 import (
     invitation_router,
     dashboard_router,
     integrations_router,
-    roadmap_enhanced_router,
+    roadmap_integrations_router,
 )
 
 api_router = APIRouter(prefix='/api/v1')
@@ -29,9 +29,9 @@ api_router.include_router(invitation_router.router)
 api_router.include_router(dashboard_router.dashboard_router)
 api_router.include_router(integrations_router.router)
 api_router.include_router(
-    roadmap_enhanced_router.router,
-    prefix='/roadmap-enhanced',
-    tags=['Roadmap Enhanced'],
+    roadmap_integrations_router.router,
+    prefix='/roadmap-integrations',
+    tags=['Roadmap Integrations'],
 )
 api_router.include_router(
     widget_router.project_widgets_router,

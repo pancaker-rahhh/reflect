@@ -80,9 +80,43 @@ class JiraConfig(BaseModel):
 
     @validator('jira_url')
     def validate_jira_url(cls, v):
-        if not v.startswith(('http://', 'https://')):
-            raise ValueError('JIRA URL must start with http:// or https://')
-        return v.rstrip('/')
+        from app.core.validation import validate_jira_url as validate_url
+
+        return validate_url(v)
+
+    @validator('project_key')
+    def validate_project_key(cls, v):
+        from app.core.validation import validate_project_key as validate_key
+
+        return validate_key(v)
+
+    @validator('default_issue_type')
+    def validate_issue_type(cls, v):
+        from app.core.validation import validate_issue_type as validate_type
+
+        return validate_type(v)
+
+    @validator('default_priority')
+    def validate_priority(cls, v):
+        from app.core.validation import validate_priority as validate_pri
+
+        return validate_pri(v)
+
+    @validator('default_assignee')
+    def validate_assignee(cls, v):
+        if v is not None:
+            from app.core.validation import validate_username
+
+            return validate_username(v)
+        return v
+
+    @validator('default_reporter')
+    def validate_reporter(cls, v):
+        if v is not None:
+            from app.core.validation import validate_username
+
+            return validate_username(v)
+        return v
 
     @validator('status_mapping')
     def validate_status_mapping(cls, v):

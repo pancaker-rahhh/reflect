@@ -19,6 +19,9 @@ from app.schemas.jira_schema import (
     JiraComponentsResponse,
 )
 from app.services.jira_integration_service import JiraAuthType
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 router = APIRouter(prefix='/integrations', tags=['Integrations'])
 
@@ -39,8 +42,6 @@ async def get_integrations(
             db, project_id
         )
 
-        print(f'DEBUG: result = {result}')
-
         if result.get('status') == 'success':
             return result['integrations']
         else:
@@ -51,13 +52,8 @@ async def get_integrations(
     except HTTPException:
         raise
     except Exception as e:
-        print(f'DEBUG: Exception in get_integrations: {str(e)}')
-        import traceback
-
-        traceback.print_exc()
-        raise HTTPException(
-            status_code=500, detail=f'Failed to retrieve integrations: {str(e)}'
-        )
+        logger.error(f'Failed to retrieve integrations: {str(e)}', exc_info=True)
+        raise HTTPException(status_code=500, detail='Failed to retrieve integrations')
 
 
 @jira_router.post('/')
@@ -72,23 +68,32 @@ async def create_jira_integration(
     current_user: User = Depends(get_current_user),
 ):
     try:
-        # Validate user has access to this project
-        # This would typically check project membership
+        if str(project_id) != str(current_user.project_id):
+            logger.warning(
+                f'User {current_user.id} attempted to access project {project_id} without permission'
+            )
+            raise HTTPException(status_code=403, detail='Access denied to this project')
 
-        jira_config = JiraConfig(
-            jira_url=jira_url,
-            auth_type=auth_type,
-            project_key=config.get('project_key'),
-            default_issue_type=config.get('default_issue_type', 'Task'),
-            default_priority=config.get('default_priority', 'Medium'),
-            status_mapping=config.get('status_mapping', {}),
-            auto_create_issues=config.get('auto_create_issues', True),
-            include_metadata=config.get('include_metadata', True),
-            default_assignee=config.get('default_assignee'),
-            default_reporter=config.get('default_reporter'),
-            components=config.get('components', []),
-            labels=config.get('labels', []),
-        )
+        try:
+            jira_config = JiraConfig(
+                jira_url=jira_url,
+                auth_type=auth_type,
+                project_key=config.get('project_key'),
+                default_issue_type=config.get('default_issue_type', 'Task'),
+                default_priority=config.get('default_priority', 'Medium'),
+                status_mapping=config.get('status_mapping', {}),
+                auto_create_issues=config.get('auto_create_issues', True),
+                include_metadata=config.get('include_metadata', True),
+                default_assignee=config.get('default_assignee'),
+                default_reporter=config.get('default_reporter'),
+                components=config.get('components', []),
+                labels=config.get('labels', []),
+            )
+        except ValueError as e:
+            logger.warning(f'Invalid JIRA configuration: {str(e)}')
+            raise HTTPException(
+                status_code=400, detail=f'Invalid configuration: {str(e)}'
+            )
 
         result = await integration_setup_service.create_jira_integration(
             db, project_id, jira_config, auth_data, current_user.id

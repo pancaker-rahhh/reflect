@@ -235,36 +235,14 @@ class JiraAuthService:
         return headers
 
     def _encrypt_auth_data(self, auth_data: Dict[str, Any]) -> Dict[str, Any]:
-        return {
-            k: base64.b64encode(str(v).encode()).decode()
-            if k in ['access_token', 'refresh_token', 'api_token', 'password']
-            else v
-            for k, v in auth_data.items()
-        }
+        from app.core.encryption import encryption_service
+
+        return encryption_service.encrypt_auth_data(auth_data)
 
     def _decrypt_auth_data(self, auth_data: Dict[str, Any]) -> Dict[str, Any]:
-        def safe_b64decode(value: str) -> str:
-            try:
-                if not value:
-                    return value
-                if not isinstance(value, str):
-                    return str(value)
-                # Add padding if needed
-                padding_needed = len(value) % 4
-                if padding_needed:
-                    value += '=' * (4 - padding_needed)
-                return base64.b64decode(value.encode()).decode()
-            except Exception as e:
-                logger.error(f'Failed to decode base64 value: {str(e)}')
-                # Return original value if decoding fails
-                return str(value) if value else ''
+        from app.core.encryption import encryption_service
 
-        return {
-            k: safe_b64decode(v)
-            if k in ['access_token', 'refresh_token', 'api_token', 'password']
-            else v
-            for k, v in auth_data.items()
-        }
+        return encryption_service.decrypt_auth_data(auth_data)
 
     async def test_connection_comprehensive(
         self,

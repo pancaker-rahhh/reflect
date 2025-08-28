@@ -185,7 +185,12 @@ class RoadmapActionItemIntegration(BaseModel):
         UniqueConstraint(
             'action_item_id', 'integration_id', name='uq_action_item_integration'
         ),
+        UniqueConstraint(
+            'integration_id', 'external_id', name='uq_integration_external_id'
+        ),
         Index('idx_action_item_integration_external_id', 'external_id'),
+        Index('idx_action_item_integration_sync_status', 'sync_status'),
+        Index('idx_action_item_integration_last_synced', 'last_synced_at'),
     )
 
 

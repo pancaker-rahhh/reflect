@@ -36,8 +36,8 @@ export function IndividualJiraModal({
   // Disabled projects fetching since we use existing integration config
   // const { data: jiraProjects, isLoading: isLoadingProjects, error: projectsError } = useIntegrationProjects(selectedIntegrationId, false)
 
-  // Debug logging
-  console.log('🔍 Debug - IndividualJiraModal selectedIntegrationId:', selectedIntegrationId)
+  // Component state logging for debugging (remove in production)
+  // console.log('🔍 Debug - IndividualJiraModal selectedIntegrationId:', selectedIntegrationId)
 
   const handleConvertToJira = async () => {
     if (!selectedIntegrationId) return

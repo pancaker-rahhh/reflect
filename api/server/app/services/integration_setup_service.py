@@ -84,11 +84,10 @@ class IntegrationSetupService:
         created_by: UUID,
     ) -> Dict[str, Any]:
         try:
-            integration_data = {
-                'project_id': project_id,
-                'integration_type': IntegrationType.JIRA,
-                'name': f'JIRA Integration - {config.project_key}',
-                'config': {
+            from app.core.validation import validate_integration_config, sanitize_input
+
+            validated_config = validate_integration_config(
+                {
                     'base_url': config.jira_url,
                     'project_key': config.project_key,
                     'default_issue_type': config.default_issue_type,
@@ -100,8 +99,17 @@ class IntegrationSetupService:
                     'default_reporter': config.default_reporter,
                     'components': config.components,
                     'labels': config.labels,
-                },
-                'auth_data': auth_data,
+                }
+            )
+
+            sanitized_auth_data = sanitize_input(auth_data)
+
+            integration_data = {
+                'project_id': project_id,
+                'integration_type': IntegrationType.JIRA,
+                'name': f'JIRA Integration - {validated_config["project_key"]}',
+                'config': validated_config,
+                'auth_data': sanitized_auth_data,
                 'is_active': True,
                 'created_by': created_by,
             }
@@ -118,11 +126,18 @@ class IntegrationSetupService:
                 'integration': integration,
             }
 
-        except Exception as e:
-            logger.error(f'Failed to create JIRA integration: {str(e)}')
+        except ValueError as e:
+            logger.error(f'Validation error creating JIRA integration: {str(e)}')
             return {
                 'status': 'error',
-                'message': f'Failed to create integration: {str(e)}',
+                'message': f'Invalid configuration: {str(e)}',
+                'details': {'validation_error': str(e)},
+            }
+        except Exception as e:
+            logger.error(f'Failed to create JIRA integration: {str(e)}', exc_info=True)
+            return {
+                'status': 'error',
+                'message': 'Failed to create integration',
                 'details': {'exception': str(e)},
             }
 
