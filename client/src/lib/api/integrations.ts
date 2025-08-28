@@ -232,11 +232,16 @@ export const integrationsApi = {
   syncFeatureToJira: async (
     featureId: string,
     jiraIntegrationId: string,
-    forceSync: boolean = false
+    forceSync: boolean = false,
+    customConfig?: {
+      issue_type?: string
+      priority?: string
+    }
   ): Promise<any> => {
-    return apiClient.post<any>(`/roadmap/features/${featureId}/jira/sync`, {
+    return apiClient.post<any>(`/roadmap-enhanced/roadmap/features/${featureId}/jira/sync`, {
       jira_integration_id: jiraIntegrationId,
       force_sync: forceSync,
+      custom_config: customConfig,
     })
   },
 }

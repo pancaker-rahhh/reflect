@@ -96,10 +96,15 @@ class JiraIssueService:
             'title': action_item.title,
             'description': description,
             'issue_type': jira_config.get('issue_type', 'Task'),
-            'priority': self._map_priority(getattr(action_item, 'priority', 'Medium')),
             'labels': tags,
             'project_key': jira_config.get('project_key'),
         }
+
+        # Only include priority if it's enabled in the JIRA config
+        if jira_config.get('enable_priority', True):
+            priority = self._map_priority(getattr(action_item, 'priority', 'Medium'))
+            if priority:
+                issue_data['priority'] = priority
 
         if jira_config.get('components'):
             issue_data['components'] = jira_config.get('components')
@@ -270,27 +275,77 @@ class JiraIssueService:
             if issue_data.get('reporter'):
                 jira_issue['fields']['reporter'] = {'name': issue_data['reporter']}
 
-            async with session.post(
+            # First attempt with priority
+            response = await session.post(
                 f'{base_url}/issue', headers=headers, json=jira_issue
-            ) as response:
-                if response.status == 201:
-                    created_issue = await response.json()
-                    issue_key = created_issue.get('key')
-                    issue_url = (
-                        f"{config.get('base_url', '').rstrip('/')}/browse/{issue_key}"
+            )
+
+            if response.status == 201:
+                created_issue = await response.json()
+                issue_key = created_issue.get('key')
+                issue_url = (
+                    f"{config.get('base_url', '').rstrip('/')}/browse/{issue_key}"
+                )
+
+                logger.info(f'Successfully created JIRA issue {issue_key}')
+                logger.debug(f'JIRA response: {created_issue}')
+                return {
+                    'status': 'success',
+                    'message': 'JIRA issue created successfully',
+                    'issue_key': issue_key,
+                    'issue_url': issue_url,
+                    'issue_id': created_issue.get('id'),
+                    'issue_data': created_issue,
+                }
+            else:
+                error_text = await response.text()
+
+                # If it's a priority-related error, try again without priority
+                if (
+                    'priority' in error_text.lower()
+                    and 'priority' in jira_issue['fields']
+                ):
+                    logger.warning(
+                        f'Priority field not available, retrying without priority: {error_text}'
                     )
 
-                    logger.info(f'Successfully created JIRA issue {issue_key}')
-                    return {
-                        'status': 'success',
-                        'message': 'JIRA issue created successfully',
-                        'issue_key': issue_key,
-                        'issue_url': issue_url,
-                        'issue_id': created_issue.get('id'),
-                        'issue_data': created_issue,
-                    }
+                    # Remove priority field and try again
+                    del jira_issue['fields']['priority']
+
+                    async with session.post(
+                        f'{base_url}/issue', headers=headers, json=jira_issue
+                    ) as retry_response:
+                        if retry_response.status == 201:
+                            created_issue = await retry_response.json()
+                            issue_key = created_issue.get('key')
+                            issue_url = f"{config.get('base_url', '').rstrip('/')}/browse/{issue_key}"
+
+                            logger.info(
+                                f'Successfully created JIRA issue {issue_key} (without priority)'
+                            )
+                            logger.debug(f'JIRA response: {created_issue}')
+                            return {
+                                'status': 'success',
+                                'message': 'JIRA issue created successfully (without priority)',
+                                'issue_key': issue_key,
+                                'issue_url': issue_url,
+                                'issue_id': created_issue.get('id'),
+                                'issue_data': created_issue,
+                            }
+                        else:
+                            retry_error_text = await retry_response.text()
+                            logger.error(
+                                f'JIRA issue creation failed even without priority: {retry_error_text}'
+                            )
+                            return {
+                                'status': 'error',
+                                'message': f'Failed to create issue: {retry_error_text}',
+                                'details': {
+                                    'status_code': retry_response.status,
+                                    'response_text': retry_error_text,
+                                },
+                            }
                 else:
-                    error_text = await response.text()
                     logger.error(f'JIRA issue creation failed: {error_text}')
                     return {
                         'status': 'error',

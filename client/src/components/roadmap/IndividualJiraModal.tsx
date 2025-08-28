@@ -34,15 +34,29 @@ export function IndividualJiraModal({
   const [priority, setPriority] = useState('Medium')
 
   const syncToJira = useSyncFeatureToJira()
-  const { data: jiraProjects } = useIntegrationProjects(selectedIntegrationId, false)
+  // Disabled projects fetching since we use existing integration config
+  // const { data: jiraProjects, isLoading: isLoadingProjects, error: projectsError } = useIntegrationProjects(selectedIntegrationId, false)
+
+  // Debug logging
+  console.log('🔍 Debug - IndividualJiraModal selectedIntegrationId:', selectedIntegrationId)
 
   const handleConvertToJira = async () => {
-    if (!selectedIntegrationId || !selectedProject) return
+    if (!selectedIntegrationId) return
+
+    // Get the selected integration to use its config
+    const selectedIntegration = jiraIntegrations.find(
+      (integration) => integration.id === selectedIntegrationId
+    )
+    if (!selectedIntegration) return
 
     await syncToJira.mutateAsync({
       featureId: feature.id,
       jiraIntegrationId: selectedIntegrationId,
       forceSync: false,
+      customConfig: {
+        issue_type: issueType,
+        priority: priority,
+      },
     })
   }
 
@@ -63,8 +77,17 @@ export function IndividualJiraModal({
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <ExternalLink className="h-5 w-5" />
-            Convert to JIRA Issue
+            {feature.jira_integration ? (
+              <>
+                <CheckCircle className="h-5 w-5 text-green-500" />
+                JIRA Issue Details
+              </>
+            ) : (
+              <>
+                <ExternalLink className="h-5 w-5" />
+                Convert to JIRA Issue
+              </>
+            )}
           </DialogTitle>
         </DialogHeader>
 
@@ -73,7 +96,9 @@ export function IndividualJiraModal({
           <div className="bg-blue-50/50 rounded-lg p-4 border border-blue-200/50">
             <div className="flex items-center gap-2 mb-2">
               <AlertTriangle className="h-4 w-4 text-blue-600" />
-              <Label className="text-sm font-medium text-blue-900">Feature to Convert</Label>
+              <Label className="text-sm font-medium text-blue-900">
+                {feature.jira_integration ? 'Feature Details' : 'Feature to Convert'}
+              </Label>
             </div>
             <div className="p-3 bg-white rounded border">
               <h4 className="font-semibold text-sm mb-2">{feature.title}</h4>
@@ -93,51 +118,95 @@ export function IndividualJiraModal({
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div>
-              <Label>JIRA Integration</Label>
-              <Select value={selectedIntegrationId} onValueChange={setSelectedIntegrationId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select JIRA integration" />
-                </SelectTrigger>
-                <SelectContent>
-                  {jiraIntegrations.map((integration) => (
-                    <SelectItem key={integration.id} value={integration.id}>
-                      {integration.config?.jira_url || 'JIRA Integration'}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Show JIRA Issue Details if already synced */}
+          {feature.jira_integration && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  JIRA Issue Created
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">Issue:</span>
+                    <Badge variant="default" className="bg-green-500">
+                      {feature.jira_integration.external_id} - {feature.title}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">Issue Type:</span>
+                    <Badge variant="outline" className="text-xs">
+                      {feature.jira_integration.integration_metadata?.issue_type || 'Task'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">Priority:</span>
+                    <Badge variant="outline" className="text-xs">
+                      {feature.jira_integration.integration_metadata?.priority || 'Medium'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">Status:</span>
+                    <Badge variant="outline" className="text-xs">
+                      {feature.jira_integration.external_status || 'To Do'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">Last Synced:</span>
+                    <span className="text-muted-foreground">
+                      {feature.jira_integration.last_synced_at
+                        ? new Date(feature.jira_integration.last_synced_at).toLocaleDateString()
+                        : 'Unknown'}
+                    </span>
+                  </div>
+                </div>
 
-            {selectedIntegrationId && jiraProjects?.success && (
+                {feature.jira_integration.external_url && (
+                  <div className="pt-2 border-t">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => window.open(feature.jira_integration!.external_url, '_blank')}
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      View in JIRA
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Only show form fields if not already synced */}
+          {!feature.jira_integration && (
+            <div className="space-y-4">
               <div>
                 <Label>JIRA Project</Label>
-                <Select value={selectedProject} onValueChange={setSelectedProject}>
+                <Select value={selectedIntegrationId} onValueChange={setSelectedIntegrationId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select project" />
+                    <SelectValue placeholder="Select your JIRA project" />
                   </SelectTrigger>
                   <SelectContent>
-                    {jiraProjects.data.projects.map((project: any) => (
-                      <SelectItem key={project.key} value={project.key}>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs">{project.key}</span>
-                          <span>{project.name}</span>
-                        </div>
+                    {jiraIntegrations.map((integration) => (
+                      <SelectItem key={integration.id} value={integration.id}>
+                        {integration.config?.project_key ||
+                          integration.name?.replace('JIRA Integration - ', '') ||
+                          'JIRA Project'}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-            )}
 
-            {selectedProject && (
-              <div className="grid grid-cols-2 gap-4">
+              {selectedIntegrationId && (
                 <div>
                   <Label>Issue Type</Label>
                   <Select value={issueType} onValueChange={setIssueType}>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select issue type" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Task">Task</SelectItem>
@@ -147,11 +216,14 @@ export function IndividualJiraModal({
                     </SelectContent>
                   </Select>
                 </div>
+              )}
+
+              {selectedIntegrationId && (
                 <div>
                   <Label>Priority</Label>
                   <Select value={priority} onValueChange={setPriority}>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select priority" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Low">Low</SelectItem>
@@ -161,9 +233,9 @@ export function IndividualJiraModal({
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           {syncToJira.data && (
             <Card>
@@ -172,7 +244,7 @@ export function IndividualJiraModal({
                   {syncToJira.data.success ? (
                     <>
                       <CheckCircle className="h-4 w-4 text-green-500" />
-                      JIRA Issue Created
+                      JIRA Issue Created Successfully!
                     </>
                   ) : (
                     <>
@@ -184,12 +256,55 @@ export function IndividualJiraModal({
               </CardHeader>
               <CardContent className="space-y-3">
                 {syncToJira.data.success ? (
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Issue Key:</span>
-                    <Badge variant="default" className="bg-green-500">
-                      {syncToJira.data.data.issue_key}
-                    </Badge>
-                  </div>
+                  <>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium">Issue:</span>
+                        <Badge variant="default" className="bg-green-500">
+                          {syncToJira.data.data.issue_key} - {feature.title}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium">Project:</span>
+                        <span className="text-muted-foreground">
+                          {jiraIntegrations.find((i) => i.id === selectedIntegrationId)?.config
+                            ?.project_key || 'Unknown'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium">Issue Type:</span>
+                        <Badge variant="outline" className="text-xs">
+                          {issueType}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium">Priority:</span>
+                        <Badge variant="outline" className="text-xs">
+                          {priority}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium">Status:</span>
+                        <Badge variant="outline" className="text-xs">
+                          To Do
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {syncToJira.data.data.issue_url && (
+                      <div className="pt-2 border-t">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => window.open(syncToJira.data.data.issue_url, '_blank')}
+                        >
+                          <ExternalLink className="mr-2 h-4 w-4" />
+                          View in JIRA
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="text-sm text-red-600">{syncToJira.data.message}</div>
                 )}
@@ -200,22 +315,24 @@ export function IndividualJiraModal({
 
         <div className="flex gap-2 pt-4 border-t">
           <Button variant="outline" onClick={handleClose} className="flex-1">
-            Cancel
+            {feature.jira_integration ? 'Close' : 'Cancel'}
           </Button>
-          <Button
-            onClick={handleConvertToJira}
-            disabled={!selectedIntegrationId || !selectedProject || syncToJira.isPending}
-            className="flex-1"
-          >
-            {syncToJira.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating JIRA Issue...
-              </>
-            ) : (
-              'Create JIRA Issue'
-            )}
-          </Button>
+          {!feature.jira_integration && (
+            <Button
+              onClick={handleConvertToJira}
+              disabled={!selectedIntegrationId || syncToJira.isPending}
+              className="flex-1"
+            >
+              {syncToJira.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating JIRA Issue...
+                </>
+              ) : (
+                'Create JIRA Issue'
+              )}
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>

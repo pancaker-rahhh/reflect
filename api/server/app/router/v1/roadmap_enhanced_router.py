@@ -43,7 +43,22 @@ async def create_action_item_with_jira(
             raise HTTPException(status_code=404, detail='JIRA integration not found')
 
         integration = config_result.get('integration')
-        if str(integration.project_id) != str(current_user.project_id):
+
+        # Get the project from the column to validate access
+        from app.repositories.roadmap_repository import (
+            roadmap_column_repository,
+            roadmap_repository,
+        )
+
+        column = await roadmap_column_repository.get(db, id=feature_data.column_id)
+        if not column:
+            raise HTTPException(status_code=404, detail='Column not found')
+
+        roadmap = await roadmap_repository.get(db, id=column.roadmap_id)
+        if not roadmap:
+            raise HTTPException(status_code=404, detail='Roadmap not found')
+
+        if str(integration.project_id) != str(roadmap.project_id):
             raise HTTPException(
                 status_code=403, detail='Access denied to this integration'
             )
@@ -116,7 +131,27 @@ async def bulk_create_jira_issues(
             raise HTTPException(status_code=404, detail='JIRA integration not found')
 
         integration = config_result.get('integration')
-        if str(integration.project_id) != str(current_user.project_id):
+
+        # Get the project from the first action item to validate access
+        from app.repositories.roadmap_repository import (
+            roadmap_feature_repository,
+            roadmap_column_repository,
+            roadmap_repository,
+        )
+
+        first_feature = await roadmap_feature_repository.get(db, id=action_item_ids[0])
+        if not first_feature:
+            raise HTTPException(status_code=404, detail='First action item not found')
+
+        column = await roadmap_column_repository.get(db, id=first_feature.column_id)
+        if not column:
+            raise HTTPException(status_code=404, detail='Column not found')
+
+        roadmap = await roadmap_repository.get(db, id=column.roadmap_id)
+        if not roadmap:
+            raise HTTPException(status_code=404, detail='Roadmap not found')
+
+        if str(integration.project_id) != str(roadmap.project_id):
             raise HTTPException(
                 status_code=403, detail='Access denied to this integration'
             )
@@ -202,14 +237,31 @@ async def update_jira_issue(
             raise HTTPException(status_code=404, detail='JIRA integration not found')
 
         integration = config_result.get('integration')
-        if str(integration.project_id) != str(current_user.project_id):
+
+        # Get the project from the feature to validate access
+        from app.repositories.roadmap_repository import (
+            roadmap_feature_repository,
+            roadmap_column_repository,
+            roadmap_repository,
+            roadmap_action_item_integration_repository,
+        )
+
+        feature = await roadmap_feature_repository.get(db, id=feature_id)
+        if not feature:
+            raise HTTPException(status_code=404, detail='Feature not found')
+
+        column = await roadmap_column_repository.get(db, id=feature.column_id)
+        if not column:
+            raise HTTPException(status_code=404, detail='Column not found')
+
+        roadmap = await roadmap_repository.get(db, id=column.roadmap_id)
+        if not roadmap:
+            raise HTTPException(status_code=404, detail='Roadmap not found')
+
+        if str(integration.project_id) != str(roadmap.project_id):
             raise HTTPException(
                 status_code=403, detail='Access denied to this integration'
             )
-
-        from app.repositories.roadmap_repository import (
-            roadmap_action_item_integration_repository,
-        )
 
         integration_record = await roadmap_action_item_integration_repository.get_by_action_item_and_integration(
             db, feature_id, jira_integration_id
@@ -271,14 +323,31 @@ async def remove_jira_association(
             raise HTTPException(status_code=404, detail='JIRA integration not found')
 
         integration = config_result.get('integration')
-        if str(integration.project_id) != str(current_user.project_id):
+
+        # Get the project from the feature to validate access
+        from app.repositories.roadmap_repository import (
+            roadmap_feature_repository,
+            roadmap_column_repository,
+            roadmap_repository,
+            roadmap_action_item_integration_repository,
+        )
+
+        feature = await roadmap_feature_repository.get(db, id=feature_id)
+        if not feature:
+            raise HTTPException(status_code=404, detail='Feature not found')
+
+        column = await roadmap_column_repository.get(db, id=feature.column_id)
+        if not column:
+            raise HTTPException(status_code=404, detail='Column not found')
+
+        roadmap = await roadmap_repository.get(db, id=column.roadmap_id)
+        if not roadmap:
+            raise HTTPException(status_code=404, detail='Roadmap not found')
+
+        if str(integration.project_id) != str(roadmap.project_id):
             raise HTTPException(
                 status_code=403, detail='Access denied to this integration'
             )
-
-        from app.repositories.roadmap_repository import (
-            roadmap_action_item_integration_repository,
-        )
 
         integration_record = await roadmap_action_item_integration_repository.get_by_action_item_and_integration(
             db, feature_id, jira_integration_id
@@ -305,7 +374,7 @@ async def remove_jira_association(
             'success': True,
             'data': {
                 'issue_key': integration_record.external_id,
-                'jira_issue_closed': close_jira_issue,
+                'issue_url': integration_record.external_url,
             },
             'message': 'JIRA association removed successfully',
             'errors': [],
@@ -335,14 +404,31 @@ async def get_jira_issue_details(
             raise HTTPException(status_code=404, detail='JIRA integration not found')
 
         integration = config_result.get('integration')
-        if str(integration.project_id) != str(current_user.project_id):
+
+        # Get the project from the feature to validate access
+        from app.repositories.roadmap_repository import (
+            roadmap_feature_repository,
+            roadmap_column_repository,
+            roadmap_repository,
+            roadmap_action_item_integration_repository,
+        )
+
+        feature = await roadmap_feature_repository.get(db, id=feature_id)
+        if not feature:
+            raise HTTPException(status_code=404, detail='Feature not found')
+
+        column = await roadmap_column_repository.get(db, id=feature.column_id)
+        if not column:
+            raise HTTPException(status_code=404, detail='Column not found')
+
+        roadmap = await roadmap_repository.get(db, id=column.roadmap_id)
+        if not roadmap:
+            raise HTTPException(status_code=404, detail='Roadmap not found')
+
+        if str(integration.project_id) != str(roadmap.project_id):
             raise HTTPException(
                 status_code=403, detail='Access denied to this integration'
             )
-
-        from app.repositories.roadmap_repository import (
-            roadmap_action_item_integration_repository,
-        )
 
         integration_record = await roadmap_action_item_integration_repository.get_by_action_item_and_integration(
             db, feature_id, jira_integration_id
@@ -397,6 +483,7 @@ async def sync_action_item_to_jira(
     feature_id: UUID,
     jira_integration_id: UUID = Body(..., embed=True),
     force_sync: bool = Body(False, embed=True),
+    custom_config: Optional[Dict[str, Any]] = Body(None, embed=True),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -409,20 +496,40 @@ async def sync_action_item_to_jira(
             raise HTTPException(status_code=404, detail='JIRA integration not found')
 
         integration = config_result.get('integration')
-        if str(integration.project_id) != str(current_user.project_id):
+
+        # Get the project from the feature to validate access
+        from app.repositories.roadmap_repository import (
+            roadmap_feature_repository,
+            roadmap_column_repository,
+            roadmap_repository,
+        )
+
+        feature = await roadmap_feature_repository.get(db, id=feature_id)
+        if not feature:
+            raise HTTPException(status_code=404, detail='Feature not found')
+
+        column = await roadmap_column_repository.get(db, id=feature.column_id)
+        if not column:
+            raise HTTPException(status_code=404, detail='Column not found')
+
+        roadmap = await roadmap_repository.get(db, id=column.roadmap_id)
+        if not roadmap:
+            raise HTTPException(status_code=404, detail='Roadmap not found')
+
+        if str(integration.project_id) != str(roadmap.project_id):
             raise HTTPException(
                 status_code=403, detail='Access denied to this integration'
             )
 
         result = await jira_integration_service.sync_action_item_to_jira(
-            db, integration, feature_id, force_sync
+            db, integration, feature_id, force_sync, custom_config
         )
 
         if result.get('status') == 'success':
             return {
                 'success': True,
                 'data': {
-                    'issue_key': result.get('external_id'),
+                    'issue_key': result.get('issue_key'),
                     'issue_url': result.get('issue_url'),
                     'sync_status': 'synced',
                 },

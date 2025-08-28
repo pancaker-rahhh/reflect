@@ -1,10 +1,9 @@
 from typing import Dict, Any
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from app.core.logging import get_logger
-from app.models.integration_model import Integration, IntegrationType
+from app.models.integration_model import IntegrationType
 from app.repositories.integration_repository import integration_repository
 from app.services.jira_integration_service import jira_integration_service, JiraAuthType
 from app.schemas.jira_schema import JiraConfig, JiraConfigUpdate
@@ -177,8 +176,8 @@ class IntegrationSetupService:
         self, db: AsyncSession, integration_id: UUID
     ) -> Dict[str, Any]:
         try:
-            integration = await integration_repository.get(
-                db, integration_id, options=[selectinload(Integration.project)]
+            integration = await integration_repository.get_with_project(
+                db, integration_id
             )
 
             if not integration:

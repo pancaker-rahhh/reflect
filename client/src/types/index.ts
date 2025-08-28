@@ -188,6 +188,18 @@ export interface RoadmapActionItemTag {
   updated_at: Date | string
 }
 
+export interface RoadmapActionItemIntegration {
+  id: string
+  action_item_id: string
+  integration_id: string
+  external_id: string
+  external_url?: string
+  external_status?: string
+  integration_metadata: Record<string, any>
+  last_synced_at?: Date | string
+  sync_status: string
+}
+
 export interface RoadmapActionItem {
   id: string
   column_id: string
@@ -200,6 +212,7 @@ export interface RoadmapActionItem {
   submitter_email?: string
   tags: RoadmapTag[]
   feature_tags?: RoadmapActionItemTag[]
+  jira_integration?: RoadmapActionItemIntegration
   created_at: Date | string
   updated_at: Date | string
 }

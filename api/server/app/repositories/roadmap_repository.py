@@ -256,6 +256,32 @@ class RoadmapActionItemRepository(BaseRepository[RoadmapActionItem]):
             logger.error(f'Error fetching feature {id} with tags: {str(e)}')
             raise
 
+    async def get_with_integrations(
+        self, db: AsyncSession, id: UUID
+    ) -> Optional[RoadmapActionItem]:
+        try:
+            stmt = (
+                select(RoadmapActionItem)
+                .where(RoadmapActionItem.id == id)
+                .options(
+                    selectinload(RoadmapActionItem.integrations).selectinload(
+                        RoadmapActionItemIntegration.integration
+                    ),
+                    selectinload(RoadmapActionItem.column)
+                    .selectinload(RoadmapColumn.roadmap)
+                    .selectinload(Roadmap.project),
+                    selectinload(RoadmapActionItem.action_item_tags).selectinload(
+                        RoadmapActionItemTag.tag
+                    ),
+                    selectinload(RoadmapActionItem.converted_feedback),
+                )
+            )
+            result = await db.execute(stmt)
+            return result.scalar_one_or_none()
+        except Exception as e:
+            logger.error(f'Error fetching feature {id} with integrations: {str(e)}')
+            raise
+
     async def get_by_column(
         self, db: AsyncSession, column_id: UUID
     ) -> List[RoadmapActionItem]:
@@ -466,6 +492,12 @@ class RoadmapRepository(BaseRepository[Roadmap]):
                     .selectinload(RoadmapActionItem.action_item_tags)
                     .selectinload(RoadmapActionItemTag.tag)
                 )
+                .options(
+                    selectinload(Roadmap.columns)
+                    .selectinload(RoadmapColumn.action_items)
+                    .selectinload(RoadmapActionItem.integrations)
+                    .selectinload(RoadmapActionItemIntegration.integration)
+                )
                 .options(selectinload(Roadmap.tags))
             )
             result = await db.execute(stmt)
@@ -490,6 +522,12 @@ class RoadmapRepository(BaseRepository[Roadmap]):
                     .selectinload(RoadmapColumn.action_items)
                     .selectinload(RoadmapActionItem.action_item_tags)
                     .selectinload(RoadmapActionItemTag.tag)
+                )
+                .options(
+                    selectinload(Roadmap.columns)
+                    .selectinload(RoadmapColumn.action_items)
+                    .selectinload(RoadmapActionItem.integrations)
+                    .selectinload(RoadmapActionItemIntegration.integration)
                 )
                 .options(selectinload(Roadmap.tags))
             )
@@ -516,6 +554,12 @@ class RoadmapRepository(BaseRepository[Roadmap]):
                     .selectinload(RoadmapActionItem.action_item_tags)
                     .selectinload(RoadmapActionItemTag.tag)
                 )
+                .options(
+                    selectinload(Roadmap.columns)
+                    .selectinload(RoadmapColumn.action_items)
+                    .selectinload(RoadmapActionItem.integrations)
+                    .selectinload(RoadmapActionItemIntegration.integration)
+                )
                 .options(selectinload(Roadmap.tags))
             )
             result = await db.execute(stmt)
@@ -538,6 +582,12 @@ class RoadmapRepository(BaseRepository[Roadmap]):
                     .selectinload(RoadmapColumn.action_items)
                     .selectinload(RoadmapActionItem.action_item_tags)
                     .selectinload(RoadmapActionItemTag.tag)
+                )
+                .options(
+                    selectinload(Roadmap.columns)
+                    .selectinload(RoadmapColumn.action_items)
+                    .selectinload(RoadmapActionItem.integrations)
+                    .selectinload(RoadmapActionItemIntegration.integration)
                 )
                 .options(selectinload(Roadmap.tags))
             )

@@ -16,6 +16,7 @@ import {
   Calendar,
   MessageSquare,
   ExternalLink,
+  CheckCircle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/use-toast'
@@ -172,11 +173,20 @@ export function RoadmapCard({
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-6 w-6 p-0 hover:bg-muted/70 hover:text-muted-foreground transition-all duration-200 hover:scale-110"
+                  className={cn(
+                    'h-6 w-6 p-0 transition-all duration-200 hover:scale-110',
+                    feature.jira_integration
+                      ? 'text-green-600 hover:bg-green-50 hover:text-green-700'
+                      : 'hover:bg-muted/70 hover:text-muted-foreground'
+                  )}
                   onClick={handleConvertToJira}
-                  title="Convert to JIRA"
+                  title={feature.jira_integration ? 'View in JIRA' : 'Convert to JIRA'}
                 >
-                  <ExternalLink className="h-3 w-3" />
+                  {feature.jira_integration ? (
+                    <CheckCircle className="h-3 w-3" />
+                  ) : (
+                    <ExternalLink className="h-3 w-3" />
+                  )}
                 </Button>
               )}
               <Button
@@ -276,26 +286,45 @@ export function RoadmapCard({
               <span>Created {new Date(feature.created_at).toLocaleDateString()}</span>
             </div>
 
-            {/* Bottom row with submitter and votes */}
+            {/* Bottom row with submitter, votes, and JIRA status */}
             <div className="flex items-center justify-between">
-              {/* Enhanced Submitter Info */}
-              {feature.submitter_name ? (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground group-hover:text-muted-foreground/80 transition-all duration-300">
-                  <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-all duration-300 group-hover:scale-110">
-                    <User className="h-3 w-3 text-primary" />
+              {/* Left side: Submitter and JIRA status */}
+              <div className="flex items-center gap-3">
+                {/* Enhanced Submitter Info */}
+                {feature.submitter_name ? (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground group-hover:text-muted-foreground/80 transition-all duration-300">
+                    <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-all duration-300 group-hover:scale-110">
+                      <User className="h-3 w-3 text-primary" />
+                    </div>
+                    <span className="max-w-[80px] truncate font-medium group-hover:max-w-none transition-all duration-300">
+                      {feature.submitter_name}
+                    </span>
                   </div>
-                  <span className="max-w-[80px] truncate font-medium group-hover:max-w-none transition-all duration-300">
-                    {feature.submitter_name}
-                  </span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground group-hover:text-muted-foreground/80 transition-all duration-300">
-                  <div className="w-5 h-5 rounded-full bg-muted/50 flex items-center justify-center group-hover:bg-muted/70 transition-all duration-300 group-hover:scale-110">
-                    <User className="h-3 w-3 text-muted-foreground" />
+                ) : (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground group-hover:text-muted-foreground/80 transition-all duration-300">
+                    <div className="w-5 h-5 rounded-full bg-muted/50 flex items-center justify-center group-hover:bg-muted/70 transition-all duration-300 group-hover:scale-110">
+                      <User className="h-3 w-3 text-muted-foreground" />
+                    </div>
+                    <span>Anonymous</span>
                   </div>
-                  <span>Anonymous</span>
-                </div>
-              )}
+                )}
+
+                {/* JIRA Sync Status Indicator */}
+                {feature.jira_integration && (
+                  <div className="flex items-center gap-1 text-xs">
+                    <div className="w-3 h-3 rounded-full bg-green-500 flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
+                    </div>
+                    <span className="text-green-600 font-medium">JIRA</span>
+                    <Badge
+                      variant="outline"
+                      className="text-xs px-1 py-0.5 bg-green-50 text-green-700 border-green-200"
+                    >
+                      {feature.jira_integration.external_id}
+                    </Badge>
+                  </div>
+                )}
+              </div>
 
               {/* Enhanced Vote Count with better interactions */}
               <div className="flex items-center gap-2 text-xs">

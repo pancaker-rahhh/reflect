@@ -196,19 +196,24 @@ export const useSyncFeatureToJira = () => {
       featureId,
       jiraIntegrationId,
       forceSync,
+      customConfig,
     }: {
       featureId: string
       jiraIntegrationId: string
       forceSync?: boolean
-    }) => integrationsApi.syncFeatureToJira(featureId, jiraIntegrationId, forceSync),
+      customConfig?: {
+        issue_type?: string
+        priority?: string
+      }
+    }) => integrationsApi.syncFeatureToJira(featureId, jiraIntegrationId, forceSync, customConfig),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['roadmap'] })
       queryClient.invalidateQueries({ queryKey: ['roadmap-features'] })
 
       if (data.success) {
         toast({
-          title: 'JIRA Issue Created',
-          description: `Successfully created JIRA issue: ${data.data.issue_key}`,
+          title: 'JIRA Issue Created Successfully!',
+          description: `Issue ${data.data.issue_key} has been created and is ready for development. Click the "View in JIRA" button in the modal to open it.`,
         })
       } else {
         toast({

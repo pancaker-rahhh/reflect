@@ -90,11 +90,14 @@ class JiraIntegrationService:
         integration: Integration,
         action_item_id: UUID,
         push_to_jira: bool = True,
+        custom_config: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         try:
             from app.repositories.roadmap_repository import roadmap_feature_repository
 
-            action_item = await roadmap_feature_repository.get(db, action_item_id)
+            action_item = await roadmap_feature_repository.get_with_integrations(
+                db, action_item_id
+            )
             if not action_item:
                 return {'status': 'error', 'message': 'Action item not found'}
 
@@ -104,13 +107,18 @@ class JiraIntegrationService:
                 return {
                     'status': 'success',
                     'message': 'Already synced with JIRA',
-                    'external_id': existing_integration.external_id,
+                    'issue_key': existing_integration.external_id,
+                    'issue_url': existing_integration.external_url,
                 }
 
             jira_config = {
                 'project_key': integration.config.get('project_key'),
-                'issue_type': integration.config.get('issue_type', 'Task'),
-                'priority': integration.config.get('priority'),
+                'issue_type': custom_config.get('issue_type')
+                if custom_config
+                else integration.config.get('issue_type', 'Task'),
+                'priority': custom_config.get('priority')
+                if custom_config
+                else integration.config.get('priority'),
                 'components': integration.config.get('components', []),
                 'assignee': integration.config.get('default_assignee'),
                 'reporter': integration.config.get('default_reporter'),
@@ -130,6 +138,17 @@ class JiraIntegrationService:
                         else [],
                     },
                 )
+
+                # Ensure consistent response format for updates
+                if result.get('status') == 'success':
+                    return {
+                        'status': 'success',
+                        'message': 'JIRA issue updated successfully',
+                        'issue_key': existing_integration.external_id,
+                        'issue_url': existing_integration.external_url,
+                    }
+                else:
+                    return result
             else:
                 result = await self.issue_service.create_issue_from_action_item(
                     db, integration, action_item_id, jira_config
