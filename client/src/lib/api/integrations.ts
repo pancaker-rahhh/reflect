@@ -226,7 +226,10 @@ export const integrationsApi = {
   },
 
   bulkCreateJiraIssues: async (request: BulkJiraCreateRequest): Promise<BulkJiraCreateResponse> => {
-    return apiClient.post<BulkJiraCreateResponse>('/roadmap/features/bulk-jira', request)
+    return apiClient.post<BulkJiraCreateResponse>(
+      '/roadmap-enhanced/roadmap/features/bulk-jira',
+      request
+    )
   },
 
   syncFeatureToJira: async (

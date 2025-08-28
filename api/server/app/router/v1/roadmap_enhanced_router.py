@@ -9,6 +9,7 @@ from app.models.user_model import User
 from app.services.roadmap_service import roadmap_service
 from app.services.integration_setup_service import integration_setup_service
 from app.services.jira_integration_service import jira_integration_service
+from app.services.jira.jira_auth_service import JiraAuthType
 from app.schemas.roadmap_schema import RoadmapActionItemCreate
 
 router = APIRouter(prefix='/roadmap', tags=['Roadmap Enhanced'])
@@ -159,14 +160,59 @@ async def bulk_create_jira_issues(
         results = []
         errors = []
         successful_count = 0
+        failed_fields = []
 
         for action_item_id in action_item_ids:
             try:
-                jira_result = (
-                    await jira_integration_service.create_issue_from_action_item(
-                        db, integration, action_item_id, jira_config
+                # Create a copy of jira_config with failed fields tracking
+                current_jira_config = jira_config.copy()
+                if failed_fields:
+                    current_jira_config['failed_fields'] = failed_fields
+
+                # If this is the first item, check field support
+                if action_item_id == action_item_ids[0]:
+                    field_support = await jira_integration_service.issue_service._check_field_support(
+                        integration.config,
+                        integration.auth_data,
+                        current_jira_config.get('project_key'),
+                        current_jira_config.get('issue_type', 'Task'),
+                        JiraAuthType.API_TOKEN,
                     )
+                    if field_support['status'] == 'success':
+                        current_jira_config['supported_fields'] = field_support[
+                            'supported_fields'
+                        ]
+                    else:
+                        current_jira_config['supported_fields'] = {
+                            'priority': True,
+                            'components': True,
+                            'assignee': True,
+                        }
+
+                # Check if action item already has a JIRA integration for this integration
+                from app.repositories.roadmap_repository import (
+                    roadmap_action_item_integration_repository,
                 )
+
+                existing_integration = await roadmap_action_item_integration_repository.get_by_action_item_and_integration(
+                    db, action_item_id, jira_integration_id
+                )
+
+                if existing_integration:
+                    # Skip if already has JIRA integration for this integration
+                    jira_result = {
+                        'status': 'success',
+                        'message': 'Already has JIRA integration',
+                        'issue_key': existing_integration.external_id,
+                        'issue_url': existing_integration.external_url,
+                    }
+                else:
+                    # Force creation of new issues for bulk operations (don't update existing ones)
+                    jira_result = (
+                        await jira_integration_service.create_issue_from_action_item(
+                            db, integration, action_item_id, current_jira_config
+                        )
+                    )
 
                 if jira_result.get('status') == 'success':
                     results.append(
@@ -179,16 +225,23 @@ async def bulk_create_jira_issues(
                     )
                     successful_count += 1
                 else:
+                    error_message = jira_result.get('message', '')
+
+                    # Track priority field failures for subsequent items
+                    if (
+                        'priority' in error_message.lower()
+                        and 'priority' not in failed_fields
+                    ):
+                        failed_fields.append('priority')
+
                     results.append(
                         {
                             'action_item_id': str(action_item_id),
                             'status': 'failed',
-                            'error': jira_result.get('message'),
+                            'error': error_message,
                         }
                     )
-                    errors.append(
-                        f"Action item {action_item_id}: {jira_result.get('message')}"
-                    )
+                    errors.append(f'Action item {action_item_id}: {error_message}')
 
             except Exception as e:
                 results.append(

@@ -245,6 +245,10 @@ class JiraAuthService:
     def _decrypt_auth_data(self, auth_data: Dict[str, Any]) -> Dict[str, Any]:
         def safe_b64decode(value: str) -> str:
             try:
+                if not value:
+                    return value
+                if not isinstance(value, str):
+                    return str(value)
                 # Add padding if needed
                 padding_needed = len(value) % 4
                 if padding_needed:
@@ -253,7 +257,7 @@ class JiraAuthService:
             except Exception as e:
                 logger.error(f'Failed to decode base64 value: {str(e)}')
                 # Return original value if decoding fails
-                return value
+                return str(value) if value else ''
 
         return {
             k: safe_b64decode(v)

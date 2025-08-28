@@ -11,10 +11,8 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Progress } from '@/components/ui/progress'
 import { Loader2, CheckCircle, XCircle, ExternalLink, AlertTriangle } from 'lucide-react'
-import { useBulkCreateJiraIssues, useIntegrationProjects } from '@/hooks/useJiraIntegration'
+import { useBulkCreateJiraIssues } from '@/hooks/useJiraIntegration'
 import type { RoadmapActionItem } from '@/types'
 
 interface BulkJiraModalProps {
@@ -31,27 +29,26 @@ export function BulkJiraModal({
   jiraIntegrations,
 }: BulkJiraModalProps) {
   const [selectedIntegrationId, setSelectedIntegrationId] = useState<string>('')
-  const [selectedProject, setSelectedProject] = useState<string>('')
   const [issueType, setIssueType] = useState('Task')
   const [priority, setPriority] = useState('Medium')
-  const [assignee, setAssignee] = useState<string>('')
-  const [components, setComponents] = useState<string[]>([])
 
   const bulkCreate = useBulkCreateJiraIssues()
-  const { data: jiraProjects } = useIntegrationProjects(selectedIntegrationId, false)
 
   const handleBulkCreate = async () => {
-    if (!selectedIntegrationId || !selectedProject) return
+    if (!selectedIntegrationId) return
+
+    const selectedIntegration = jiraIntegrations.find(
+      (integration) => integration.id === selectedIntegrationId
+    )
+    if (!selectedIntegration) return
 
     const request = {
       action_item_ids: selectedItems.map((item) => item.id),
       jira_integration_id: selectedIntegrationId,
       jira_config: {
-        project_key: selectedProject,
+        project_key: selectedIntegration.config?.project_key || '',
         issue_type: issueType,
-        priority,
-        assignee: assignee || undefined,
-        components: components.length > 0 ? components : undefined,
+        priority: priority,
       },
     }
 
@@ -60,11 +57,8 @@ export function BulkJiraModal({
 
   const resetForm = () => {
     setSelectedIntegrationId('')
-    setSelectedProject('')
     setIssueType('Task')
     setPriority('Medium')
-    setAssignee('')
-    setComponents([])
   }
 
   const handleClose = () => {
@@ -107,84 +101,52 @@ export function BulkJiraModal({
 
           <div className="space-y-4">
             <div>
-              <Label>JIRA Integration</Label>
+              <Label>JIRA Project</Label>
               <Select value={selectedIntegrationId} onValueChange={setSelectedIntegrationId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select JIRA integration" />
+                  <SelectValue placeholder="Select your JIRA project" />
                 </SelectTrigger>
                 <SelectContent>
                   {jiraIntegrations.map((integration) => (
                     <SelectItem key={integration.id} value={integration.id}>
-                      {integration.config?.jira_url || 'JIRA Integration'}
+                      {integration.config?.project_key ||
+                        integration.name?.replace('JIRA Integration - ', '') ||
+                        'JIRA Project'}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {selectedIntegrationId && jiraProjects?.success && (
+            {selectedIntegrationId && (
               <div>
-                <Label>JIRA Project</Label>
-                <Select value={selectedProject} onValueChange={setSelectedProject}>
+                <Label>Issue Type</Label>
+                <Select value={issueType} onValueChange={setIssueType}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select project" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {jiraProjects.data.projects.map((project: any) => (
-                      <SelectItem key={project.key} value={project.key}>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs">{project.key}</span>
-                          <span>{project.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="Task">Task</SelectItem>
+                    <SelectItem value="Story">Story</SelectItem>
+                    <SelectItem value="Bug">Bug</SelectItem>
+                    <SelectItem value="Epic">Epic</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             )}
 
-            {selectedProject && (
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Issue Type</Label>
-                  <Select value={issueType} onValueChange={setIssueType}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Task">Task</SelectItem>
-                      <SelectItem value="Story">Story</SelectItem>
-                      <SelectItem value="Bug">Bug</SelectItem>
-                      <SelectItem value="Epic">Epic</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Priority</Label>
-                  <Select value={priority} onValueChange={setPriority}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Low">Low</SelectItem>
-                      <SelectItem value="Medium">Medium</SelectItem>
-                      <SelectItem value="High">High</SelectItem>
-                      <SelectItem value="Highest">Highest</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            )}
-
-            {selectedProject && (
+            {selectedIntegrationId && (
               <div>
-                <Label>Assignee (Optional)</Label>
-                <Select value={assignee} onValueChange={setAssignee}>
+                <Label>Priority</Label>
+                <Select value={priority} onValueChange={setPriority}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Unassigned" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Unassigned</SelectItem>
+                    <SelectItem value="Low">Low</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
+                    <SelectItem value="Highest">Highest</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -240,6 +202,16 @@ export function BulkJiraModal({
                             <div className="flex items-center gap-1">
                               <CheckCircle className="h-3 w-3 text-green-500" />
                               <span className="text-green-600">{result.issue_key}</span>
+                              {result.issue_url && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-4 w-4 p-0"
+                                  onClick={() => window.open(result.issue_url, '_blank')}
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                </Button>
+                              )}
                             </div>
                           ) : (
                             <div className="flex items-center gap-1">
@@ -250,6 +222,27 @@ export function BulkJiraModal({
                         </div>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {bulkCreate.data.data.successful_count > 0 && (
+                  <div className="pt-2 border-t">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => {
+                        const successfulResults = bulkCreate.data.data.results.filter(
+                          (r) => r.status === 'success' && r.issue_url
+                        )
+                        if (successfulResults.length > 0) {
+                          window.open(successfulResults[0].issue_url, '_blank')
+                        }
+                      }}
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      View Created Issues in JIRA
+                    </Button>
                   </div>
                 )}
               </CardContent>
@@ -263,7 +256,7 @@ export function BulkJiraModal({
           </Button>
           <Button
             onClick={handleBulkCreate}
-            disabled={!selectedIntegrationId || !selectedProject || bulkCreate.isPending}
+            disabled={!selectedIntegrationId || bulkCreate.isPending}
             className="flex-1"
           >
             {bulkCreate.isPending ? (
@@ -271,6 +264,8 @@ export function BulkJiraModal({
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Creating JIRA Issues...
               </>
+            ) : bulkCreate.data ? (
+              'Create More Issues'
             ) : (
               `Create ${selectedItems.length} JIRA Issue${selectedItems.length > 1 ? 's' : ''}`
             )}

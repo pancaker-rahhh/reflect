@@ -57,6 +57,26 @@ class JiraIssueService:
             if not project_validation['status'] == 'success':
                 return project_validation
 
+            # Check field support for the issue type
+            field_support = await self._check_field_support(
+                integration.config,
+                integration.auth_data,
+                jira_config.get('project_key'),
+                jira_config.get('issue_type', 'Task'),
+                auth_type,
+            )
+
+            # Add supported fields to config
+            if field_support['status'] == 'success':
+                jira_config['supported_fields'] = field_support['supported_fields']
+            else:
+                # If we can't check field support, assume all fields are supported
+                jira_config['supported_fields'] = {
+                    'priority': True,
+                    'components': True,
+                    'assignee': True,
+                }
+
             issue_data = self._map_action_item_to_jira_issue(action_item, jira_config)
             validation_result = self._validate_issue_data(issue_data)
             if not validation_result['valid']:
@@ -100,8 +120,12 @@ class JiraIssueService:
             'project_key': jira_config.get('project_key'),
         }
 
-        # Only include priority if it's enabled in the JIRA config
-        if jira_config.get('enable_priority', True):
+        # Only include priority if it's enabled in the JIRA config and not previously failed
+        if (
+            jira_config.get('enable_priority', True)
+            and 'priority' not in jira_config.get('failed_fields', [])
+            and jira_config.get('supported_fields', {}).get('priority', True)
+        ):
             priority = self._map_priority(getattr(action_item, 'priority', 'Medium'))
             if priority:
                 issue_data['priority'] = priority
@@ -233,6 +257,53 @@ class JiraIssueService:
             return {
                 'status': 'error',
                 'message': f'Project validation failed: {str(e)}',
+            }
+
+    async def _check_field_support(
+        self,
+        config: Dict[str, Any],
+        auth_data: Dict[str, Any],
+        project_key: str,
+        issue_type: str,
+        auth_type: JiraAuthType,
+    ) -> Dict[str, Any]:
+        try:
+            base_url = self._get_api_base_url(config)
+            headers = jira_auth_service._get_auth_headers(
+                jira_auth_service._decrypt_auth_data(auth_data), auth_type
+            )
+            session = await self.get_session()
+
+            async with session.get(
+                f'{base_url}/issue/createmeta/{project_key}/issuetypes/{issue_type}',
+                headers=headers,
+            ) as response:
+                if response.status == 200:
+                    metadata = await response.json()
+                    fields = metadata.get('values', [{}])[0].get('fields', {})
+
+                    supported_fields = {
+                        'priority': 'priority' in fields,
+                        'components': 'components' in fields,
+                        'assignee': 'assignee' in fields,
+                    }
+
+                    return {
+                        'status': 'success',
+                        'supported_fields': supported_fields,
+                    }
+                else:
+                    return {
+                        'status': 'error',
+                        'message': f'Failed to get field metadata: {response.status}',
+                        'details': {'status_code': response.status},
+                    }
+        except Exception as e:
+            logger.error(f'Field support check failed: {str(e)}')
+            return {
+                'status': 'error',
+                'message': f'Field support check failed: {str(e)}',
+                'details': {'exception': str(e)},
             }
 
     async def _create_jira_issue(
@@ -447,8 +518,36 @@ class JiraIssueService:
                     update_data['description']
                 )
 
+            # Check if priority field is supported before including it
             if 'priority' in update_data:
-                jira_update['fields']['priority'] = {'name': update_data['priority']}
+                # Get issue metadata to check field support
+                try:
+                    async with session.get(
+                        f'{base_url}/issue/{issue_key}/editmeta',
+                        headers=headers,
+                    ) as meta_response:
+                        if meta_response.status == 200:
+                            meta_data = await meta_response.json()
+                            fields = meta_data.get('fields', {})
+
+                            # Only include priority if it's supported
+                            if 'priority' in fields:
+                                jira_update['fields']['priority'] = {
+                                    'name': update_data['priority']
+                                }
+                            else:
+                                logger.warning(
+                                    f'Priority field not supported for issue {issue_key}, skipping'
+                                )
+                        else:
+                            # If we can't check metadata, try without priority
+                            logger.warning(
+                                f'Could not check field support for issue {issue_key}, skipping priority'
+                            )
+                except Exception as e:
+                    logger.warning(
+                        f'Error checking field support for issue {issue_key}: {str(e)}, skipping priority'
+                    )
 
             if 'assignee' in update_data:
                 jira_update['fields']['assignee'] = {'name': update_data['assignee']}
@@ -472,10 +571,41 @@ class JiraIssueService:
                     }
                 else:
                     error_text = await response.text()
-                    return {
-                        'status': 'error',
-                        'message': f'Failed to update issue: {error_text}',
-                    }
+
+                    # If it's a priority-related error, try again without priority
+                    if (
+                        'priority' in error_text.lower()
+                        and 'priority' in jira_update['fields']
+                    ):
+                        logger.warning(
+                            f'Priority field not available for update, retrying without priority: {error_text}'
+                        )
+
+                        # Remove priority field and try again
+                        del jira_update['fields']['priority']
+
+                        async with session.put(
+                            f'{base_url}/issue/{issue_key}',
+                            headers=headers,
+                            json=jira_update,
+                        ) as retry_response:
+                            if retry_response.status == 204:
+                                return {
+                                    'status': 'success',
+                                    'message': f'Issue {issue_key} updated successfully (without priority)',
+                                    'url': f"{config.get('base_url', '').rstrip('/')}/browse/{issue_key}",
+                                }
+                            else:
+                                retry_error_text = await retry_response.text()
+                                return {
+                                    'status': 'error',
+                                    'message': f'Failed to update issue: {retry_error_text}',
+                                }
+                    else:
+                        return {
+                            'status': 'error',
+                            'message': f'Failed to update issue: {error_text}',
+                        }
 
         except Exception as e:
             logger.error(f'Failed to update JIRA issue: {str(e)}')

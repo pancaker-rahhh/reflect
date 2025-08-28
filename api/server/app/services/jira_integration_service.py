@@ -111,6 +111,7 @@ class JiraIntegrationService:
                     'issue_url': existing_integration.external_url,
                 }
 
+            # Merge custom config with integration config
             jira_config = {
                 'project_key': integration.config.get('project_key'),
                 'issue_type': custom_config.get('issue_type')
@@ -119,24 +120,36 @@ class JiraIntegrationService:
                 'priority': custom_config.get('priority')
                 if custom_config
                 else integration.config.get('priority'),
-                'components': integration.config.get('components', []),
-                'assignee': integration.config.get('default_assignee'),
+                'components': custom_config.get(
+                    'components', integration.config.get('components', [])
+                ),
+                'assignee': custom_config.get(
+                    'assignee', integration.config.get('default_assignee')
+                ),
                 'reporter': integration.config.get('default_reporter'),
             }
 
             if existing_integration:
+                # Prepare update data, but be careful with priority field
+                update_data = {
+                    'title': action_item.title,
+                    'description': action_item.description,
+                    'labels': [tag.name for tag in action_item.tags]
+                    if action_item.tags
+                    else [],
+                }
+
+                # Only include priority if it's not in failed fields
+                if jira_config.get('priority') and 'priority' not in jira_config.get(
+                    'failed_fields', []
+                ):
+                    update_data['priority'] = jira_config.get('priority')
+
                 result = await self.issue_service.update_issue(
                     integration.config,
                     integration.auth_data,
                     existing_integration.external_id,
-                    {
-                        'title': action_item.title,
-                        'description': action_item.description,
-                        'priority': jira_config.get('priority'),
-                        'labels': [tag.name for tag in action_item.tags]
-                        if action_item.tags
-                        else [],
-                    },
+                    update_data,
                 )
 
                 # Ensure consistent response format for updates

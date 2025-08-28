@@ -29,7 +29,6 @@ export function IndividualJiraModal({
   jiraIntegrations,
 }: IndividualJiraModalProps) {
   const [selectedIntegrationId, setSelectedIntegrationId] = useState<string>('')
-  const [selectedProject, setSelectedProject] = useState<string>('')
   const [issueType, setIssueType] = useState('Task')
   const [priority, setPriority] = useState('Medium')
 
@@ -62,7 +61,6 @@ export function IndividualJiraModal({
 
   const resetForm = () => {
     setSelectedIntegrationId('')
-    setSelectedProject('')
     setIssueType('Task')
     setPriority('Medium')
   }
