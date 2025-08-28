@@ -15,6 +15,7 @@ import {
   Clock,
   Calendar,
   MessageSquare,
+  ExternalLink,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/use-toast'
@@ -32,6 +33,8 @@ interface RoadmapCardProps {
   isSelectionMode: boolean
   onToggleSelection?: (feature: RoadmapActionItem) => void
   isSelected: boolean
+  jiraIntegrations?: any[]
+  onConvertToJira?: (feature: RoadmapActionItem) => void
 }
 
 export function RoadmapCard({
@@ -45,6 +48,8 @@ export function RoadmapCard({
   isSelectionMode,
   onToggleSelection,
   isSelected,
+  jiraIntegrations = [],
+  onConvertToJira,
 }: RoadmapCardProps) {
   const [showDetail, setShowDetail] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -98,6 +103,11 @@ export function RoadmapCard({
     setShowDeleteConfirm(true)
   }
 
+  const handleConvertToJira = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onConvertToJira?.(feature)
+  }
+
   const confirmDelete = () => {
     deleteFeatureMutation.mutate(feature.id)
   }
@@ -143,7 +153,7 @@ export function RoadmapCard({
         {/* Subtle border glow on hover */}
         <div className="absolute inset-0 rounded-lg border-2 border-transparent group-hover:border-primary/20 transition-all duration-300" />
 
-        {/* Quick Actions - Enhanced hover animation */}
+        {/* Quick Actions - Enhanced hover animation (Edit, JIRA, Delete) */}
         {!isSelectionMode && (
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 transform translate-y-2 group-hover:translate-y-0 scale-95 group-hover:scale-100">
             <div className="flex items-center gap-1 bg-background/95 backdrop-blur-sm rounded-lg border border-border/50 p-1 shadow-xl">
@@ -158,6 +168,17 @@ export function RoadmapCard({
               >
                 <Edit3 className="h-3 w-3" />
               </Button>
+              {jiraIntegrations.length > 0 && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 w-6 p-0 hover:bg-muted/70 hover:text-muted-foreground transition-all duration-200 hover:scale-110"
+                  onClick={handleConvertToJira}
+                  title="Convert to JIRA"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                </Button>
+              )}
               <Button
                 size="sm"
                 variant="ghost"

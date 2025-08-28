@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils'
 import { RoadmapCard } from '@/components/roadmap/RoadmapCard'
 import { AddFeatureModal } from '@/components/roadmap/AddFeatureModal'
 import { BulkJiraModal } from '@/components/roadmap/BulkJiraModal'
+import { IndividualJiraModal } from '@/components/roadmap/IndividualJiraModal'
 import { useToast } from '@/components/ui/use-toast'
 import { supabase } from '@/lib/supabase'
 import type { RoadmapColumn, RoadmapActionItem } from '@/types'
@@ -36,6 +37,10 @@ interface FeatureFormData {
 export function RoadmapPage() {
   const [addFeatureModalOpen, setAddFeatureModalOpen] = useState(false)
   const [bulkJiraModalOpen, setBulkJiraModalOpen] = useState(false)
+  const [individualJiraModalOpen, setIndividualJiraModalOpen] = useState(false)
+  const [selectedFeatureForJira, setSelectedFeatureForJira] = useState<RoadmapActionItem | null>(
+    null
+  )
   const [selectedItems, setSelectedItems] = useState<RoadmapActionItem[]>([])
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedColumn, setSelectedColumn] = useState<{
@@ -98,7 +103,9 @@ export function RoadmapPage() {
 
   const { data: roadmap, isLoading: isLoadingRoadmap } = useQuery({
     queryKey: ['roadmap', project?.id],
-    queryFn: () => (project ? api.getRoadmap(project.id) : null),
+    queryFn: () => {
+      return project ? api.getRoadmap(project.id) : null
+    },
     enabled: !!project,
   })
 
@@ -108,13 +115,19 @@ export function RoadmapPage() {
     enabled: !!roadmap?.id,
   })
 
-  const { data: integrations = [] } = useQuery({
-    queryKey: ['integrations'],
-    queryFn: () => api.getIntegrations(),
+  const {
+    data: integrations = [],
+    isLoading: isLoadingIntegrations,
+    error: integrationsError,
+  } = useQuery({
+    queryKey: ['integrations', project?.id],
+    queryFn: () => api.getIntegrations(project?.id),
     enabled: !!project?.id,
   })
 
-  const jiraIntegrations = integrations.filter((integration: any) => integration.type === 'JIRA')
+  const jiraIntegrations = integrations.filter(
+    (integration: any) => integration.integration_type === 'jira' || integration.type === 'JIRA'
+  )
 
   const createFeatureMutation = useMutation({
     mutationFn: (data: {
@@ -126,7 +139,7 @@ export function RoadmapPage() {
       submitter_email?: string
     }) => api.createRoadmapActionItem(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
       setAddFeatureModalOpen(false)
       toast({
         title: 'Feature created',
@@ -146,7 +159,7 @@ export function RoadmapPage() {
     mutationFn: (updates: { id: string; order: number; column_id?: string }[]) =>
       api.updateFeaturesOrder(updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
       toast({
         title: 'Feature moved',
         description: 'Feature has been moved to the new column.',
@@ -289,6 +302,11 @@ export function RoadmapPage() {
     })
   }
 
+  const handleConvertToJira = (feature: RoadmapActionItem) => {
+    setSelectedFeatureForJira(feature)
+    setIndividualJiraModalOpen(true)
+  }
+
   const handleSelectAll = () => {
     if (roadmap) {
       const allFeatures = roadmap.columns.flatMap((col) => getFeaturesByColumn(col.id))
@@ -325,7 +343,7 @@ export function RoadmapPage() {
     const column = roadmap.columns.find((c) => c.id === columnId)
     if (!column) return []
 
-    const features = column.features || []
+    const features = column.action_items || []
     return [...features].sort((a, b) => a.order - b.order)
   }
 
@@ -584,6 +602,19 @@ export function RoadmapPage() {
         jiraIntegrations={jiraIntegrations}
       />
 
+      {/* Individual JIRA Modal */}
+      {selectedFeatureForJira && (
+        <IndividualJiraModal
+          isOpen={individualJiraModalOpen}
+          onClose={() => {
+            setIndividualJiraModalOpen(false)
+            setSelectedFeatureForJira(null)
+          }}
+          feature={selectedFeatureForJira}
+          jiraIntegrations={jiraIntegrations}
+        />
+      )}
+
       <div className="relative">
         {/* Enhanced navigation buttons with better positioning and animations */}
         <Button
@@ -696,6 +727,8 @@ export function RoadmapPage() {
                             isSelectionMode={isSelectionMode}
                             isSelected={selectedItems.some((item) => item.id === feature.id)}
                             onToggleSelection={handleToggleSelection}
+                            jiraIntegrations={jiraIntegrations}
+                            onConvertToJira={handleConvertToJira}
                           />
                         </div>
                       ))}

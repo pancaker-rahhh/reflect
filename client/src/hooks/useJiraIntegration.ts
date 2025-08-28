@@ -186,3 +186,44 @@ export const useBulkCreateJiraIssues = () => {
     },
   })
 }
+
+export const useSyncFeatureToJira = () => {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  return useMutation({
+    mutationFn: ({
+      featureId,
+      jiraIntegrationId,
+      forceSync,
+    }: {
+      featureId: string
+      jiraIntegrationId: string
+      forceSync?: boolean
+    }) => integrationsApi.syncFeatureToJira(featureId, jiraIntegrationId, forceSync),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap-features'] })
+
+      if (data.success) {
+        toast({
+          title: 'JIRA Issue Created',
+          description: `Successfully created JIRA issue: ${data.data.issue_key}`,
+        })
+      } else {
+        toast({
+          title: 'JIRA Creation Failed',
+          description: data.message || 'Failed to create JIRA issue',
+          variant: 'destructive',
+        })
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'JIRA Creation Failed',
+        description: error.message || 'Failed to create JIRA issue',
+        variant: 'destructive',
+      })
+    },
+  })
+}

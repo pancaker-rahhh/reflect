@@ -211,7 +211,7 @@ export interface RoadmapColumn {
   status: 'new' | 'in-progress' | 'planned' | 'under-review'
   color: string
   order: number
-  features: RoadmapActionItem[]
+  action_items: RoadmapActionItem[]
 }
 
 export interface Roadmap {

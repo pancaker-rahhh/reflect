@@ -28,7 +28,11 @@ api_router.include_router(onboarding_router.router)
 api_router.include_router(invitation_router.router)
 api_router.include_router(dashboard_router.dashboard_router)
 api_router.include_router(integrations_router.router)
-api_router.include_router(roadmap_enhanced_router.router)
+api_router.include_router(
+    roadmap_enhanced_router.router,
+    prefix='/roadmap-enhanced',
+    tags=['Roadmap Enhanced'],
+)
 api_router.include_router(
     widget_router.project_widgets_router,
     prefix='/projects/{project_id}/widgets',

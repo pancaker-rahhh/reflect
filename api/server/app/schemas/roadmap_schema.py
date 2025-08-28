@@ -303,8 +303,8 @@ class RoadmapColumnRead(RoadmapColumnBase):
         ..., description='ID of the roadmap this column belongs to'
     )
     order: int = Field(..., ge=0, description='Column order within the roadmap')
-    features: List[RoadmapActionItemRead] = Field(
-        default_factory=list, description='List of features in this column'
+    action_items: List[RoadmapActionItemRead] = Field(
+        default_factory=list, description='List of action items in this column'
     )
 
     class Config:

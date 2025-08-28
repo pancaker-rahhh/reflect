@@ -35,12 +35,6 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { RoadmapTag } from '@/types'
-import {
-  useJiraIntegration,
-  useIntegrationProjects,
-  useIntegrationIssueTypes,
-  useIntegrationPriorities,
-} from '@/hooks/useJiraIntegration'
 
 interface AddFeatureModalProps {
   isOpen: boolean
@@ -56,13 +50,6 @@ export interface FeatureFormData {
   title: string
   description: string
   tagIds: string[]
-  pushToJira?: boolean
-  jiraIntegrationId?: string
-  jiraConfig?: {
-    project_key: string
-    issue_type: string
-    priority?: string
-  }
 }
 
 const formatStatus = (status: string) => {
@@ -82,13 +69,7 @@ export function AddFeatureModal({
     title: '',
     description: '',
     tagIds: [],
-    pushToJira: false,
   })
-
-  const [jiraIntegrationId, setJiraIntegrationId] = useState<string>('')
-  const [selectedJiraProject, setSelectedJiraProject] = useState<string>('')
-  const [selectedIssueType, setSelectedIssueType] = useState<string>('Task')
-  const [selectedPriority, setSelectedPriority] = useState<string>('Medium')
 
   // Fetch tags
   const { data: tags = [] } = useQuery({
@@ -97,54 +78,11 @@ export function AddFeatureModal({
     enabled: !!roadmapId,
   })
 
-  // Fetch JIRA integrations
-  const { data: integrations = [] } = useQuery({
-    queryKey: ['integrations'],
-    queryFn: () => api.getIntegrations(),
-    enabled: !!roadmapId,
-  })
-
-  const jiraIntegrations = integrations.filter((integration: any) => integration.type === 'JIRA')
-
-  const { data: jiraProjects } = useIntegrationProjects(jiraIntegrationId, false)
-  const { data: jiraIssueTypes } = useIntegrationIssueTypes(jiraIntegrationId)
-  const { data: jiraPriorities } = useIntegrationPriorities(jiraIntegrationId)
-
   useEffect(() => {
     if (!isOpen) {
-      setFormData({ title: '', description: '', tagIds: [], pushToJira: false })
-      setJiraIntegrationId('')
-      setSelectedJiraProject('')
-      setSelectedIssueType('Task')
-      setSelectedPriority('Medium')
+      setFormData({ title: '', description: '', tagIds: [] })
     }
   }, [isOpen])
-
-  useEffect(() => {
-    if (formData.pushToJira && jiraIntegrationId && selectedJiraProject) {
-      setFormData((prev) => ({
-        ...prev,
-        jiraIntegrationId,
-        jiraConfig: {
-          project_key: selectedJiraProject,
-          issue_type: selectedIssueType,
-          priority: selectedPriority,
-        },
-      }))
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        jiraIntegrationId: undefined,
-        jiraConfig: undefined,
-      }))
-    }
-  }, [
-    formData.pushToJira,
-    jiraIntegrationId,
-    selectedJiraProject,
-    selectedIssueType,
-    selectedPriority,
-  ])
 
   const handleTagSelect = (tagId: string) => {
     setFormData((prev) => {
@@ -292,109 +230,6 @@ export function AddFeatureModal({
               <p className="text-xs text-muted-foreground mt-3">
                 Click on tags to select/deselect them. Tags help organize and categorize features
                 for better roadmap management.
-              </p>
-            </div>
-          )}
-
-          {/* JIRA Integration Section */}
-          {jiraIntegrations.length > 0 && (
-            <div className="bg-blue-50/50 rounded-lg p-4 border border-blue-200/50 transition-all duration-200 hover:border-blue-300/70 hover:bg-blue-50/70">
-              <div className="flex items-center gap-2 mb-3">
-                <ExternalLink className="h-4 w-4 text-blue-600" />
-                <Label className="text-sm font-semibold text-blue-900">
-                  JIRA Integration <span className="text-blue-600 text-xs">(Optional)</span>
-                </Label>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="push-to-jira"
-                    checked={formData.pushToJira}
-                    onCheckedChange={(checked) =>
-                      setFormData((prev) => ({ ...prev, pushToJira: checked as boolean }))
-                    }
-                  />
-                  <Label htmlFor="push-to-jira" className="text-sm text-blue-700">
-                    Push to JIRA
-                  </Label>
-                </div>
-              </div>
-
-              {formData.pushToJira && (
-                <div className="space-y-3 animate-in slide-in-from-top-2 duration-200">
-                  <div>
-                    <Label className="text-xs text-blue-700">JIRA Integration</Label>
-                    <Select value={jiraIntegrationId} onValueChange={setJiraIntegrationId}>
-                      <SelectTrigger className="text-sm">
-                        <SelectValue placeholder="Select JIRA integration" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {jiraIntegrations.map((integration: any) => (
-                          <SelectItem key={integration.id} value={integration.id}>
-                            {integration.config?.jira_url || 'JIRA Integration'}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {jiraIntegrationId && jiraProjects?.success && (
-                    <div>
-                      <Label className="text-xs text-blue-700">JIRA Project</Label>
-                      <Select value={selectedJiraProject} onValueChange={setSelectedJiraProject}>
-                        <SelectTrigger className="text-sm">
-                          <SelectValue placeholder="Select project" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {jiraProjects.data.projects.map((project: any) => (
-                            <SelectItem key={project.key} value={project.key}>
-                              <div className="flex items-center gap-2">
-                                <span className="font-mono text-xs">{project.key}</span>
-                                <span>{project.name}</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  {selectedJiraProject && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label className="text-xs text-blue-700">Issue Type</Label>
-                        <Select value={selectedIssueType} onValueChange={setSelectedIssueType}>
-                          <SelectTrigger className="text-sm">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Task">Task</SelectItem>
-                            <SelectItem value="Story">Story</SelectItem>
-                            <SelectItem value="Bug">Bug</SelectItem>
-                            <SelectItem value="Epic">Epic</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label className="text-xs text-blue-700">Priority</Label>
-                        <Select value={selectedPriority} onValueChange={setSelectedPriority}>
-                          <SelectTrigger className="text-sm">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Low">Low</SelectItem>
-                            <SelectItem value="Medium">Medium</SelectItem>
-                            <SelectItem value="High">High</SelectItem>
-                            <SelectItem value="Highest">Highest</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <p className="text-xs text-blue-600 mt-3">
-                When enabled, this feature request will automatically create a corresponding JIRA
-                issue.
               </p>
             </div>
           )}

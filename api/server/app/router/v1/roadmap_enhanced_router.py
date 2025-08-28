@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from app.core.auth import get_current_user
 from app.models.user_model import User
-from app.services.action_item_service import action_item_service
+from app.services.roadmap_service import roadmap_service
 from app.services.integration_setup_service import integration_setup_service
 from app.services.jira_integration_service import jira_integration_service
 from app.schemas.roadmap_schema import RoadmapActionItemCreate
@@ -25,8 +25,8 @@ async def create_action_item_with_jira(
 ):
     try:
         if not jira_integration_id or not push_to_jira:
-            result = await action_item_service.create_action_item(
-                db, feature_data, current_user.id
+            result = await roadmap_service.create_feature(
+                db, user_id=current_user.id, feature_in=feature_data
             )
             return {
                 'success': True,
@@ -48,44 +48,44 @@ async def create_action_item_with_jira(
                 status_code=403, detail='Access denied to this integration'
             )
 
-        result = await action_item_service.create_action_item(
-            db, feature_data, current_user.id
+        result = await roadmap_service.create_feature(
+            db, user_id=current_user.id, feature_in=feature_data
         )
 
-        if result.get('status') == 'success':
-            action_item_id = result.get('data', {}).get('id')
+        action_item_id = result.id
 
-            jira_result = await jira_integration_service.create_issue_from_action_item(
-                db, integration, action_item_id, jira_config or {}
-            )
+        jira_result = await jira_integration_service.create_issue_from_action_item(
+            db, integration, action_item_id, jira_config or {}
+        )
 
-            if jira_result.get('status') == 'success':
-                return {
-                    'success': True,
-                    'data': {
-                        **result.get('data', {}),
-                        'jira_issue': {
-                            'issue_key': jira_result.get('issue_key'),
-                            'issue_url': jira_result.get('issue_url'),
-                            'issue_id': jira_result.get('issue_id'),
-                        },
+        if jira_result.get('status') == 'success':
+            return {
+                'success': True,
+                'data': {
+                    'id': str(result.id),
+                    'title': result.title,
+                    'description': result.description,
+                    'column_id': str(result.column_id),
+                    'jira_issue': {
+                        'issue_key': jira_result.get('issue_key'),
+                        'issue_url': jira_result.get('issue_url'),
+                        'issue_id': jira_result.get('issue_id'),
                     },
-                    'message': 'Action item created and synced to JIRA successfully',
-                    'errors': [],
-                }
-            else:
-                return {
-                    'success': True,
-                    'data': result.get('data'),
-                    'message': 'Action item created but JIRA sync failed',
-                    'errors': [jira_result.get('message')],
-                }
+                },
+                'message': 'Action item created and synced to JIRA successfully',
+                'errors': [],
+            }
         else:
             return {
-                'success': False,
-                'data': None,
-                'message': result.get('message'),
-                'errors': [result.get('details', {})],
+                'success': True,
+                'data': {
+                    'id': str(result.id),
+                    'title': result.title,
+                    'description': result.description,
+                    'column_id': str(result.column_id),
+                },
+                'message': 'Action item created but JIRA sync failed',
+                'errors': [jira_result.get('message')],
             }
 
     except HTTPException:
