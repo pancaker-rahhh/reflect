@@ -10,16 +10,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Loader2, CheckCircle, XCircle, ExternalLink, Settings } from 'lucide-react'
+import { Loader2, CheckCircle, XCircle, ExternalLink, Settings, FolderOpen } from 'lucide-react'
 import {
   useJiraConnectionTest,
   useJiraProjects,
   useCreateJiraIntegration,
 } from '@/hooks/useJiraIntegration'
-import type { JiraProject, JiraConfig } from '@/lib/api'
 
 interface JiraIntegrationModalProps {
   isOpen: boolean
@@ -28,18 +27,15 @@ interface JiraIntegrationModalProps {
 }
 
 export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegrationModalProps) {
-  const [step, setStep] = useState<'connection' | 'configuration' | 'complete'>('connection')
+  const [step, setStep] = useState<'connection' | 'discovery' | 'complete'>('connection')
   const [jiraUrl, setJiraUrl] = useState('')
   const [authType, setAuthType] = useState<'api_token' | 'basic_auth'>('api_token')
   const [email, setEmail] = useState('')
   const [apiToken, setApiToken] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [selectedProject, setSelectedProject] = useState<JiraProject | null>(null)
-  const [issueType, setIssueType] = useState('Task')
-  const [priority, setPriority] = useState('Medium')
+  const [defaultProject, setDefaultProject] = useState<string>('none')
   const [autoCreate, setAutoCreate] = useState(true)
-  const [includeMetadata, setIncludeMetadata] = useState(true)
 
   const connectionTest = useJiraConnectionTest()
   const createIntegration = useCreateJiraIntegration()
@@ -63,22 +59,21 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
   }
 
   const handleCreateIntegration = async () => {
-    if (!selectedProject) return
-
     const authData =
       authType === 'api_token' ? { username: email, api_token: apiToken } : { username, password }
 
-    const config = {
-      project_key: selectedProject.key,
-      default_issue_type: issueType,
-      default_priority: priority,
+    const config: any = {
       auto_create_issues: autoCreate,
-      include_metadata: includeMetadata,
+      include_metadata: true,
+    }
+
+    if (defaultProject && defaultProject !== 'none') {
+      config.project_key = defaultProject
     }
 
     await createIntegration.mutateAsync({
       project_id: projectId,
-      name: `JIRA Integration - ${selectedProject.key}`,
+      name: `JIRA Integration`,
       jira_url: jiraUrl,
       auth_type: authType,
       auth_data: authData,
@@ -96,11 +91,8 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
     setApiToken('')
     setUsername('')
     setPassword('')
-    setSelectedProject(null)
-    setIssueType('Task')
-    setPriority('Medium')
+    setDefaultProject('none')
     setAutoCreate(true)
-    setIncludeMetadata(true)
   }
 
   const handleClose = () => {
@@ -114,12 +106,20 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
-            Connect JIRA Integration
+            Connect to JIRA
           </DialogTitle>
         </DialogHeader>
 
         {step === 'connection' && (
           <div className="space-y-6">
+            <div className="text-center space-y-2">
+              <h3 className="text-lg font-semibold">Connect to JIRA</h3>
+              <p className="text-muted-foreground">
+                Connect once, use everywhere. Your action items can be converted to issues in any of
+                your JIRA projects.
+              </p>
+            </div>
+
             <div className="space-y-4">
               <div>
                 <Label htmlFor="jira-url">JIRA Instance URL</Label>
@@ -245,126 +245,125 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
               </Card>
             )}
 
-            {connectionTest.data?.success && projectsQuery.data?.success && (
-              <div className="space-y-4">
-                <div>
-                  <Label>Select JIRA Project</Label>
-                  <Select
-                    onValueChange={(projectKey) => {
-                      const project = projectsQuery.data.projects.find((p) => p.key === projectKey)
-                      setSelectedProject(project || null)
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose a project" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {projectsQuery.data.projects.map((project) => (
-                        <SelectItem key={project.key} value={project.key}>
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs">{project.key}</span>
-                            <span>{project.name}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {selectedProject && (
-                  <Button onClick={() => setStep('configuration')} className="w-full">
-                    Continue to Configuration
-                  </Button>
-                )}
-              </div>
+            {connectionTest.data?.success && (
+              <Button onClick={() => setStep('discovery')} className="w-full">
+                Continue
+              </Button>
             )}
           </div>
         )}
 
-        {step === 'configuration' && (
+        {step === 'discovery' && (
           <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <Label>Default Issue Type</Label>
-                <Select value={issueType} onValueChange={setIssueType}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Task">Task</SelectItem>
-                    <SelectItem value="Story">Story</SelectItem>
-                    <SelectItem value="Bug">Bug</SelectItem>
-                    <SelectItem value="Epic">Epic</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label>Default Priority</Label>
-                <Select value={priority} onValueChange={setPriority}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Low">Low</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Highest">Highest</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="auto-create"
-                    checked={autoCreate}
-                    onCheckedChange={(checked) => setAutoCreate(checked as boolean)}
-                  />
-                  <Label htmlFor="auto-create">
-                    Automatically create JIRA issues when action items are created
-                  </Label>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="include-metadata"
-                    checked={includeMetadata}
-                    onCheckedChange={(checked) => setIncludeMetadata(checked as boolean)}
-                  />
-                  <Label htmlFor="include-metadata">Include Reflect metadata in JIRA issues</Label>
-                </div>
-              </div>
+            <div className="text-center space-y-2">
+              <h3 className="text-lg font-semibold">Found Your Projects</h3>
+              <p className="text-muted-foreground">
+                Your action items can be converted to issues in any of these projects
+              </p>
             </div>
 
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setStep('connection')} className="flex-1">
-                Back
-              </Button>
-              <Button
-                onClick={handleCreateIntegration}
-                disabled={createIntegration.isPending}
-                className="flex-1"
-              >
-                {createIntegration.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating Integration...
-                  </>
-                ) : (
-                  'Create Integration'
-                )}
-              </Button>
-            </div>
+            {projectsQuery.isLoading ? (
+              <div className="text-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+                <p className="text-muted-foreground">Loading your projects...</p>
+              </div>
+            ) : projectsQuery.data?.success ? (
+              <div className="space-y-4">
+                <div className="grid gap-3">
+                  {projectsQuery.data.projects.map((project) => (
+                    <div
+                      key={project.key}
+                      className="flex items-center gap-3 p-3 border rounded-lg bg-muted/20"
+                    >
+                      <FolderOpen className="h-5 w-5 text-blue-500" />
+                      <div className="flex-1">
+                        <div className="font-medium">{project.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          Project key: {project.key}
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        Available
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <Label>Default Project (Optional)</Label>
+                    <Select value={defaultProject} onValueChange={setDefaultProject}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a default project (optional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No default</SelectItem>
+                        {projectsQuery.data.projects.map((project) => (
+                          <SelectItem key={project.key} value={project.key}>
+                            {project.name} ({project.key})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      You can always choose the project when creating issues
+                    </p>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="auto-create"
+                      checked={autoCreate}
+                      onCheckedChange={(checked) => setAutoCreate(checked as boolean)}
+                    />
+                    <Label htmlFor="auto-create">
+                      Automatically create JIRA issues when action items are created
+                    </Label>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setStep('connection')}
+                    className="flex-1"
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    onClick={handleCreateIntegration}
+                    disabled={createIntegration.isPending}
+                    className="flex-1"
+                  >
+                    {createIntegration.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating Integration...
+                      </>
+                    ) : (
+                      'Connect JIRA'
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <XCircle className="h-8 w-8 text-red-500 mx-auto mb-4" />
+                <p className="text-muted-foreground">Failed to load projects</p>
+                <Button variant="outline" onClick={() => setStep('connection')} className="mt-4">
+                  Go Back
+                </Button>
+              </div>
+            )}
           </div>
         )}
 
         {step === 'complete' && (
           <div className="text-center space-y-4">
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto" />
-            <h3 className="text-lg font-semibold">Integration Created Successfully!</h3>
+            <h3 className="text-lg font-semibold">JIRA Connected Successfully!</h3>
             <p className="text-muted-foreground">
-              Your JIRA integration is now configured and ready to use.
+              Your JIRA integration is ready. You can now convert action items to JIRA issues.
             </p>
             <Button onClick={handleClose} className="w-full">
               Done

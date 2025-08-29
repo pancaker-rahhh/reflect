@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   integrationsApi,
   type JiraConnectionTestRequest,
-  type JiraConfig,
   type JiraConfigUpdate,
   type BulkJiraCreateRequest,
 } from '@/lib/api'
@@ -38,7 +37,7 @@ export const useCreateJiraIntegration = () => {
 
   return useMutation({
     mutationFn: (request: any) => integrationsApi.createJiraIntegration(request),
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['integrations'] })
       toast({
         title: 'JIRA Integration Created',
@@ -71,7 +70,7 @@ export const useUpdateJiraIntegration = () => {
   return useMutation({
     mutationFn: ({ integrationId, config }: { integrationId: string; config: JiraConfigUpdate }) =>
       integrationsApi.updateJiraIntegration(integrationId, config),
-    onSuccess: (data, variables) => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['jira-integration', variables.integrationId] })
       queryClient.invalidateQueries({ queryKey: ['integrations'] })
       toast({
@@ -98,89 +97,14 @@ export const useDeleteJiraIntegration = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['integrations'] })
       toast({
-        title: 'Integration Removed',
+        title: 'Integration Deleted',
         description: 'Your JIRA integration has been successfully removed.',
       })
     },
     onError: (error: any) => {
       toast({
-        title: 'Removal Failed',
-        description: error.message || 'Failed to remove JIRA integration',
-        variant: 'destructive',
-      })
-    },
-  })
-}
-
-export const useIntegrationProjects = (integrationId: string, force_refresh?: boolean) => {
-  return useQuery({
-    queryKey: ['integration-projects', integrationId, force_refresh],
-    queryFn: () => integrationsApi.getIntegrationProjects(integrationId, force_refresh),
-    enabled: !!integrationId,
-    staleTime: 10 * 60 * 1000,
-  })
-}
-
-export const useIntegrationIssueTypes = (integrationId: string) => {
-  return useQuery({
-    queryKey: ['integration-issue-types', integrationId],
-    queryFn: () => integrationsApi.getIntegrationIssueTypes(integrationId),
-    enabled: !!integrationId,
-    staleTime: 30 * 60 * 1000,
-  })
-}
-
-export const useIntegrationPriorities = (integrationId: string) => {
-  return useQuery({
-    queryKey: ['integration-priorities', integrationId],
-    queryFn: () => integrationsApi.getIntegrationPriorities(integrationId),
-    enabled: !!integrationId,
-    staleTime: 30 * 60 * 1000,
-  })
-}
-
-export const useIntegrationComponents = (integrationId: string) => {
-  return useQuery({
-    queryKey: ['integration-components', integrationId],
-    queryFn: () => integrationsApi.getIntegrationComponents(integrationId),
-    enabled: !!integrationId,
-    staleTime: 30 * 60 * 1000,
-  })
-}
-
-export const useBulkCreateJiraIssues = () => {
-  const queryClient = useQueryClient()
-  const { toast } = useToast()
-
-  return useMutation({
-    mutationFn: (request: BulkJiraCreateRequest) => integrationsApi.bulkCreateJiraIssues(request),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
-      queryClient.invalidateQueries({ queryKey: ['roadmap-features'] })
-
-      const { successful_count, failed_count } = data.data
-      if (successful_count > 0) {
-        toast({
-          title: 'JIRA Issues Created',
-          description: `Successfully created ${successful_count} JIRA issue${
-            successful_count > 1 ? 's' : ''
-          }.`,
-        })
-      }
-      if (failed_count > 0) {
-        toast({
-          title: 'Some Issues Failed',
-          description: `${failed_count} issue${
-            failed_count > 1 ? 's' : ''
-          } failed to create. Check the details for more information.`,
-          variant: 'destructive',
-        })
-      }
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Bulk Creation Failed',
-        description: error.message || 'Failed to create JIRA issues',
+        title: 'Delete Failed',
+        description: error.message || 'Failed to delete JIRA integration',
         variant: 'destructive',
       })
     },
@@ -195,7 +119,7 @@ export const useSyncFeatureToJira = () => {
     mutationFn: ({
       featureId,
       jiraIntegrationId,
-      forceSync,
+      forceSync = false,
       customConfig,
     }: {
       featureId: string
@@ -206,29 +130,82 @@ export const useSyncFeatureToJira = () => {
         priority?: string
       }
     }) => integrationsApi.syncFeatureToJira(featureId, jiraIntegrationId, forceSync, customConfig),
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmap'] })
-      queryClient.invalidateQueries({ queryKey: ['roadmap-features'] })
-
-      if (data.success) {
-        toast({
-          title: 'JIRA Issue Created Successfully!',
-          description: `Issue ${data.data.issue_key} has been created and is ready for development. Click the "View in JIRA" button in the modal to open it.`,
-        })
-      } else {
-        toast({
-          title: 'JIRA Creation Failed',
-          description: data.message || 'Failed to create JIRA issue',
-          variant: 'destructive',
-        })
-      }
+      toast({
+        title: 'Feature Synced',
+        description: 'The feature has been successfully synced to JIRA.',
+      })
     },
     onError: (error: any) => {
       toast({
-        title: 'JIRA Creation Failed',
-        description: error.message || 'Failed to create JIRA issue',
+        title: 'Sync Failed',
+        description: error.message || 'Failed to sync feature to JIRA',
         variant: 'destructive',
       })
     },
+  })
+}
+
+export const useBulkCreateJiraIssues = () => {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  return useMutation({
+    mutationFn: (request: BulkJiraCreateRequest) => integrationsApi.bulkCreateJiraIssues(request),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      const { successful_count, failed_count } = data.data
+      toast({
+        title: 'Bulk Creation Complete',
+        description: `${successful_count} issues created successfully${
+          failed_count > 0 ? `, ${failed_count} failed` : ''
+        }.`,
+        variant: failed_count > 0 ? 'destructive' : 'default',
+      })
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Bulk Creation Failed',
+        description: error.message || 'Failed to create JIRA issues',
+        variant: 'destructive',
+      })
+    },
+  })
+}
+
+export const useIntegrationProjects = (integrationId: string, enabled: boolean = true) => {
+  return useQuery({
+    queryKey: ['integration-projects', integrationId],
+    queryFn: () => integrationsApi.getIntegrationProjects(integrationId),
+    enabled: enabled && !!integrationId,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export const useIntegrationIssueTypes = (integrationId: string) => {
+  return useQuery({
+    queryKey: ['integration-issue-types', integrationId],
+    queryFn: () => integrationsApi.getIntegrationIssueTypes(integrationId),
+    enabled: !!integrationId,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export const useIntegrationPriorities = (integrationId: string) => {
+  return useQuery({
+    queryKey: ['integration-priorities', integrationId],
+    queryFn: () => integrationsApi.getIntegrationPriorities(integrationId),
+    enabled: !!integrationId,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export const useIntegrationComponents = (integrationId: string) => {
+  return useQuery({
+    queryKey: ['integration-components', integrationId],
+    queryFn: () => integrationsApi.getIntegrationComponents(integrationId),
+    enabled: !!integrationId,
+    staleTime: 5 * 60 * 1000,
   })
 }

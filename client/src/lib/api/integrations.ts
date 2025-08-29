@@ -1,5 +1,4 @@
 import { apiClient } from '../client'
-import { ApiException } from '../errors'
 
 export interface JiraConnectionTestRequest {
   jira_url: string
@@ -29,9 +28,9 @@ export interface JiraConnectionTestResponse {
 
 export interface JiraConfig {
   jira_url: string
-  project_key: string
-  default_issue_type: string
-  default_priority: string
+  project_key?: string
+  default_issue_type?: string
+  default_priority?: string
   status_mapping?: Record<string, string>
   auto_create_issues: boolean
   include_metadata: boolean

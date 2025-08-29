@@ -407,22 +407,26 @@ async def discover_jira_projects(
                 'redirect_uri': redirect_uri,
             }
 
-        result = await integration_setup_service.discover_jira_projects(
+        result = await integration_setup_service.get_jira_projects(
             jira_url, auth_type, auth_data
         )
 
         if result.get('status') == 'success':
+            data = result.get('data', {})
             return JiraProjectsResponse(
                 success=True,
                 message=result.get('message', 'Projects discovered successfully'),
-                projects=result.get('projects', []),
+                projects=data.get('projects', []),
+                total_count=data.get('total_count', 0),
+                cached=result.get('cached', False),
             )
         else:
             return JiraProjectsResponse(
                 success=False,
                 message=result.get('message', 'Failed to discover projects'),
                 projects=[],
-                details=result.get('details'),
+                total_count=0,
+                cached=False,
             )
 
     except HTTPException:

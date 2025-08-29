@@ -85,28 +85,37 @@ class IntegrationSetupService:
         created_by: UUID,
     ) -> Dict[str, Any]:
         try:
-            validated_config = validate_integration_config(
-                {
-                    'base_url': config.jira_url,
-                    'project_key': config.project_key,
-                    'default_issue_type': config.default_issue_type,
-                    'default_priority': config.default_priority,
-                    'status_mapping': config.status_mapping,
-                    'auto_create_issues': config.auto_create_issues,
-                    'include_metadata': config.include_metadata,
-                    'default_assignee': config.default_assignee,
-                    'default_reporter': config.default_reporter,
-                    'components': config.components,
-                    'labels': config.labels,
-                }
-            )
+            config_data = {
+                'base_url': config.jira_url,
+                'auto_create_issues': config.auto_create_issues,
+                'include_metadata': config.include_metadata,
+            }
+
+            if config.project_key:
+                config_data['project_key'] = config.project_key
+            if config.default_issue_type:
+                config_data['default_issue_type'] = config.default_issue_type
+            if config.default_priority:
+                config_data['default_priority'] = config.default_priority
+            if config.status_mapping:
+                config_data['status_mapping'] = config.status_mapping
+            if config.default_assignee:
+                config_data['default_assignee'] = config.default_assignee
+            if config.default_reporter:
+                config_data['default_reporter'] = config.default_reporter
+            if config.components:
+                config_data['components'] = config.components
+            if config.labels:
+                config_data['labels'] = config.labels
+
+            validated_config = validate_integration_config(config_data)
 
             sanitized_auth_data = sanitize_input(auth_data)
 
             integration_data = {
                 'project_id': project_id,
                 'integration_type': IntegrationType.JIRA,
-                'name': f'JIRA Integration - {validated_config["project_key"]}',
+                'name': 'JIRA Integration',
                 'config': validated_config,
                 'auth_data': sanitized_auth_data,
                 'is_active': True,

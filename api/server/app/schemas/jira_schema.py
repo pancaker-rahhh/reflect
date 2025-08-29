@@ -64,7 +64,7 @@ class JiraProjectsResponse(BaseModel):
 class JiraConfig(BaseModel):
     jira_url: str = Field(..., description='JIRA instance URL')
     auth_type: JiraAuthType = Field(..., description='Authentication type')
-    project_key: str = Field(..., description='Default JIRA project key')
+    project_key: Optional[str] = Field(None, description='Default JIRA project key')
     default_issue_type: str = Field(default='Task', description='Default issue type')
     default_priority: str = Field(default='Medium', description='Default priority')
     status_mapping: Dict[str, str] = Field(

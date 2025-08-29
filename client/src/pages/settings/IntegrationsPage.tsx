@@ -4,16 +4,14 @@ import { api } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ExternalLink, Plus, Settings, Trash2, TestTube } from 'lucide-react'
+import { ExternalLink, Plus, Settings, Trash2, TestTube, CheckCircle } from 'lucide-react'
 import { JiraIntegrationModal } from '@/components/integrations/JiraIntegrationModal'
 import { useDeleteJiraIntegration } from '@/hooks/useJiraIntegration'
-import { useToast } from '@/components/ui/use-toast'
 import { useAppContext } from '@/context/AppContext'
 
 export function IntegrationsPage() {
   const [isJiraModalOpen, setIsJiraModalOpen] = useState(false)
   const { currentProject } = useAppContext()
-  const { toast } = useToast()
 
   const { data: integrations = [], isLoading } = useQuery({
     queryKey: ['integrations', currentProject?.id],
@@ -35,86 +33,95 @@ export function IntegrationsPage() {
     }
   }
 
+  const getJiraDomain = (url: string) => {
+    try {
+      const domain = new URL(url).hostname
+      return domain.replace('.atlassian.net', '')
+    } catch {
+      return url
+    }
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Integrations</h1>
-          <p className="text-muted-foreground">
-            Connect your Reflect project with external tools and services
-          </p>
-        </div>
+    <div className="p-6">
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Integrations</h3>
+        <p className="text-sm text-gray-600">
+          Connect your Reflect project with external tools and services
+        </p>
       </div>
 
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <ExternalLink className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg">JIRA Integration</CardTitle>
-                  <CardDescription>
-                    Automatically create JIRA issues from your action items
-                  </CardDescription>
-                </div>
+      <div className="space-y-6">
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <ExternalLink className="h-4 w-4 text-blue-600" />
               </div>
-              <Button onClick={() => setIsJiraModalOpen(true)} disabled={!currentProject?.id}>
+              <div>
+                <h4 className="font-medium text-gray-900">JIRA Integration</h4>
+                <p className="text-sm text-gray-600">
+                  Convert action items to JIRA issues in your existing workflow
+                </p>
+              </div>
+            </div>
+            {jiraIntegrations.length === 0 && (
+              <Button
+                onClick={() => setIsJiraModalOpen(true)}
+                disabled={!currentProject?.id}
+                size="sm"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Connect JIRA
+              </Button>
+            )}
+          </div>
+
+          {isLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+              <p className="text-sm text-gray-600 mt-2">Loading integrations...</p>
+            </div>
+          ) : jiraIntegrations.length === 0 ? (
+            <div className="text-center py-8 border border-gray-200 rounded-lg bg-gray-50">
+              <ExternalLink className="h-8 w-8 text-gray-400 mx-auto mb-3" />
+              <h4 className="font-medium text-gray-900 mb-1">No JIRA connection</h4>
+              <p className="text-sm text-gray-600 mb-4">
+                Connect to JIRA to convert action items to issues in your existing workflow
+              </p>
+              <Button
+                onClick={() => setIsJiraModalOpen(true)}
+                disabled={!currentProject?.id}
+                size="sm"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Connect JIRA
               </Button>
             </div>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                <p className="text-muted-foreground mt-2">Loading integrations...</p>
-              </div>
-            ) : jiraIntegrations.length === 0 ? (
-              <div className="text-center py-8">
-                <ExternalLink className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">No JIRA integrations</h3>
-                <p className="text-muted-foreground mb-4">
-                  Connect your JIRA instance to automatically create issues from action items
-                </p>
-                <Button onClick={() => setIsJiraModalOpen(true)} disabled={!currentProject?.id}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Connect JIRA
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {jiraIntegrations.map((integration: any) => (
-                  <div
-                    key={integration.id}
-                    className="flex items-center justify-between p-4 border rounded-lg bg-muted/30"
-                  >
+          ) : (
+            <div className="space-y-3">
+              {jiraIntegrations.map((integration: any) => (
+                <div key={integration.id} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <ExternalLink className="h-4 w-4 text-blue-600" />
+                      <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center">
+                        <CheckCircle className="h-3 w-3 text-green-600" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h4 className="font-medium">
-                            {integration.config?.jira_url || 'JIRA Integration'}
-                          </h4>
-                          <Badge variant="secondary" className="text-xs">
-                            {integration.config?.project_key || 'No Project'}
+                          <span className="font-medium text-gray-900">JIRA Connected</span>
+                          <Badge variant="outline" className="text-xs">
+                            {getJiraDomain(integration.config?.jira_url || '')}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          Project: {integration.config?.project_key} • Issue Type:{' '}
-                          {integration.config?.default_issue_type || 'Task'} • Priority:{' '}
-                          {integration.config?.default_priority || 'Medium'}
+                        <p className="text-sm text-gray-500">
+                          Ready to create issues in your JIRA projects
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2">
                       <Button variant="outline" size="sm">
-                        <Settings className="h-4 w-4 mr-1" />
+                        <Settings className="h-3 w-3 mr-1" />
                         Configure
                       </Button>
                       <Button
@@ -123,57 +130,58 @@ export function IntegrationsPage() {
                         onClick={() => handleDeleteIntegration(integration.id)}
                         disabled={deleteIntegration.isPending}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                <TestTube className="h-5 w-5 text-gray-600" />
-              </div>
-              <div>
-                <CardTitle className="text-lg">Coming Soon</CardTitle>
-                <CardDescription>More integrations are on the way</CardDescription>
-              </div>
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+              <TestTube className="h-4 w-4 text-gray-600" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/20">
-                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                  <span className="text-green-600 font-bold text-sm">T</span>
+            <div>
+              <h4 className="font-medium text-gray-900">Coming Soon</h4>
+              <p className="text-sm text-gray-600">More integrations are on the way</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center">
+                  <span className="text-green-600 font-bold text-xs">T</span>
                 </div>
                 <div>
-                  <h4 className="font-medium">Trello</h4>
-                  <p className="text-sm text-muted-foreground">Create Trello cards</p>
+                  <h5 className="font-medium text-gray-900">Trello</h5>
+                  <p className="text-sm text-gray-600">Create Trello cards</p>
                 </div>
-                <Badge variant="outline" className="ml-auto">
-                  Soon
-                </Badge>
-              </div>
-              <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/20">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <span className="text-purple-600 font-bold text-sm">L</span>
-                </div>
-                <div>
-                  <h4 className="font-medium">Linear</h4>
-                  <p className="text-sm text-muted-foreground">Create Linear issues</p>
-                </div>
-                <Badge variant="outline" className="ml-auto">
+                <Badge variant="outline" className="ml-auto text-xs">
                   Soon
                 </Badge>
               </div>
             </div>
-          </CardContent>
-        </Card>
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <span className="text-purple-600 font-bold text-xs">L</span>
+                </div>
+                <div>
+                  <h5 className="font-medium text-gray-900">Linear</h5>
+                  <p className="text-sm text-gray-600">Create Linear issues</p>
+                </div>
+                <Badge variant="outline" className="ml-auto text-xs">
+                  Soon
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <JiraIntegrationModal
