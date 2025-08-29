@@ -4,6 +4,7 @@ from functools import wraps
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.logging import get_logger
+from urllib.parse import urlparse
 
 logger = get_logger(__name__)
 
@@ -206,8 +207,6 @@ class AuditLogger:
             return url
 
         try:
-            from urllib.parse import urlparse
-
             parsed = urlparse(url)
             return f'{parsed.scheme}://{parsed.netloc}'
         except Exception:

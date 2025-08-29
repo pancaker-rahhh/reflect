@@ -3,6 +3,7 @@ import asyncio
 from typing import Dict, Optional
 from functools import wraps
 from fastapi import HTTPException, Request
+from starlette.requests import Request as StarletteRequest
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
@@ -79,9 +80,6 @@ def rate_limit(max_requests: int = 100, window_seconds: int = 3600):
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
-            from fastapi import Request
-            from starlette.requests import Request as StarletteRequest
-
             request = None
 
             if 'request' in kwargs:

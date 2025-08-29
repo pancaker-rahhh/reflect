@@ -7,7 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.logging import get_logger
 from app.services.jira.jira_auth_service import JiraAuthType, jira_auth_service
 from app.models.integration_model import Integration
-from app.repositories.roadmap_repository import roadmap_feature_repository
+from app.repositories.roadmap_repository import (
+    roadmap_feature_repository,
+    roadmap_action_item_integration_repository,
+)
 
 logger = get_logger(__name__)
 
@@ -499,10 +502,6 @@ class JiraIssueService:
         jira_config: Dict[str, Any],
     ):
         try:
-            from app.repositories.roadmap_repository import (
-                roadmap_action_item_integration_repository,
-            )
-
             integration_data = {
                 'action_item_id': action_item.id,
                 'integration_id': integration.id,

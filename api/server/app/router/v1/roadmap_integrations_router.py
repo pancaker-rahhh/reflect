@@ -16,6 +16,12 @@ from app.core.logging import get_logger
 from app.core.rate_limiting import rate_limit
 from app.core.audit_logging import audit_log
 from app.core.validation import sanitize_input
+from app.repositories.roadmap_repository import (
+    roadmap_feature_repository,
+    roadmap_column_repository,
+    roadmap_repository,
+    roadmap_action_item_integration_repository,
+)
 
 logger = get_logger(__name__)
 
@@ -66,11 +72,6 @@ async def create_action_item_with_integration(
 
         await organization_service.check_project_access(
             db, current_user.id, integration.project_id
-        )
-
-        from app.repositories.roadmap_repository import (
-            roadmap_column_repository,
-            roadmap_repository,
         )
 
         column = await roadmap_column_repository.get(db, id=feature_data.column_id)
@@ -185,12 +186,6 @@ async def bulk_create_jira_issues(
             db, current_user.id, integration.project_id
         )
 
-        from app.repositories.roadmap_repository import (
-            roadmap_feature_repository,
-            roadmap_column_repository,
-            roadmap_repository,
-        )
-
         first_feature = await roadmap_feature_repository.get(db, id=action_item_ids[0])
         if not first_feature:
             logger.warning(f'First action item not found: {action_item_ids[0]}')
@@ -244,10 +239,6 @@ async def bulk_create_jira_issues(
                             'components': True,
                             'assignee': True,
                         }
-
-                from app.repositories.roadmap_repository import (
-                    roadmap_action_item_integration_repository,
-                )
 
                 existing_integration = await roadmap_action_item_integration_repository.get_by_action_item_and_integration(
                     db, action_item_id, jira_integration_id
@@ -392,10 +383,6 @@ async def sync_feature_to_jira(
                 detail='Integration and roadmap must belong to the same project',
             )
 
-        from app.repositories.roadmap_repository import (
-            roadmap_action_item_integration_repository,
-        )
-
         existing_integration = await roadmap_action_item_integration_repository.get_by_action_item_and_integration(
             db, feature_id, jira_integration_id
         )
@@ -462,12 +449,6 @@ async def get_jira_status(
     current_user: User = Depends(get_current_user),
 ):
     try:
-        from app.repositories.roadmap_repository import (
-            roadmap_feature_repository,
-            roadmap_column_repository,
-            roadmap_repository,
-        )
-
         action_item = await roadmap_feature_repository.get(db, id=feature_id)
         if not action_item:
             logger.warning(f'Action item not found: {feature_id}')
@@ -485,10 +466,6 @@ async def get_jira_status(
 
         await organization_service.check_project_access(
             db, current_user.id, roadmap.project_id
-        )
-
-        from app.repositories.roadmap_repository import (
-            roadmap_action_item_integration_repository,
         )
 
         integrations = (

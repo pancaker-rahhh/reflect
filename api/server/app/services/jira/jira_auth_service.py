@@ -8,6 +8,7 @@ from urllib.parse import urlencode, urlparse
 from enum import Enum
 
 from app.core.logging import get_logger
+from app.core.encryption import encryption_service
 
 logger = get_logger(__name__)
 
@@ -235,13 +236,9 @@ class JiraAuthService:
         return headers
 
     def _encrypt_auth_data(self, auth_data: Dict[str, Any]) -> Dict[str, Any]:
-        from app.core.encryption import encryption_service
-
         return encryption_service.encrypt_auth_data(auth_data)
 
     def _decrypt_auth_data(self, auth_data: Dict[str, Any]) -> Dict[str, Any]:
-        from app.core.encryption import encryption_service
-
         return encryption_service.decrypt_auth_data(auth_data)
 
     async def test_connection_comprehensive(

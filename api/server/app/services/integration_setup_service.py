@@ -7,6 +7,7 @@ from app.models.integration_model import IntegrationType
 from app.repositories.integration_repository import integration_repository
 from app.services.jira_integration_service import jira_integration_service, JiraAuthType
 from app.schemas.jira_schema import JiraConfig, JiraConfigUpdate
+from app.core.validation import validate_integration_config, sanitize_input
 
 logger = get_logger(__name__)
 
@@ -84,8 +85,6 @@ class IntegrationSetupService:
         created_by: UUID,
     ) -> Dict[str, Any]:
         try:
-            from app.core.validation import validate_integration_config, sanitize_input
-
             validated_config = validate_integration_config(
                 {
                     'base_url': config.jira_url,
