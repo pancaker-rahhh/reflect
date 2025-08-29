@@ -502,6 +502,11 @@ class JiraIssueService:
         jira_config: Dict[str, Any],
     ):
         try:
+            # Check if integration record already exists
+            existing_record = await roadmap_action_item_integration_repository.get_by_action_item_and_integration(
+                db, action_item.id, integration.id
+            )
+
             integration_data = {
                 'action_item_id': action_item.id,
                 'integration_id': integration.id,
@@ -520,12 +525,22 @@ class JiraIssueService:
                 'sync_status': 'synced',
             }
 
-            await roadmap_action_item_integration_repository.create(
-                db, **integration_data
-            )
-            logger.info(
-                f'Stored integration record for action item {action_item.id} and JIRA issue {result.get("issue_key")}'
-            )
+            if existing_record:
+                # Update existing record
+                await roadmap_action_item_integration_repository.update(
+                    db, existing_record.id, **integration_data
+                )
+                logger.info(
+                    f'Updated integration record for action item {action_item.id} and JIRA issue {result.get("issue_key")}'
+                )
+            else:
+                # Create new record
+                await roadmap_action_item_integration_repository.create(
+                    db, **integration_data
+                )
+                logger.info(
+                    f'Stored integration record for action item {action_item.id} and JIRA issue {result.get("issue_key")}'
+                )
 
         except Exception as e:
             logger.error(f'Failed to store integration record: {str(e)}')

@@ -65,6 +65,9 @@ class JiraConfig(BaseModel):
     jira_url: str = Field(..., description='JIRA instance URL')
     auth_type: JiraAuthType = Field(..., description='Authentication type')
     project_key: Optional[str] = Field(None, description='Default JIRA project key')
+    default_project_key: Optional[str] = Field(
+        None, description='Default JIRA project key for new issues'
+    )
     default_issue_type: str = Field(default='Task', description='Default issue type')
     default_priority: str = Field(default='Medium', description='Default priority')
     status_mapping: Dict[str, str] = Field(
@@ -91,6 +94,10 @@ class JiraConfig(BaseModel):
 
     @validator('project_key')
     def validate_project_key(cls, v):
+        return validate_key(v)
+
+    @validator('default_project_key')
+    def validate_default_project_key(cls, v):
         return validate_key(v)
 
     @validator('default_issue_type')
@@ -125,7 +132,10 @@ class JiraConfig(BaseModel):
 
 
 class JiraConfigUpdate(BaseModel):
+    base_url: Optional[str] = None
+    jira_url: Optional[str] = None
     project_key: Optional[str] = None
+    default_project_key: Optional[str] = None
     default_issue_type: Optional[str] = None
     default_priority: Optional[str] = None
     status_mapping: Optional[Dict[str, str]] = None
@@ -135,6 +145,30 @@ class JiraConfigUpdate(BaseModel):
     default_reporter: Optional[str] = None
     components: Optional[List[str]] = None
     labels: Optional[List[str]] = None
+
+    @validator('base_url')
+    def validate_base_url(cls, v):
+        if v is not None:
+            return validate_url(v)
+        return v
+
+    @validator('jira_url')
+    def validate_jira_url(cls, v):
+        if v is not None:
+            return validate_url(v)
+        return v
+
+    @validator('project_key')
+    def validate_project_key(cls, v):
+        if v is not None:
+            return validate_key(v)
+        return v
+
+    @validator('default_project_key')
+    def validate_default_project_key(cls, v):
+        if v is not None:
+            return validate_key(v)
+        return v
 
 
 class JiraIssueTypeInfo(BaseModel):

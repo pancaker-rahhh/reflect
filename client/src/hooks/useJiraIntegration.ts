@@ -128,6 +128,7 @@ export const useSyncFeatureToJira = () => {
       customConfig?: {
         issue_type?: string
         priority?: string
+        project_key?: string
       }
     }) => integrationsApi.syncFeatureToJira(featureId, jiraIntegrationId, forceSync, customConfig),
     onSuccess: () => {

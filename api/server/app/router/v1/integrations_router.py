@@ -160,7 +160,7 @@ async def get_jira_integration(
 @jira_router.put('/{integration_id}')
 async def update_jira_integration(
     integration_id: UUID,
-    config_update: JiraConfigUpdate,
+    config_update: JiraConfigUpdate = Body(..., embed=True),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -462,12 +462,15 @@ async def get_integration_projects(
         )
 
         if projects_result.get('status') == 'success':
+            data = projects_result.get('data', {})
+            projects = data.get('projects', [])
             return JiraProjectsResponse(
                 success=True,
                 message=projects_result.get(
                     'message', 'Projects retrieved successfully'
                 ),
-                projects=projects_result.get('projects', []),
+                projects=projects,
+                total_count=data.get('total_count', len(projects)),
                 cached=projects_result.get('cached', False),
             )
         else:
@@ -475,7 +478,8 @@ async def get_integration_projects(
                 success=False,
                 message=projects_result.get('message', 'Failed to retrieve projects'),
                 projects=[],
-                details=projects_result.get('details'),
+                total_count=0,
+                cached=False,
             )
 
     except HTTPException:

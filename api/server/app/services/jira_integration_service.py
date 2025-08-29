@@ -111,9 +111,30 @@ class JiraIntegrationService:
                     'issue_url': existing_integration.external_url,
                 }
 
+            # If force_sync is True, we should create a new issue even if one exists
+            # We'll determine this by checking if custom_config has a different project_key
+            force_create_new = False
+            if (
+                existing_integration
+                and custom_config
+                and custom_config.get('project_key')
+            ):
+                existing_project_key = (
+                    existing_integration.integration_metadata.get('project_key')
+                    if existing_integration.integration_metadata
+                    else None
+                )
+                if existing_project_key != custom_config.get('project_key'):
+                    force_create_new = True
+                    logger.info(
+                        f'Force creating new issue due to project change: {existing_project_key} -> {custom_config.get("project_key")}'
+                    )
+
             # Merge custom config with integration config
             jira_config = {
-                'project_key': integration.config.get('project_key'),
+                'project_key': custom_config.get('project_key')
+                if custom_config
+                else integration.config.get('project_key'),
                 'issue_type': custom_config.get('issue_type')
                 if custom_config
                 else integration.config.get('issue_type', 'Task'),
@@ -129,7 +150,7 @@ class JiraIntegrationService:
                 'reporter': integration.config.get('default_reporter'),
             }
 
-            if existing_integration:
+            if existing_integration and not force_create_new:
                 # Prepare update data, but be careful with priority field
                 update_data = {
                     'title': action_item.title,
@@ -163,6 +184,7 @@ class JiraIntegrationService:
                 else:
                     return result
             else:
+                # Create new issue (either no existing integration or force_create_new is True)
                 result = await self.issue_service.create_issue_from_action_item(
                     db, integration, action_item_id, jira_config
                 )

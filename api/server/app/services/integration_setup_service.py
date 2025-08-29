@@ -195,6 +195,62 @@ class IntegrationSetupService:
                 'details': {'exception': str(e)},
             }
 
+    async def get_integration_projects(
+        self, db: AsyncSession, integration_id: UUID, force_refresh: bool = False
+    ) -> Dict[str, Any]:
+        try:
+            config_result = await self.get_jira_integration_config(db, integration_id)
+
+            if config_result.get('status') != 'success':
+                return config_result
+
+            integration = config_result.get('integration')
+            config = integration.config
+            auth_data = integration.auth_data
+
+            return await self.get_jira_projects(
+                config.get('base_url', config.get('jira_url')),
+                JiraAuthType.API_TOKEN,
+                auth_data,
+                force_refresh,
+            )
+
+        except Exception as e:
+            logger.error(f'Failed to get integration projects: {str(e)}')
+            return {
+                'status': 'error',
+                'message': f'Failed to get integration projects: {str(e)}',
+                'details': {'exception': str(e)},
+            }
+
+    async def get_integration_issue_types(
+        self, db: AsyncSession, integration_id: UUID
+    ) -> Dict[str, Any]:
+        try:
+            config_result = await self.get_jira_integration_config(db, integration_id)
+
+            if config_result.get('status') != 'success':
+                return config_result
+
+            return {
+                'status': 'success',
+                'message': 'Issue types retrieved successfully',
+                'issue_types': [
+                    {'id': '1', 'name': 'Task', 'subtask': False},
+                    {'id': '2', 'name': 'Story', 'subtask': False},
+                    {'id': '3', 'name': 'Bug', 'subtask': False},
+                    {'id': '4', 'name': 'Epic', 'subtask': False},
+                ],
+            }
+
+        except Exception as e:
+            logger.error(f'Failed to get integration issue types: {str(e)}')
+            return {
+                'status': 'error',
+                'message': f'Failed to get integration issue types: {str(e)}',
+                'details': {'exception': str(e)},
+            }
+
     async def get_jira_integration_config(
         self, db: AsyncSession, integration_id: UUID
     ) -> Dict[str, Any]:

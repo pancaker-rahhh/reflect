@@ -38,11 +38,14 @@ export interface JiraConfig {
 
 export interface JiraConfigUpdate {
   project_key?: string
+  default_project_key?: string
   default_issue_type?: string
   default_priority?: string
   status_mapping?: Record<string, string>
   auto_create_issues?: boolean
   include_metadata?: boolean
+  base_url?: string
+  jira_url?: string
 }
 
 export interface JiraProject {
@@ -238,6 +241,7 @@ export const integrationsApi = {
     customConfig?: {
       issue_type?: string
       priority?: string
+      project_key?: string
     }
   ): Promise<any> => {
     return apiClient.post<any>(`/roadmap-integrations/roadmap/features/${featureId}/sync-jira`, {

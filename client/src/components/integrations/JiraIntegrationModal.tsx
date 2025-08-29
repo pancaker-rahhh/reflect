@@ -35,7 +35,7 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [defaultProject, setDefaultProject] = useState<string>('none')
-  const [autoCreate, setAutoCreate] = useState(true)
+  const [autoCreate, setAutoCreate] = useState(false)
 
   const connectionTest = useJiraConnectionTest()
   const createIntegration = useCreateJiraIntegration()
@@ -92,7 +92,7 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
     setUsername('')
     setPassword('')
     setDefaultProject('none')
-    setAutoCreate(true)
+    setAutoCreate(false)
   }
 
   const handleClose = () => {
@@ -308,17 +308,6 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
                     <p className="text-sm text-muted-foreground mt-1">
                       You can always choose the project when creating issues
                     </p>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="auto-create"
-                      checked={autoCreate}
-                      onCheckedChange={(checked) => setAutoCreate(checked as boolean)}
-                    />
-                    <Label htmlFor="auto-create">
-                      Automatically create JIRA issues when action items are created
-                    </Label>
                   </div>
                 </div>
 

@@ -387,6 +387,19 @@ async def sync_feature_to_jira(
             db, feature_id, jira_integration_id
         )
 
+        # If custom_config has a different project_key than the existing issue, force sync
+        if existing_integration and custom_config and custom_config.get('project_key'):
+            existing_project_key = (
+                existing_integration.integration_metadata.get('project_key')
+                if existing_integration.integration_metadata
+                else None
+            )
+            if existing_project_key != custom_config.get('project_key'):
+                logger.info(
+                    f'Project changed from {existing_project_key} to {custom_config.get("project_key")}, forcing sync'
+                )
+                force_sync = True
+
         if existing_integration and not force_sync:
             logger.info(
                 f'Action item {feature_id} already synced to JIRA: {existing_integration.external_id}'
@@ -403,7 +416,7 @@ async def sync_feature_to_jira(
             }
 
         jira_result = await jira_integration_service.sync_action_item_to_jira(
-            db, integration, feature_id, push_to_jira=True
+            db, integration, feature_id, push_to_jira=True, custom_config=custom_config
         )
 
         if jira_result.get('status') == 'success':

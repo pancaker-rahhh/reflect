@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, CheckCircle, XCircle, ExternalLink, AlertTriangle } from 'lucide-react'
+import { Loader2, CheckCircle, XCircle, ExternalLink } from 'lucide-react'
 import { useSyncFeatureToJira, useIntegrationProjects } from '@/hooks/useJiraIntegration'
 import type { RoadmapActionItem } from '@/types'
 
@@ -29,20 +29,49 @@ export function IndividualJiraModal({
   jiraIntegrations,
 }: IndividualJiraModalProps) {
   const [selectedIntegrationId, setSelectedIntegrationId] = useState<string>('')
+  const [selectedProjectKey, setSelectedProjectKey] = useState<string>('')
   const [issueType, setIssueType] = useState('Task')
-  const [priority, setPriority] = useState('Medium')
 
   const syncToJira = useSyncFeatureToJira()
-  // Disabled projects fetching since we use existing integration config
-  // const { data: jiraProjects, isLoading: isLoadingProjects, error: projectsError } = useIntegrationProjects(selectedIntegrationId, false)
+  const projectsQuery = useIntegrationProjects(
+    selectedIntegrationId,
+    isOpen && !!selectedIntegrationId
+  )
 
-  // Component state logging for debugging (remove in production)
-  // console.log('🔍 Debug - IndividualJiraModal selectedIntegrationId:', selectedIntegrationId)
+  // Auto-select the first integration if only one exists
+  useEffect(() => {
+    if (jiraIntegrations.length === 1) {
+      setSelectedIntegrationId(jiraIntegrations[0].id)
+      setIssueType(jiraIntegrations[0].config?.default_issue_type || 'Task')
+    }
+  }, [jiraIntegrations])
+
+  // Set the selected project when integration changes or projects are loaded
+  useEffect(() => {
+    if (selectedIntegrationId && projectsQuery.data?.projects) {
+      const selectedIntegration = jiraIntegrations.find((i) => i.id === selectedIntegrationId)
+      if (selectedIntegration) {
+        // Only set default project if no project is currently selected
+        if (!selectedProjectKey) {
+          const defaultProjectKey = selectedIntegration.config?.default_project_key
+          const firstProjectKey = projectsQuery.data.projects[0]?.key
+
+          if (
+            defaultProjectKey &&
+            projectsQuery.data.projects.find((p) => p.key === defaultProjectKey)
+          ) {
+            setSelectedProjectKey(defaultProjectKey)
+          } else if (firstProjectKey) {
+            setSelectedProjectKey(firstProjectKey)
+          }
+        }
+      }
+    }
+  }, [selectedIntegrationId, projectsQuery.data, jiraIntegrations, selectedProjectKey])
 
   const handleConvertToJira = async () => {
-    if (!selectedIntegrationId) return
+    if (!selectedIntegrationId || !selectedProjectKey) return
 
-    // Get the selected integration to use its config
     const selectedIntegration = jiraIntegrations.find(
       (integration) => integration.id === selectedIntegrationId
     )
@@ -54,20 +83,33 @@ export function IndividualJiraModal({
       forceSync: false,
       customConfig: {
         issue_type: issueType,
-        priority: priority,
+        project_key: selectedProjectKey,
       },
     })
   }
 
   const resetForm = () => {
     setSelectedIntegrationId('')
+    setSelectedProjectKey('')
     setIssueType('Task')
-    setPriority('Medium')
   }
 
   const handleClose = () => {
     resetForm()
     onClose()
+  }
+
+  const selectedIntegration = jiraIntegrations.find((i) => i.id === selectedIntegrationId)
+  const projectName = projectsQuery.data?.projects?.find((p) => p.key === selectedProjectKey)?.name
+
+  const getProjectDisplayName = (integration: any) => {
+    const project = projectsQuery.data?.projects?.find(
+      (p) => p.key === integration.config?.project_key
+    )
+    if (project) {
+      return `${project.name} (${project.key})`
+    }
+    return integration.config?.project_key || 'JIRA Project'
   }
 
   return (
@@ -90,33 +132,20 @@ export function IndividualJiraModal({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Feature Preview */}
-          <div className="bg-blue-50/50 rounded-lg p-4 border border-blue-200/50">
+          <div className="bg-gray-50 rounded-lg p-4 border">
             <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="h-4 w-4 text-blue-600" />
-              <Label className="text-sm font-medium text-blue-900">
+              <Label className="text-sm font-medium text-gray-900">
                 {feature.jira_integration ? 'Feature Details' : 'Feature to Convert'}
               </Label>
             </div>
             <div className="p-3 bg-white rounded border">
               <h4 className="font-semibold text-sm mb-2">{feature.title}</h4>
               {feature.description && (
-                <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-                  {feature.description}
-                </p>
+                <p className="text-sm text-gray-600 line-clamp-2 mb-2">{feature.description}</p>
               )}
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-xs">
-                  {feature.tags?.length || 0} tags
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  {feature.vote_count || 0} votes
-                </Badge>
-              </div>
             </div>
           </div>
 
-          {/* Show JIRA Issue Details if already synced */}
           {feature.jira_integration && (
             <Card>
               <CardHeader className="pb-3">
@@ -140,12 +169,6 @@ export function IndividualJiraModal({
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">Priority:</span>
-                    <Badge variant="outline" className="text-xs">
-                      {feature.jira_integration.integration_metadata?.priority || 'Medium'}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
                     <span className="font-medium">Status:</span>
                     <Badge variant="outline" className="text-xs">
                       {feature.jira_integration.external_status || 'To Do'}
@@ -153,7 +176,7 @@ export function IndividualJiraModal({
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium">Last Synced:</span>
-                    <span className="text-muted-foreground">
+                    <span className="text-gray-600">
                       {feature.jira_integration.last_synced_at
                         ? new Date(feature.jira_integration.last_synced_at).toLocaleDateString()
                         : 'Unknown'}
@@ -178,26 +201,59 @@ export function IndividualJiraModal({
             </Card>
           )}
 
-          {/* Only show form fields if not already synced */}
           {!feature.jira_integration && (
             <div className="space-y-4">
-              <div>
-                <Label>JIRA Project</Label>
-                <Select value={selectedIntegrationId} onValueChange={setSelectedIntegrationId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your JIRA project" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {jiraIntegrations.map((integration) => (
-                      <SelectItem key={integration.id} value={integration.id}>
-                        {integration.config?.project_key ||
-                          integration.name?.replace('JIRA Integration - ', '') ||
-                          'JIRA Project'}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {jiraIntegrations.length > 1 && (
+                <div>
+                  <Label>JIRA Integration</Label>
+                  <Select value={selectedIntegrationId} onValueChange={setSelectedIntegrationId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your JIRA integration" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {jiraIntegrations.map((integration) => (
+                        <SelectItem key={integration.id} value={integration.id}>
+                          <div className="flex items-center gap-2">
+                            <span>{integration.name || 'JIRA Integration'}</span>
+                            {integration.config?.default_project_key && (
+                              <Badge variant="outline" className="text-xs">
+                                default
+                              </Badge>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {selectedIntegrationId && projectsQuery.data?.projects && (
+                <div>
+                  <Label>Project</Label>
+                  <Select value={selectedProjectKey} onValueChange={setSelectedProjectKey}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select project" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {projectsQuery.data.projects.map((project) => (
+                        <SelectItem key={project.key} value={project.key}>
+                          <div className="flex items-center gap-2">
+                            <span>
+                              {project.name} ({project.key})
+                            </span>
+                            {project.key === selectedIntegration?.config?.default_project_key && (
+                              <Badge variant="outline" className="text-xs">
+                                default
+                              </Badge>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               {selectedIntegrationId && (
                 <div>
@@ -211,23 +267,6 @@ export function IndividualJiraModal({
                       <SelectItem value="Story">Story</SelectItem>
                       <SelectItem value="Bug">Bug</SelectItem>
                       <SelectItem value="Epic">Epic</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {selectedIntegrationId && (
-                <div>
-                  <Label>Priority</Label>
-                  <Select value={priority} onValueChange={setPriority}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select priority" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Low">Low</SelectItem>
-                      <SelectItem value="Medium">Medium</SelectItem>
-                      <SelectItem value="High">High</SelectItem>
-                      <SelectItem value="Highest">Highest</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -264,21 +303,14 @@ export function IndividualJiraModal({
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-medium">Project:</span>
-                        <span className="text-muted-foreground">
-                          {jiraIntegrations.find((i) => i.id === selectedIntegrationId)?.config
-                            ?.project_key || 'Unknown'}
+                        <span className="text-gray-600">
+                          {projectName || getProjectDisplayName(selectedIntegration) || 'Unknown'}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-medium">Issue Type:</span>
                         <Badge variant="outline" className="text-xs">
                           {issueType}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium">Priority:</span>
-                        <Badge variant="outline" className="text-xs">
-                          {priority}
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between text-sm">
@@ -318,7 +350,7 @@ export function IndividualJiraModal({
           {!feature.jira_integration && (
             <Button
               onClick={handleConvertToJira}
-              disabled={!selectedIntegrationId || syncToJira.isPending}
+              disabled={!selectedIntegrationId || !selectedProjectKey || syncToJira.isPending}
               className="flex-1"
             >
               {syncToJira.isPending ? (

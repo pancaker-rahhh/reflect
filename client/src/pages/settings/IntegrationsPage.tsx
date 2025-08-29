@@ -6,11 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { ExternalLink, Plus, Settings, Trash2, TestTube, CheckCircle } from 'lucide-react'
 import { JiraIntegrationModal } from '@/components/integrations/JiraIntegrationModal'
+import { JiraConfigureModal } from '@/components/integrations/JiraConfigureModal'
 import { useDeleteJiraIntegration } from '@/hooks/useJiraIntegration'
 import { useAppContext } from '@/context/AppContext'
 
 export function IntegrationsPage() {
   const [isJiraModalOpen, setIsJiraModalOpen] = useState(false)
+  const [isConfigureModalOpen, setIsConfigureModalOpen] = useState(false)
+  const [selectedIntegration, setSelectedIntegration] = useState<any>(null)
   const { currentProject } = useAppContext()
 
   const { data: integrations = [], isLoading } = useQuery({
@@ -18,6 +21,10 @@ export function IntegrationsPage() {
     queryFn: () => api.getIntegrations(currentProject?.id),
     enabled: !!currentProject?.id,
   })
+
+  const handleIntegrationUpdate = (updatedIntegration: any) => {
+    setSelectedIntegration(updatedIntegration)
+  }
 
   const deleteIntegration = useDeleteJiraIntegration()
 
@@ -120,7 +127,14 @@ export function IntegrationsPage() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedIntegration(integration)
+                          setIsConfigureModalOpen(true)
+                        }}
+                      >
                         <Settings className="h-3 w-3 mr-1" />
                         Configure
                       </Button>
@@ -188,6 +202,15 @@ export function IntegrationsPage() {
         isOpen={isJiraModalOpen}
         onClose={() => setIsJiraModalOpen(false)}
         projectId={currentProject?.id || ''}
+      />
+      <JiraConfigureModal
+        isOpen={isConfigureModalOpen}
+        onClose={() => {
+          setIsConfigureModalOpen(false)
+          setSelectedIntegration(null)
+        }}
+        integration={selectedIntegration}
+        onUpdate={handleIntegrationUpdate}
       />
     </div>
   )
