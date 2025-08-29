@@ -699,5 +699,72 @@ class JiraIssueService:
             logger.error(f'Failed to get JIRA issue status: {str(e)}')
             return {'status': 'error', 'message': str(e)}
 
+    async def get_issue_types(
+        self,
+        config: Dict[str, Any],
+        auth_data: Dict[str, Any],
+        auth_type: JiraAuthType = JiraAuthType.API_TOKEN,
+    ) -> Dict[str, Any]:
+        try:
+            base_url = self._get_api_base_url(config)
+            headers = jira_auth_service._get_auth_headers(
+                jira_auth_service._decrypt_auth_data(auth_data), auth_type
+            )
+            session = await self.get_session()
+
+            # Get issue types from JIRA API
+            async with session.get(
+                f'{base_url}/issuetype', headers=headers
+            ) as response:
+                if response.status == 200:
+                    issue_types_data = await response.json()
+                    issue_types = []
+                    seen_names = (
+                        set()
+                    )  # Track seen issue type names to avoid duplicates
+
+                    for issue_type in issue_types_data:
+                        if not issue_type.get(
+                            'subtask', False
+                        ):  # Only include non-subtask issue types
+                            issue_type_name = issue_type.get('name')
+                            if issue_type_name and issue_type_name not in seen_names:
+                                seen_names.add(issue_type_name)
+                                issue_types.append(
+                                    {
+                                        'id': str(issue_type.get('id')),
+                                        'name': issue_type_name,
+                                        'subtask': issue_type.get('subtask', False),
+                                        'description': issue_type.get(
+                                            'description', ''
+                                        ),
+                                    }
+                                )
+
+                    return {
+                        'status': 'success',
+                        'message': 'Issue types retrieved successfully',
+                        'issue_types': issue_types,
+                    }
+                else:
+                    error_text = await response.text()
+                    logger.error(f'Failed to get issue types: {error_text}')
+                    return {
+                        'status': 'error',
+                        'message': f'Failed to get issue types: {error_text}',
+                        'details': {
+                            'status_code': response.status,
+                            'response_text': error_text,
+                        },
+                    }
+
+        except Exception as e:
+            logger.error(f'Failed to get JIRA issue types: {str(e)}')
+            return {
+                'status': 'error',
+                'message': f'Failed to get issue types: {str(e)}',
+                'details': {'exception': str(e)},
+            }
+
 
 jira_issue_service = JiraIssueService()

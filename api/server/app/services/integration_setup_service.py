@@ -232,16 +232,34 @@ class IntegrationSetupService:
             if config_result.get('status') != 'success':
                 return config_result
 
-            return {
-                'status': 'success',
-                'message': 'Issue types retrieved successfully',
-                'issue_types': [
-                    {'id': '1', 'name': 'Task', 'subtask': False},
-                    {'id': '2', 'name': 'Story', 'subtask': False},
-                    {'id': '3', 'name': 'Bug', 'subtask': False},
-                    {'id': '4', 'name': 'Epic', 'subtask': False},
-                ],
-            }
+            integration = config_result.get('integration')
+
+            # Get issue types from JIRA API
+            from app.services.jira.jira_issue_service import JiraIssueService
+
+            jira_service = JiraIssueService()
+            issue_types_result = await jira_service.get_issue_types(
+                integration.config, integration.auth_data
+            )
+
+            if issue_types_result.get('status') == 'success':
+                return {
+                    'status': 'success',
+                    'message': 'Issue types retrieved successfully',
+                    'issue_types': issue_types_result.get('issue_types', []),
+                }
+            else:
+                # Fallback to common issue types if API fails
+                return {
+                    'status': 'success',
+                    'message': 'Issue types retrieved successfully (fallback)',
+                    'issue_types': [
+                        {'id': '1', 'name': 'Task', 'subtask': False},
+                        {'id': '2', 'name': 'Story', 'subtask': False},
+                        {'id': '3', 'name': 'Bug', 'subtask': False},
+                        {'id': '4', 'name': 'Epic', 'subtask': False},
+                    ],
+                }
 
         except Exception as e:
             logger.error(f'Failed to get integration issue types: {str(e)}')

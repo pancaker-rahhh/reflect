@@ -240,24 +240,15 @@ async def bulk_create_jira_issues(
                             'assignee': True,
                         }
 
-                existing_integration = await roadmap_action_item_integration_repository.get_by_action_item_and_integration(
-                    db, action_item_id, jira_integration_id
-                )
+                # Let sync_action_item_to_jira handle all the logic including force sync
+                # No need to check for existing integrations here as sync_action_item_to_jira will handle it
 
-                if existing_integration:
-                    errors.append(
-                        {
-                            'action_item_id': str(action_item_id),
-                            'error': 'Action item already has a JIRA issue for this integration',
-                            'issue_key': existing_integration.external_id,
-                        }
-                    )
-                    continue
-
-                jira_result = (
-                    await jira_integration_service.create_issue_from_action_item(
-                        db, integration, action_item_id, current_jira_config
-                    )
+                jira_result = await jira_integration_service.sync_action_item_to_jira(
+                    db,
+                    integration,
+                    action_item_id,
+                    push_to_jira=True,
+                    custom_config=current_jira_config,
                 )
 
                 if jira_result.get('status') == 'success':

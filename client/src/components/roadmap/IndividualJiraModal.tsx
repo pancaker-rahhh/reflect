@@ -12,7 +12,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Loader2, CheckCircle, XCircle, ExternalLink } from 'lucide-react'
-import { useSyncFeatureToJira, useIntegrationProjects } from '@/hooks/useJiraIntegration'
+import {
+  useSyncFeatureToJira,
+  useIntegrationProjects,
+  useIntegrationIssueTypes,
+} from '@/hooks/useJiraIntegration'
 import type { RoadmapActionItem } from '@/types'
 
 interface IndividualJiraModalProps {
@@ -37,14 +41,18 @@ export function IndividualJiraModal({
     selectedIntegrationId,
     isOpen && !!selectedIntegrationId
   )
+  const issueTypesQuery = useIntegrationIssueTypes(selectedIntegrationId)
 
   // Auto-select the first integration if only one exists
   useEffect(() => {
     if (jiraIntegrations.length === 1) {
       setSelectedIntegrationId(jiraIntegrations[0].id)
-      setIssueType(jiraIntegrations[0].config?.default_issue_type || 'Task')
+      // Only set default issue type if no issue type is currently selected
+      if (!issueType || issueType === 'Task') {
+        setIssueType(jiraIntegrations[0].config?.default_issue_type || 'Task')
+      }
     }
-  }, [jiraIntegrations])
+  }, [jiraIntegrations, issueType])
 
   // Set the selected project when integration changes or projects are loaded
   useEffect(() => {
@@ -68,6 +76,28 @@ export function IndividualJiraModal({
       }
     }
   }, [selectedIntegrationId, projectsQuery.data, jiraIntegrations, selectedProjectKey])
+
+  // Set issue type when issue types are loaded
+  useEffect(() => {
+    if (issueTypesQuery.data?.issue_types && issueTypesQuery.data.issue_types.length > 0) {
+      console.log('Issue types loaded:', issueTypesQuery.data.issue_types)
+      const selectedIntegration = jiraIntegrations.find((i) => i.id === selectedIntegrationId)
+      if (selectedIntegration) {
+        // Only set default issue type if current issue type is not in the available list
+        const availableIssueTypes = issueTypesQuery.data.issue_types.map((t) => t.name)
+        if (!availableIssueTypes.includes(issueType)) {
+          const defaultIssueType = selectedIntegration.config?.default_issue_type
+          if (defaultIssueType && availableIssueTypes.includes(defaultIssueType)) {
+            setIssueType(defaultIssueType)
+          } else if (availableIssueTypes.includes('Task')) {
+            setIssueType('Task')
+          } else {
+            setIssueType(availableIssueTypes[0])
+          }
+        }
+      }
+    }
+  }, [issueTypesQuery.data, selectedIntegrationId, jiraIntegrations]) // Removed issueType from dependencies to prevent infinite loops
 
   const handleConvertToJira = async () => {
     if (!selectedIntegrationId || !selectedProjectKey) return
@@ -99,10 +129,14 @@ export function IndividualJiraModal({
     onClose()
   }
 
-  const selectedIntegration = jiraIntegrations.find((i) => i.id === selectedIntegrationId)
+  const selectedIntegration = selectedIntegrationId
+    ? jiraIntegrations.find((i) => i.id === selectedIntegrationId)
+    : null
   const projectName = projectsQuery.data?.projects?.find((p) => p.key === selectedProjectKey)?.name
 
   const getProjectDisplayName = (integration: any) => {
+    if (!integration) return 'JIRA Project'
+
     const project = projectsQuery.data?.projects?.find(
       (p) => p.key === integration.config?.project_key
     )
@@ -263,10 +297,32 @@ export function IndividualJiraModal({
                       <SelectValue placeholder="Select issue type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Task">Task</SelectItem>
-                      <SelectItem value="Story">Story</SelectItem>
-                      <SelectItem value="Bug">Bug</SelectItem>
-                      <SelectItem value="Epic">Epic</SelectItem>
+                      {issueTypesQuery.data?.issue_types
+                        ? issueTypesQuery.data.issue_types.map((type) => (
+                            <SelectItem key={type.id} value={type.name}>
+                              <div className="flex items-center gap-2">
+                                <span>{type.name}</span>
+                                {type.name === selectedIntegration?.config?.default_issue_type && (
+                                  <Badge variant="outline" className="text-xs">
+                                    default
+                                  </Badge>
+                                )}
+                              </div>
+                            </SelectItem>
+                          ))
+                        : // Fallback to common issue types if API fails
+                          ['Task', 'Story', 'Bug', 'Epic'].map((type) => (
+                            <SelectItem key={type} value={type}>
+                              <div className="flex items-center gap-2">
+                                <span>{type}</span>
+                                {type === selectedIntegration?.config?.default_issue_type && (
+                                  <Badge variant="outline" className="text-xs">
+                                    default
+                                  </Badge>
+                                )}
+                              </div>
+                            </SelectItem>
+                          ))}
                     </SelectContent>
                   </Select>
                 </div>
