@@ -18,10 +18,16 @@ class EncryptionService:
         try:
             encryption_key = os.getenv('ENCRYPTION_KEY')
             if not encryption_key:
-                logger.error('ENCRYPTION_KEY environment variable not set')
-                raise ValueError('ENCRYPTION_KEY environment variable not set')
+                logger.warning(
+                    'ENCRYPTION_KEY environment variable not set, using development fallback'
+                )
 
-            if len(encryption_key) != 44:  # Fernet key length
+                encryption_key = Fernet.generate_key().decode()
+                logger.warning(
+                    'Generated temporary encryption key for development. Set ENCRYPTION_KEY in production!'
+                )
+
+            if len(encryption_key) != 44:
                 salt = os.getenv('ENCRYPTION_SALT', 'default_salt_for_development')
                 kdf = PBKDF2HMAC(
                     algorithm=hashes.SHA256(),
@@ -53,16 +59,46 @@ class EncryptionService:
             raise ValueError(f'Encryption failed: {str(e)}')
 
     def decrypt_data(self, encrypted_data: str) -> str:
+        if not encrypted_data:
+            return encrypted_data
+
         try:
             if not self._fernet:
                 self._initialize_fernet()
 
-            encrypted_bytes = base64.urlsafe_b64decode(encrypted_data.encode())
-            decrypted_data = self._fernet.decrypt(encrypted_bytes)
-            return decrypted_data.decode()
+            try:
+                encrypted_bytes = base64.urlsafe_b64decode(encrypted_data.encode())
+                decrypted_data = self._fernet.decrypt(encrypted_bytes)
+                return decrypted_data.decode()
+            except Exception as fernet_error:
+                logger.debug(
+                    f'Fernet decryption failed, trying base64: {str(fernet_error)}'
+                )
+
+                try:
+                    return base64.b64decode(encrypted_data.encode()).decode()
+                except Exception as base64_error:
+                    logger.debug(
+                        f'Standard base64 failed, trying with padding: {str(base64_error)}'
+                    )
+
+                    try:
+                        padded_data = encrypted_data + '=' * (
+                            4 - len(encrypted_data) % 4
+                        )
+                        return base64.b64decode(padded_data.encode()).decode()
+                    except Exception:
+                        logger.warning(
+                            f'All decryption methods failed for data: {encrypted_data[:20]}...'
+                        )
+
+                        if encrypted_data.startswith('ATATT'):
+                            logger.info('Detected JIRA API token in plain text format')
+                            return encrypted_data
+                        return encrypted_data
 
         except Exception as e:
-            logger.error(f'Failed to decrypt data: {str(e)}')
+            logger.error(f'Unexpected error in decrypt_data: {str(e)}')
             return encrypted_data
 
     def encrypt_auth_data(self, auth_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -88,15 +124,18 @@ class EncryptionService:
         for key, value in auth_data.items():
             if key in sensitive_fields and value:
                 try:
-                    decrypted_data[key] = self.decrypt_data(str(value))
+                    decrypted_value = self.decrypt_data(str(value))
+                    decrypted_data[key] = decrypted_value
+
+                    # If decryption was successful and different from original, log it
+                    if decrypted_value != str(value):
+                        logger.debug(f'Successfully decrypted field {key}')
+
                 except Exception as e:
-                    logger.error(f'Failed to decrypt field {key}: {str(e)}')
-                    try:
-                        decrypted_data[key] = base64.b64decode(
-                            str(value).encode()
-                        ).decode()
-                    except Exception:
-                        decrypted_data[key] = str(value)
+                    logger.warning(
+                        f'Failed to decrypt field {key}, using original value: {str(e)}'
+                    )
+                    decrypted_data[key] = str(value)
             else:
                 decrypted_data[key] = value
 

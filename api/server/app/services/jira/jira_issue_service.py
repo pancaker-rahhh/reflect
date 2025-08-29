@@ -57,7 +57,6 @@ class JiraIssueService:
             if not project_validation['status'] == 'success':
                 return project_validation
 
-            # Check field support for the issue type
             field_support = await self._check_field_support(
                 integration.config,
                 integration.auth_data,
@@ -66,18 +65,18 @@ class JiraIssueService:
                 auth_type,
             )
 
-            # Add supported fields to config
             if field_support['status'] == 'success':
                 jira_config['supported_fields'] = field_support['supported_fields']
             else:
-                # If we can't check field support, assume all fields are supported
                 jira_config['supported_fields'] = {
                     'priority': True,
                     'components': True,
                     'assignee': True,
                 }
 
-            issue_data = self._map_action_item_to_jira_issue(action_item, jira_config)
+            issue_data = await self._map_action_item_to_jira_issue(
+                action_item, jira_config
+            )
             validation_result = self._validate_issue_data(issue_data)
             if not validation_result['valid']:
                 return {
@@ -105,12 +104,17 @@ class JiraIssueService:
                 'details': {'exception': str(e)},
             }
 
-    def _map_action_item_to_jira_issue(
+    async def _map_action_item_to_jira_issue(
         self, action_item, jira_config: Dict[str, Any]
     ) -> Dict[str, Any]:
-        tags = [tag.name for tag in action_item.tags] if action_item.tags else []
+        tags = []
+        try:
+            if hasattr(action_item, 'tags') and action_item.tags:
+                tags = [tag.name for tag in action_item.tags]
+        except Exception:
+            pass
 
-        description = self._generate_issue_description(action_item, jira_config)
+        description = await self._generate_issue_description(action_item, jira_config)
 
         issue_data = {
             'title': action_item.title,
@@ -120,7 +124,6 @@ class JiraIssueService:
             'project_key': jira_config.get('project_key'),
         }
 
-        # Only include priority if it's enabled in the JIRA config and not previously failed
         if (
             jira_config.get('enable_priority', True)
             and 'priority' not in jira_config.get('failed_fields', [])
@@ -141,7 +144,7 @@ class JiraIssueService:
 
         return issue_data
 
-    def _generate_issue_description(
+    async def _generate_issue_description(
         self, action_item, jira_config: Dict[str, Any]
     ) -> str:
         description_parts = []
@@ -150,38 +153,73 @@ class JiraIssueService:
             description_parts.append(f'## Description\n{action_item.description}')
 
         description_parts.append('## Reflect Metadata')
-        description_parts.append(
-            f"**Project:** {getattr(action_item.column.roadmap.project, 'name', 'Unknown')}"
-        )
-        description_parts.append(f'**Column:** {action_item.column.name}')
+
+        project_name = 'Unknown'
+        try:
+            if hasattr(action_item, 'column') and action_item.column:
+                if (
+                    hasattr(action_item.column, 'roadmap')
+                    and action_item.column.roadmap
+                ):
+                    if (
+                        hasattr(action_item.column.roadmap, 'project')
+                        and action_item.column.roadmap.project
+                    ):
+                        project_name = getattr(
+                            action_item.column.roadmap.project, 'name', 'Unknown'
+                        )
+        except Exception:
+            project_name = 'Unknown'
+
+        description_parts.append(f'**Project:** {project_name}')
+
+        column_name = 'Unknown'
+        try:
+            if hasattr(action_item, 'column') and action_item.column:
+                column_name = getattr(action_item.column, 'name', 'Unknown')
+        except Exception:
+            column_name = 'Unknown'
+
+        description_parts.append(f'**Column:** {column_name}')
         description_parts.append(
             f"**Submitted by:** {action_item.submitter_name or 'Unknown'}"
         )
         description_parts.append(f'**Vote count:** {action_item.vote_count}')
 
-        if action_item.tags:
-            tag_names = [tag.name for tag in action_item.tags]
-            description_parts.append(f"**Tags:** {', '.join(tag_names)}")
+        try:
+            if hasattr(action_item, 'tags') and action_item.tags:
+                tag_names = [tag.name for tag in action_item.tags]
+                description_parts.append(f"**Tags:** {', '.join(tag_names)}")
+        except Exception:
+            pass
 
         description_parts.append(
             f"**Created:** {action_item.created_at.strftime('%Y-%m-%d %H:%M:%S UTC')}"
         )
 
-        if action_item.converted_feedback:
-            feedback = (
-                action_item.converted_feedback[0]
-                if action_item.converted_feedback
-                else None
-            )
-            if feedback:
-                description_parts.append('## Original Feedback')
-                description_parts.append(f'**Type:** {feedback.feedback_type.value}')
-                if feedback.message:
-                    description_parts.append(f'**Message:** {feedback.message}')
-                if feedback.submitter_name:
+        try:
+            if (
+                hasattr(action_item, 'converted_feedback')
+                and action_item.converted_feedback
+            ):
+                feedback = (
+                    action_item.converted_feedback[0]
+                    if action_item.converted_feedback
+                    else None
+                )
+                if feedback:
+                    description_parts.append('## Original Feedback')
                     description_parts.append(
-                        f'**Original submitter:** {feedback.submitter_name}'
+                        f'**Type:** {feedback.feedback_type.value}'
                     )
+                    if feedback.message:
+                        description_parts.append(f'**Message:** {feedback.message}')
+                    if feedback.submitter_name:
+                        description_parts.append(
+                            f'**Original submitter:** {feedback.submitter_name}'
+                        )
+        except Exception:
+            pass
 
         description_parts.append('\n---\n*Created from Reflect Action Item*')
 

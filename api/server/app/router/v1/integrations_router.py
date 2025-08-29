@@ -19,6 +19,7 @@ from app.schemas.jira_schema import (
     JiraComponentsResponse,
 )
 from app.services.jira_integration_service import JiraAuthType
+from app.services.organization_service import organization_service
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
@@ -68,32 +69,22 @@ async def create_jira_integration(
     current_user: User = Depends(get_current_user),
 ):
     try:
-        if str(project_id) != str(current_user.project_id):
-            logger.warning(
-                f'User {current_user.id} attempted to access project {project_id} without permission'
-            )
-            raise HTTPException(status_code=403, detail='Access denied to this project')
+        await organization_service.check_project_access(db, current_user.id, project_id)
 
-        try:
-            jira_config = JiraConfig(
-                jira_url=jira_url,
-                auth_type=auth_type,
-                project_key=config.get('project_key'),
-                default_issue_type=config.get('default_issue_type', 'Task'),
-                default_priority=config.get('default_priority', 'Medium'),
-                status_mapping=config.get('status_mapping', {}),
-                auto_create_issues=config.get('auto_create_issues', True),
-                include_metadata=config.get('include_metadata', True),
-                default_assignee=config.get('default_assignee'),
-                default_reporter=config.get('default_reporter'),
-                components=config.get('components', []),
-                labels=config.get('labels', []),
-            )
-        except ValueError as e:
-            logger.warning(f'Invalid JIRA configuration: {str(e)}')
-            raise HTTPException(
-                status_code=400, detail=f'Invalid configuration: {str(e)}'
-            )
+        jira_config = JiraConfig(
+            jira_url=jira_url,
+            auth_type=auth_type,
+            project_key=config.get('project_key'),
+            default_issue_type=config.get('default_issue_type', 'Task'),
+            default_priority=config.get('default_priority', 'Medium'),
+            status_mapping=config.get('status_mapping', {}),
+            auto_create_issues=config.get('auto_create_issues', True),
+            include_metadata=config.get('include_metadata', True),
+            default_assignee=config.get('default_assignee'),
+            default_reporter=config.get('default_reporter'),
+            components=config.get('components', []),
+            labels=config.get('labels', []),
+        )
 
         result = await integration_setup_service.create_jira_integration(
             db, project_id, jira_config, auth_data, current_user.id
@@ -138,10 +129,9 @@ async def get_jira_integration(
 
         if result.get('status') == 'success':
             integration = result.get('integration')
-            if str(integration.project_id) != str(current_user.project_id):
-                raise HTTPException(
-                    status_code=403, detail='Access denied to this integration'
-                )
+            await organization_service.check_project_access(
+                db, current_user.id, integration.project_id
+            )
 
             return {
                 'success': True,
@@ -181,10 +171,9 @@ async def update_jira_integration(
 
         if result.get('status') == 'success':
             integration = result.get('integration')
-            if str(integration.project_id) != str(current_user.project_id):
-                raise HTTPException(
-                    status_code=403, detail='Access denied to this integration'
-                )
+            await organization_service.check_project_access(
+                db, current_user.id, integration.project_id
+            )
 
             return {
                 'success': True,
@@ -220,10 +209,9 @@ async def delete_jira_integration(
         )
         if config_result.get('status') == 'success':
             integration = config_result.get('integration')
-            if str(integration.project_id) != str(current_user.project_id):
-                raise HTTPException(
-                    status_code=403, detail='Access denied to this integration'
-                )
+            await organization_service.check_project_access(
+                db, current_user.id, integration.project_id
+            )
 
         result = await integration_setup_service.delete_jira_integration(
             db, integration_id
@@ -262,10 +250,9 @@ async def test_jira_integration(
             raise HTTPException(status_code=404, detail=config_result.get('message'))
 
         integration = config_result.get('integration')
-        if str(integration.project_id) != str(current_user.project_id):
-            raise HTTPException(
-                status_code=403, detail='Access denied to this integration'
-            )
+        await organization_service.check_project_access(
+            db, current_user.id, integration.project_id
+        )
 
         config = integration.config
         auth_data = integration.auth_data
@@ -362,26 +349,31 @@ async def test_jira_connection(
             return JiraConnectionTestResponse(
                 success=False,
                 message=result.get('message', 'Connection failed'),
-                connection_status=result.get('connection_status', 'unknown_error'),
+                connection_status=result.get('connection_status', 'failed'),
                 details=result.get('details'),
             )
 
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f'Connection test failed: {str(e)}')
+        raise HTTPException(
+            status_code=500, detail=f'Failed to test connection: {str(e)}'
+        )
 
 
 @jira_router.get('/discover/projects', response_model=JiraProjectsResponse)
-async def get_jira_projects(
-    jira_url: str = Query(..., description='JIRA instance URL'),
+async def discover_jira_projects(
+    jira_url: str = Query(..., description='JIRA URL'),
     auth_type: JiraAuthType = Query(..., description='Authentication type'),
-    username: Optional[str] = Query(
-        None, description='Username for API token or basic auth'
+    username: Optional[str] = Query(None, description='Username'),
+    api_token: Optional[str] = Query(None, description='API token'),
+    password: Optional[str] = Query(None, description='Password'),
+    authorization_code: Optional[str] = Query(
+        None, description='OAuth2 authorization code'
     ),
-    api_token: Optional[str] = Query(None, description='API token for authentication'),
-    password: Optional[str] = Query(None, description='Password for basic auth'),
-    force_refresh: bool = Query(False, description='Force refresh project cache'),
+    client_id: Optional[str] = Query(None, description='OAuth2 client ID'),
+    client_secret: Optional[str] = Query(None, description='OAuth2 client secret'),
+    redirect_uri: Optional[str] = Query(None, description='OAuth2 redirect URI'),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -391,48 +383,60 @@ async def get_jira_projects(
         if auth_type == JiraAuthType.API_TOKEN:
             if not username or not api_token:
                 raise HTTPException(
-                    status_code=400, detail='Username and API token are required'
+                    status_code=400,
+                    detail='Username and API token are required for API token authentication',
                 )
             auth_data = {'username': username, 'api_token': api_token}
         elif auth_type == JiraAuthType.BASIC_AUTH:
             if not username or not password:
                 raise HTTPException(
-                    status_code=400, detail='Username and password are required'
+                    status_code=400,
+                    detail='Username and password are required for basic authentication',
                 )
             auth_data = {'username': username, 'password': password}
-        else:
-            raise HTTPException(
-                status_code=400, detail='OAuth2 not supported for project discovery'
-            )
+        elif auth_type == JiraAuthType.OAUTH2:
+            if not authorization_code or not client_id or not client_secret:
+                raise HTTPException(
+                    status_code=400,
+                    detail='Authorization code, client ID, and client secret are required for OAuth2',
+                )
+            auth_data = {
+                'client_id': client_id,
+                'client_secret': client_secret,
+                'authorization_code': authorization_code,
+                'redirect_uri': redirect_uri,
+            }
 
-        result = await integration_setup_service.get_jira_projects(
-            jira_url, auth_type, auth_data, force_refresh
+        result = await integration_setup_service.discover_jira_projects(
+            jira_url, auth_type, auth_data
         )
 
         if result.get('status') == 'success':
-            data = result.get('data', {})
-            return {
-                'success': True,
-                'message': result.get('message', 'Projects retrieved successfully'),
-                'projects': data.get('projects', []),
-                'total_count': data.get('total_count', 0),
-                'cached': data.get('cached', False),
-            }
+            return JiraProjectsResponse(
+                success=True,
+                message=result.get('message', 'Projects discovered successfully'),
+                projects=result.get('projects', []),
+            )
         else:
-            raise HTTPException(
-                status_code=400, detail=result.get('message', 'Failed to get projects')
+            return JiraProjectsResponse(
+                success=False,
+                message=result.get('message', 'Failed to discover projects'),
+                projects=[],
+                details=result.get('details'),
             )
 
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f'Failed to get projects: {str(e)}')
+        raise HTTPException(
+            status_code=500, detail=f'Failed to discover projects: {str(e)}'
+        )
 
 
 @jira_router.get('/{integration_id}/projects', response_model=JiraProjectsResponse)
 async def get_integration_projects(
     integration_id: UUID,
-    force_refresh: bool = Query(False, description='Force refresh project cache'),
+    force_refresh: bool = Query(False, description='Force refresh projects cache'),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -445,40 +449,41 @@ async def get_integration_projects(
             raise HTTPException(status_code=404, detail=config_result.get('message'))
 
         integration = config_result.get('integration')
-        if str(integration.project_id) != str(current_user.project_id):
-            raise HTTPException(
-                status_code=403, detail='Access denied to this integration'
-            )
-
-        config = integration.config
-        auth_data = integration.auth_data
-
-        result = await integration_setup_service.get_jira_projects(
-            config.get('base_url'), JiraAuthType.API_TOKEN, auth_data, force_refresh
+        await organization_service.check_project_access(
+            db, current_user.id, integration.project_id
         )
 
-        if result.get('status') == 'success':
-            data = result.get('data', {})
-            return {
-                'success': True,
-                'message': result.get('message', 'Projects retrieved successfully'),
-                'projects': data.get('projects', []),
-                'total_count': data.get('total_count', 0),
-                'cached': data.get('cached', False),
-            }
+        projects_result = await integration_setup_service.get_integration_projects(
+            db, integration_id, force_refresh
+        )
+
+        if projects_result.get('status') == 'success':
+            return JiraProjectsResponse(
+                success=True,
+                message=projects_result.get(
+                    'message', 'Projects retrieved successfully'
+                ),
+                projects=projects_result.get('projects', []),
+                cached=projects_result.get('cached', False),
+            )
         else:
-            raise HTTPException(
-                status_code=400, detail=result.get('message', 'Failed to get projects')
+            return JiraProjectsResponse(
+                success=False,
+                message=projects_result.get('message', 'Failed to retrieve projects'),
+                projects=[],
+                details=projects_result.get('details'),
             )
 
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f'Failed to get projects: {str(e)}')
+        raise HTTPException(
+            status_code=500, detail=f'Failed to get integration projects: {str(e)}'
+        )
 
 
 @jira_router.get('/{integration_id}/issue-types', response_model=JiraIssueTypesResponse)
-async def get_jira_issue_types(
+async def get_integration_issue_types(
     integration_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -492,48 +497,44 @@ async def get_jira_issue_types(
             raise HTTPException(status_code=404, detail=config_result.get('message'))
 
         integration = config_result.get('integration')
-        if str(integration.project_id) != str(current_user.project_id):
-            raise HTTPException(
-                status_code=403, detail='Access denied to this integration'
-            )
-
-        config = integration.config
-        auth_data = integration.auth_data
-
-        from app.services.jira_integration_service import jira_integration_service
-
-        result = await jira_integration_service.discover_projects(
-            config, auth_data, JiraAuthType.API_TOKEN
+        await organization_service.check_project_access(
+            db, current_user.id, integration.project_id
         )
 
-        if result.get('status') == 'success':
-            projects_data = result.get('data', {})
-            projects = projects_data.get('projects', [])
+        issue_types_result = (
+            await integration_setup_service.get_integration_issue_types(
+                db, integration_id
+            )
+        )
 
-            issue_types = []
-            for project in projects:
-                if project.get('key') == config.get('project_key'):
-                    issue_types = project.get('issue_types', [])
-                    break
-
+        if issue_types_result.get('status') == 'success':
             return JiraIssueTypesResponse(
                 success=True,
-                message=f'Found {len(issue_types)} issue types',
-                issue_types=issue_types,
+                message=issue_types_result.get(
+                    'message', 'Issue types retrieved successfully'
+                ),
+                issue_types=issue_types_result.get('issue_types', []),
             )
         else:
-            raise HTTPException(status_code=400, detail=result.get('message'))
+            return JiraIssueTypesResponse(
+                success=False,
+                message=issue_types_result.get(
+                    'message', 'Failed to retrieve issue types'
+                ),
+                issue_types=[],
+                details=issue_types_result.get('details'),
+            )
 
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f'Failed to get issue types: {str(e)}'
+            status_code=500, detail=f'Failed to get integration issue types: {str(e)}'
         )
 
 
 @jira_router.get('/{integration_id}/priorities', response_model=JiraPrioritiesResponse)
-async def get_jira_priorities(
+async def get_integration_priorities(
     integration_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -547,56 +548,42 @@ async def get_jira_priorities(
             raise HTTPException(status_code=404, detail=config_result.get('message'))
 
         integration = config_result.get('integration')
-        if str(integration.project_id) != str(current_user.project_id):
-            raise HTTPException(
-                status_code=403, detail='Access denied to this integration'
-            )
-
-        config = integration.config
-        auth_data = integration.auth_data
-
-        from app.services.jira_integration_service import jira_integration_service
-
-        base_url = config.get('base_url')
-        headers = jira_integration_service.auth_service._get_auth_headers(
-            auth_data,
-            JiraAuthType.API_TOKEN,
+        await organization_service.check_project_access(
+            db, current_user.id, integration.project_id
         )
 
-        session = await jira_integration_service.auth_service.get_session()
-        async with session.get(
-            f'{base_url}/rest/api/3/priority', headers=headers
-        ) as response:
-            if response.status == 200:
-                priorities_data = await response.json()
-                priorities = [
-                    {
-                        'id': p.get('id'),
-                        'name': p.get('name'),
-                        'description': p.get('description'),
-                        'icon_url': p.get('iconUrl'),
-                    }
-                    for p in priorities_data
-                ]
+        priorities_result = await integration_setup_service.get_integration_priorities(
+            db, integration_id
+        )
 
-                return JiraPrioritiesResponse(
-                    success=True,
-                    message=f'Found {len(priorities)} priorities',
-                    priorities=priorities,
-                )
-            else:
-                raise HTTPException(status_code=400, detail='Failed to get priorities')
+        if priorities_result.get('status') == 'success':
+            return JiraPrioritiesResponse(
+                success=True,
+                message=priorities_result.get(
+                    'message', 'Priorities retrieved successfully'
+                ),
+                priorities=priorities_result.get('priorities', []),
+            )
+        else:
+            return JiraPrioritiesResponse(
+                success=False,
+                message=priorities_result.get(
+                    'message', 'Failed to retrieve priorities'
+                ),
+                priorities=[],
+                details=priorities_result.get('details'),
+            )
 
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f'Failed to get priorities: {str(e)}'
+            status_code=500, detail=f'Failed to get integration priorities: {str(e)}'
         )
 
 
 @jira_router.get('/{integration_id}/statuses', response_model=JiraStatusesResponse)
-async def get_jira_statuses(
+async def get_integration_statuses(
     integration_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -610,119 +597,84 @@ async def get_jira_statuses(
             raise HTTPException(status_code=404, detail=config_result.get('message'))
 
         integration = config_result.get('integration')
-        if str(integration.project_id) != str(current_user.project_id):
-            raise HTTPException(
-                status_code=403, detail='Access denied to this integration'
-            )
-
-        config = integration.config
-        auth_data = integration.auth_data
-
-        from app.services.jira_integration_service import jira_integration_service
-
-        base_url = config.get('base_url')
-        project_key = config.get('project_key')
-        headers = jira_integration_service.auth_service._get_auth_headers(
-            auth_data,
-            JiraAuthType.API_TOKEN,
+        await organization_service.check_project_access(
+            db, current_user.id, integration.project_id
         )
 
-        session = await jira_integration_service.auth_service.get_session()
-        async with session.get(
-            f'{base_url}/rest/api/3/project/{project_key}/statuses', headers=headers
-        ) as response:
-            if response.status == 200:
-                statuses_data = await response.json()
-                statuses = []
-
-                for issue_type in statuses_data:
-                    for status in issue_type.get('statuses', []):
-                        statuses.append(
-                            {
-                                'id': status.get('id'),
-                                'name': status.get('name'),
-                                'description': status.get('description'),
-                                'category': status.get('statusCategory', {}).get(
-                                    'name'
-                                ),
-                            }
-                        )
-
-                return JiraStatusesResponse(
-                    success=True,
-                    message=f'Found {len(statuses)} statuses',
-                    statuses=statuses,
-                )
-            else:
-                raise HTTPException(status_code=400, detail='Failed to get statuses')
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f'Failed to get statuses: {str(e)}')
-
-
-@jira_router.get('/{integration_id}/components', response_model=JiraComponentsResponse)
-async def get_jira_components(
-    integration_id: UUID,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    try:
-        config_result = await integration_setup_service.get_jira_integration_config(
+        statuses_result = await integration_setup_service.get_integration_statuses(
             db, integration_id
         )
 
-        if config_result.get('status') != 'success':
-            raise HTTPException(status_code=404, detail=config_result.get('message'))
-
-        integration = config_result.get('integration')
-        if str(integration.project_id) != str(current_user.project_id):
-            raise HTTPException(
-                status_code=403, detail='Access denied to this integration'
+        if statuses_result.get('status') == 'success':
+            return JiraStatusesResponse(
+                success=True,
+                message=statuses_result.get(
+                    'message', 'Statuses retrieved successfully'
+                ),
+                statuses=statuses_result.get('statuses', []),
             )
-
-        config = integration.config
-        auth_data = integration.auth_data
-
-        from app.services.jira_integration_service import jira_integration_service
-
-        base_url = config.get('base_url')
-        project_key = config.get('project_key')
-        headers = jira_integration_service.auth_service._get_auth_headers(
-            auth_data,
-            JiraAuthType.API_TOKEN,
-        )
-
-        session = await jira_integration_service.auth_service.get_session()
-        async with session.get(
-            f'{base_url}/rest/api/3/project/{project_key}/components', headers=headers
-        ) as response:
-            if response.status == 200:
-                components_data = await response.json()
-                components = [
-                    {
-                        'id': c.get('id'),
-                        'name': c.get('name'),
-                        'description': c.get('description'),
-                        'lead': c.get('lead'),
-                    }
-                    for c in components_data
-                ]
-
-                return JiraComponentsResponse(
-                    success=True,
-                    message=f'Found {len(components)} components',
-                    components=components,
-                )
-            else:
-                raise HTTPException(status_code=400, detail='Failed to get components')
+        else:
+            return JiraStatusesResponse(
+                success=False,
+                message=statuses_result.get('message', 'Failed to retrieve statuses'),
+                statuses=[],
+                details=statuses_result.get('details'),
+            )
 
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f'Failed to get components: {str(e)}'
+            status_code=500, detail=f'Failed to get integration statuses: {str(e)}'
+        )
+
+
+@jira_router.get('/{integration_id}/components', response_model=JiraComponentsResponse)
+async def get_integration_components(
+    integration_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        config_result = await integration_setup_service.get_jira_integration_config(
+            db, integration_id
+        )
+
+        if config_result.get('status') != 'success':
+            raise HTTPException(status_code=404, detail=config_result.get('message'))
+
+        integration = config_result.get('integration')
+        await organization_service.check_project_access(
+            db, current_user.id, integration.project_id
+        )
+
+        components_result = await integration_setup_service.get_integration_components(
+            db, integration_id
+        )
+
+        if components_result.get('status') == 'success':
+            return JiraComponentsResponse(
+                success=True,
+                message=components_result.get(
+                    'message', 'Components retrieved successfully'
+                ),
+                components=components_result.get('components', []),
+            )
+        else:
+            return JiraComponentsResponse(
+                success=False,
+                message=components_result.get(
+                    'message', 'Failed to retrieve components'
+                ),
+                components=[],
+                details=components_result.get('details'),
+            )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f'Failed to get integration components: {str(e)}'
         )
 
 

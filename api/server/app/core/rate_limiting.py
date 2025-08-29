@@ -79,11 +79,24 @@ def rate_limit(max_requests: int = 100, window_seconds: int = 3600):
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
+            from fastapi import Request
+            from starlette.requests import Request as StarletteRequest
+
             request = None
-            for arg in args:
-                if hasattr(arg, 'client') and hasattr(arg, 'headers'):
-                    request = arg
-                    break
+
+            if 'request' in kwargs:
+                request = kwargs['request']
+            else:
+                for arg in args:
+                    if isinstance(arg, (Request, StarletteRequest)):
+                        request = arg
+                        break
+
+                if not request:
+                    for arg in args:
+                        if hasattr(arg, 'client') and hasattr(arg, 'headers'):
+                            request = arg
+                            break
 
             if not request:
                 logger.warning(

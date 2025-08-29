@@ -1,6 +1,6 @@
 from typing import Dict, Any, Optional, List
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi import APIRouter, Depends, HTTPException, Body, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
@@ -10,6 +10,7 @@ from app.services.roadmap_service import roadmap_service
 from app.services.integration_setup_service import integration_setup_service
 from app.services.jira_integration_service import jira_integration_service
 from app.services.jira.jira_auth_service import JiraAuthType
+from app.services.organization_service import organization_service
 from app.schemas.roadmap_schema import RoadmapActionItemCreate
 from app.core.logging import get_logger
 from app.core.rate_limiting import rate_limit
@@ -25,6 +26,7 @@ router = APIRouter(prefix='/roadmap', tags=['Roadmap Integrations'])
 @rate_limit(max_requests=50, window_seconds=3600)
 @audit_log(action='create_action_item_with_integration')
 async def create_action_item_with_integration(
+    request: Request,
     feature_data: RoadmapActionItemCreate,
     jira_integration_id: Optional[UUID] = Body(None, embed=True),
     jira_config: Optional[Dict[str, Any]] = Body(None, embed=True),
@@ -62,13 +64,9 @@ async def create_action_item_with_integration(
 
         integration = config_result.get('integration')
 
-        if str(integration.project_id) != str(current_user.project_id):
-            logger.warning(
-                f'User {current_user.id} attempted to access integration {jira_integration_id} without permission'
-            )
-            raise HTTPException(
-                status_code=403, detail='Access denied to this integration'
-            )
+        await organization_service.check_project_access(
+            db, current_user.id, integration.project_id
+        )
 
         from app.repositories.roadmap_repository import (
             roadmap_column_repository,
@@ -154,6 +152,7 @@ async def create_action_item_with_integration(
 @rate_limit(max_requests=10, window_seconds=3600)
 @audit_log(action='bulk_create_jira_issues')
 async def bulk_create_jira_issues(
+    request: Request,
     action_item_ids: List[UUID] = Body(..., embed=True),
     jira_integration_id: UUID = Body(..., embed=True),
     jira_config: Dict[str, Any] = Body(..., embed=True),
@@ -164,7 +163,7 @@ async def bulk_create_jira_issues(
         if not action_item_ids:
             raise HTTPException(status_code=400, detail='No action item IDs provided')
 
-        if len(action_item_ids) > 50:  # Limit bulk operations
+        if len(action_item_ids) > 50:
             raise HTTPException(
                 status_code=400,
                 detail='Maximum 50 action items allowed per bulk operation',
@@ -182,13 +181,9 @@ async def bulk_create_jira_issues(
 
         integration = config_result.get('integration')
 
-        if str(integration.project_id) != str(current_user.project_id):
-            logger.warning(
-                f'User {current_user.id} attempted to access integration {jira_integration_id} without permission'
-            )
-            raise HTTPException(
-                status_code=403, detail='Access denied to this integration'
-            )
+        await organization_service.check_project_access(
+            db, current_user.id, integration.project_id
+        )
 
         from app.repositories.roadmap_repository import (
             roadmap_feature_repository,
@@ -342,6 +337,7 @@ async def bulk_create_jira_issues(
 @audit_log(action='sync_feature_to_jira')
 async def sync_feature_to_jira(
     feature_id: UUID,
+    request: Request,
     jira_integration_id: UUID = Body(..., embed=True),
     force_sync: bool = Body(False, embed=True),
     custom_config: Optional[Dict[str, Any]] = Body(None, embed=True),
@@ -362,13 +358,9 @@ async def sync_feature_to_jira(
 
         integration = config_result.get('integration')
 
-        if str(integration.project_id) != str(current_user.project_id):
-            logger.warning(
-                f'User {current_user.id} attempted to access integration {jira_integration_id} without permission'
-            )
-            raise HTTPException(
-                status_code=403, detail='Access denied to this integration'
-            )
+        await organization_service.check_project_access(
+            db, current_user.id, integration.project_id
+        )
 
         from app.repositories.roadmap_repository import (
             roadmap_feature_repository,
@@ -491,11 +483,9 @@ async def get_jira_status(
             logger.warning(f'Roadmap not found for column: {column.id}')
             raise HTTPException(status_code=404, detail='Roadmap not found')
 
-        if str(roadmap.project_id) != str(current_user.project_id):
-            logger.warning(
-                f'User {current_user.id} attempted to access roadmap {roadmap.id} without permission'
-            )
-            raise HTTPException(status_code=403, detail='Access denied to this roadmap')
+        await organization_service.check_project_access(
+            db, current_user.id, roadmap.project_id
+        )
 
         from app.repositories.roadmap_repository import (
             roadmap_action_item_integration_repository,
