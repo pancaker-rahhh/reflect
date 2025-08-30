@@ -13,7 +13,6 @@ from app.services.jira.jira_auth_service import JiraAuthType
 from app.services.organization_service import organization_service
 from app.schemas.roadmap_schema import RoadmapActionItemCreate
 from app.core.logging import get_logger
-from app.core.rate_limiting import rate_limit
 from app.core.audit_logging import audit_log
 from app.core.validation import sanitize_input
 from app.repositories.roadmap_repository import (
@@ -29,7 +28,6 @@ router = APIRouter(prefix='/roadmap', tags=['Roadmap Integrations'])
 
 
 @router.post('/features')
-@rate_limit(max_requests=50, window_seconds=3600)
 @audit_log(action='create_action_item_with_integration')
 async def create_action_item_with_integration(
     request: Request,
@@ -150,7 +148,6 @@ async def create_action_item_with_integration(
 
 
 @router.post('/features/bulk-jira')
-@rate_limit(max_requests=10, window_seconds=3600)
 @audit_log(action='bulk_create_jira_issues')
 async def bulk_create_jira_issues(
     request: Request,
@@ -315,7 +312,6 @@ async def bulk_create_jira_issues(
 
 
 @router.post('/features/{feature_id}/sync-jira')
-@rate_limit(max_requests=100, window_seconds=3600)
 @audit_log(action='sync_feature_to_jira')
 async def sync_feature_to_jira(
     feature_id: UUID,
