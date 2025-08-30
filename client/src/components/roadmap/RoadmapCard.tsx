@@ -174,18 +174,18 @@ export function RoadmapCard({
                   size="sm"
                   variant="ghost"
                   className={cn(
-                    'h-6 w-6 p-0 transition-all duration-200 hover:scale-110',
+                    'h-7 w-7 p-0 transition-all duration-200 hover:scale-110',
                     feature.jira_integration
                       ? 'text-green-600 hover:bg-green-50 hover:text-green-700'
-                      : 'hover:bg-muted/70 hover:text-muted-foreground'
+                      : 'hover:bg-blue-50 hover:text-blue-600'
                   )}
                   onClick={handleConvertToJira}
                   title={feature.jira_integration ? 'View in JIRA' : 'Convert to JIRA'}
                 >
                   {feature.jira_integration ? (
-                    <CheckCircle className="h-3 w-3" />
+                    <CheckCircle className="h-4 w-4" />
                   ) : (
-                    <ExternalLink className="h-3 w-3" />
+                    <ExternalLink className="h-4 w-4" />
                   )}
                 </Button>
               )}
@@ -311,14 +311,14 @@ export function RoadmapCard({
 
                 {/* JIRA Sync Status Indicator */}
                 {feature.jira_integration && (
-                  <div className="flex items-center gap-1 text-xs">
-                    <div className="w-3 h-3 rounded-full bg-green-500 flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <div className="flex items-center gap-1">
+                      <CheckCircle className="h-3 w-3 text-green-600" />
+                      <span className="text-green-600 font-medium">JIRA</span>
                     </div>
-                    <span className="text-green-600 font-medium">JIRA</span>
                     <Badge
                       variant="outline"
-                      className="text-xs px-1 py-0.5 bg-green-50 text-green-700 border-green-200"
+                      className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border-green-200 font-medium"
                     >
                       {feature.jira_integration.external_id}
                     </Badge>

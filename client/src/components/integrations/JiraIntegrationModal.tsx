@@ -104,41 +104,44 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Connect to JIRA
+          <DialogTitle className="flex items-center gap-3">
+            <Settings className="h-6 w-6 text-blue-600" />
+            <span className="text-lg font-semibold">Connect to JIRA</span>
           </DialogTitle>
         </DialogHeader>
 
         {step === 'connection' && (
           <div className="space-y-6">
-            <div className="text-center space-y-2">
-              <h3 className="text-lg font-semibold">Connect to JIRA</h3>
-              <p className="text-muted-foreground">
+            <div className="text-center space-y-3">
+              <h3 className="text-xl font-semibold text-gray-900">Connect to JIRA</h3>
+              <p className="text-gray-600">
                 Connect once, use everywhere. Your action items can be converted to issues in any of
                 your JIRA projects.
               </p>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="jira-url">JIRA Instance URL</Label>
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="jira-url" className="text-sm font-semibold text-gray-900">
+                  JIRA Instance URL
+                </Label>
                 <Input
                   id="jira-url"
                   type="url"
                   placeholder="https://your-company.atlassian.net"
                   value={jiraUrl}
                   onChange={(e) => setJiraUrl(e.target.value)}
+                  className="h-11"
                 />
               </div>
 
-              <div>
-                <Label>Authentication Method</Label>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold text-gray-900">Authentication Method</Label>
                 <Select
                   value={authType}
                   onValueChange={(value: 'api_token' | 'basic_auth') => setAuthType(value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -149,33 +152,39 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
               </div>
 
               {authType === 'api_token' ? (
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="email">Email Address</Label>
+                <div className="space-y-5">
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-semibold text-gray-900">
+                      Email Address
+                    </Label>
                     <Input
                       id="email"
                       type="email"
                       placeholder="your-email@company.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      className="h-11"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="api-token">API Token</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="api-token" className="text-sm font-semibold text-gray-900">
+                      API Token
+                    </Label>
                     <Input
                       id="api-token"
                       type="password"
                       placeholder="Enter your JIRA API token"
                       value={apiToken}
                       onChange={(e) => setApiToken(e.target.value)}
+                      className="h-11"
                     />
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-sm text-gray-600 mt-2">
                       <ExternalLink className="inline h-3 w-3 mr-1" />
                       <a
                         href="https://id.atlassian.com/manage-profile/security/api-tokens"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="underline hover:text-primary"
+                        className="underline hover:text-blue-600"
                       >
                         Get your API token from Atlassian
                       </a>
@@ -183,24 +192,30 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="username">Username</Label>
+                <div className="space-y-5">
+                  <div className="space-y-2">
+                    <Label htmlFor="username" className="text-sm font-semibold text-gray-900">
+                      Username
+                    </Label>
                     <Input
                       id="username"
                       placeholder="your-username"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
+                      className="h-11"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="password">Password</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className="text-sm font-semibold text-gray-900">
+                      Password
+                    </Label>
                     <Input
                       id="password"
                       type="password"
                       placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      className="h-11"
                     />
                   </div>
                 </div>
@@ -210,43 +225,57 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
             <Button
               onClick={handleTestConnection}
               disabled={!jiraUrl || connectionTest.isPending}
-              className="w-full"
+              className="w-full h-11"
             >
               {connectionTest.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Testing Connection...
-                </>
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Testing Connection...</span>
+                </div>
               ) : (
                 'Test Connection'
               )}
             </Button>
 
             {connectionTest.data && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm flex items-center gap-2">
+              <Card
+                className={
+                  connectionTest.data.success
+                    ? 'border-green-200 bg-green-50'
+                    : 'border-red-200 bg-red-50'
+                }
+              >
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-base flex items-center gap-3">
                     {connectionTest.data.success ? (
                       <>
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        Connection Successful
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <span className="text-green-900">Connection Successful</span>
                       </>
                     ) : (
                       <>
-                        <XCircle className="h-4 w-4 text-red-500" />
-                        Connection Failed
+                        <XCircle className="h-5 w-5 text-red-600" />
+                        <span className="text-red-900">Connection Failed</span>
                       </>
                     )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm">{connectionTest.data.message}</p>
+                  <p className="text-sm text-gray-700">{connectionTest.data.message}</p>
+                  {connectionTest.data.user_info && (
+                    <div className="mt-3 p-3 bg-white rounded-lg border border-gray-200">
+                      <p className="text-sm font-medium text-gray-900">
+                        Connected as: {connectionTest.data.user_info.display_name}
+                      </p>
+                      <p className="text-xs text-gray-600">{connectionTest.data.user_info.email}</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
 
             {connectionTest.data?.success && (
-              <Button onClick={() => setStep('discovery')} className="w-full">
+              <Button onClick={() => setStep('discovery')} className="w-full h-11">
                 Continue
               </Button>
             )}
@@ -255,34 +284,37 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
 
         {step === 'discovery' && (
           <div className="space-y-6">
-            <div className="text-center space-y-2">
-              <h3 className="text-lg font-semibold">Found Your Projects</h3>
-              <p className="text-muted-foreground">
+            <div className="text-center space-y-3">
+              <h3 className="text-xl font-semibold text-gray-900">Found Your Projects</h3>
+              <p className="text-gray-600">
                 Your action items can be converted to issues in any of these projects
               </p>
             </div>
 
             {projectsQuery.isLoading ? (
               <div className="text-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-                <p className="text-muted-foreground">Loading your projects...</p>
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                  <span className="text-lg font-medium text-gray-900">
+                    Loading your projects...
+                  </span>
+                </div>
+                <p className="text-gray-600">Discovering available JIRA projects</p>
               </div>
             ) : projectsQuery.data?.success ? (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div className="grid gap-3">
                   {projectsQuery.data.projects.map((project) => (
                     <div
                       key={project.key}
-                      className="flex items-center gap-3 p-3 border rounded-lg bg-muted/20"
+                      className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow"
                     >
-                      <FolderOpen className="h-5 w-5 text-blue-500" />
+                      <FolderOpen className="h-5 w-5 text-blue-600" />
                       <div className="flex-1">
-                        <div className="font-medium">{project.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          Project key: {project.key}
-                        </div>
+                        <div className="font-semibold text-gray-900">{project.name}</div>
+                        <div className="text-sm text-gray-600">Project key: {project.key}</div>
                       </div>
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs border-green-300 text-green-700">
                         Available
                       </Badge>
                     </div>
@@ -290,10 +322,12 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
                 </div>
 
                 <div className="space-y-4">
-                  <div>
-                    <Label>Default Project (Optional)</Label>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-gray-900">
+                      Default Project (Optional)
+                    </Label>
                     <Select value={defaultProject} onValueChange={setDefaultProject}>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-11">
                         <SelectValue placeholder="Choose a default project (optional)" />
                       </SelectTrigger>
                       <SelectContent>
@@ -305,30 +339,30 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
                         ))}
                       </SelectContent>
                     </Select>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-sm text-gray-600">
                       You can always choose the project when creating issues
                     </p>
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <Button
                     variant="outline"
                     onClick={() => setStep('connection')}
-                    className="flex-1"
+                    className="flex-1 h-11"
                   >
                     Back
                   </Button>
                   <Button
                     onClick={handleCreateIntegration}
                     disabled={createIntegration.isPending}
-                    className="flex-1"
+                    className="flex-1 h-11"
                   >
                     {createIntegration.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Creating Integration...
-                      </>
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Creating Integration...</span>
+                      </div>
                     ) : (
                       'Connect JIRA'
                     )}
@@ -337,9 +371,12 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
               </div>
             ) : (
               <div className="text-center py-8">
-                <XCircle className="h-8 w-8 text-red-500 mx-auto mb-4" />
-                <p className="text-muted-foreground">Failed to load projects</p>
-                <Button variant="outline" onClick={() => setStep('connection')} className="mt-4">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <XCircle className="h-8 w-8 text-red-600" />
+                  <span className="text-lg font-medium text-red-900">Failed to load projects</span>
+                </div>
+                <p className="text-gray-600 mb-6">Unable to discover your JIRA projects</p>
+                <Button variant="outline" onClick={() => setStep('connection')} className="h-11">
                   Go Back
                 </Button>
               </div>
@@ -348,13 +385,17 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
         )}
 
         {step === 'complete' && (
-          <div className="text-center space-y-4">
-            <CheckCircle className="h-12 w-12 text-green-500 mx-auto" />
-            <h3 className="text-lg font-semibold">JIRA Connected Successfully!</h3>
-            <p className="text-muted-foreground">
-              Your JIRA integration is ready. You can now convert action items to JIRA issues.
-            </p>
-            <Button onClick={handleClose} className="w-full">
+          <div className="text-center space-y-6">
+            <div className="flex items-center justify-center">
+              <CheckCircle className="h-16 w-16 text-green-600" />
+            </div>
+            <div className="space-y-3">
+              <h3 className="text-xl font-semibold text-gray-900">JIRA Connected Successfully!</h3>
+              <p className="text-gray-600">
+                Your JIRA integration is ready. You can now convert action items to JIRA issues.
+              </p>
+            </div>
+            <Button onClick={handleClose} className="w-full h-11">
               Done
             </Button>
           </div>

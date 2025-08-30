@@ -43,24 +43,20 @@ export function BulkJiraModal({
   )
   const issueTypesQuery = useIntegrationIssueTypes(selectedIntegrationId)
 
-  // Auto-select the first integration if only one exists
   useEffect(() => {
     if (jiraIntegrations.length === 1) {
       setSelectedIntegrationId(jiraIntegrations[0].id)
-      // Only set default issue type if no issue type is currently selected
       if (!issueType || issueType === 'Task') {
         setIssueType(jiraIntegrations[0].config?.default_issue_type || 'Task')
       }
     }
   }, [jiraIntegrations, issueType])
 
-  // Set issue type when issue types are loaded
   useEffect(() => {
     if (issueTypesQuery.data?.issue_types && issueTypesQuery.data.issue_types.length > 0) {
       console.log('Issue types loaded (bulk):', issueTypesQuery.data.issue_types)
       const selectedIntegration = jiraIntegrations.find((i) => i.id === selectedIntegrationId)
       if (selectedIntegration) {
-        // Only set default issue type if current issue type is not in the available list
         const availableIssueTypes = issueTypesQuery.data.issue_types.map((t) => t.name)
         if (!availableIssueTypes.includes(issueType)) {
           const defaultIssueType = selectedIntegration.config?.default_issue_type
@@ -74,14 +70,12 @@ export function BulkJiraModal({
         }
       }
     }
-  }, [issueTypesQuery.data, selectedIntegrationId, jiraIntegrations]) // Removed issueType from dependencies to prevent infinite loops
+  }, [issueTypesQuery.data, selectedIntegrationId, jiraIntegrations])
 
-  // Set the selected project when integration changes or projects are loaded
   useEffect(() => {
     if (selectedIntegrationId && projectsQuery.data?.projects) {
       const selectedIntegration = jiraIntegrations.find((i) => i.id === selectedIntegrationId)
       if (selectedIntegration) {
-        // Only set default project if no project is currently selected
         if (!selectedProjectKey) {
           const defaultProjectKey = selectedIntegration.config?.default_project_key
           const firstProjectKey = projectsQuery.data.projects[0]?.key
@@ -151,37 +145,45 @@ export function BulkJiraModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <ExternalLink className="h-5 w-5" />
-            Push {selectedItems.length} Action Items to JIRA
+          <DialogTitle className="flex items-center gap-3">
+            <ExternalLink className="h-6 w-6 text-blue-600" />
+            <span className="text-lg font-semibold">
+              Push {selectedItems.length} Action Items to JIRA
+            </span>
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
-          <div className="bg-gray-50 rounded-lg p-4 border">
-            <div className="flex items-center gap-2 mb-2">
-              <Label className="text-sm font-medium text-gray-900">Selected Items</Label>
+          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <div className="flex items-center gap-2 mb-3">
+              <Label className="text-sm font-semibold text-gray-900">Selected Items</Label>
+              <Badge variant="outline" className="text-xs">
+                {selectedItems.length} items
+              </Badge>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-32 overflow-y-auto">
               {selectedItems.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between p-2 bg-white rounded border"
+                  className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm"
                 >
                   <div className="flex-1">
-                    <p className="text-sm font-medium truncate">{item.title}</p>
+                    <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
+                    {item.description && (
+                      <p className="text-xs text-gray-600 line-clamp-1 mt-1">{item.description}</p>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-5">
             {jiraIntegrations.length > 1 && (
-              <div>
-                <Label>JIRA Integration</Label>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold text-gray-900">JIRA Integration</Label>
                 <Select value={selectedIntegrationId} onValueChange={setSelectedIntegrationId}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11">
                     <SelectValue placeholder="Select your JIRA integration" />
                   </SelectTrigger>
                   <SelectContent>
@@ -202,128 +204,143 @@ export function BulkJiraModal({
               </div>
             )}
 
-            {selectedIntegrationId && projectsQuery.data?.projects && (
-              <div>
-                <Label>Project</Label>
-                <Select value={selectedProjectKey} onValueChange={setSelectedProjectKey}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select project" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {projectsQuery.data.projects.map((project) => (
-                      <SelectItem key={project.key} value={project.key}>
-                        <div className="flex items-center gap-2">
-                          <span>
-                            {project.name} ({project.key})
-                          </span>
-                          {project.key === selectedIntegration?.config?.default_project_key && (
-                            <Badge variant="outline" className="text-xs">
-                              default
-                            </Badge>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            {selectedIntegrationId && (
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold text-gray-900">Project</Label>
+                {projectsQuery.isLoading ? (
+                  <div className="h-11 bg-gray-100 rounded-md animate-pulse"></div>
+                ) : (
+                  <Select value={selectedProjectKey} onValueChange={setSelectedProjectKey}>
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Select project" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {projectsQuery.data?.projects?.map((project) => (
+                        <SelectItem key={project.key} value={project.key}>
+                          <div className="flex items-center gap-2">
+                            <span>
+                              {project.name} ({project.key})
+                            </span>
+                            {project.key === selectedIntegration?.config?.default_project_key && (
+                              <Badge variant="outline" className="text-xs">
+                                default
+                              </Badge>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             )}
 
             {selectedIntegrationId && (
-              <div>
-                <Label>Issue Type</Label>
-                <Select value={issueType} onValueChange={setIssueType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select issue type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {issueTypesQuery.data?.issue_types
-                      ? issueTypesQuery.data.issue_types.map((type) => (
-                          <SelectItem key={type.id} value={type.name}>
-                            <div className="flex items-center gap-2">
-                              <span>{type.name}</span>
-                              {type.name === selectedIntegration?.config?.default_issue_type && (
-                                <Badge variant="outline" className="text-xs">
-                                  default
-                                </Badge>
-                              )}
-                            </div>
-                          </SelectItem>
-                        ))
-                      : // Fallback to common issue types if API fails
-                        ['Task', 'Story', 'Bug', 'Epic'].map((type) => (
-                          <SelectItem key={type} value={type}>
-                            <div className="flex items-center gap-2">
-                              <span>{type}</span>
-                              {type === selectedIntegration?.config?.default_issue_type && (
-                                <Badge variant="outline" className="text-xs">
-                                  default
-                                </Badge>
-                              )}
-                            </div>
-                          </SelectItem>
-                        ))}
-                  </SelectContent>
-                </Select>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold text-gray-900">Issue Type</Label>
+                {issueTypesQuery.isLoading ? (
+                  <div className="h-11 bg-gray-100 rounded-md animate-pulse"></div>
+                ) : (
+                  <Select value={issueType} onValueChange={setIssueType}>
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Select issue type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {issueTypesQuery.data?.issue_types
+                        ? issueTypesQuery.data.issue_types.map((type) => (
+                            <SelectItem key={type.id} value={type.name}>
+                              <div className="flex items-center gap-2">
+                                <span>{type.name}</span>
+                                {type.name === selectedIntegration?.config?.default_issue_type && (
+                                  <Badge variant="outline" className="text-xs">
+                                    default
+                                  </Badge>
+                                )}
+                              </div>
+                            </SelectItem>
+                          ))
+                        : ['Task', 'Story', 'Bug', 'Epic'].map((type) => (
+                            <SelectItem key={type} value={type}>
+                              <div className="flex items-center gap-2">
+                                <span>{type}</span>
+                                {type === selectedIntegration?.config?.default_issue_type && (
+                                  <Badge variant="outline" className="text-xs">
+                                    default
+                                  </Badge>
+                                )}
+                              </div>
+                            </SelectItem>
+                          ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             )}
           </div>
 
           {bulkCreate.data && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
+            <Card
+              className={
+                bulkCreate.data.success
+                  ? 'border-green-200 bg-green-50'
+                  : 'border-red-200 bg-red-50'
+              }
+            >
+              <CardHeader className="pb-4">
+                <CardTitle className="text-base flex items-center gap-3">
                   {bulkCreate.data.success ? (
                     <>
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                      Bulk Creation Complete
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <span className="text-green-900">Bulk Creation Complete</span>
                     </>
                   ) : (
                     <>
-                      <XCircle className="h-4 w-4 text-red-500" />
-                      Creation Failed
+                      <XCircle className="h-5 w-5 text-red-600" />
+                      <span className="text-red-900">Creation Failed</span>
                     </>
                   )}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-4">
                 {bulkCreate.data.success ? (
                   <>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium">Successfully Created:</span>
-                        <Badge variant="default" className="bg-green-500">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-sm text-gray-700">
+                          Successfully Created:
+                        </span>
+                        <Badge variant="default" className="bg-green-600 text-white px-3 py-1">
                           {bulkCreate.data.data.successful_count} issues
                         </Badge>
                       </div>
                       {bulkCreate.data.data.failed_count > 0 && (
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="font-medium">Failed:</span>
-                          <Badge variant="destructive">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-sm text-gray-700">Failed:</span>
+                          <Badge variant="destructive" className="px-3 py-1">
                             {bulkCreate.data.data.failed_count} issues
                           </Badge>
                         </div>
                       )}
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium">Project:</span>
-                        <span className="text-gray-600">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-sm text-gray-700">Project:</span>
+                        <span className="text-gray-600 text-sm">
                           {projectName || getProjectDisplayName(selectedIntegration) || 'Unknown'}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium">Issue Type:</span>
-                        <Badge variant="outline" className="text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-sm text-gray-700">Issue Type:</span>
+                        <Badge variant="outline" className="text-xs border-gray-300">
                           {issueType}
                         </Badge>
                       </div>
                     </div>
 
                     {bulkCreate.data.data.results?.some((r) => r.issue_url) && (
-                      <div className="pt-2 border-t">
+                      <div className="pt-3 border-t border-green-200">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="w-full"
+                          className="w-full border-green-300 text-green-700 hover:bg-green-100"
                           onClick={() => {
                             const firstIssueUrl = bulkCreate.data.data.results.find(
                               (r) => r.issue_url
@@ -340,27 +357,35 @@ export function BulkJiraModal({
                     )}
                   </>
                 ) : (
-                  <div className="text-sm text-red-600">{bulkCreate.data.message}</div>
+                  <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+                    <div className="flex items-start gap-3">
+                      <XCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                      <div>
+                        <h4 className="font-medium text-red-900">Failed to Create JIRA Issues</h4>
+                        <p className="text-sm text-red-700 mt-1">{bulkCreate.data.message}</p>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </CardContent>
             </Card>
           )}
         </div>
 
-        <div className="flex gap-2 pt-4 border-t">
-          <Button variant="outline" onClick={handleClose} className="flex-1">
+        <div className="flex gap-3 pt-6 border-t border-gray-200">
+          <Button variant="outline" onClick={handleClose} className="flex-1 h-11">
             Cancel
           </Button>
           <Button
             onClick={handleBulkCreate}
-            disabled={!selectedIntegrationId || bulkCreate.isPending}
-            className="flex-1"
+            disabled={!selectedIntegrationId || !selectedProjectKey || bulkCreate.isPending}
+            className="flex-1 h-11"
           >
             {bulkCreate.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating JIRA Issues...
-              </>
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Creating JIRA Issues...</span>
+              </div>
             ) : (
               `Create ${selectedItems.length} JIRA Issues`
             )}
