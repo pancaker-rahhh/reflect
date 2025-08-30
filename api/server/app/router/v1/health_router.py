@@ -1,5 +1,4 @@
 from fastapi import APIRouter, status
-
 from app.schemas.health_schema import HealthCheckResponse
 from app.services.health_service import health_service
 
@@ -8,6 +7,7 @@ health_router = APIRouter(
     tags=['health'],
 )
 
+# TODO - Limit public access to this endpoint
 
 @health_router.get(
     '', response_model=HealthCheckResponse, status_code=status.HTTP_200_OK
