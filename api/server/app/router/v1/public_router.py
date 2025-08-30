@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
 from app.repositories.feedback_repository import feedback_repository
 from app.core.rate_limiting import create_rate_limit_decorator
+from app.core.sanitization import InputSanitizer
 
 public_router = APIRouter()
 
@@ -52,7 +53,13 @@ async def get_public_widget_config(
     db: AsyncSession = Depends(get_db),
     service: WidgetService = Depends(lambda: widget_service),
 ):
-    return await service.get_public_widget_config(db, public_key=public_key)
+    sanitized_public_key = InputSanitizer.sanitize_widget_key(public_key)
+    if not sanitized_public_key:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=400, detail='Invalid widget key')
+
+    return await service.get_public_widget_config(db, public_key=sanitized_public_key)
 
 
 @public_router.post(
@@ -67,7 +74,14 @@ async def submit_public_feedback(
     db: AsyncSession = Depends(get_db),
     widget_service: WidgetService = Depends(lambda: widget_service),
 ):
-    widget = await widget_service.get_public_widget_by_key(db, payload.widgetKey)
+    # Sanitize widget key
+    sanitized_widget_key = InputSanitizer.sanitize_widget_key(payload.widgetKey)
+    if not sanitized_widget_key:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=400, detail='Invalid widget key')
+
+    widget = await widget_service.get_public_widget_by_key(db, sanitized_widget_key)
 
     widget_type_str = payload.feedbackType or payload.widgetType
     if widget_type_str:
@@ -79,7 +93,8 @@ async def submit_public_feedback(
         widget_type = widget.widget_type
 
     context = payload.context or {}
-    context.update(
+    sanitized_context = InputSanitizer.sanitize_feedback_data(context)
+    sanitized_context.update(
         {
             'ip_address': request.client.host if request.client else None,
             'user_agent': request.headers.get('user-agent'),
@@ -129,17 +144,23 @@ async def submit_public_feedback(
         )
 
     if payload.submitter_name:
-        context['submitter_name'] = payload.submitter_name
+        sanitized_context['submitter_name'] = InputSanitizer.sanitize_text(
+            payload.submitter_name, InputSanitizer.MAX_LENGTHS['submitter_name']
+        )
     if payload.submitter_email:
-        context['submitter_email'] = payload.submitter_email
+        sanitized_context['submitter_email'] = InputSanitizer.sanitize_email(
+            payload.submitter_email
+        )
+
+    sanitized_feedback_data = InputSanitizer.sanitize_feedback_data(feedback_data)
 
     return await feedback_service.create_feedback_from_widget(
         db=db,
         widget_id=widget.id,
         project_id=widget.project_id,
         widget_type=widget_type,
-        data=feedback_data,
-        context=context,
+        data=sanitized_feedback_data,
+        context=sanitized_context,
     )
 
 
@@ -170,7 +191,13 @@ async def get_widget_feature_requests(
 ):
     from app.services.voting_service import voting_service
 
-    widget = await widget_service.get_public_widget_by_key(db, public_key)
+    sanitized_public_key = InputSanitizer.sanitize_widget_key(public_key)
+    if not sanitized_public_key:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=400, detail='Invalid widget key')
+
+    widget = await widget_service.get_public_widget_by_key(db, sanitized_public_key)
     features = await feedback_repository.get_by_widget_and_type(
         db, widget_id=widget.id, feedback_type=FeedbackType.FEATURE_REQUEST
     )
@@ -189,10 +216,20 @@ async def get_widget_feature_requests(
         feature_requests.append(
             FeatureRequestPublic(
                 id=str(feature.id),
-                title=feature.title or 'Untitled Feature',
-                description=feature.message or '',
-                category=context.get('category', 'other'),
-                priority=context.get('priority', 'medium'),
+                title=InputSanitizer.sanitize_text(
+                    feature.title, InputSanitizer.MAX_LENGTHS['title']
+                )
+                or 'Untitled Feature',
+                description=InputSanitizer.sanitize_text(
+                    feature.message, InputSanitizer.MAX_LENGTHS['message']
+                )
+                or '',
+                category=InputSanitizer.sanitize_category(
+                    context.get('category', 'other')
+                ),
+                priority=InputSanitizer.sanitize_priority(
+                    context.get('priority', 'medium')
+                ),
                 upvotes=feature.feedback_votes or 0,
                 hasUserUpvoted=has_user_voted,
             )
@@ -212,8 +249,23 @@ async def upvote_feature_request(
 ):
     from app.services.voting_service import voting_service
 
-    widget = await widget_service.get_public_widget_by_key(db, payload.widgetKey)
-    feature = await feedback_repository.get(db, payload.featureId)
+    sanitized_widget_key = InputSanitizer.sanitize_widget_key(payload.widgetKey)
+    if not sanitized_widget_key:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=400, detail='Invalid widget key')
+
+    try:
+        from uuid import UUID
+
+        feature_id = UUID(payload.featureId)
+    except ValueError:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=400, detail='Invalid feature ID format')
+
+    widget = await widget_service.get_public_widget_by_key(db, sanitized_widget_key)
+    feature = await feedback_repository.get(db, feature_id)
 
     if not feature or feature.widget_id != widget.id:
         from fastapi import HTTPException

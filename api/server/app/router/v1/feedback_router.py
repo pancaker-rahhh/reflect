@@ -20,6 +20,7 @@ from app.services.action_item_service import action_item_service
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.logging import get_logger
 from app.core.rate_limiting import create_rate_limit_decorator
+from app.core.sanitization import InputSanitizer
 
 logger = get_logger(__name__)
 # from app.services.tasks.executors.fastapi_executor import FastAPIExecutor
@@ -39,11 +40,14 @@ async def create_feedback(
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ) -> FeedbackResponsePayload:
+    sanitized_data = InputSanitizer.sanitize_feedback_data(payload.model_dump())
+    sanitized_payload = FeedbackCreatePayload(**sanitized_data)
+
     # executor = FastAPIExecutor(background_tasks)
     # Example: register and execute background tasks if needed
     # executor.register_task('send_webhook', some_async_func)
     # await executor.execute('send_webhook', {"feedback": payload.model_dump()})
-    return await feedback_service.create_feedback(db, payload)
+    return await feedback_service.create_feedback(db, sanitized_payload)
 
 
 @feedback_router.get('', response_model=List[FeedbackResponsePayload])
@@ -151,7 +155,13 @@ async def update_feedback(
     payload: FeedbackUpdate,
     db: AsyncSession = Depends(get_db),
 ) -> FeedbackResponsePayload:
-    result = await feedback_service.update_feedback(db, feedback_id, payload)
+    sanitized_data = InputSanitizer.sanitize_feedback_data(
+        payload.model_dump(exclude_unset=True)
+    )
+
+    sanitized_payload = FeedbackUpdate(**sanitized_data)
+
+    result = await feedback_service.update_feedback(db, feedback_id, sanitized_payload)
     if not result:
         raise HTTPException(status_code=404, detail='Feedback not found')
     return result
@@ -182,8 +192,17 @@ async def add_comment(
     current_user: TokenData = Depends(get_current_token_data),
     db: AsyncSession = Depends(get_db),
 ) -> FeedbackCommentResponse:
+    sanitized_comment_text = InputSanitizer.sanitize_text(
+        comment_data.comment_text, InputSanitizer.MAX_LENGTHS['comment']
+    )
+
+    if not sanitized_comment_text:
+        raise HTTPException(
+            status_code=400, detail='Comment text is required and cannot be empty'
+        )
+
     comment = await feedback_service.add_comment(
-        db, feedback_id, UUID(current_user.user_id), comment_data.comment_text
+        db, feedback_id, UUID(current_user.user_id), sanitized_comment_text
     )
     return FeedbackCommentResponse.model_validate(comment)
 
@@ -250,13 +269,24 @@ async def convert_feedback_to_roadmap_item(
     db: AsyncSession = Depends(get_db),
 ) -> Dict[str, Any]:
     try:
+        sanitized_priority = InputSanitizer.sanitize_priority(conversion_data.priority)
+        sanitized_notes = InputSanitizer.sanitize_text(
+            conversion_data.conversion_notes, InputSanitizer.MAX_LENGTHS['message']
+        )
+        sanitized_tags = []
+        if conversion_data.custom_tags:
+            for tag in conversion_data.custom_tags:
+                sanitized_tag = InputSanitizer.sanitize_text(tag, 50)
+                if sanitized_tag:
+                    sanitized_tags.append(sanitized_tag)
+
         roadmap_item = await action_item_service.convert_feedback_to_roadmap_item(
             db,
             feedback_id,
             UUID(current_user.user_id),
-            conversion_data.priority,
-            conversion_data.conversion_notes,
-            conversion_data.custom_tags,
+            sanitized_priority,
+            sanitized_notes,
+            sanitized_tags,
         )
         return {
             'message': 'Feedback successfully converted to roadmap item',
