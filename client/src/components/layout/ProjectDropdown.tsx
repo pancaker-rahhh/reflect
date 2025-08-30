@@ -1,117 +1,117 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronDown, FolderOpen, Plus, Search, Clock } from 'lucide-react';
-import { useAppContext } from '../../context/AppContext';
-import { projectApi } from '@/lib/api';
-import type { Project } from '@/types';
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { ChevronDown, FolderOpen, Plus, Search, Clock } from 'lucide-react'
+import { useAppContext } from '../../context/AppContext'
+import { projectApi } from '@/lib/api'
+import type { Project } from '@/types'
 
 interface ProjectDropdownProps {
-  onProjectChange?: (project: Project) => void;
+  onProjectChange?: (project: Project) => void
 }
 
-export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({
-  onProjectChange,
-}) => {
+export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ onProjectChange }) => {
   const {
     organization: currentOrganization,
     currentProject,
     projects,
     setCurrentProject,
     refreshProjects,
-    isLoading: loading
-  } = useAppContext();
-  
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [recentProjects, setRecentProjects] = useState<string[]>([]);
-  const [isCreatingProject, setIsCreatingProject] = useState(false);
-  const [newProjectName, setNewProjectName] = useState('');
-  const dropdownRef = useRef<HTMLDivElement>(null);
+    isLoading: loading,
+  } = useAppContext()
+
+  const [isOpen, setIsOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [recentProjects, setRecentProjects] = useState<string[]>([])
+  const [isCreatingProject, setIsCreatingProject] = useState(false)
+  const [newProjectName, setNewProjectName] = useState('')
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-        setIsCreatingProject(false);
-        setNewProjectName('');
+        setIsOpen(false)
+        setIsCreatingProject(false)
+        setNewProjectName('')
       }
-    };
+    }
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const loadRecentProjects = () => {
-    const stored = localStorage.getItem('recentProjects');
+    const stored = localStorage.getItem('recentProjects')
     if (stored) {
-      setRecentProjects(JSON.parse(stored));
+      setRecentProjects(JSON.parse(stored))
     }
-  };
+  }
 
   const addToRecentProjects = useCallback((projectId: string) => {
-    const updated = [projectId, ...recentProjects.filter(id => id !== projectId)].slice(0, 5);
-    setRecentProjects(updated);
-    localStorage.setItem('recentProjects', JSON.stringify(updated));
-  }, [recentProjects]);
+    setRecentProjects((prev) => {
+      const updated = [projectId, ...prev.filter((id) => id !== projectId)].slice(0, 5)
+      localStorage.setItem('recentProjects', JSON.stringify(updated))
+      return updated
+    })
+  }, [])
 
   useEffect(() => {
-    loadRecentProjects();
-  }, []);
+    loadRecentProjects()
+  }, [])
 
   useEffect(() => {
     if (currentProject) {
-      addToRecentProjects(currentProject.id);
+      addToRecentProjects(currentProject.id)
     }
-  }, [currentProject, addToRecentProjects]);
+  }, [currentProject, addToRecentProjects])
 
   const handleProjectSelect = (project: Project) => {
-    setCurrentProject(project);
-    addToRecentProjects(project.id);
-    onProjectChange?.(project);
-    setIsOpen(false);
-  };
+    setCurrentProject(project)
+    addToRecentProjects(project.id)
+    onProjectChange?.(project)
+    setIsOpen(false)
+  }
 
   const handleCreateProject = async () => {
-    if (!newProjectName.trim() || !currentOrganization) return;
-    
+    if (!newProjectName.trim() || !currentOrganization) return
+
     try {
       const newProject = await projectApi.createProject({
         name: newProjectName.trim(),
         organization_id: currentOrganization.id,
-      });
-      
-      setCurrentProject(newProject);
-      addToRecentProjects(newProject.id);
-      setNewProjectName('');
-      setIsCreatingProject(false);
-      setIsOpen(false);
-      
-      refreshProjects();
-      
+      })
+
+      setCurrentProject(newProject)
+      addToRecentProjects(newProject.id)
+      setNewProjectName('')
+      setIsCreatingProject(false)
+      setIsOpen(false)
+
+      refreshProjects()
+
       if (onProjectChange) {
-        onProjectChange(newProject);
+        onProjectChange(newProject)
       }
     } catch (error) {
-      console.error('Failed to create project:', error);
+      console.error('Failed to create project:', error)
     }
-  };
+  }
 
   const handleStartCreatingProject = () => {
-    setIsCreatingProject(true);
-    setSearchQuery('');
-  };
+    setIsCreatingProject(true)
+    setSearchQuery('')
+  }
 
   const handleCancelCreateProject = () => {
-    setIsCreatingProject(false);
-    setNewProjectName('');
-  };
+    setIsCreatingProject(false)
+    setNewProjectName('')
+  }
 
-  const filteredProjects = projects.filter(project =>
+  const filteredProjects = projects.filter((project) =>
     project.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  )
 
   const recentProjectObjects = recentProjects
-    .map(id => projects.find(p => p.id === id))
-    .filter(Boolean) as Project[];
+    .map((id) => projects.find((p) => p.id === id))
+    .filter(Boolean) as Project[]
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -140,9 +140,9 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      handleCreateProject();
+                      handleCreateProject()
                     } else if (e.key === 'Escape') {
-                      handleCancelCreateProject();
+                      handleCancelCreateProject()
                     }
                   }}
                 />
@@ -187,7 +187,7 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({
                     <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
                       Recent Projects
                     </div>
-                    {recentProjectObjects.map(project => (
+                    {recentProjectObjects.map((project) => (
                       <button
                         key={project.id}
                         onClick={() => handleProjectSelect(project)}
@@ -204,7 +204,7 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({
                   <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
                     All Projects
                   </div>
-                  {filteredProjects.map(project => (
+                  {filteredProjects.map((project) => (
                     <button
                       key={project.id}
                       onClick={() => handleProjectSelect(project)}
@@ -216,9 +216,9 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({
                       <span>{project.name}</span>
                     </button>
                   ))}
-                  
+
                   {!isCreatingProject && currentOrganization && (
-                    <button 
+                    <button
                       onClick={handleStartCreatingProject}
                       className="w-full flex items-center gap-2 px-2 py-2 mt-2 text-sm text-left text-indigo-600 hover:bg-indigo-50 rounded"
                     >
@@ -226,11 +226,9 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({
                       <span>Create New Project</span>
                     </button>
                   )}
-                  
+
                   {!currentOrganization && (
-                    <div className="px-2 py-2 text-sm text-gray-500">
-                      No organization selected
-                    </div>
+                    <div className="px-2 py-2 text-sm text-gray-500">No organization selected</div>
                   )}
                 </div>
               </>
@@ -239,5 +237,5 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}

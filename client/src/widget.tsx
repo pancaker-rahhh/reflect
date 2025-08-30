@@ -1,7 +1,8 @@
+import { h, Fragment } from 'preact'
 import { createRoot } from 'react-dom/client'
 import { WidgetCore } from './components/widgets/core/WidgetCore'
 import './widget.css'
-import type { 
+import type {
   WidgetConfiguration,
   FeedbackData,
   FeedbackType,
@@ -154,7 +155,11 @@ declare global {
   })
 
   window.addEventListener('unhandledrejection', (event) => {
-    if (event.reason && typeof event.reason === 'string' && event.reason.includes('Reflect Widget')) {
+    if (
+      event.reason &&
+      typeof event.reason === 'string' &&
+      event.reason.includes('Reflect Widget')
+    ) {
       console.error('Reflect Widget: Unhandled promise rejection', event.reason)
       // Could send error to analytics service here
     }
@@ -213,19 +218,22 @@ declare global {
     const content = backendConfig.configuration?.content || {}
     const modules = backendConfig.configuration?.modules || {}
     const widgetType = backendConfig.widget_type?.toUpperCase()
-    
+
     // Map widget types to modules properly
     const defaultModules = getDefaultModulesForType(widgetType)
-    
+
     // Use explicit modules if provided, otherwise fall back to defaults based on widget type
     const finalModules = {
       feedback: modules.feedback !== undefined ? modules.feedback : defaultModules.feedback,
       reviews: modules.reviews !== undefined ? modules.reviews : defaultModules.reviews,
-      bugReporting: modules.bugReporting !== undefined ? modules.bugReporting : defaultModules.bugReporting,
-      featureRequests: modules.featureRequests !== undefined ? modules.featureRequests : defaultModules.featureRequests,
+      bugReporting:
+        modules.bugReporting !== undefined ? modules.bugReporting : defaultModules.bugReporting,
+      featureRequests:
+        modules.featureRequests !== undefined
+          ? modules.featureRequests
+          : defaultModules.featureRequests,
     }
-    
-    
+
     return {
       modules: finalModules,
       primaryType: (widgetType || 'FEEDBACK') as FeedbackType,
@@ -238,7 +246,8 @@ declare global {
       },
       appearance: {
         theme: configTheme === 'dark' ? 'minimal-dark' : 'default',
-        position: (backendConfig.position || configPosition) as WidgetConfiguration['appearance']['position'],
+        position: (backendConfig.position ||
+          configPosition) as WidgetConfiguration['appearance']['position'],
         colors: {
           primary: theme.primary || '#3b82f6',
           background: theme.background || (configTheme === 'dark' ? '#1f2937' : '#ffffff'),
@@ -382,11 +391,13 @@ declare global {
       borderRadius: '20px',
       background: `linear-gradient(135deg, ${themeStyles.background}ee, ${themeStyles.background}f5)`,
       color: themeStyles.text,
-      boxShadow: '0 24px 48px rgba(0,0,0,0.1), 0 12px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(255,255,255,0.05)',
+      boxShadow:
+        '0 24px 48px rgba(0,0,0,0.1), 0 12px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(255,255,255,0.05)',
       display: 'none',
       zIndex: '9998',
       overflow: 'hidden',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+      fontFamily:
+        '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
       fontSize: '13px',
       lineHeight: '1.4',
       backdropFilter: 'blur(20px)',
@@ -403,16 +414,16 @@ declare global {
     // Create React render target
     const widgetConfig = {
       ...transformWidgetConfig(backendConfig),
-      widgetKey: publicKey
+      widgetKey: publicKey,
     }
-    
+
     const handleSubmit = async (data: FeedbackData) => {
-      // Submit feedback via API with retry logic      
+      // Submit feedback via API with retry logic
       async function submitWithRetry(retries = 2): Promise<void> {
         try {
           const controller = new AbortController()
           const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
-          
+
           const response = await fetch(`${apiBaseUrl}/public/feedback`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -422,25 +433,25 @@ declare global {
               rating: data.rating,
               feedbackType: data.feedbackType.toLowerCase(),
               // Include type-specific data
-              ...data.typeSpecificData || {},
+              ...(data.typeSpecificData || {}),
             }),
-            signal: controller.signal
+            signal: controller.signal,
           })
-          
+
           clearTimeout(timeoutId)
-          
+
           if (!response.ok) {
             const errorText = await response.text().catch(() => 'Unknown error')
             throw new Error(`HTTP ${response.status}: ${errorText}`)
           }
-          
+
           // Success
           return
         } catch (error) {
           if (error instanceof Error && error.name === 'AbortError') {
             throw new Error('Request timed out. Please check your internet connection.')
           }
-          
+
           // Handle specific HTTP errors with user-friendly messages
           if (error instanceof Error && error.message.includes('HTTP')) {
             const statusMatch = error.message.match(/HTTP (\d+)/)
@@ -456,42 +467,42 @@ declare global {
                 // Server errors should be retried
                 if (retries > 0) {
                   console.warn(`Server error (${status}), retrying... (${retries} attempts left)`)
-                  await new Promise(resolve => setTimeout(resolve, 2000)) // Wait 2 seconds for server errors
+                  await new Promise((resolve) => setTimeout(resolve, 2000)) // Wait 2 seconds for server errors
                   return submitWithRetry(retries - 1)
                 }
                 throw new Error('Server temporarily unavailable. Please try again later.')
               }
             }
           }
-          
+
           // Network errors should be retried
           if (error instanceof TypeError && error.message.includes('fetch')) {
             if (retries > 0) {
               console.warn(`Network error, retrying... (${retries} attempts left)`)
-              await new Promise(resolve => setTimeout(resolve, 1000))
+              await new Promise((resolve) => setTimeout(resolve, 1000))
               return submitWithRetry(retries - 1)
             }
             throw new Error('Network error. Please check your internet connection.')
           }
-          
+
           // Generic retry logic for other errors
           if (retries > 0) {
             console.warn(`Feedback submission failed, retrying... (${retries} attempts left)`)
-            await new Promise(resolve => setTimeout(resolve, 1000))
+            await new Promise((resolve) => setTimeout(resolve, 1000))
             return submitWithRetry(retries - 1)
           }
-          
+
           throw error
         }
       }
-      
+
       return submitWithRetry()
     }
 
     const handleClose = () => {
       isWidgetOpen = false
       hideWidget()
-      
+
       if (launcherContainer) {
         launcherContainer.style.transform = 'rotate(90deg)'
         setTimeout(() => {
@@ -569,7 +580,8 @@ declare global {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      boxShadow: '0 12px 32px rgba(0,0,0,0.15), 0 6px 16px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.1)',
+      boxShadow:
+        '0 12px 32px rgba(0,0,0,0.15), 0 6px 16px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.1)',
       transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
       border: '2px solid rgba(255,255,255,0.2)',
       color: '#FFFFFF',

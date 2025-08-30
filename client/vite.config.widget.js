@@ -59,6 +59,8 @@ export default defineConfig({
     // Configure JSX for Preact
     jsxFactory: 'h',
     jsxFragment: 'Fragment',
-    jsxInject: `import { h, Fragment } from 'preact'`,
+  },
+  optimizeDeps: {
+    include: ['preact', 'preact/compat']
   }
 })
