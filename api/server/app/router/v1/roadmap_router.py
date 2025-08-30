@@ -1,6 +1,6 @@
 from typing import Any, List, Dict
 from uuid import UUID
-from fastapi import APIRouter, Depends, status, Response, HTTPException, Query
+from fastapi import APIRouter, Depends, status, Response, HTTPException, Query, Request
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
@@ -23,6 +23,7 @@ from app.schemas.roadmap_schema import (
 )
 from app.services.roadmap_service import roadmap_service, RoadmapService
 from app.core.logging import get_logger
+from app.core.rate_limiting import create_rate_limit_decorator
 
 logger = get_logger(__name__)
 
@@ -445,7 +446,9 @@ async def get_feature_assignments(
 
 
 @public_router.get('/roadmaps/{public_slug}', response_model=RoadmapRead)
+@create_rate_limit_decorator('roadmap_access', is_anonymous=True)
 async def get_public_roadmap(
+    request: Request,
     public_slug: str,
     db: AsyncSession = Depends(get_db),
     service: RoadmapService = Depends(lambda: roadmap_service),
@@ -463,7 +466,9 @@ async def get_public_roadmap(
 
 
 @public_router.get('/r/{subdomain}', response_model=RoadmapRead)
+@create_rate_limit_decorator('roadmap_access', is_anonymous=True)
 async def get_public_roadmap_by_subdomain(
+    request: Request,
     subdomain: str,
     db: AsyncSession = Depends(get_db),
     service: RoadmapService = Depends(lambda: roadmap_service),
@@ -481,7 +486,9 @@ async def get_public_roadmap_by_subdomain(
 
 
 @public_router.get('/roadmaps/{roadmap_id}/tags', response_model=List[RoadmapTagRead])
+@create_rate_limit_decorator('roadmap_access', is_anonymous=True)
 async def get_public_roadmap_tags(
+    request: Request,
     roadmap_id: UUID,
     db: AsyncSession = Depends(get_db),
     service: RoadmapService = Depends(lambda: roadmap_service),
@@ -501,7 +508,9 @@ async def get_public_roadmap_tags(
 
 
 @public_router.post('/features/{feature_id}/vote', response_model=RoadmapActionItemRead)
+@create_rate_limit_decorator('voting', is_anonymous=True)
 async def upvote_roadmap_feature(
+    request: Request,
     feature_id: UUID,
     db: AsyncSession = Depends(get_db),
     service: RoadmapService = Depends(lambda: roadmap_service),

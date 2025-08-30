@@ -10,54 +10,44 @@ from app.models.feedback_model import FeedbackType
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
 from app.repositories.feedback_repository import feedback_repository
+from app.core.rate_limiting import create_rate_limit_decorator
 
 public_router = APIRouter()
 
 
 class PublicFeedbackPayload(BaseModel):
-    # Primary fields from widget client
     widgetKey: str
     response: Optional[str] = None
     rating: Optional[int] = None
     feedbackType: Optional[str] = None
-
-    # Legacy/alternative fields for backward compatibility
     widgetType: Optional[str] = None
     title: Optional[str] = None
     message: Optional[str] = None
-
-    # Review specific fields
     overall_rating: Optional[int] = None
     pros: Optional[str] = None
     cons: Optional[str] = None
-
-    # Bug report specific fields
     severity: Optional[str] = None
     steps_to_reproduce: Optional[str] = None
     expected_result: Optional[str] = None
     actual_result: Optional[str] = None
     visual_proof: Optional[Dict[str, Any]] = None
-
-    # Feature request specific fields
     suggested_solution: Optional[str] = None
     benefits: Optional[str] = None
     use_case: Optional[str] = None
     business_value: Optional[str] = None
     effort_estimate: Optional[str] = None
     impact_score: Optional[int] = None
-
-    # Survey specific fields (NPS, CSAT, CES)
     score: Optional[int] = None
     comment: Optional[str] = None
-
-    # Additional context
     submitter_name: Optional[str] = None
     submitter_email: Optional[str] = None
     context: Optional[Dict[str, Any]] = None
 
 
 @public_router.get('/widgets/{public_key}', response_model=WidgetReadPublic)
+@create_rate_limit_decorator('widget_access', is_anonymous=True)
 async def get_public_widget_config(
+    request: Request,
     public_key: str,
     db: AsyncSession = Depends(get_db),
     service: WidgetService = Depends(lambda: widget_service),
@@ -70,28 +60,24 @@ async def get_public_widget_config(
     response_model=FeedbackResponsePayload,
     status_code=status.HTTP_201_CREATED,
 )
+@create_rate_limit_decorator('feedback_submission', is_anonymous=True)
 async def submit_public_feedback(
-    payload: PublicFeedbackPayload,
     request: Request,
+    payload: PublicFeedbackPayload,
     db: AsyncSession = Depends(get_db),
     widget_service: WidgetService = Depends(lambda: widget_service),
 ):
-    # Get widget configuration
     widget = await widget_service.get_public_widget_by_key(db, payload.widgetKey)
 
-    # Determine widget type from payload or widget configuration
     widget_type_str = payload.feedbackType or payload.widgetType
     if widget_type_str:
         try:
-            # Convert to uppercase for enum matching
             widget_type = WidgetType(widget_type_str.upper())
         except ValueError:
-            # If invalid widget type provided, use the widget's configured type
             widget_type = widget.widget_type
     else:
         widget_type = widget.widget_type
 
-    # Prepare context data
     context = payload.context or {}
     context.update(
         {
@@ -102,15 +88,12 @@ async def submit_public_feedback(
         }
     )
 
-    # Prepare feedback data based on widget type
     feedback_data = {
         'title': payload.title,
-        'message': payload.response
-        or payload.message,  # Use 'response' field primarily
+        'message': payload.response or payload.message,
         'rating': payload.rating,
     }
 
-    # Add type-specific data
     if widget_type == WidgetType.REVIEW:
         feedback_data.update(
             {
@@ -145,13 +128,11 @@ async def submit_public_feedback(
             }
         )
 
-    # Add submitter information if provided
     if payload.submitter_name:
         context['submitter_name'] = payload.submitter_name
     if payload.submitter_email:
         context['submitter_email'] = payload.submitter_email
 
-    # Create feedback using the factory method
     return await feedback_service.create_feedback_from_widget(
         db=db,
         widget_id=widget.id,
@@ -180,9 +161,10 @@ class UpvoteRequest(BaseModel):
 @public_router.get(
     '/widgets/{public_key}/features', response_model=List[FeatureRequestPublic]
 )
+@create_rate_limit_decorator('widget_access', is_anonymous=True)
 async def get_widget_feature_requests(
-    public_key: str,
     request: Request,
+    public_key: str,
     db: AsyncSession = Depends(get_db),
     widget_service: WidgetService = Depends(lambda: widget_service),
 ):
@@ -193,17 +175,13 @@ async def get_widget_feature_requests(
         db, widget_id=widget.id, feedback_type=FeedbackType.FEATURE_REQUEST
     )
 
-    # Get voter information for user vote status
     voter_ip = request.client.host if request.client else '127.0.0.1'
     voter_user_agent = request.headers.get('user-agent', '')
 
-    # Transform to public format
     feature_requests = []
     for feature in features:
-        # Parse context for category and priority
         context = feature.context or {}
 
-        # Check if current user has voted
         has_user_voted = await voting_service.get_user_vote_status(
             db, feature.id, voter_ip, voter_user_agent
         )
@@ -215,21 +193,20 @@ async def get_widget_feature_requests(
                 description=feature.message or '',
                 category=context.get('category', 'other'),
                 priority=context.get('priority', 'medium'),
-                upvotes=feature.feedback_votes or 0,  # Use correct field
+                upvotes=feature.feedback_votes or 0,
                 hasUserUpvoted=has_user_voted,
             )
         )
 
-    # Sort by upvotes descending
     feature_requests.sort(key=lambda x: x.upvotes, reverse=True)
-
     return feature_requests
 
 
 @public_router.post('/features/upvote')
+@create_rate_limit_decorator('voting', is_anonymous=True)
 async def upvote_feature_request(
-    payload: UpvoteRequest,
     request: Request,
+    payload: UpvoteRequest,
     db: AsyncSession = Depends(get_db),
     widget_service: WidgetService = Depends(lambda: widget_service),
 ):
@@ -243,11 +220,9 @@ async def upvote_feature_request(
 
         raise HTTPException(status_code=404, detail='Feature request not found')
 
-    # Get voter information from request
     voter_ip = request.client.host if request.client else '127.0.0.1'
     voter_user_agent = request.headers.get('user-agent', '')
 
-    # Handle the vote with proper duplicate prevention
     vote_result = await voting_service.vote_for_feature(
         db, feature.id, voter_ip, voter_user_agent
     )
