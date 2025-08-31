@@ -435,7 +435,6 @@ declare global {
               widgetKey: publicKey,
               response: data.response,
               rating: data.rating,
-              score: data.rating, // Backend expects 'score' for CSAT/CES/NPS
               feedbackType: data.feedbackType,
               // Include type-specific data
               ...(data.typeSpecificData || {}),

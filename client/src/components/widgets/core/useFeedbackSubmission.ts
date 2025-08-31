@@ -175,9 +175,8 @@ export function useFeedbackSubmission({
       }
 
       await handleSubmit({
-        response: `${type}: ${score}`,
+        response: `Rating: ${score}`, // Cleaner response format
         rating: score,
-        score: score, // Backend expects 'score' for CSAT/CES/NPS
         feedbackType,
         typeSpecificData,
       })

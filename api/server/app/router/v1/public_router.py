@@ -114,11 +114,18 @@ async def submit_public_feedback(
         }
     )
 
+    # Debug logging
+    print(f'DEBUG: Received payload.rating = {payload.rating}')
+    print(f'DEBUG: Received payload.response = {payload.response}')
+    print(f'DEBUG: Widget type = {widget_type}')
+
     feedback_data = {
         'title': payload.title,
         'message': payload.response or payload.message,
         'rating': payload.rating,
     }
+
+    print(f'DEBUG: Initial feedback_data = {feedback_data}')
 
     if widget_type == WidgetType.REVIEW:
         feedback_data.update(
@@ -147,13 +154,15 @@ async def submit_public_feedback(
             }
         )
     elif widget_type in [WidgetType.NPS, WidgetType.CSAT, WidgetType.CES]:
+        print(f'DEBUG: Processing scoring widget type: {widget_type}')
+        print(f'DEBUG: payload.rating = {payload.rating}')
         feedback_data.update(
             {
-                'score': payload.score,
-                'rating': payload.score,  # Also set rating field for compatibility
+                'rating': payload.rating,  # Use rating from frontend
                 'comment': payload.comment,
             }
         )
+        print(f'DEBUG: After update, feedback_data = {feedback_data}')
 
     if payload.submitter_name:
         sanitized_context['submitter_name'] = InputSanitizer.sanitize_text(
@@ -164,7 +173,11 @@ async def submit_public_feedback(
             payload.submitter_email
         )
 
+    print(f'DEBUG: Before sanitization, feedback_data = {feedback_data}')
     sanitized_feedback_data = InputSanitizer.sanitize_feedback_data(feedback_data)
+    print(
+        f'DEBUG: After sanitization, sanitized_feedback_data = {sanitized_feedback_data}'
+    )
 
     # Check for existing feedback from the same user context to prevent duplicates
     existing_feedback = await feedback_repository.get_existing_feedback_by_context(

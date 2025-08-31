@@ -37,6 +37,7 @@ class InputSanitizer:
         'category': 50,
         'priority': 20,
         'severity': 20,
+        'rating': 10,  # Add rating field for proper sanitization
     }
 
     @classmethod
