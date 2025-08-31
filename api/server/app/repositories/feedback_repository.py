@@ -1,4 +1,4 @@
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Dict
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.feedback_model import (
@@ -130,8 +130,7 @@ class FeedbackRepository(BaseRepository[Feedback]):
         self,
         db: AsyncSession,
         widget_id: UUID,
-        ip_address: Optional[str],
-        user_agent: Optional[str],
+        context: Dict[str, Any],
         feedback_type: Any,
         within_hours: int = 24,
     ) -> Optional[Feedback]:
@@ -141,6 +140,10 @@ class FeedbackRepository(BaseRepository[Feedback]):
         """
         from sqlalchemy import and_, select
         from datetime import datetime, timedelta, timezone
+
+        # Extract IP and user agent from context
+        ip_address = context.get('ip_address')
+        user_agent = context.get('user_agent')
 
         if not ip_address and not user_agent:
             return None  # Can't deduplicate without context
@@ -154,11 +157,11 @@ class FeedbackRepository(BaseRepository[Feedback]):
             Feedback.created_at >= cutoff_time,
         ]
 
-        # Add context filters if available
+        # Add context filters if available - now using context JSONB field
         if ip_address:
-            filters.append(Feedback.ip_address == ip_address)
+            filters.append(Feedback.context['ip_address'].astext == ip_address)
         if user_agent:
-            filters.append(Feedback.user_agent == user_agent)
+            filters.append(Feedback.context['user_agent'].astext == user_agent)
 
         # Use SQLAlchemy 2.x async syntax
         stmt = (

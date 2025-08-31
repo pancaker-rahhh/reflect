@@ -183,8 +183,7 @@ async def submit_public_feedback(
     existing_feedback = await feedback_repository.get_existing_feedback_by_context(
         db,
         widget_id=widget.id,
-        ip_address=sanitized_context.get('ip_address'),
-        user_agent=sanitized_context.get('user_agent'),
+        context=sanitized_context,
         feedback_type=widget_type,
         within_hours=24,  # Check for duplicates within 24 hours
     )

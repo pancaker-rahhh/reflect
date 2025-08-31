@@ -76,16 +76,10 @@ class Feedback(BaseModel):
     submitter_email = Column(String(320))
     submitter_id = Column(String(255))
 
-    ip_address = Column(INET)
-    user_agent = Column(Text)
-    browser_info = Column(JSONB, default=dict)
-
     is_anonymous = Column(Boolean, default=True)
     is_internal = Column(Boolean, default=False)
     is_spam = Column(Boolean, default=False)
     is_flagged = Column(Boolean, default=False)
-
-    # Removed columns: assigned_to_user_id, resolved_at, resolved_by_user_id, resolution_notes
 
     converted_to_action_item_id = Column(
         UUID(as_uuid=True), ForeignKey('roadmap_action_items.id'), nullable=True
