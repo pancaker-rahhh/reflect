@@ -400,6 +400,47 @@ class FeedbackService:
             'is_actionable': feedback.is_actionable,
         }
 
+    async def update_feedback_from_widget(
+        self,
+        db: AsyncSession,
+        feedback_id: UUID,
+        data: Dict[str, Any],
+        context: Dict[str, Any] = None,
+    ) -> FeedbackResponsePayload:
+        """
+        Update existing feedback from widget submission.
+        This method updates the feedback data and context while preserving the original ID.
+        """
+        context = context or {}
+
+        # Get existing feedback
+        existing_feedback = await feedback_repository.get(db, feedback_id)
+        if not existing_feedback:
+            raise ValueError(f'Feedback with ID {feedback_id} not found')
+
+        # Update the feedback data
+        for key, value in data.items():
+            if hasattr(existing_feedback, key) and value is not None:
+                setattr(existing_feedback, key, value)
+
+        # Update context
+        if context:
+            existing_context = existing_feedback.context or {}
+            existing_context.update(context)
+            existing_feedback.context = existing_context
+
+        # Update timestamp
+        from datetime import datetime, timezone
+
+        existing_feedback.updated_at = datetime.now(timezone.utc)
+
+        # Save changes
+        db.add(existing_feedback)
+        await db.commit()
+        await db.refresh(existing_feedback)
+
+        return self._convert_to_response(existing_feedback)
+
     def _convert_to_response(self, obj: Feedback) -> FeedbackResponsePayload:
         if isinstance(obj, BugReportFeedback):
             return BugReportFeedbackResponse.model_validate(obj)

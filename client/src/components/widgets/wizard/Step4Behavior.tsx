@@ -21,8 +21,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card } from '@/components/ui/card'
 import { Code, Info } from 'lucide-react'
 
+import type { WidgetFormData } from '@/pages/WidgetCreate'
+
 interface Step4BehaviorProps {
-  form: UseFormReturn<any>
+  form: UseFormReturn<WidgetFormData>
 }
 
 export function Step4Behavior({ form }: Step4BehaviorProps) {
@@ -37,9 +39,7 @@ export function Step4Behavior({ form }: Step4BehaviorProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Widget Trigger Type</FormLabel>
-              <FormDescription>
-                Choose when the widget should appear to users
-              </FormDescription>
+              <FormDescription>Choose when the widget should appear to users</FormDescription>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
@@ -81,7 +81,7 @@ export function Step4Behavior({ form }: Step4BehaviorProps) {
 
         <div className="space-y-4">
           <h3 className="font-medium">URL Targeting</h3>
-          
+
           <FormField
             control={form.control}
             name="behavior.urlTargeting.includeUrls"
@@ -95,7 +95,14 @@ export function Step4Behavior({ form }: Step4BehaviorProps) {
                   <Textarea
                     placeholder="/dashboard/*, /products/*"
                     {...field}
-                    onChange={(e) => field.onChange(e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value
+                          .split(',')
+                          .map((s) => s.trim())
+                          .filter(Boolean)
+                      )
+                    }
                     value={field.value?.join(', ') || ''}
                   />
                 </FormControl>
@@ -110,14 +117,19 @@ export function Step4Behavior({ form }: Step4BehaviorProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Exclude on specific URLs</FormLabel>
-                <FormDescription>
-                  Enter URL patterns to exclude separated by commas
-                </FormDescription>
+                <FormDescription>Enter URL patterns to exclude separated by commas</FormDescription>
                 <FormControl>
                   <Textarea
                     placeholder="/admin/*, /checkout/*"
                     {...field}
-                    onChange={(e) => field.onChange(e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value
+                          .split(',')
+                          .map((s) => s.trim())
+                          .filter(Boolean)
+                      )
+                    }
                     value={field.value?.join(', ') || ''}
                   />
                 </FormControl>
@@ -138,15 +150,10 @@ export function Step4Behavior({ form }: Step4BehaviorProps) {
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                     <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel className="font-normal capitalize">
-                        {device}
-                      </FormLabel>
+                      <FormLabel className="font-normal capitalize">{device}</FormLabel>
                     </div>
                   </FormItem>
                 )}
@@ -164,7 +171,7 @@ export function Step4Behavior({ form }: Step4BehaviorProps) {
                 Identify users to track their feedback history and provide personalized experiences.
               </p>
               <pre className="bg-background rounded p-3 text-xs overflow-x-auto">
-{`window.reflectIdentify = {
+                {`window.reflectIdentify = {
   userId: 'user123',
   email: 'user@example.com',
   name: 'John Doe'
@@ -177,8 +184,8 @@ export function Step4Behavior({ form }: Step4BehaviorProps) {
         <div className="flex items-start gap-2 p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
           <Info className="h-5 w-5 text-blue-600 mt-0.5" />
           <p className="text-sm text-blue-900 dark:text-blue-100">
-            Multi-language support is automatically enabled. The widget will detect the user&apos;s browser
-            language and display content accordingly.
+            Multi-language support is automatically enabled. The widget will detect the user&apos;s
+            browser language and display content accordingly.
           </p>
         </div>
       </div>

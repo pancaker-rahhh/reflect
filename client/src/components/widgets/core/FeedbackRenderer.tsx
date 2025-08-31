@@ -1,0 +1,254 @@
+import React from 'react'
+import { NPSRating } from '@/components/widgets/scoring/NPSRating'
+import { CSATRating } from '@/components/widgets/scoring/CSATRating'
+import { CESRating } from '@/components/widgets/scoring/CESRating'
+import { ReviewForm } from '@/components/widgets/forms/ReviewForm'
+import { BugReportForm } from '@/components/widgets/forms/BugReportForm'
+import { FeatureRequestForm } from '@/components/widgets/forms/FeatureRequestForm'
+import { LoadingSpinner } from './LoadingSpinner'
+import type {
+  FeedbackType,
+  FeedbackData,
+  NPSFeedbackData,
+  CSATFeedbackData,
+  CESFeedbackData,
+  BugReportFeedbackData,
+  FeatureRequestFeedbackData,
+} from './types'
+
+interface FeedbackRendererProps {
+  feedbackType: FeedbackType
+  selectedScore?: number
+  isSubmitting: boolean
+  onSubmit: (data: FeedbackData) => Promise<void>
+  onScoreChange: (score: number) => Promise<void>
+  colors: {
+    primary: string
+    background: string
+    text: string
+    buttonColor: string
+    buttonTextColor: string
+  }
+  content: {
+    headerTitle: string
+    mainQuestion: string
+    submitButtonText: string
+    thankYouTitle: string
+    thankYouMessage: string
+  }
+  mode: 'preview' | 'production'
+  widgetKey?: string
+}
+
+export function FeedbackRenderer({
+  feedbackType,
+  selectedScore,
+  isSubmitting,
+  onSubmit,
+  onScoreChange,
+  colors,
+  content,
+  mode,
+  widgetKey,
+}: FeedbackRendererProps) {
+  const handleReviewSubmit = async (data: { rating: number; review?: string }) => {
+    await onSubmit({
+      response: `Rating: ${data.rating}/5${data.review ? ` - ${data.review}` : ''}`,
+      rating: data.rating,
+      feedbackType,
+      typeSpecificData: {
+        overall_rating: data.rating,
+        pros: data.review || '',
+        cons: '',
+      } as any, // TODO: Fix this type
+    })
+  }
+
+  const handleBugReportSubmit = async (data: {
+    title: string
+    category: string
+    severity: string
+    description: string
+    stepsToReproduce?: string
+  }) => {
+    const response = [
+      `Title: ${data.title}`,
+      `Category: ${data.category}`,
+      `Severity: ${data.severity}`,
+      `Description: ${data.description}`,
+      data.stepsToReproduce ? `Steps: ${data.stepsToReproduce}` : null,
+    ]
+      .filter(Boolean)
+      .join('\n')
+
+    await onSubmit({
+      response,
+      feedbackType,
+      typeSpecificData: {
+        title: data.title,
+        severity: data.severity,
+        steps_to_reproduce: data.stepsToReproduce || '',
+        expected_result: '',
+        actual_result: data.description,
+        visual_proof: {},
+      } as BugReportFeedbackData,
+    })
+  }
+
+  const handleFeatureRequestSubmit = async (data: {
+    title: string
+    category: string
+    priority: string
+    description: string
+    useCase: string
+  }) => {
+    const response = [
+      `Title: ${data.title}`,
+      `Category: ${data.category}`,
+      `Priority: ${data.priority}`,
+      `Description: ${data.description}`,
+      `Use Case: ${data.useCase}`,
+    ].join('\n')
+
+    await onSubmit({
+      response,
+      feedbackType,
+      typeSpecificData: {
+        title: data.title,
+        suggested_solution: data.description,
+        benefits: `Priority: ${data.priority}, Category: ${data.category}`,
+        use_case: data.useCase,
+      } as FeatureRequestFeedbackData,
+    })
+  }
+
+  const handleGeneralFeedbackSubmit = async (feedback: string) => {
+    await onSubmit({
+      response: feedback,
+      feedbackType,
+      typeSpecificData: {
+        title: `${feedbackType} Feedback`,
+        message: feedback,
+      } as any, // TODO: Fix this type
+    })
+  }
+
+  switch (feedbackType) {
+    case 'NPS':
+      return <NPSRating value={selectedScore} onChange={onScoreChange} disabled={isSubmitting} />
+
+    case 'CSAT':
+      return <CSATRating value={selectedScore} onChange={onScoreChange} disabled={isSubmitting} />
+
+    case 'CES':
+      return <CESRating value={selectedScore} onChange={onScoreChange} disabled={isSubmitting} />
+
+    case 'REVIEW':
+      return (
+        <ReviewForm
+          onSubmit={handleReviewSubmit}
+          isSubmitting={isSubmitting}
+          colors={colors}
+          content={content}
+        />
+      )
+
+    case 'BUG_REPORT':
+      return (
+        <BugReportForm
+          onSubmit={handleBugReportSubmit}
+          isSubmitting={isSubmitting}
+          colors={colors}
+          content={content}
+        />
+      )
+
+    case 'FEATURE_REQUEST':
+      return (
+        <FeatureRequestForm
+          onSubmit={handleFeatureRequestSubmit}
+          onUpvote={async (_featureId) => {
+            // Feature upvote functionality
+          }}
+          widgetKey={mode === 'production' ? widgetKey : undefined}
+          isSubmitting={isSubmitting}
+          colors={colors}
+          content={content}
+        />
+      )
+
+    case 'FEEDBACK':
+    case 'SURVEY':
+      return (
+        <GeneralFeedbackForm
+          onSubmit={handleGeneralFeedbackSubmit}
+          isSubmitting={isSubmitting}
+          submitButtonText={content.submitButtonText}
+          colors={colors}
+        />
+      )
+
+    default:
+      return <div className="text-center text-gray-500">Unknown feedback type: {feedbackType}</div>
+  }
+}
+
+// General feedback form component
+interface GeneralFeedbackFormProps {
+  onSubmit: (feedback: string) => Promise<void>
+  isSubmitting: boolean
+  submitButtonText: string
+  colors: {
+    primary: string
+    background: string
+    text: string
+    buttonColor: string
+    buttonTextColor: string
+  }
+}
+
+function GeneralFeedbackForm({
+  onSubmit,
+  isSubmitting,
+  submitButtonText,
+  colors,
+}: GeneralFeedbackFormProps) {
+  const [feedback, setFeedback] = React.useState('')
+
+  const handleSubmit = async () => {
+    if (!feedback.trim()) return
+    await onSubmit(feedback)
+  }
+
+  return (
+    <div className="space-y-4">
+      <textarea
+        value={feedback}
+        onChange={(e) => setFeedback(e.target.value)}
+        placeholder="Tell us what you think..."
+        className="w-full h-32 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all"
+        style={{
+          borderColor: feedback.trim() ? colors.primary : '#E5E7EB',
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          boxShadow: feedback.trim() ? `0 0 0 3px ${colors.primary}20` : undefined,
+        }}
+        disabled={isSubmitting}
+      />
+      <button
+        onClick={handleSubmit}
+        disabled={!feedback.trim() || isSubmitting}
+        className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+        style={{ backgroundColor: colors.buttonColor, color: colors.buttonTextColor }}
+      >
+        {isSubmitting ? (
+          <span className="inline-flex items-center space-x-2">
+            <LoadingSpinner size="sm" color="currentColor" />
+            <span>Submitting...</span>
+          </span>
+        ) : (
+          submitButtonText
+        )}
+      </button>
+    </div>
+  )
+}

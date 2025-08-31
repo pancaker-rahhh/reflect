@@ -213,19 +213,11 @@ declare global {
 
   // Convert backend config to WidgetConfiguration format
   function transformWidgetConfig(backendConfig: WidgetConfig): WidgetConfiguration {
-    console.log('Widget: transformWidgetConfig - backendConfig:', backendConfig)
-    console.log('Widget: transformWidgetConfig - widget_type:', backendConfig.widget_type)
-
     const theme = backendConfig.theme_configuration || {}
     const content = backendConfig.configuration?.content || {}
     const modules = backendConfig.configuration?.modules || {}
     // Extract the actual type from enum format (e.g., "WidgetType.CSAT" -> "CSAT")
     const widgetType = backendConfig.widget_type?.split('.')?.pop()?.toUpperCase()
-
-    console.log(
-      'Widget: transformWidgetConfig - widgetType after split and toUpperCase:',
-      widgetType
-    )
 
     // Map widget types to modules properly
     const defaultModules = getDefaultModulesForType(widgetType)
@@ -273,9 +265,6 @@ declare global {
         deviceTypes: { desktop: true, mobile: true, tablet: true },
       },
     }
-
-    console.log('Widget: transformWidgetConfig - final result:', result)
-    console.log('Widget: transformWidgetConfig - result.primaryType:', result.primaryType)
 
     return result
   }
@@ -446,7 +435,8 @@ declare global {
               widgetKey: publicKey,
               response: data.response,
               rating: data.rating,
-              feedbackType: data.feedbackType.toLowerCase(),
+              score: data.rating, // Backend expects 'score' for CSAT/CES/NPS
+              feedbackType: data.feedbackType,
               // Include type-specific data
               ...(data.typeSpecificData || {}),
             }),

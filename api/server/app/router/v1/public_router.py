@@ -67,7 +67,7 @@ async def get_public_widget_config(
     response_model=FeedbackResponsePayload,
     status_code=status.HTTP_201_CREATED,
 )
-@create_rate_limit_decorator('feedback_submission', is_anonymous=True)
+# @create_rate_limit_decorator('feedback_submission', is_anonymous=True)
 async def submit_public_feedback(
     request: Request,
     payload: PublicFeedbackPayload,
@@ -94,12 +94,23 @@ async def submit_public_feedback(
 
     context = payload.context or {}
     sanitized_context = InputSanitizer.sanitize_feedback_data(context)
+
+    # Capture user context for deduplication and analytics
+    client_ip = request.client.host if request.client else None
+    user_agent = request.headers.get('user-agent')
+    referer = request.headers.get('referer')
+
     sanitized_context.update(
         {
-            'ip_address': request.client.host if request.client else None,
-            'user_agent': request.headers.get('user-agent'),
-            'referer': request.headers.get('referer'),
+            'ip_address': client_ip,
+            'user_agent': user_agent,
+            'referer': referer,
             'submission_timestamp': str(request.headers.get('date', '')),
+            'browser_info': {
+                'user_agent': user_agent,
+                'referer': referer,
+                'ip_address': client_ip,
+            },
         }
     )
 
@@ -139,6 +150,7 @@ async def submit_public_feedback(
         feedback_data.update(
             {
                 'score': payload.score,
+                'rating': payload.score,  # Also set rating field for compatibility
                 'comment': payload.comment,
             }
         )
@@ -153,6 +165,25 @@ async def submit_public_feedback(
         )
 
     sanitized_feedback_data = InputSanitizer.sanitize_feedback_data(feedback_data)
+
+    # Check for existing feedback from the same user context to prevent duplicates
+    existing_feedback = await feedback_repository.get_existing_feedback_by_context(
+        db,
+        widget_id=widget.id,
+        ip_address=sanitized_context.get('ip_address'),
+        user_agent=sanitized_context.get('user_agent'),
+        feedback_type=widget_type,
+        within_hours=24,  # Check for duplicates within 24 hours
+    )
+
+    if existing_feedback:
+        # Update existing feedback instead of creating new one
+        return await feedback_service.update_feedback_from_widget(
+            db=db,
+            feedback_id=existing_feedback.id,
+            data=sanitized_feedback_data,
+            context=sanitized_context,
+        )
 
     return await feedback_service.create_feedback_from_widget(
         db=db,

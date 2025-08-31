@@ -50,8 +50,7 @@ class FeedbackUpdate(BaseModel):
     is_internal: Optional[bool] = None
     is_spam: Optional[bool] = None
     is_flagged: Optional[bool] = None
-    assigned_to_user_id: Optional[UUID] = None
-    resolution_notes: Optional[str] = None
+    # Removed fields: assigned_to_user_id, resolution_notes
 
     # SurveyFeedback fields
     survey_type: Optional[str] = None
@@ -119,10 +118,7 @@ class FeedbackResponse(BaseModel):
     is_internal: bool
     is_spam: bool
     is_flagged: bool
-    assigned_to_user_id: Optional[UUID]
-    resolved_at: Optional[datetime]
-    resolved_by_user_id: Optional[UUID]
-    resolution_notes: Optional[str]
+    # Removed fields: assigned_to_user_id, resolved_at, resolved_by_user_id, resolution_notes
     converted_to_action_item_id: Optional[UUID]
     conversion_date: Optional[datetime]
     conversion_notes: Optional[str]
