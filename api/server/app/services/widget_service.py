@@ -2,13 +2,10 @@ from typing import List, cast
 from uuid import UUID
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.models.widget_model import Widget, WidgetStatus
 from app.repositories.widget_repository import widget_repository, WidgetRepository
 from app.schemas.widget_schema import WidgetCreate, WidgetUpdate
 from app.services.project_service import project_service, ProjectService
-
-import os
 from app.services.cdn_deployment_service import cdn_deployment_service
 from app.core.settings import get_settings
 from app.core.logging import get_logger
@@ -29,7 +26,7 @@ class WidgetService:
 
     def _generate_embed_code(self, public_key: str) -> str:
         widget_cdn_url = self._get_cdn_url(public_key)
-        
+
         embed_code = (
             f'<script>\n'
             f'  window.reflectConfig = {{ key: "{public_key}" }};\n'
@@ -45,7 +42,9 @@ class WidgetService:
         if not widget:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
 
-        await self.project_service.get_project_and_check_access(db, user_id, widget.project_id)
+        await self.project_service.get_project_and_check_access(
+            db, user_id, widget.project_id
+        )
         return widget
 
     async def list_widgets_by_project(
@@ -65,7 +64,7 @@ class WidgetService:
 
         temp_widget = Widget(**widget_data)
         public_key = temp_widget.public_key
-        
+
         widget_data['public_key'] = public_key
         widget_data['embed_code'] = self._generate_embed_code(public_key)
         widget_data['status'] = WidgetStatus.ACTIVE
@@ -73,25 +72,35 @@ class WidgetService:
         widget_data['cdn_url'] = self._get_cdn_url(public_key)
 
         widget = await self.repository.create(db, **widget_data)
-        
+
         await self._deploy_to_cdn(widget)
-        
+
         return widget
 
     async def update_widget(
         self, db: AsyncSession, user_id: UUID, widget_id: UUID, widget_in: WidgetUpdate
     ) -> Widget:
-        widget = await self.get_widget_and_check_access(db, user_id, widget_id)
+        await self.get_widget_and_check_access(db, user_id, widget_id)
         update_data = widget_in.model_dump(exclude_unset=True)
-        
-        configuration_changed = any(key in update_data for key in ['configuration', 'theme_configuration', 'widget_type', 'position'])
-        
+
+        configuration_changed = any(
+            key in update_data
+            for key in [
+                'configuration',
+                'theme_configuration',
+                'widget_type',
+                'position',
+            ]
+        )
+
         updated_widget = await self.repository.update(db, id=widget_id, **update_data)
-        
+
         if configuration_changed:
             await self._deploy_to_cdn(updated_widget)
-            logger.info(f"Widget {updated_widget.public_key} updated and redeployed to R2 + CDN")
-        
+            logger.info(
+                f'Widget {updated_widget.public_key} updated and redeployed to R2 + CDN'
+            )
+
         return updated_widget
 
     async def delete_widget(
@@ -104,6 +113,19 @@ class WidgetService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='Cannot delete an active widget. Please deactivate the widget first before deleting.',
             )
+
+        # Delete widget files from CDN before soft deleting from database
+        try:
+            success = await cdn_deployment_service.delete_widget(widget.public_key)
+            if success:
+                logger.info(f'Widget {widget.public_key} deleted from CDN successfully')
+            else:
+                logger.error(f'Failed to delete widget {widget.public_key} from CDN')
+        except Exception as e:
+            logger.error(
+                f'Failed to delete widget {widget.public_key} from CDN: {str(e)}'
+            )
+            # Continue with database deletion even if CDN cleanup fails
 
         return await self.repository.soft_delete(db, id=widget_id)
 
@@ -131,35 +153,35 @@ class WidgetService:
                 detail='Active widget not found for this key.',
             )
 
-        if not bool(widget.is_active) or cast(WidgetStatus, widget.status) != WidgetStatus.ACTIVE:
+        if (
+            not bool(widget.is_active)
+            or cast(WidgetStatus, widget.status) != WidgetStatus.ACTIVE
+        ):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail='Active widget not found for this key.',
             )
         return widget
-    
-    async def get_public_widget_config(
-        self, db: AsyncSession, public_key: str
-    ):
+
+    async def get_public_widget_config(self, db: AsyncSession, public_key: str):
         from app.schemas.widget_schema import WidgetReadPublic
-        
+
         widget = await self.get_public_widget_by_key(db, public_key)
         return WidgetReadPublic.from_widget(widget)
 
-
     def _get_cdn_url(self, public_key: str) -> str:
         return f'{settings.CDN_BASE_URL}/widgets/{public_key}/widget.js'
-    
+
     async def _deploy_to_cdn(self, widget) -> bool:
         try:
             success = await cdn_deployment_service.deploy_widget(widget)
             if success:
-                logger.info(f"Widget {widget.public_key} deployed successfully")
+                logger.info(f'Widget {widget.public_key} deployed successfully')
             else:
-                logger.error(f"Failed to deploy widget {widget.public_key}")
+                logger.error(f'Failed to deploy widget {widget.public_key}')
             return success
         except Exception as e:
-            logger.error(f"CDN deployment error for {widget.public_key}: {str(e)}")
+            logger.error(f'CDN deployment error for {widget.public_key}: {str(e)}')
             return False
 
 

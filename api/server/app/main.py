@@ -9,6 +9,7 @@ from app.core.exceptions import AuthenticationError
 from app.core.settings import get_settings
 from app.core.logging import setup_logging
 from app.core.middleware import CorrelationIDMiddleware, RequestLoggingMiddleware
+from app.core.rate_limiting import setup_rate_limiting
 from app.db import engine
 from app.router.api_router import api_router
 
@@ -18,6 +19,7 @@ async def lifespan(app: FastAPI):
     setup_logging()
     # Import all models to ensure SQLAlchemy relationships are properly configured
     import app.models  # noqa
+
     yield
     await engine.dispose()
 
@@ -45,6 +47,9 @@ def create_application() -> FastAPI:
     )
     app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(CorrelationIDMiddleware)
+
+    # Setup rate limiting (must be after other middleware)
+    setup_rate_limiting(app)
 
     app.add_exception_handler(AuthenticationError, authentication_error_handler)
     app.add_exception_handler(Exception, general_error_handler)

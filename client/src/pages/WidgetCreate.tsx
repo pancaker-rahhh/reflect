@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useQueryClient } from '@tanstack/react-query'
 import { WizardProgress } from '@/components/widgets/wizard/WizardProgress'
 import { WizardNavigation } from '@/components/widgets/wizard/WizardNavigation'
 import { Step1Basics } from '@/components/widgets/wizard/Step1Basics'
@@ -14,87 +15,112 @@ import { widgetApi } from '@/lib/api/widget'
 import { useAppContext } from '@/context/AppContext'
 import { PageLoading } from '@/components/common/LoadingSpinner'
 
-const widgetSchema = z.object({
-  name: z.string().min(1, 'Widget name is required'),
-  modules: z.object({
-    feedback: z.boolean(),
-    reviews: z.boolean(),
-    bugReporting: z.boolean(),
-    featureRequests: z.boolean(),
-  }).refine((modules) => {
-    // At least one module must be enabled
-    return Object.values(modules).some(Boolean)
-  }, { message: 'At least one module must be enabled' }),
-  primaryType: z.enum([
-    'FEEDBACK',
-    'SURVEY',
-    'NPS',
-    'CSAT',
-    'CES',
-    '',
-  ]).optional(),
-  content: z.object({
-    headerTitle: z.string().min(1, 'Header title is required'),
-    mainQuestion: z.string().min(1, 'Main question is required'),
-    submitButtonText: z.string().min(1, 'Button text is required'),
-    thankYouTitle: z.string().min(1, 'Thank you title is required'),
-    thankYouMessage: z.string().min(1, 'Thank you message is required'),
-    // Scoring fields for NPS, CSAT, CES
-    npsScore: z.number().min(0).max(10).optional(),
-    csatScore: z.number().min(1).max(5).optional(),
-    cesScore: z.number().min(1).max(5).optional(),
-    // Review-specific fields
-    reviewPrompt: z.string().optional(),
-    requireReviewText: z.boolean().optional(),
-    // Bug report specific fields
-    bugCategories: z.array(z.string()).optional(),
-    bugSeverityLevels: z.array(z.string()).optional(),
-    requireStepsToReproduce: z.boolean().optional(),
-    // Feature request specific fields
-    featureCategories: z.array(z.string()).optional(),
-    priorityLevels: z.array(z.string()).optional(),
-    requireUseCase: z.boolean().optional(),
-  }),
-  appearance: z.object({
-    theme: z.enum(['default', 'midnight', 'minimal-light', 'minimal-dark']),
-    position: z.enum(['bottom_right', 'bottom_left', 'top_right', 'top_left', 'center']),
-    colors: z.object({
-      primary: z.string(),
-      headerGradientEnd: z.string().optional(),
-      background: z.string(),
-      text: z.string(),
-      buttonColor: z.string(),
-      buttonTextColor: z.string(),
+// Production-grade widget schema supporting all widget types
+const widgetSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1, 'Widget name is required')
+      .max(255, 'Widget name must be 255 characters or less'),
+    modules: z
+      .object({
+        feedback: z.boolean(),
+        reviews: z.boolean(),
+        bugReporting: z.boolean(),
+        featureRequests: z.boolean(),
+      })
+      .refine(
+        (modules) => {
+          return Object.values(modules).some(Boolean)
+        },
+        { message: 'At least one module must be enabled' }
+      ),
+
+    primaryType: z.enum([
+      'FEEDBACK',
+      'SURVEY',
+      'NPS',
+      'CSAT',
+      'CES',
+      'REVIEW',
+      'BUG_REPORT',
+      'FEATURE_REQUEST',
+    ]),
+
+    content: z.object({
+      headerTitle: z.string().min(1, 'Header title is required'),
+      mainQuestion: z.string().min(1, 'Main question is required'),
+      submitButtonText: z.string().min(1, 'Button text is required'),
+      thankYouTitle: z.string().min(1, 'Thank you title is required'),
+      thankYouMessage: z.string().min(1, 'Thank you message is required'),
+      npsScore: z.number().min(0).max(10).optional(),
+      csatScore: z.number().min(1).max(5).optional(),
+      cesScore: z.number().min(1).max(5).optional(),
+      reviewPrompt: z.string().optional(),
+      requireReviewText: z.boolean().optional(),
+      bugCategories: z.array(z.string()).optional(),
+      bugSeverityLevels: z.array(z.string()).optional(),
+      requireStepsToReproduce: z.boolean().optional(),
+      featureCategories: z.array(z.string()).optional(),
+      priorityLevels: z.array(z.string()).optional(),
+      requireUseCase: z.boolean().optional(),
     }),
-    showBranding: z.boolean(),
-  }),
-  behavior: z.object({
-    triggerType: z.enum(['immediate', 'delay', 'exit-intent', 'scroll']),
-    triggerDelay: z.number().optional(),
-    urlTargeting: z.object({
-      includeUrls: z.array(z.string()),
-      excludeUrls: z.array(z.string()),
+
+    appearance: z.object({
+      theme: z.enum(['default', 'midnight', 'minimal-light', 'minimal-dark']),
+      position: z.enum(['bottom_right', 'bottom_left', 'top_right', 'top_left', 'center']),
+      colors: z.object({
+        primary: z.string(),
+        headerGradientEnd: z.string().optional(),
+        background: z.string(),
+        text: z.string(),
+        buttonColor: z.string(),
+        buttonTextColor: z.string(),
+      }),
+      showBranding: z.boolean(),
     }),
-    deviceTypes: z.object({
-      desktop: z.boolean(),
-      mobile: z.boolean(),
-      tablet: z.boolean(),
+
+    behavior: z.object({
+      triggerType: z.enum(['immediate', 'delay', 'exit-intent', 'scroll']),
+      triggerDelay: z.number().optional(),
+      urlTargeting: z.object({
+        includeUrls: z.array(z.string()),
+        excludeUrls: z.array(z.string()),
+      }),
+      deviceTypes: z.object({
+        desktop: z.boolean(),
+        mobile: z.boolean(),
+        tablet: z.boolean(),
+      }),
     }),
-  }),
-}).refine((data) => {
-  // Validate that primaryType is only set when feedback module is enabled
-  if (!data.modules.feedback) {
-    // If feedback is disabled, primaryType should be empty
-    return !data.primaryType || data.primaryType === ''
-  }
-  
-  // If feedback is enabled, primaryType should be a valid feedback type
-  const validFeedbackTypes = ['FEEDBACK', 'NPS', 'CSAT', 'CES', 'SURVEY']
-  return data.primaryType && validFeedbackTypes.includes(data.primaryType)
-}, {
-  message: 'Primary type is only available when feedback module is enabled',
-  path: ['primaryType']
-})
+  })
+  .refine(
+    (data) => {
+      // Ensure primaryType matches the enabled module
+      if (data.modules.feedback) {
+        const validFeedbackTypes = ['FEEDBACK', 'NPS', 'CSAT', 'CES', 'SURVEY']
+        return validFeedbackTypes.includes(data.primaryType)
+      }
+
+      if (data.modules.reviews) {
+        return data.primaryType === 'REVIEW'
+      }
+
+      if (data.modules.bugReporting) {
+        return data.primaryType === 'BUG_REPORT'
+      }
+
+      if (data.modules.featureRequests) {
+        return data.primaryType === 'FEATURE_REQUEST'
+      }
+
+      return false
+    },
+    {
+      message: 'Primary type must match the enabled module type',
+      path: ['primaryType'],
+    }
+  )
 
 export type WidgetFormData = z.infer<typeof widgetSchema>
 
@@ -123,6 +149,7 @@ const steps = [
 
 export function WidgetCreate() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { widgetId } = useParams<{ widgetId: string }>()
   const [currentStep, setCurrentStep] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -171,6 +198,34 @@ export function WidgetCreate() {
         },
   })
 
+  // Auto-set primaryType when modules change to ensure validation consistency
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name?.startsWith('modules.')) {
+        const modules = value.modules
+        if (modules) {
+          let newPrimaryType: WidgetFormData['primaryType'] | undefined
+
+          if (modules.feedback) {
+            newPrimaryType = 'FEEDBACK'
+          } else if (modules.reviews) {
+            newPrimaryType = 'REVIEW'
+          } else if (modules.bugReporting) {
+            newPrimaryType = 'BUG_REPORT'
+          } else if (modules.featureRequests) {
+            newPrimaryType = 'FEATURE_REQUEST'
+          }
+
+          if (newPrimaryType && newPrimaryType !== value.primaryType) {
+            form.setValue('primaryType', newPrimaryType)
+          }
+        }
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [form])
+
   // Load widget data for edit mode
   useEffect(() => {
     if (isEditMode && widgetId && currentProject) {
@@ -178,7 +233,6 @@ export function WidgetCreate() {
       widgetApi
         .getWidget(widgetId)
         .then((widget) => {
-          // Transform widget data to form data
           const formData: WidgetFormData = {
             name: widget.name,
             modules: {
@@ -187,7 +241,20 @@ export function WidgetCreate() {
               bugReporting: widget.configuration?.modules?.bugReporting ?? false,
               featureRequests: widget.configuration?.modules?.featureRequests ?? false,
             },
-            primaryType: widget.widget_type,
+            primaryType: (() => {
+              // Map backend widget types to frontend primaryType
+              const typeMapping: Record<string, WidgetFormData['primaryType']> = {
+                FEEDBACK: 'FEEDBACK',
+                SURVEY: 'SURVEY',
+                NPS: 'NPS',
+                CSAT: 'CSAT',
+                CES: 'CES',
+                REVIEW: 'REVIEW',
+                BUG_REPORT: 'BUG_REPORT',
+                FEATURE_REQUEST: 'FEATURE_REQUEST',
+              }
+              return typeMapping[widget.widget_type] || 'FEEDBACK'
+            })(),
             content: {
               headerTitle: widget.configuration?.content?.headerTitle || 'We value your feedback',
               mainQuestion: widget.configuration?.content?.mainQuestion || 'How can we improve?',
@@ -196,11 +263,22 @@ export function WidgetCreate() {
               thankYouTitle: widget.configuration?.content?.thankYouTitle || 'Thank you!',
               thankYouMessage:
                 widget.configuration?.content?.thankYouMessage || 'Your feedback helps us improve.',
-              // Type-specific fields
-              reviewPrompt: widget.configuration?.typeSpecificSettings?.reviewPrompt || widget.configuration?.content?.reviewPrompt || 'Share your thoughts about your experience',
-              requireReviewText: widget.configuration?.typeSpecificSettings?.requireReviewText || widget.configuration?.content?.requireReviewText || false,
-              requireStepsToReproduce: widget.configuration?.typeSpecificSettings?.requireStepsToReproduce || widget.configuration?.content?.requireStepsToReproduce || false,
-              requireUseCase: widget.configuration?.typeSpecificSettings?.requireUseCase || widget.configuration?.content?.requireUseCase || true,
+              reviewPrompt:
+                widget.configuration?.typeSpecificSettings?.reviewPrompt ||
+                widget.configuration?.content?.reviewPrompt ||
+                'Share your thoughts about your experience',
+              requireReviewText:
+                widget.configuration?.typeSpecificSettings?.requireReviewText ||
+                widget.configuration?.content?.requireReviewText ||
+                false,
+              requireStepsToReproduce:
+                widget.configuration?.typeSpecificSettings?.requireStepsToReproduce ||
+                widget.configuration?.content?.requireStepsToReproduce ||
+                false,
+              requireUseCase:
+                widget.configuration?.typeSpecificSettings?.requireUseCase ||
+                widget.configuration?.content?.requireUseCase ||
+                true,
             },
             appearance: {
               theme: widget.theme_configuration?.theme_name || 'default',
@@ -215,13 +293,17 @@ export function WidgetCreate() {
               showBranding: widget.theme_configuration?.show_branding ?? true,
             },
             behavior: {
-              triggerType: (['immediate', 'delay', 'exit-intent', 'scroll'].includes((widget.targeting_rules?.[0]?.details as TriggerDetails)?.type) 
-                ? (widget.targeting_rules?.[0]?.details as TriggerDetails)?.type 
+              triggerType: (['immediate', 'delay', 'exit-intent', 'scroll'].includes(
+                (widget.targeting_rules?.[0]?.details as TriggerDetails)?.type
+              )
+                ? (widget.targeting_rules?.[0]?.details as TriggerDetails)?.type
                 : 'immediate') as 'immediate' | 'delay' | 'exit-intent' | 'scroll',
               triggerDelay: (widget.targeting_rules?.[0]?.details as TriggerDetails)?.delay,
               urlTargeting: {
-                includeUrls: (widget.targeting_rules?.[1]?.details as UrlTargetingDetails)?.includeUrls || [],
-                excludeUrls: (widget.targeting_rules?.[1]?.details as UrlTargetingDetails)?.excludeUrls || [],
+                includeUrls:
+                  (widget.targeting_rules?.[1]?.details as UrlTargetingDetails)?.includeUrls || [],
+                excludeUrls:
+                  (widget.targeting_rules?.[1]?.details as UrlTargetingDetails)?.excludeUrls || [],
               },
               deviceTypes: (widget.targeting_rules?.[2]?.details as DeviceTargetingDetails) || {
                 desktop: true,
@@ -252,12 +334,12 @@ export function WidgetCreate() {
     setIsSubmitting(true)
     try {
       if (isEditMode && widgetId) {
-        // Update existing widget
         await widgetApi.update(widgetId, data)
+        queryClient.invalidateQueries({ queryKey: ['widget', widgetId] })
         navigate(`/widgets/${widgetId}/get-code`)
       } else {
-        // Create new widget
         const newWidget = await widgetApi.create(currentProject.id, data)
+        queryClient.invalidateQueries({ queryKey: ['widgets', currentProject.id] })
         navigate(`/widgets/${newWidget.id}/get-code`)
       }
     } catch (error) {
@@ -289,7 +371,6 @@ export function WidgetCreate() {
     return <PageLoading />
   }
 
-  // In edit mode, show loading until widget data is loaded
   if (isEditMode && isLoadingWidget) {
     return (
       <div className="max-w-4xl mx-auto">
@@ -308,7 +389,6 @@ export function WidgetCreate() {
 
   const StepComponent = steps[currentStep].component
 
-  // Don't render the form until data is loaded in edit mode
   if (isEditMode && !widgetDataLoaded) {
     return (
       <div className="max-w-4xl mx-auto">
@@ -324,7 +404,6 @@ export function WidgetCreate() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex flex-col lg:flex-row h-screen">
-        {/* Left Panel - Form */}
         <div className="w-full lg:w-3/5 flex flex-col bg-white lg:border-r">
           <div className="p-4 lg:p-6 border-b">
             <h1 className="text-2xl lg:text-3xl font-bold tracking-tight mb-2">
@@ -337,15 +416,17 @@ export function WidgetCreate() {
               for project: <strong>{currentProject.name}</strong>
             </p>
           </div>
-          
+
           <div className="flex-1 overflow-y-auto p-4 lg:p-6">
             <WizardProgress currentStep={currentStep} totalSteps={steps.length} />
             <div className="mt-6 lg:mt-8 mb-6 lg:mb-8">
-              <h2 className="text-lg lg:text-xl font-semibold mb-4 lg:mb-6">{steps[currentStep].title}</h2>
+              <h2 className="text-lg lg:text-xl font-semibold mb-4 lg:mb-6">
+                {steps[currentStep].title}
+              </h2>
               <StepComponent form={form} />
             </div>
           </div>
-          
+
           <div className="p-4 lg:p-6 border-t bg-gray-50">
             <WizardNavigation
               currentStep={currentStep}
@@ -357,24 +438,32 @@ export function WidgetCreate() {
           </div>
         </div>
 
-        {/* Right Panel - Live Preview */}
         <div className="hidden lg:flex lg:w-2/5 flex-col">
           <div className="flex-1 sticky top-0 h-screen">
             <LiveWidgetPreview form={form} />
           </div>
         </div>
-        
-        {/* Mobile Preview - Hidden on desktop */}
+
         <div className="lg:hidden fixed bottom-4 right-4 z-50">
-          <button 
+          <button
             className="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
             onClick={() => {
               // TODO: Open mobile preview modal
             }}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+              />
             </svg>
           </button>
         </div>

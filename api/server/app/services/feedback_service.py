@@ -170,7 +170,7 @@ class FeedbackService:
         self, base_data: Dict[str, Any], data: Dict[str, Any]
     ) -> NPSFeedbackCreate:
         """Create NPS feedback with 0-10 scale"""
-        nps_score = data.get('score', 0)
+        nps_score = data.get('rating', 0)  # Use rating field from frontend
         if not isinstance(nps_score, int) or nps_score < 0 or nps_score > 10:
             raise ValidationError('NPS score must be an integer between 0 and 10')
 
@@ -185,6 +185,7 @@ class FeedbackService:
         return NPSFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.NPS,
+            rating=nps_score,  # Set base rating field
             nps_score=nps_score,
             promoter_category=promoter_category,
             follow_up_comment=data.get('comment', ''),
@@ -196,7 +197,7 @@ class FeedbackService:
         self, base_data: Dict[str, Any], data: Dict[str, Any]
     ) -> CSATFeedbackCreate:
         """Create CSAT feedback with 1-5 scale"""
-        csat_score = data.get('score', 1)
+        csat_score = data.get('rating', 1)  # Use rating field from frontend
         if not isinstance(csat_score, int) or csat_score < 1 or csat_score > 5:
             raise ValidationError('CSAT score must be an integer between 1 and 5')
 
@@ -212,6 +213,7 @@ class FeedbackService:
         return CSATFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.CSAT,
+            rating=csat_score,  # Set base rating field
             csat_score=csat_score,
             satisfaction_level=satisfaction_levels.get(csat_score, 'neutral'),
             follow_up_comment=data.get('comment', ''),
@@ -223,7 +225,7 @@ class FeedbackService:
         self, base_data: Dict[str, Any], data: Dict[str, Any]
     ) -> CESFeedbackCreate:
         """Create CES feedback with 1-5 scale"""
-        ces_score = data.get('score', 1)
+        ces_score = data.get('rating', 1)  # Use rating field from frontend
         if not isinstance(ces_score, int) or ces_score < 1 or ces_score > 5:
             raise ValidationError('CES score must be an integer between 1 and 5')
 
@@ -239,6 +241,7 @@ class FeedbackService:
         return CESFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.CES,
+            rating=ces_score,  # Set base rating field
             ces_score=ces_score,
             ease_level=ease_levels.get(ces_score, 'neutral'),
             follow_up_comment=data.get('comment', ''),
@@ -399,6 +402,47 @@ class FeedbackService:
             'conversion_notes': feedback.conversion_notes,
             'is_actionable': feedback.is_actionable,
         }
+
+    async def update_feedback_from_widget(
+        self,
+        db: AsyncSession,
+        feedback_id: UUID,
+        data: Dict[str, Any],
+        context: Dict[str, Any] = None,
+    ) -> FeedbackResponsePayload:
+        """
+        Update existing feedback from widget submission.
+        This method updates the feedback data and context while preserving the original ID.
+        """
+        context = context or {}
+
+        # Get existing feedback
+        existing_feedback = await feedback_repository.get(db, feedback_id)
+        if not existing_feedback:
+            raise ValueError(f'Feedback with ID {feedback_id} not found')
+
+        # Update the feedback data
+        for key, value in data.items():
+            if hasattr(existing_feedback, key) and value is not None:
+                setattr(existing_feedback, key, value)
+
+        # Update context
+        if context:
+            existing_context = existing_feedback.context or {}
+            existing_context.update(context)
+            existing_feedback.context = existing_context
+
+        # Update timestamp
+        from datetime import datetime, timezone
+
+        existing_feedback.updated_at = datetime.now(timezone.utc)
+
+        # Save changes
+        db.add(existing_feedback)
+        await db.commit()
+        await db.refresh(existing_feedback)
+
+        return self._convert_to_response(existing_feedback)
 
     def _convert_to_response(self, obj: Feedback) -> FeedbackResponsePayload:
         if isinstance(obj, BugReportFeedback):

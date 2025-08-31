@@ -3,7 +3,7 @@ import { AlertTriangle, Bug, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface BugReportFormProps {
-  onSubmit: (data: { 
+  onSubmit: (data: {
     title: string
     description: string
     severity: string
@@ -26,9 +26,19 @@ interface BugReportFormProps {
 
 const severityOptions = [
   { value: 'low', label: 'Low', icon: '🟢', description: 'Minor issue, workaround available' },
-  { value: 'medium', label: 'Medium', icon: '🟡', description: 'Noticeable issue affecting some users' },
+  {
+    value: 'medium',
+    label: 'Medium',
+    icon: '🟡',
+    description: 'Noticeable issue affecting some users',
+  },
   { value: 'high', label: 'High', icon: '🟠', description: 'Major issue affecting many users' },
-  { value: 'critical', label: 'Critical', icon: '🔴', description: 'Blocking issue, needs immediate attention' }
+  {
+    value: 'critical',
+    label: 'Critical',
+    icon: '🔴',
+    description: 'Blocking issue, needs immediate attention',
+  },
 ]
 
 const categoryOptions = [
@@ -37,7 +47,7 @@ const categoryOptions = [
   { value: 'performance', label: 'Performance', icon: '⚡' },
   { value: 'data', label: 'Data/Content', icon: '📊' },
   { value: 'security', label: 'Security', icon: '🔒' },
-  { value: 'other', label: 'Other', icon: '❓' }
+  { value: 'other', label: 'Other', icon: '❓' },
 ]
 
 export function BugReportForm({ onSubmit, isSubmitting, colors, content }: BugReportFormProps) {
@@ -49,13 +59,13 @@ export function BugReportForm({ onSubmit, isSubmitting, colors, content }: BugRe
 
   const handleSubmit = async () => {
     if (!title.trim() || !description.trim() || !severity || !category) return
-    
+
     await onSubmit({
       title: title.trim(),
       description: description.trim(),
       severity,
       category,
-      stepsToReproduce: stepsToReproduce.trim() || undefined
+      stepsToReproduce: stepsToReproduce.trim() || undefined,
     })
   }
 
@@ -64,8 +74,13 @@ export function BugReportForm({ onSubmit, isSubmitting, colors, content }: BugRe
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4" 
-             style={{ backgroundColor: `${colors.primary}15`, border: `2px solid ${colors.primary}30` }}>
+        <div
+          className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4"
+          style={{
+            backgroundColor: `${colors.primary}15`,
+            border: `2px solid ${colors.primary}30`,
+          }}
+        >
           <Bug className="w-8 h-8" style={{ color: colors.primary }} />
         </div>
         <h3 className="text-lg font-semibold mb-2" style={{ color: colors.text }}>
@@ -118,13 +133,12 @@ export function BugReportForm({ onSubmit, isSubmitting, colors, content }: BugRe
                 disabled={isSubmitting}
                 className={cn(
                   'p-3 rounded-lg border text-left transition-all text-xs',
-                  category === option.value
-                    ? 'border-2'
-                    : 'border hover:border-gray-300'
+                  category === option.value ? 'border-2' : 'border hover:border-gray-300'
                 )}
                 style={{
                   borderColor: category === option.value ? colors.primary : '#E5E7EB',
-                  backgroundColor: category === option.value ? `${colors.primary}10` : colors.background,
+                  backgroundColor:
+                    category === option.value ? `${colors.primary}10` : colors.background,
                   color: colors.text,
                 }}
               >
@@ -151,13 +165,12 @@ export function BugReportForm({ onSubmit, isSubmitting, colors, content }: BugRe
                 disabled={isSubmitting}
                 className={cn(
                   'w-full p-3 rounded-lg border text-left transition-all',
-                  severity === option.value
-                    ? 'border-2'
-                    : 'border hover:border-gray-300'
+                  severity === option.value ? 'border-2' : 'border hover:border-gray-300'
                 )}
                 style={{
                   borderColor: severity === option.value ? colors.primary : '#E5E7EB',
-                  backgroundColor: severity === option.value ? `${colors.primary}10` : colors.background,
+                  backgroundColor:
+                    severity === option.value ? `${colors.primary}10` : colors.background,
                   color: colors.text,
                 }}
               >
@@ -220,10 +233,10 @@ export function BugReportForm({ onSubmit, isSubmitting, colors, content }: BugRe
           onClick={handleSubmit}
           disabled={!isFormValid || isSubmitting}
           className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transform"
-          style={{ 
-            backgroundColor: colors.buttonColor, 
+          style={{
+            backgroundColor: colors.buttonColor,
             color: colors.buttonTextColor,
-            boxShadow: `0 4px 12px ${colors.buttonColor}30`
+            boxShadow: `0 4px 12px ${colors.buttonColor}30`,
           }}
         >
           {isSubmitting ? (

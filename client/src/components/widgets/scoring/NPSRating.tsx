@@ -26,24 +26,6 @@ export function NPSRating({ value, onChange, disabled = false }: NPSRatingProps)
     setHoveredValue(null)
   }
 
-  const getScoreColor = (score: number) => {
-    // Pastel gradient from red to green (0-10)
-    const colors = [
-      'bg-gradient-to-br from-red-300 to-red-400 hover:from-red-400 hover:to-red-500', // 0
-      'bg-gradient-to-br from-red-300 to-red-400 hover:from-red-400 hover:to-red-500', // 1
-      'bg-gradient-to-br from-red-300 to-orange-300 hover:from-red-400 hover:to-orange-400', // 2
-      'bg-gradient-to-br from-orange-300 to-orange-400 hover:from-orange-400 hover:to-orange-500', // 3
-      'bg-gradient-to-br from-orange-300 to-yellow-300 hover:from-orange-400 hover:to-yellow-400', // 4
-      'bg-gradient-to-br from-yellow-300 to-yellow-400 hover:from-yellow-400 hover:to-yellow-500', // 5
-      'bg-gradient-to-br from-yellow-300 to-amber-300 hover:from-yellow-400 hover:to-amber-400', // 6
-      'bg-gradient-to-br from-amber-300 to-lime-300 hover:from-amber-400 hover:to-lime-400', // 7
-      'bg-gradient-to-br from-lime-300 to-green-300 hover:from-lime-400 hover:to-green-400', // 8
-      'bg-gradient-to-br from-green-300 to-green-400 hover:from-green-400 hover:to-green-500', // 9
-      'bg-gradient-to-br from-green-400 to-emerald-400 hover:from-green-500 hover:to-emerald-500', // 10
-    ]
-    return colors[score] || colors[0]
-  }
-
   const getScoreLabel = (score: number) => {
     if (score <= 6) return 'Detractor'
     if (score <= 8) return 'Passive'

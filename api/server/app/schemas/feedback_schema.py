@@ -4,7 +4,8 @@ from typing_extensions import Literal
 from uuid import UUID
 from datetime import datetime
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
-from ipaddress import IPv4Address, IPv6Address
+
+# Removed IPv4Address, IPv6Address imports - no longer needed
 from app.models.feedback_model import (
     FeedbackType,
     FeedbackStatus,
@@ -27,9 +28,8 @@ class FeedbackBase(BaseModel):
     submitter_email: Optional[EmailStr] = None
     submitter_id: Optional[str] = None
 
-    ip_address: Optional[Union[IPv4Address, IPv6Address]] = None
-    user_agent: Optional[str] = None
-    browser_info: Dict[str, Any] = Field(default_factory=dict)
+    # Removed redundant fields: ip_address, user_agent, browser_info
+    # This data is already stored in the context JSONB field
 
     is_anonymous: bool = True
     is_internal: bool = False
@@ -50,8 +50,7 @@ class FeedbackUpdate(BaseModel):
     is_internal: Optional[bool] = None
     is_spam: Optional[bool] = None
     is_flagged: Optional[bool] = None
-    assigned_to_user_id: Optional[UUID] = None
-    resolution_notes: Optional[str] = None
+    # Removed fields: assigned_to_user_id, resolution_notes
 
     # SurveyFeedback fields
     survey_type: Optional[str] = None
@@ -111,18 +110,11 @@ class FeedbackResponse(BaseModel):
     context: Dict[str, Any]
     submitter_name: Optional[str]
     submitter_email: Optional[EmailStr]
-    submitter_id: Optional[str]
-    ip_address: Optional[Union[IPv4Address, IPv6Address]]
-    user_agent: Optional[str]
-    browser_info: Dict[str, Any]
+    submitter_id: Optional[str] 
     is_anonymous: bool
     is_internal: bool
     is_spam: bool
     is_flagged: bool
-    assigned_to_user_id: Optional[UUID]
-    resolved_at: Optional[datetime]
-    resolved_by_user_id: Optional[UUID]
-    resolution_notes: Optional[str]
     converted_to_action_item_id: Optional[UUID]
     conversion_date: Optional[datetime]
     conversion_notes: Optional[str]

@@ -1,16 +1,20 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Request
+from app.core.rate_limiting import create_rate_limit_decorator
 
-from app.schemas.health_schema import HealthCheckResponse
-from app.services.health_service import health_service
-
-health_router = APIRouter(
-    prefix='/health',
-    tags=['health'],
-)
+health_router = APIRouter(prefix='/health', tags=['health'])
 
 
-@health_router.get(
-    '', response_model=HealthCheckResponse, status_code=status.HTTP_200_OK
-)
-async def health_check() -> HealthCheckResponse:
-    return health_service.get_health_status()
+@health_router.get('')
+@create_rate_limit_decorator('health_check', is_anonymous=True)
+async def health_check(request: Request):
+    return {'status': 'ok', 'message': 'Service is healthy'}
+
+
+@health_router.get('/test-rate-limit')
+@create_rate_limit_decorator('feedback_submission', is_anonymous=True)
+async def test_rate_limit(request: Request):
+    return {
+        'status': 'ok',
+        'message': 'Rate limit test endpoint',
+        'ip': request.client.host,
+    }

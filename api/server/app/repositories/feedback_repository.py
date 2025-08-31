@@ -1,4 +1,4 @@
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Dict
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.feedback_model import (
@@ -118,21 +118,69 @@ class FeedbackRepository(BaseRepository[Feedback]):
     ) -> List[Feedback]:
         """Get all feedback for a specific widget and type"""
         from sqlalchemy import select
-        
+
         # Use the base Feedback model and filter by feedback_type and widget_id
         stmt = select(Feedback).where(
-            Feedback.widget_id == widget_id,
-            Feedback.feedback_type == feedback_type
+            Feedback.widget_id == widget_id, Feedback.feedback_type == feedback_type
         )
         result = await db.execute(stmt)
         return list(result.scalars().all())
 
-    async def update_votes(self, db: AsyncSession, feedback_id: UUID, new_vote_count: int) -> bool:
+    async def get_existing_feedback_by_context(
+        self,
+        db: AsyncSession,
+        widget_id: UUID,
+        context: Dict[str, Any],
+        feedback_type: Any,
+        within_hours: int = 24,
+    ) -> Optional[Feedback]:
+        """
+        Check for existing feedback from the same user context to prevent duplicates.
+        Looks for feedback with matching IP, user agent, and widget within the specified time window.
+        """
+        from sqlalchemy import and_, select
+        from datetime import datetime, timedelta, timezone
+
+        # Extract IP and user agent from context
+        ip_address = context.get('ip_address')
+        user_agent = context.get('user_agent')
+
+        if not ip_address and not user_agent:
+            return None  # Can't deduplicate without context
+
+        cutoff_time = datetime.now(timezone.utc) - timedelta(hours=within_hours)
+
+        # Build query filters
+        filters = [
+            Feedback.widget_id == widget_id,
+            Feedback.feedback_type == feedback_type,
+            Feedback.created_at >= cutoff_time,
+        ]
+
+        # Add context filters if available - now using context JSONB field
+        if ip_address:
+            filters.append(Feedback.context['ip_address'].astext == ip_address)
+        if user_agent:
+            filters.append(Feedback.context['user_agent'].astext == user_agent)
+
+        # Use SQLAlchemy 2.x async syntax
+        stmt = (
+            select(Feedback)
+            .where(and_(*filters))
+            .order_by(Feedback.created_at.desc())
+            .limit(1)
+        )
+        result = await db.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def update_votes(
+        self, db: AsyncSession, feedback_id: UUID, new_vote_count: int
+    ) -> bool:
         """Update the vote count for a feedback item"""
         obj = await self.get(db, feedback_id)
         if not obj:
             return False
-        
+
         obj.feedback_votes = new_vote_count  # Use correct field name
         db.add(obj)
         await db.commit()

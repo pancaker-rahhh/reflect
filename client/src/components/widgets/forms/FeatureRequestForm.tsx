@@ -13,7 +13,7 @@ interface ExistingFeature {
 }
 
 interface FeatureRequestFormProps {
-  onSubmit: (data: { 
+  onSubmit: (data: {
     title: string
     description: string
     category: string
@@ -37,24 +37,24 @@ interface FeatureRequestFormProps {
 }
 
 const priorityOptions = [
-  { 
-    value: 'low', 
-    label: 'Nice to Have', 
-    icon: '😌', 
-    description: 'Would be helpful but not essential' 
+  {
+    value: 'low',
+    label: 'Nice to Have',
+    icon: '😌',
+    description: 'Would be helpful but not essential',
   },
-  { 
-    value: 'medium', 
-    label: 'Important', 
-    icon: '😊', 
-    description: 'Would significantly improve experience' 
+  {
+    value: 'medium',
+    label: 'Important',
+    icon: '😊',
+    description: 'Would significantly improve experience',
   },
-  { 
-    value: 'high', 
-    label: 'Critical', 
-    icon: '🚀', 
-    description: 'Essential for workflow/success' 
-  }
+  {
+    value: 'high',
+    label: 'Critical',
+    icon: '🚀',
+    description: 'Essential for workflow/success',
+  },
 ]
 
 const categoryOptions = [
@@ -67,15 +67,15 @@ const categoryOptions = [
   { value: 'automation', label: 'Automation', icon: '🤖' },
   { value: 'analytics', label: 'Analytics & Reporting', icon: '📊' },
   { value: 'security', label: 'Security & Privacy', icon: '🔒' },
-  { value: 'other', label: 'Other', icon: '💡' }
+  { value: 'other', label: 'Other', icon: '💡' },
 ]
 
-export function FeatureRequestForm({ 
-  onSubmit, 
+export function FeatureRequestForm({
+  onSubmit,
   widgetKey,
-  isSubmitting, 
-  colors, 
-  content 
+  isSubmitting,
+  colors,
+  content,
 }: FeatureRequestFormProps) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -96,12 +96,12 @@ export function FeatureRequestForm({
       setIsLoadingFeatures(false)
       return
     }
-    
+
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
-      
+
       const response = await fetch(`${apiBaseUrl}/public/widgets/${widgetKey}/features`)
-      
+
       if (response.ok) {
         const features = await response.json()
         setExistingFeatures(features)
@@ -115,17 +115,17 @@ export function FeatureRequestForm({
             category: 'ui_ux',
             priority: 'medium',
             upvotes: 23,
-            hasUserUpvoted: false
+            hasUserUpvoted: false,
           },
           {
-            id: '2', 
+            id: '2',
             title: 'Mobile App',
             description: 'Create a mobile application for iOS and Android',
             category: 'functionality',
             priority: 'high',
             upvotes: 45,
-            hasUserUpvoted: true
-          }
+            hasUserUpvoted: true,
+          },
         ])
       }
     } catch (error) {
@@ -139,35 +139,37 @@ export function FeatureRequestForm({
 
   const handleUpvote = async (featureId: string) => {
     if (!widgetKey || votingFeatures.has(featureId)) return
-    
+
     // Add feature to voting set to prevent duplicate clicks
-    setVotingFeatures(prev => new Set([...prev, featureId]))
-    
+    setVotingFeatures((prev) => new Set([...prev, featureId]))
+
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
-      
+
       const response = await fetch(`${apiBaseUrl}/public/features/upvote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           widgetKey,
-          featureId
-        })
+          featureId,
+        }),
       })
-      
+
       if (response.ok) {
         const result = await response.json()
-        
+
         // Update local state with exact response from server
-        setExistingFeatures(prev => prev.map(feature => 
-          feature.id === featureId 
-            ? { 
-                ...feature, 
-                upvotes: result.newVoteCount,
-                hasUserUpvoted: result.hasUserVoted
-              }
-            : feature
-        ))
+        setExistingFeatures((prev) =>
+          prev.map((feature) =>
+            feature.id === featureId
+              ? {
+                  ...feature,
+                  upvotes: result.newVoteCount,
+                  hasUserUpvoted: result.hasUserVoted,
+                }
+              : feature
+          )
+        )
       } else {
         console.error('Failed to upvote feature')
       }
@@ -175,7 +177,7 @@ export function FeatureRequestForm({
       console.error('Failed to upvote feature:', error)
     } finally {
       // Remove feature from voting set
-      setVotingFeatures(prev => {
+      setVotingFeatures((prev) => {
         const newSet = new Set(prev)
         newSet.delete(featureId)
         return newSet
@@ -185,28 +187,28 @@ export function FeatureRequestForm({
 
   const handleSubmit = async () => {
     if (!title.trim() || !description.trim() || !category || !priority || !useCase.trim()) return
-    
+
     await onSubmit({
       title: title.trim(),
       description: description.trim(),
       category,
       priority,
-      useCase: useCase.trim()
+      useCase: useCase.trim(),
     })
   }
 
   const isFormValid = title.trim() && description.trim() && category && priority && useCase.trim()
 
   const getCategoryIcon = (categoryValue: string) => {
-    const category = categoryOptions.find(opt => opt.value === categoryValue)
+    const category = categoryOptions.find((opt) => opt.value === categoryValue)
     return category?.icon || '💡'
   }
 
   const getPriorityColor = (priorityValue: string) => {
     const colorMap = {
       low: '#10B981',
-      medium: '#F59E0B', 
-      high: '#EF4444'
+      medium: '#F59E0B',
+      high: '#EF4444',
     }
     return colorMap[priorityValue as keyof typeof colorMap] || '#6B7280'
   }
@@ -233,7 +235,7 @@ export function FeatureRequestForm({
 
       {isLoadingFeatures ? (
         <div className="space-y-3">
-          {[1, 2, 3].map(i => (
+          {[1, 2, 3].map((i) => (
             <div key={i} className="h-20 bg-gray-200 animate-pulse rounded-lg"></div>
           ))}
         </div>
@@ -255,11 +257,11 @@ export function FeatureRequestForm({
                     <h4 className="font-semibold text-sm" style={{ color: colors.text }}>
                       {feature.title}
                     </h4>
-                    <span 
+                    <span
                       className="px-2 py-1 rounded-full text-xs font-medium"
-                      style={{ 
+                      style={{
                         backgroundColor: `${getPriorityColor(feature.priority)}20`,
-                        color: getPriorityColor(feature.priority)
+                        color: getPriorityColor(feature.priority),
                       }}
                     >
                       {feature.priority}
@@ -280,7 +282,7 @@ export function FeatureRequestForm({
                   )}
                   style={{
                     backgroundColor: feature.hasUserUpvoted ? `${colors.primary}20` : '#F3F4F6',
-                    color: feature.hasUserUpvoted ? colors.primary : colors.text
+                    color: feature.hasUserUpvoted ? colors.primary : colors.text,
                   }}
                 >
                   {votingFeatures.has(feature.id) ? (
@@ -360,13 +362,12 @@ export function FeatureRequestForm({
                 disabled={isSubmitting}
                 className={cn(
                   'p-2 rounded-lg border text-left transition-all text-xs',
-                  category === option.value
-                    ? 'border-2'
-                    : 'border hover:border-gray-300'
+                  category === option.value ? 'border-2' : 'border hover:border-gray-300'
                 )}
                 style={{
                   borderColor: category === option.value ? colors.primary : '#E5E7EB',
-                  backgroundColor: category === option.value ? `${colors.primary}10` : colors.background,
+                  backgroundColor:
+                    category === option.value ? `${colors.primary}10` : colors.background,
                   color: colors.text,
                 }}
               >
@@ -393,13 +394,12 @@ export function FeatureRequestForm({
                 disabled={isSubmitting}
                 className={cn(
                   'w-full p-3 rounded-lg border text-left transition-all',
-                  priority === option.value
-                    ? 'border-2'
-                    : 'border hover:border-gray-300'
+                  priority === option.value ? 'border-2' : 'border hover:border-gray-300'
                 )}
                 style={{
                   borderColor: priority === option.value ? colors.primary : '#E5E7EB',
-                  backgroundColor: priority === option.value ? `${colors.primary}10` : colors.background,
+                  backgroundColor:
+                    priority === option.value ? `${colors.primary}10` : colors.background,
                   color: colors.text,
                 }}
               >
@@ -465,9 +465,9 @@ export function FeatureRequestForm({
           onClick={handleSubmit}
           disabled={!isFormValid || isSubmitting}
           className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ 
-            backgroundColor: colors.buttonColor, 
-            color: colors.buttonTextColor 
+          style={{
+            backgroundColor: colors.buttonColor,
+            color: colors.buttonTextColor,
           }}
         >
           {isSubmitting ? 'Submitting...' : content.submitButtonText}
@@ -477,8 +477,6 @@ export function FeatureRequestForm({
   )
 
   return (
-    <div className="space-y-4">
-      {view === 'list' ? renderFeatureList() : renderCreateForm()}
-    </div>
+    <div className="space-y-4">{view === 'list' ? renderFeatureList() : renderCreateForm()}</div>
   )
 }

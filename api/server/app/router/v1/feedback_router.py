@@ -1,6 +1,6 @@
 from typing import List, Optional, Dict, Any
 from uuid import UUID
-from fastapi import APIRouter, Depends, BackgroundTasks, Query, status
+from fastapi import APIRouter, Depends, BackgroundTasks, Query, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
 from app.db import get_db
@@ -19,6 +19,8 @@ from app.services.feedback_service import feedback_service
 from app.services.action_item_service import action_item_service
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.logging import get_logger
+from app.core.rate_limiting import create_rate_limit_decorator
+from app.core.sanitization import InputSanitizer
 
 logger = get_logger(__name__)
 # from app.services.tasks.executors.fastapi_executor import FastAPIExecutor
@@ -31,20 +33,27 @@ feedback_router = APIRouter(prefix='/feedback', tags=['feedback'])
 @feedback_router.post(
     '', response_model=FeedbackResponsePayload, status_code=status.HTTP_201_CREATED
 )
+@create_rate_limit_decorator('feedback_submission', is_anonymous=True)
 async def create_feedback(
+    request: Request,
     payload: FeedbackCreatePayload,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ) -> FeedbackResponsePayload:
+    sanitized_data = InputSanitizer.sanitize_feedback_data(payload.model_dump())
+    sanitized_payload = FeedbackCreatePayload(**sanitized_data)
+
     # executor = FastAPIExecutor(background_tasks)
     # Example: register and execute background tasks if needed
     # executor.register_task('send_webhook', some_async_func)
     # await executor.execute('send_webhook', {"feedback": payload.model_dump()})
-    return await feedback_service.create_feedback(db, payload)
+    return await feedback_service.create_feedback(db, sanitized_payload)
 
 
 @feedback_router.get('', response_model=List[FeedbackResponsePayload])
+@create_rate_limit_decorator('general_public', is_anonymous=True)
 async def list_feedback(
+    request: Request,
     project_id: Optional[UUID] = Query(default=None),
     widget_id: Optional[UUID] = Query(default=None),
     skip: int = Query(default=0, ge=0),
@@ -76,7 +85,9 @@ def _convert_feedback_to_dict(item) -> Dict[str, Any]:
 
 
 @feedback_router.get('/actionable', response_model=List[Dict[str, Any]])
+@create_rate_limit_decorator('general_public', is_anonymous=True)
 async def get_actionable_feedback(
+    request: Request,
     project_id: Optional[UUID] = Query(
         default=None, description='Project ID to filter feedback'
     ),
@@ -95,7 +106,9 @@ async def get_actionable_feedback(
 
 
 @feedback_router.get('/chart-data', response_model=List[Dict[str, Any]])
+@create_rate_limit_decorator('general_public', is_anonymous=True)
 async def get_feedback_for_charts(
+    request: Request,
     time_range: Optional[str] = Query(default='all'),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=1000),
@@ -112,8 +125,9 @@ async def get_feedback_for_charts(
 
 
 @feedback_router.get('/{feedback_id}/conversion-preview', response_model=Dict[str, Any])
+@create_rate_limit_decorator('general_public', is_anonymous=True)
 async def get_conversion_preview(
-    feedback_id: UUID, db: AsyncSession = Depends(get_db)
+    request: Request, feedback_id: UUID, db: AsyncSession = Depends(get_db)
 ) -> Dict[str, Any]:
     try:
         preview = await action_item_service.get_conversion_preview(db, feedback_id)
@@ -123,8 +137,9 @@ async def get_conversion_preview(
 
 
 @feedback_router.get('/{feedback_id}', response_model=FeedbackResponsePayload)
+@create_rate_limit_decorator('general_public', is_anonymous=True)
 async def get_feedback(
-    feedback_id: UUID, db: AsyncSession = Depends(get_db)
+    request: Request, feedback_id: UUID, db: AsyncSession = Depends(get_db)
 ) -> FeedbackResponsePayload:
     result = await feedback_service.get_feedback(db, feedback_id)
     if not result:
@@ -133,18 +148,29 @@ async def get_feedback(
 
 
 @feedback_router.patch('/{feedback_id}', response_model=FeedbackResponsePayload)
+@create_rate_limit_decorator('feedback_submission', is_anonymous=True)
 async def update_feedback(
-    feedback_id: UUID, payload: FeedbackUpdate, db: AsyncSession = Depends(get_db)
+    request: Request,
+    feedback_id: UUID,
+    payload: FeedbackUpdate,
+    db: AsyncSession = Depends(get_db),
 ) -> FeedbackResponsePayload:
-    result = await feedback_service.update_feedback(db, feedback_id, payload)
+    sanitized_data = InputSanitizer.sanitize_feedback_data(
+        payload.model_dump(exclude_unset=True)
+    )
+
+    sanitized_payload = FeedbackUpdate(**sanitized_data)
+
+    result = await feedback_service.update_feedback(db, feedback_id, sanitized_payload)
     if not result:
         raise HTTPException(status_code=404, detail='Feedback not found')
     return result
 
 
 @feedback_router.delete('/{feedback_id}', status_code=status.HTTP_204_NO_CONTENT)
+@create_rate_limit_decorator('feedback_submission', is_anonymous=True)
 async def delete_feedback(
-    feedback_id: UUID, db: AsyncSession = Depends(get_db)
+    request: Request, feedback_id: UUID, db: AsyncSession = Depends(get_db)
 ) -> None:
     deleted = await feedback_service.delete_feedback(db, feedback_id)
     if not deleted:
@@ -158,14 +184,25 @@ async def delete_feedback(
     response_model=FeedbackCommentResponse,
     status_code=status.HTTP_201_CREATED,
 )
+@create_rate_limit_decorator('feedback_submission', is_anonymous=True)
 async def add_comment(
+    request: Request,
     feedback_id: UUID,
     comment_data: FeedbackCommentCreate,
     current_user: TokenData = Depends(get_current_token_data),
     db: AsyncSession = Depends(get_db),
 ) -> FeedbackCommentResponse:
+    sanitized_comment_text = InputSanitizer.sanitize_text(
+        comment_data.comment_text, InputSanitizer.MAX_LENGTHS['comment']
+    )
+
+    if not sanitized_comment_text:
+        raise HTTPException(
+            status_code=400, detail='Comment text is required and cannot be empty'
+        )
+
     comment = await feedback_service.add_comment(
-        db, feedback_id, UUID(current_user.user_id), comment_data.comment_text
+        db, feedback_id, UUID(current_user.user_id), sanitized_comment_text
     )
     return FeedbackCommentResponse.model_validate(comment)
 
@@ -173,7 +210,9 @@ async def add_comment(
 @feedback_router.get(
     '/{feedback_id}/comments', response_model=List[FeedbackCommentResponse]
 )
+@create_rate_limit_decorator('general_public', is_anonymous=True)
 async def get_comments(
+    request: Request,
     feedback_id: UUID,
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=100),
@@ -188,7 +227,9 @@ async def get_comments(
     response_model=UpvoteResponse,
     status_code=status.HTTP_200_OK,
 )
+@create_rate_limit_decorator('voting', is_anonymous=True)
 async def upvote_feedback(
+    request: Request,
     feedback_id: UUID,
     current_user: TokenData = Depends(get_current_token_data),
     db: AsyncSession = Depends(get_db),
@@ -219,20 +260,33 @@ async def upvote_feedback(
     response_model=Dict[str, Any],
     status_code=status.HTTP_201_CREATED,
 )
+@create_rate_limit_decorator('feedback_submission', is_anonymous=True)
 async def convert_feedback_to_roadmap_item(
+    request: Request,
     feedback_id: UUID,
     conversion_data: FeedbackConversionRequest,
     current_user: TokenData = Depends(get_current_token_data),
     db: AsyncSession = Depends(get_db),
 ) -> Dict[str, Any]:
     try:
+        sanitized_priority = InputSanitizer.sanitize_priority(conversion_data.priority)
+        sanitized_notes = InputSanitizer.sanitize_text(
+            conversion_data.conversion_notes, InputSanitizer.MAX_LENGTHS['message']
+        )
+        sanitized_tags = []
+        if conversion_data.custom_tags:
+            for tag in conversion_data.custom_tags:
+                sanitized_tag = InputSanitizer.sanitize_text(tag, 50)
+                if sanitized_tag:
+                    sanitized_tags.append(sanitized_tag)
+
         roadmap_item = await action_item_service.convert_feedback_to_roadmap_item(
             db,
             feedback_id,
             UUID(current_user.user_id),
-            conversion_data.priority,
-            conversion_data.conversion_notes,
-            conversion_data.custom_tags,
+            sanitized_priority,
+            sanitized_notes,
+            sanitized_tags,
         )
         return {
             'message': 'Feedback successfully converted to roadmap item',

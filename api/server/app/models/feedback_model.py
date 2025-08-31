@@ -27,9 +27,9 @@ class FeedbackType(str, enum.Enum):
     REVIEW = 'review'
     BUG_REPORT = 'bug_report'
     FEATURE_REQUEST = 'feature_request'
-    NPS = 'nps'
-    CSAT = 'csat'
-    CES = 'ces'
+    NPS = 'NPS'
+    CSAT = 'CSAT'
+    CES = 'CES'
 
 
 class FeedbackStatus(str, enum.Enum):
@@ -76,23 +76,10 @@ class Feedback(BaseModel):
     submitter_email = Column(String(320))
     submitter_id = Column(String(255))
 
-    ip_address = Column(INET)
-    user_agent = Column(Text)
-    browser_info = Column(JSONB, default=dict)
-
     is_anonymous = Column(Boolean, default=True)
     is_internal = Column(Boolean, default=False)
     is_spam = Column(Boolean, default=False)
     is_flagged = Column(Boolean, default=False)
-
-    assigned_to_user_id = Column(
-        UUID(as_uuid=True), ForeignKey('users.id'), nullable=True
-    )
-    resolved_at = Column(DateTimeColumn, nullable=True)
-    resolved_by_user_id = Column(
-        UUID(as_uuid=True), ForeignKey('users.id'), nullable=True
-    )
-    resolution_notes = Column(Text)
 
     converted_to_action_item_id = Column(
         UUID(as_uuid=True), ForeignKey('roadmap_action_items.id'), nullable=True
@@ -104,15 +91,16 @@ class Feedback(BaseModel):
     widget = relationship('Widget', back_populates='feedback')
     project = relationship('Project')
     form = relationship('FeedbackForm', back_populates='feedback_items')
-    assigned_to = relationship('User', foreign_keys=[assigned_to_user_id])
-    resolved_by = relationship('User', foreign_keys=[resolved_by_user_id])
+    # Removed relationships: assigned_to, resolved_by (columns were removed)
     converted_to_action_item: Mapped[Optional['RoadmapActionItem']] = relationship(
         foreign_keys=[converted_to_action_item_id], back_populates='converted_feedback'
     )
     comments = relationship(
         'FeedbackComment', back_populates='feedback', cascade='all, delete-orphan'
     )
-    votes = relationship('FeatureVote', back_populates='feedback', cascade='all, delete-orphan')
+    votes = relationship(
+        'FeatureVote', back_populates='feedback', cascade='all, delete-orphan'
+    )
 
     __mapper_args__ = {
         'polymorphic_identity': 'feedback',

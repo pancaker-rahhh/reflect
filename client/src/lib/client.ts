@@ -57,7 +57,7 @@ async function request<T>(
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
 
-      // Debug logging in development
+      // TODO - Remove this once we have a proper logging system
       if (import.meta.env.DEV) {
         console.log(`🌐 API Request: ${fetchOptions.method || 'GET'} ${API_BASE_URL}${endpoint}`)
         console.log(`🎫 Token present: ${token ? 'Yes' : 'No'}`)

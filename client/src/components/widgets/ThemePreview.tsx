@@ -4,8 +4,8 @@ import { cn } from '@/lib/utils'
 interface ThemePreviewProps {
   theme: string
   position: string
-  colors: any
-  content: any
+  colors: Record<string, string>
+  content: Record<string, string>
   widgetType?: string
 }
 
