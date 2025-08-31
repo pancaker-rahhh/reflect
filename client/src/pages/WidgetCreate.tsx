@@ -18,7 +18,10 @@ import { PageLoading } from '@/components/common/LoadingSpinner'
 // Production-grade widget schema supporting all widget types
 const widgetSchema = z
   .object({
-    name: z.string().min(1, 'Widget name is required'),
+    name: z
+      .string()
+      .min(1, 'Widget name is required')
+      .max(255, 'Widget name must be 255 characters or less'),
     modules: z
       .object({
         feedback: z.boolean(),

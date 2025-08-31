@@ -178,7 +178,8 @@ export function Step1Basics({ form }: Step1BasicsProps) {
             <FormItem>
               <FormLabel className="text-lg font-semibold mb-4">Widget Name</FormLabel>
               <FormDescription>
-                Internal name to identify this widget (not visible to users)
+                Internal name to identify this widget (not visible to users). Must be 1-255
+                characters.
               </FormDescription>
               <FormControl>
                 <Input placeholder="e.g., Main App Feedback Widget" {...field} />

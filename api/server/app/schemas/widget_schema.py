@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, List, Dict, Any
 from uuid import UUID
 from datetime import datetime
@@ -19,7 +19,7 @@ class ThemeConfiguration(BaseModel):
 
 
 class WidgetBase(BaseModel):
-    name: str = Field(..., min_length=3, max_length=255)
+    name: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = Field(None, max_length=1000)
     widget_type: WidgetType
     position: WidgetPosition = WidgetPosition.BOTTOM_RIGHT
@@ -35,7 +35,7 @@ class WidgetCreate(WidgetBase):
 
 
 class WidgetUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=3, max_length=255)
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
     description: Optional[str] = Field(None, max_length=1000)
     position: Optional[WidgetPosition] = None
     configuration: Optional[Dict[str, Any]] = None
@@ -65,33 +65,35 @@ class WidgetReadPublic(BaseModel):
     targeting_rules: list
 
     model_config = ConfigDict(from_attributes=True)
-    
+
     @classmethod
     def from_widget(cls, widget) -> 'WidgetReadPublic':
         """Transform Widget model to format expected by widget client"""
         # Transform theme_configuration to match widget client expectations
         theme_config = widget.theme_configuration or {}
         transformed_theme = {
-            'primary': theme_config.get('primary_color', theme_config.get('primary', '#6366F1')),
+            'primary': theme_config.get(
+                'primary_color', theme_config.get('primary', '#6366F1')
+            ),
             'background': theme_config.get('background', '#ffffff'),
             'text': theme_config.get('text', '#1f2937'),
-            'show_branding': theme_config.get('show_branding', True)
+            'show_branding': theme_config.get('show_branding', True),
         }
-        
+
         # Transform position enum to string
         position_map = {
             'BOTTOM_RIGHT': 'bottom_right',
-            'BOTTOM_LEFT': 'bottom_left', 
+            'BOTTOM_LEFT': 'bottom_left',
             'TOP_RIGHT': 'top_right',
             'TOP_LEFT': 'top_left',
-            'CENTER': 'center'
+            'CENTER': 'center',
         }
         position_str = position_map.get(str(widget.position), 'bottom_right')
-        
+
         return cls(
             widget_type=str(widget.widget_type),
             position=position_str,
             configuration=widget.configuration or {},
             theme_configuration=transformed_theme,
-            targeting_rules=widget.targeting_rules or []
+            targeting_rules=widget.targeting_rules or [],
         )

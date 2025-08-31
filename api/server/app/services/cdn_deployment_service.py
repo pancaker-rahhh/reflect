@@ -1,6 +1,5 @@
-import os
 import subprocess
-import tempfile
+import asyncio
 from pathlib import Path
 from typing import Dict, Any
 from app.services.r2_storage_service import r2_storage_service, R2StorageService
@@ -15,29 +14,39 @@ class CDNDeploymentService:
     def __init__(self, r2_service: R2StorageService = r2_storage_service):
         self.r2_service = r2_service
 
-    async def deploy_widget(self, widget) -> bool:
-        try:
-            base_widget_content = await self._build_widget_content()
-            config = self._prepare_widget_config(widget)
-            widget_content_with_config = self._inject_config_into_widget(
-                base_widget_content, config
-            )
+    async def deploy_widget(self, widget, max_retries: int = 3) -> bool:
+        for attempt in range(max_retries + 1):
+            try:
+                base_widget_content = await self._build_widget_content()
+                config = self._prepare_widget_config(widget)
+                widget_content_with_config = self._inject_config_into_widget(
+                    base_widget_content, config
+                )
 
-            upload_result = await self.r2_service.upload_widget_file(
-                widget.public_key, widget_content_with_config
-            )
+                upload_result = await self.r2_service.upload_widget_file(
+                    widget.public_key, widget_content_with_config
+                )
 
-            cache_paths = [upload_result['widget_key']]
-            await self.r2_service.purge_cdn_cache(cache_paths)
+                cache_paths = [upload_result['widget_key']]
+                await self.r2_service.purge_cdn_cache(cache_paths)
 
-            logger.info(
-                f'Successfully deployed widget {widget.public_key} with embedded configuration'
-            )
-            return True
+                logger.info(
+                    f'Successfully deployed widget {widget.public_key} with embedded configuration'
+                )
+                return True
 
-        except Exception as e:
-            logger.error(f'Widget deployment failed for {widget.public_key}: {str(e)}')
-            return False
+            except Exception as e:
+                if attempt < max_retries:
+                    delay = (2**attempt) * 1  # Exponential backoff: 1s, 2s, 4s
+                    logger.warning(
+                        f'Widget deployment attempt {attempt + 1} failed for {widget.public_key}: {str(e)}. Retrying in {delay}s...'
+                    )
+                    await asyncio.sleep(delay)
+                else:
+                    logger.error(
+                        f'Widget deployment failed for {widget.public_key} after {max_retries + 1} attempts: {str(e)}'
+                    )
+                    return False
 
     async def delete_widget(self, public_key: str) -> bool:
         """Delete widget files from CDN/R2 storage."""

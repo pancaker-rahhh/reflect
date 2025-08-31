@@ -1,7 +1,8 @@
 import boto3
 import json
 import httpx
-from typing import Dict, Any, List, Optional
+import asyncio
+from typing import Dict, Any, List
 from botocore.exceptions import ClientError
 from app.core.settings import get_settings
 from app.core.logging import get_logger
@@ -81,34 +82,44 @@ class R2StorageService:
             raise Exception(f'Failed to upload widget to R2: {str(e)}')
 
     async def upload_widget_file(
-        self, public_key: str, widget_js_content: str
+        self, public_key: str, widget_js_content: str, max_retries: int = 3
     ) -> Dict[str, str]:
         if not self.s3_client:
             raise Exception('R2 client not initialized')
 
-        try:
-            widget_key = f'widgets/{public_key}/widget.js'
+        for attempt in range(max_retries + 1):
+            try:
+                widget_key = f'widgets/{public_key}/widget.js'
 
-            self.s3_client.put_object(
-                Bucket=settings.R2_BUCKET_NAME,
-                Key=widget_key,
-                Body=widget_js_content.encode('utf-8'),
-                ContentType='application/javascript',
-                CacheControl='public, max-age=3600',
-                Metadata={'public_key': public_key, 'type': 'widget_with_config'},
-            )
+                self.s3_client.put_object(
+                    Bucket=settings.R2_BUCKET_NAME,
+                    Key=widget_key,
+                    Body=widget_js_content.encode('utf-8'),
+                    ContentType='application/javascript',
+                    CacheControl='public, max-age=3600',
+                    Metadata={'public_key': public_key, 'type': 'widget_with_config'},
+                )
 
-            widget_url = f'{settings.CDN_BASE_URL}/{widget_key}'
+                widget_url = f'{settings.CDN_BASE_URL}/{widget_key}'
 
-            logger.info(
-                f'Successfully uploaded widget {public_key} with embedded config to R2'
-            )
+                logger.info(
+                    f'Successfully uploaded widget {public_key} with embedded config to R2'
+                )
 
-            return {'widget_url': widget_url, 'widget_key': widget_key}
+                return {'widget_url': widget_url, 'widget_key': widget_key}
 
-        except ClientError as e:
-            logger.error(f'R2 upload failed for {public_key}: {str(e)}')
-            raise Exception(f'Failed to upload widget to R2: {str(e)}')
+            except ClientError as e:
+                if attempt < max_retries:
+                    delay = (2**attempt) * 1  # Exponential backoff: 1s, 2s, 4s
+                    logger.warning(
+                        f'R2 upload attempt {attempt + 1} failed for {public_key}: {str(e)}. Retrying in {delay}s...'
+                    )
+                    await asyncio.sleep(delay)
+                else:
+                    logger.error(
+                        f'R2 upload failed for {public_key} after {max_retries + 1} attempts: {str(e)}'
+                    )
+                    raise Exception(f'Failed to upload widget to R2: {str(e)}')
 
     async def delete_widget_files(self, public_key: str) -> bool:
         if not self.s3_client:
@@ -138,43 +149,64 @@ class R2StorageService:
             logger.error(f'Failed to delete widget {public_key} from R2: {str(e)}')
             return False
 
-    async def purge_cdn_cache(self, file_paths: List[str]) -> bool:
+    async def purge_cdn_cache(
+        self, file_paths: List[str], max_retries: int = 3
+    ) -> bool:
         if not settings.CDN_ZONE_ID or not settings.CDN_API_TOKEN:
             logger.warning(
                 'Cloudflare credentials not configured, skipping cache purge'
             )
             return True
 
-        try:
-            headers = {
-                'Authorization': f'Bearer {settings.CDN_API_TOKEN}',
-                'Content-Type': 'application/json',
-            }
+        for attempt in range(max_retries + 1):
+            try:
+                headers = {
+                    'Authorization': f'Bearer {settings.CDN_API_TOKEN}',
+                    'Content-Type': 'application/json',
+                }
 
-            urls = [f'{settings.CDN_BASE_URL}/{path}' for path in file_paths]
+                urls = [f'{settings.CDN_BASE_URL}/{path}' for path in file_paths]
 
-            data = {'files': urls}
+                data = {'files': urls}
 
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    f'https://api.cloudflare.com/client/v4/zones/{settings.CDN_ZONE_ID}/purge_cache',
-                    headers=headers,
-                    json=data,
-                    timeout=30.0,
-                )
+                async with httpx.AsyncClient() as client:
+                    response = await client.post(
+                        f'https://api.cloudflare.com/client/v4/zones/{settings.CDN_ZONE_ID}/purge_cache',
+                        headers=headers,
+                        json=data,
+                        timeout=30.0,
+                    )
 
-                if response.status_code == 200:
-                    logger.info(f'Successfully purged CDN cache for {len(urls)} files')
-                    return True
+                    if response.status_code == 200:
+                        logger.info(
+                            f'Successfully purged CDN cache for {len(urls)} files'
+                        )
+                        return True
+                    else:
+                        if attempt < max_retries:
+                            delay = (2**attempt) * 1  # Exponential backoff: 1s, 2s, 4s
+                            logger.warning(
+                                f'CDN cache purge attempt {attempt + 1} failed: {response.status_code} {response.text}. Retrying in {delay}s...'
+                            )
+                            await asyncio.sleep(delay)
+                        else:
+                            logger.error(
+                                f'CDN cache purge failed after {max_retries + 1} attempts: {response.status_code} {response.text}'
+                            )
+                            return False
+
+            except Exception as e:
+                if attempt < max_retries:
+                    delay = (2**attempt) * 1  # Exponential backoff: 1s, 2s, 4s
+                    logger.warning(
+                        f'CDN cache purge attempt {attempt + 1} error: {str(e)}. Retrying in {delay}s...'
+                    )
+                    await asyncio.sleep(delay)
                 else:
                     logger.error(
-                        f'CDN cache purge failed: {response.status_code} {response.text}'
+                        f'CDN cache purge error after {max_retries + 1} attempts: {str(e)}'
                     )
                     return False
-
-        except Exception as e:
-            logger.error(f'CDN cache purge error: {str(e)}')
-            return False
 
 
 r2_storage_service = R2StorageService()
