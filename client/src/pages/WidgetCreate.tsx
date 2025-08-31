@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useQueryClient } from '@tanstack/react-query'
 import { WizardProgress } from '@/components/widgets/wizard/WizardProgress'
 import { WizardNavigation } from '@/components/widgets/wizard/WizardNavigation'
 import { Step1Basics } from '@/components/widgets/wizard/Step1Basics'
@@ -145,6 +146,7 @@ const steps = [
 
 export function WidgetCreate() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { widgetId } = useParams<{ widgetId: string }>()
   const [currentStep, setCurrentStep] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -330,9 +332,11 @@ export function WidgetCreate() {
     try {
       if (isEditMode && widgetId) {
         await widgetApi.update(widgetId, data)
+        queryClient.invalidateQueries({ queryKey: ['widget', widgetId] })
         navigate(`/widgets/${widgetId}/get-code`)
       } else {
         const newWidget = await widgetApi.create(currentProject.id, data)
+        queryClient.invalidateQueries({ queryKey: ['widgets', currentProject.id] })
         navigate(`/widgets/${newWidget.id}/get-code`)
       }
     } catch (error) {
