@@ -41,7 +41,7 @@ export function ReviewForm({ onSubmit, isSubmitting, colors, content }: ReviewFo
             disabled={isSubmitting}
             className="p-2 transition-all duration-200 hover:scale-125 disabled:cursor-not-allowed transform"
             style={{
-              filter: star <= (hoveredRating || rating) ? `drop-shadow(0 0 8px #FCD34D)` : 'none'
+              filter: star <= (hoveredRating || rating) ? `drop-shadow(0 0 8px #FCD34D)` : 'none',
             }}
           >
             <Star
@@ -62,10 +62,10 @@ export function ReviewForm({ onSubmit, isSubmitting, colors, content }: ReviewFo
     const currentRating = hoveredRating || rating
     const texts = ['', 'Poor 😞', 'Fair 🙁', 'Good 😊', 'Very Good 😄', 'Excellent 🤩']
     const colors = ['', '#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6']
-    
+
     return {
       text: texts[currentRating] || '',
-      color: colors[currentRating] || colors.text
+      color: colors[currentRating] || colors.text,
     }
   }
 
@@ -82,21 +82,25 @@ export function ReviewForm({ onSubmit, isSubmitting, colors, content }: ReviewFo
             Click on the stars to rate your experience
           </p>
         </div>
-        
+
         {renderStars()}
-        
+
         {(hoveredRating || rating) > 0 && (
           <div className="mb-4">
             <p className="text-lg font-semibold animate-pulse" style={{ color: ratingInfo.color }}>
               {ratingInfo.text}
             </p>
-            <div className="w-20 h-1 mx-auto mt-2 rounded-full" 
-                 style={{ backgroundColor: `${ratingInfo.color}40` }}>
-              <div className="h-full rounded-full transition-all duration-500"
-                   style={{ 
-                     backgroundColor: ratingInfo.color,
-                     width: `${((hoveredRating || rating) / 5) * 100}%`
-                   }}></div>
+            <div
+              className="w-20 h-1 mx-auto mt-2 rounded-full"
+              style={{ backgroundColor: `${ratingInfo.color}40` }}
+            >
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{
+                  backgroundColor: ratingInfo.color,
+                  width: `${((hoveredRating || rating) / 5) * 100}%`,
+                }}
+              ></div>
             </div>
           </div>
         )}
@@ -131,10 +135,10 @@ export function ReviewForm({ onSubmit, isSubmitting, colors, content }: ReviewFo
             onClick={handleSubmit}
             disabled={rating === 0 || isSubmitting}
             className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transform"
-            style={{ 
-              backgroundColor: colors.buttonColor, 
+            style={{
+              backgroundColor: colors.buttonColor,
               color: colors.buttonTextColor,
-              boxShadow: `0 4px 12px ${colors.buttonColor}30`
+              boxShadow: `0 4px 12px ${colors.buttonColor}30`,
             }}
           >
             {isSubmitting ? (

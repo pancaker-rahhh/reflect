@@ -6,12 +6,7 @@ import { ReviewForm } from '@/components/widgets/forms/ReviewForm'
 import { BugReportForm } from '@/components/widgets/forms/BugReportForm'
 import { FeatureRequestForm } from '@/components/widgets/forms/FeatureRequestForm'
 import { cn } from '@/lib/utils'
-import type {
-  WidgetCoreProps,
-  WidgetState,
-  FeedbackType,
-  FeedbackData,
-} from './types'
+import type { WidgetCoreProps, WidgetState, FeedbackType, FeedbackData } from './types'
 import { FEEDBACK_TYPE_INFO } from './types'
 
 const LoadingSpinner = ({
@@ -48,62 +43,79 @@ const SkeletonPulse = ({ className, style }: { className: string; style?: any })
   ></div>
 )
 
-export function WidgetCore({ 
-  config, 
-  mode, 
+export function WidgetCore({
+  config,
+  mode,
   state: externalState,
-  onSubmit, 
-  onClose, 
-  onStateChange 
+  onSubmit,
+  onClose,
+  onStateChange,
 }: WidgetCoreProps) {
   const getInitialState = (): WidgetState => {
     if (externalState) return externalState
-    
+
     // Build available types based on enabled modules
     const availableTypes: FeedbackType[] = []
-    
-    // Always add the primary type first if it's enabled
+
+    // Always add the primary type first
     const primaryType = config.primaryType || 'FEEDBACK'
-    const primaryModuleMap: Record<string, keyof typeof config.modules> = {
-      'FEEDBACK': 'feedback',
-      'NPS': 'feedback', 
-      'CSAT': 'feedback',
-      'CES': 'feedback',
-      'SURVEY': 'feedback',
-      'REVIEW': 'reviews',
-      'BUG_REPORT': 'bugReporting',
-      'FEATURE_REQUEST': 'featureRequests'
+
+    console.log('WidgetCore: getInitialState - config:', config)
+    console.log('WidgetCore: getInitialState - primaryType:', primaryType)
+    console.log('WidgetCore: getInitialState - config.primaryType:', config.primaryType)
+    console.log(
+      'WidgetCore: getInitialState - is scoring type:',
+      ['NPS', 'CSAT', 'CES'].includes(primaryType)
+    )
+
+    // For scoring types (NPS, CSAT, CES), they should be directly available
+    if (['NPS', 'CSAT', 'CES'].includes(primaryType)) {
+      // Scoring types should be shown directly, not as part of menu system
+      console.log(
+        'WidgetCore: getInitialState - returning active state for scoring type:',
+        primaryType
+      )
+      return { type: 'active', feedbackType: primaryType as FeedbackType }
     }
-    
+
+    // Handle other types with their module mapping
+    const primaryModuleMap: Record<string, keyof typeof config.modules> = {
+      FEEDBACK: 'feedback',
+      SURVEY: 'feedback',
+      REVIEW: 'reviews',
+      BUG_REPORT: 'bugReporting',
+      FEATURE_REQUEST: 'featureRequests',
+    }
+
     const primaryModuleKey = primaryModuleMap[primaryType]
     if (config.modules?.[primaryModuleKey]) {
       availableTypes.push(primaryType as FeedbackType)
     }
-    
+
     // Add other enabled modules (except primary type)
     const moduleTypeMap: Record<string, FeedbackType> = {
-      'feedback': 'FEEDBACK',
-      'reviews': 'REVIEW',
-      'bugReporting': 'BUG_REPORT', 
-      'featureRequests': 'FEATURE_REQUEST'
+      feedback: 'FEEDBACK',
+      reviews: 'REVIEW',
+      bugReporting: 'BUG_REPORT',
+      featureRequests: 'FEATURE_REQUEST',
     }
-    
+
     Object.entries(config.modules || {}).forEach(([moduleKey, enabled]) => {
-      if (enabled && moduleKey !== primaryModuleKey) {
+      if (enabled) {
         const feedbackType = moduleTypeMap[moduleKey]
         if (feedbackType && !availableTypes.includes(feedbackType)) {
           availableTypes.push(feedbackType)
         }
       }
     })
-    
+
     // Simple logic: Show menu if multiple types, otherwise show the single type
     if (availableTypes.length > 1) {
       return { type: 'menu', availableTypes }
     } else if (availableTypes.length === 1) {
       return { type: 'active', feedbackType: availableTypes[0] }
     }
-    
+
     return { type: 'active', feedbackType: 'FEEDBACK' }
   }
 
@@ -115,7 +127,7 @@ export function WidgetCore({
   const [error, setError] = useState<string | null>(null)
 
   const currentState = externalState || internalState
-  
+
   const updateState = (newState: WidgetState) => {
     if (onStateChange) {
       onStateChange(newState)
@@ -144,10 +156,19 @@ export function WidgetCore({
 
   const getAvailableFeedbackTypes = (): FeedbackType[] => {
     const types: FeedbackType[] = []
+
+    // Check if we have a primary type that's a scoring type
+    const primaryType = config.primaryType
+    if (primaryType && ['NPS', 'CSAT', 'CES'].includes(primaryType)) {
+      types.push(primaryType as FeedbackType)
+    }
+
+    // Add other module types
     if (modules.feedback) types.push('FEEDBACK')
     if (modules.reviews) types.push('REVIEW')
     if (modules.bugReporting) types.push('BUG_REPORT')
     if (modules.featureRequests) types.push('FEATURE_REQUEST')
+
     return types
   }
 
@@ -156,36 +177,44 @@ export function WidgetCore({
     if (!data.response || !data.response.trim()) {
       return 'Feedback message is required'
     }
-    
+
     if (data.response.length > 5000) {
       return 'Feedback message is too long (maximum 5000 characters)'
     }
-    
+
     // Type-specific validation
     if (data.typeSpecificData) {
       const typeData = data.typeSpecificData
-      
+
       if (data.feedbackType === 'REVIEW' && data.rating && (data.rating < 1 || data.rating > 5)) {
         return 'Rating must be between 1 and 5 stars'
       }
-      
-      if (data.feedbackType === 'NPS' && typeData.nps_score && (typeData.nps_score < 0 || typeData.nps_score > 10)) {
+
+      if (
+        data.feedbackType === 'NPS' &&
+        typeData.nps_score &&
+        (typeData.nps_score < 0 || typeData.nps_score > 10)
+      ) {
         return 'NPS score must be between 0 and 10'
       }
-      
-      if ((data.feedbackType === 'CSAT' || data.feedbackType === 'CES') && typeData.score && (typeData.score < 1 || typeData.score > 5)) {
+
+      if (
+        (data.feedbackType === 'CSAT' || data.feedbackType === 'CES') &&
+        typeData.score &&
+        (typeData.score < 1 || typeData.score > 5)
+      ) {
         return 'Score must be between 1 and 5'
       }
-      
+
       if (data.feedbackType === 'BUG_REPORT' && typeData.title && !typeData.title.trim()) {
         return 'Bug title is required'
       }
-      
+
       if (data.feedbackType === 'FEATURE_REQUEST' && typeData.title && !typeData.title.trim()) {
         return 'Feature title is required'
       }
     }
-    
+
     return null // No validation errors
   }
 
@@ -231,16 +260,20 @@ export function WidgetCore({
 
   const handleScoreSubmission = async (score: number) => {
     setSelectedScore(score)
-    const type = config.primaryType.toLowerCase()
-    
+
+    // Get the current feedback type from state
+    const currentFeedbackType =
+      currentState.type === 'active' ? currentState.feedbackType : config.primaryType
+    const type = currentFeedbackType.toLowerCase()
+
     // Prepare type-specific data for score-based feedback
     const typeSpecificData: any = {
       score: score,
       comment: '', // Could be extended to collect comments
     }
-    
+
     // Add type-specific fields based on feedback type
-    if (config.primaryType === 'NPS') {
+    if (currentFeedbackType === 'NPS') {
       typeSpecificData.nps_score = score
       if (score >= 9) {
         typeSpecificData.promoter_category = 'promoter'
@@ -250,26 +283,32 @@ export function WidgetCore({
         typeSpecificData.promoter_category = 'detractor'
       }
       typeSpecificData.follow_up_comment = ''
-    } else if (config.primaryType === 'CSAT') {
+    } else if (currentFeedbackType === 'CSAT') {
       typeSpecificData.csat_score = score
-      const levels = ['', 'very_dissatisfied', 'dissatisfied', 'neutral', 'satisfied', 'very_satisfied']
+      const levels = [
+        '',
+        'very_dissatisfied',
+        'dissatisfied',
+        'neutral',
+        'satisfied',
+        'very_satisfied',
+      ]
       typeSpecificData.satisfaction_level = levels[score] || 'neutral'
       typeSpecificData.follow_up_comment = ''
-    } else if (config.primaryType === 'CES') {
+    } else if (currentFeedbackType === 'CES') {
       typeSpecificData.ces_score = score
       const levels = ['', 'very_difficult', 'difficult', 'neutral', 'easy', 'very_easy']
       typeSpecificData.ease_level = levels[score] || 'neutral'
       typeSpecificData.follow_up_comment = ''
     }
-    
+
     await handleSubmit({
       response: `${type}: ${score}`,
       rating: score,
-      feedbackType: config.primaryType,
+      feedbackType: currentFeedbackType,
       typeSpecificData,
     })
   }
-
 
   const adjustColorBrightness = (color: string, amount: number): string => {
     const num = parseInt(color.replace('#', ''), 16)
@@ -323,7 +362,12 @@ export function WidgetCore({
     <div className="p-6 text-center space-y-4">
       <div className="mx-auto w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
         <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M6 18L18 6M6 6l12 12"
+          />
         </svg>
       </div>
       <div className="space-y-2">
@@ -356,7 +400,7 @@ export function WidgetCore({
           ))}
         </div>
       )}
-      
+
       <div className="mb-6">
         <div
           className="mx-auto w-20 h-20 rounded-full flex items-center justify-center animate-pulse"
@@ -365,7 +409,12 @@ export function WidgetCore({
             boxShadow: `0 10px 30px ${primaryColor}40`,
           }}
         >
-          <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-10 h-10 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
@@ -390,9 +439,12 @@ export function WidgetCore({
 
   // Unified rendering function for all feedback types - clean and extensible
   const renderFeedbackType = (feedbackType: FeedbackType) => {
+    console.log('WidgetCore: renderFeedbackType called with:', feedbackType)
+    console.log('WidgetCore: renderFeedbackType - typeof feedbackType:', typeof feedbackType)
     const info = FEEDBACK_TYPE_INFO[feedbackType]
-    
+
     const renderComponent = () => {
+      console.log('WidgetCore: renderComponent called for type:', feedbackType)
       switch (feedbackType) {
         case 'NPS':
           return (
@@ -430,7 +482,7 @@ export function WidgetCore({
                     overall_rating: data.rating,
                     pros: data.review || '',
                     cons: '',
-                  }
+                  },
                 })
               }}
               isSubmitting={isSubmitting}
@@ -447,9 +499,11 @@ export function WidgetCore({
                   `Category: ${data.category}`,
                   `Severity: ${data.severity}`,
                   `Description: ${data.description}`,
-                  data.stepsToReproduce ? `Steps: ${data.stepsToReproduce}` : null
-                ].filter(Boolean).join('\n')
-                
+                  data.stepsToReproduce ? `Steps: ${data.stepsToReproduce}` : null,
+                ]
+                  .filter(Boolean)
+                  .join('\n')
+
                 await handleSubmit({
                   response,
                   feedbackType,
@@ -460,7 +514,7 @@ export function WidgetCore({
                     expected_result: '',
                     actual_result: data.description,
                     visual_proof: {},
-                  }
+                  },
                 })
               }}
               isSubmitting={isSubmitting}
@@ -477,9 +531,9 @@ export function WidgetCore({
                   `Category: ${data.category}`,
                   `Priority: ${data.priority}`,
                   `Description: ${data.description}`,
-                  `Use Case: ${data.useCase}`
+                  `Use Case: ${data.useCase}`,
                 ].join('\n')
-                
+
                 await handleSubmit({
                   response,
                   feedbackType,
@@ -488,7 +542,7 @@ export function WidgetCore({
                     suggested_solution: data.description,
                     benefits: `Priority: ${data.priority}, Category: ${data.category}`,
                     use_case: data.useCase,
-                  }
+                  },
                 })
               }}
               onUpvote={async (featureId) => {
@@ -502,6 +556,47 @@ export function WidgetCore({
           )
         case 'FEEDBACK':
         case 'SURVEY':
+          return (
+            <div className="space-y-4">
+              <textarea
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                placeholder="Tell us what you think..."
+                className="w-full h-32 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all"
+                style={{
+                  borderColor: feedback.trim() ? primaryColor : '#E5E7EB',
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  boxShadow: feedback.trim() ? `0 0 0 3px ${primaryColor}20` : undefined,
+                }}
+                disabled={isSubmitting}
+              />
+              <button
+                onClick={async () => {
+                  if (!feedback.trim()) return
+                  await handleSubmit({
+                    response: feedback,
+                    feedbackType,
+                    typeSpecificData: {
+                      title: `${feedbackType} Feedback`,
+                      message: feedback,
+                    },
+                  })
+                }}
+                disabled={!feedback.trim() || isSubmitting}
+                className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ backgroundColor: buttonColor, color: buttonTextColor }}
+              >
+                {isSubmitting ? (
+                  <span className="inline-flex items-center space-x-2">
+                    <LoadingSpinner size="sm" color="currentColor" />
+                    <span>Submitting...</span>
+                  </span>
+                ) : (
+                  content.submitButtonText
+                )}
+              </button>
+            </div>
+          )
         default:
           return (
             <div className="space-y-4">
@@ -526,7 +621,7 @@ export function WidgetCore({
                     typeSpecificData: {
                       title: `${feedbackType} Feedback`,
                       message: feedback,
-                    }
+                    },
                   })
                 }}
                 disabled={!feedback.trim() || isSubmitting}
@@ -550,7 +645,7 @@ export function WidgetCore({
     // Check if we should show back button (when multiple types are available)
     const availableTypes = getAvailableFeedbackTypes()
     const showBackButton = availableTypes.length > 1
-    
+
     return (
       <div className="p-5">
         {showBackButton && (
@@ -567,15 +662,18 @@ export function WidgetCore({
             </h3>
           </div>
         )}
-        
+
         <div className="mb-4">
-          <h3 className="text-base font-medium mb-2 text-center leading-tight" style={{ color: textColor }}>
+          <h3
+            className="text-base font-medium mb-2 text-center leading-tight"
+            style={{ color: textColor }}
+          >
             {content.mainQuestion}
           </h3>
         </div>
-        
+
         {renderComponent()}
-        
+
         {error && <div className="text-xs text-red-600 bg-red-50 p-2 rounded-lg">{error}</div>}
       </div>
     )
@@ -587,48 +685,50 @@ export function WidgetCore({
     const availableModules = currentState.availableTypes.map((type, index) => {
       const info = FEEDBACK_TYPE_INFO[type]
       const colors = {
-        'FEEDBACK': { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
-        'NPS': { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
-        'CSAT': { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
-        'CES': { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
-        'SURVEY': { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
-        'REVIEW': { bg: '#FEF3C7', border: '#FDE68A', icon: '#F59E0B' },
-        'BUG_REPORT': { bg: '#FEE2E2', border: '#FECACA', icon: '#EF4444' },
-        'FEATURE_REQUEST': { bg: '#D1FAE5', border: '#A7F3D0', icon: '#10B981' },
+        FEEDBACK: { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
+        NPS: { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
+        CSAT: { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
+        CES: { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
+        SURVEY: { bg: '#EEF2FF', border: '#C7D2FE', icon: '#6366F1' },
+        REVIEW: { bg: '#FEF3C7', border: '#FDE68A', icon: '#F59E0B' },
+        BUG_REPORT: { bg: '#FEE2E2', border: '#FECACA', icon: '#EF4444' },
+        FEATURE_REQUEST: { bg: '#D1FAE5', border: '#A7F3D0', icon: '#10B981' },
       }
-      
+
       // Override title for primary type (first in array)
       let title = info.title
       if (index === 0) {
         // Use primary type specific titles
         const primaryTitles: Record<string, string> = {
-          'FEEDBACK': 'Give Feedback',
-          'NPS': 'Rate Us (NPS)',
-          'CSAT': 'Rate Satisfaction',
-          'CES': 'Rate Experience',
-          'SURVEY': 'Take Survey',
-          'REVIEW': 'Write Review',
-          'BUG_REPORT': 'Report Issue',
-          'FEATURE_REQUEST': 'Suggest Feature'
+          FEEDBACK: 'Give Feedback',
+          NPS: 'Rate Us (NPS)',
+          CSAT: 'Rate Satisfaction',
+          CES: 'Rate Experience',
+          SURVEY: 'Take Survey',
+          REVIEW: 'Write Review',
+          BUG_REPORT: 'Report Issue',
+          FEATURE_REQUEST: 'Suggest Feature',
         }
         title = primaryTitles[type] || title
       }
-      
+
       return {
         type,
         title,
         description: info.description,
         icon: info.icon,
         color: colors[type as keyof typeof colors] || colors.FEEDBACK,
-        isPrimary: index === 0
+        isPrimary: index === 0,
       }
     })
 
     return (
       <div className="p-5 space-y-5">
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 mx-auto rounded-full flex items-center justify-center" 
-               style={{ backgroundColor: `${primaryColor}15`, border: `2px solid ${primaryColor}30` }}>
+          <div
+            className="w-12 h-12 mx-auto rounded-full flex items-center justify-center"
+            style={{ backgroundColor: `${primaryColor}15`, border: `2px solid ${primaryColor}30` }}
+          >
             <span className="text-2xl">🎯</span>
           </div>
           <div>
@@ -661,13 +761,17 @@ export function WidgetCore({
               }}
             >
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-                     style={{ backgroundColor: `${module.color.icon}15`, color: module.color.icon }}>
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
+                  style={{ backgroundColor: `${module.color.icon}15`, color: module.color.icon }}
+                >
                   {module.icon}
                 </div>
                 <div className="flex-1">
-                  <div className="font-semibold text-sm group-hover:translate-x-1 transition-transform duration-200" 
-                       style={{ color: textColor }}>
+                  <div
+                    className="font-semibold text-sm group-hover:translate-x-1 transition-transform duration-200"
+                    style={{ color: textColor }}
+                  >
                     {module.title}
                   </div>
                   <div className="text-xs opacity-70 mt-0.5" style={{ color: textColor }}>
@@ -675,7 +779,14 @@ export function WidgetCore({
                   </div>
                 </div>
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <polyline points="9,18 15,12 9,6"></polyline>
                   </svg>
                 </div>
@@ -686,7 +797,6 @@ export function WidgetCore({
       </div>
     )
   }
-
 
   const renderContent = () => {
     switch (currentState.type) {
@@ -738,8 +848,18 @@ export function WidgetCore({
               onClick={onClose}
               className="p-1 hover:bg-white/20 rounded transition-colors ml-2"
             >
-              <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-3.5 h-3.5 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           )}
@@ -747,9 +867,7 @@ export function WidgetCore({
       </div>
 
       {/* Content */}
-      <div className="flex-grow overflow-auto">
-        {renderContent()}
-      </div>
+      <div className="flex-grow overflow-auto">{renderContent()}</div>
 
       {/* Branding */}
       {theme.showBranding && (

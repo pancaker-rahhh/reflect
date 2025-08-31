@@ -40,7 +40,7 @@ export function CESRating({ value, onChange, disabled = false }: CESRatingProps)
   return (
     <div className="space-y-6">
       <div className="text-center text-sm text-gray-600 mb-4">
-        "It was easy to get the help I needed"
+        &quot;It was easy to get the help I needed&quot;
       </div>
 
       <div className="flex justify-center gap-3">

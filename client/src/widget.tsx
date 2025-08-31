@@ -1,4 +1,3 @@
-import { h, Fragment } from 'preact'
 import { createRoot } from 'react-dom/client'
 import { WidgetCore } from './components/widgets/core/WidgetCore'
 import './widget.css'
@@ -214,10 +213,19 @@ declare global {
 
   // Convert backend config to WidgetConfiguration format
   function transformWidgetConfig(backendConfig: WidgetConfig): WidgetConfiguration {
+    console.log('Widget: transformWidgetConfig - backendConfig:', backendConfig)
+    console.log('Widget: transformWidgetConfig - widget_type:', backendConfig.widget_type)
+
     const theme = backendConfig.theme_configuration || {}
     const content = backendConfig.configuration?.content || {}
     const modules = backendConfig.configuration?.modules || {}
-    const widgetType = backendConfig.widget_type?.toUpperCase()
+    // Extract the actual type from enum format (e.g., "WidgetType.CSAT" -> "CSAT")
+    const widgetType = backendConfig.widget_type?.split('.')?.pop()?.toUpperCase()
+
+    console.log(
+      'Widget: transformWidgetConfig - widgetType after split and toUpperCase:',
+      widgetType
+    )
 
     // Map widget types to modules properly
     const defaultModules = getDefaultModulesForType(widgetType)
@@ -234,7 +242,7 @@ declare global {
           : defaultModules.featureRequests,
     }
 
-    return {
+    const result = {
       modules: finalModules,
       primaryType: (widgetType || 'FEEDBACK') as FeedbackType,
       content: {
@@ -245,7 +253,9 @@ declare global {
         thankYouMessage: content.thankYouMessage || 'Your feedback helps us improve.',
       },
       appearance: {
-        theme: configTheme === 'dark' ? 'minimal-dark' : 'default',
+        theme: (configTheme === 'dark'
+          ? 'minimal-dark'
+          : 'default') as WidgetConfiguration['appearance']['theme'],
         position: (backendConfig.position ||
           configPosition) as WidgetConfiguration['appearance']['position'],
         colors: {
@@ -258,11 +268,16 @@ declare global {
         showBranding: theme.show_branding !== false,
       },
       behavior: {
-        triggerType: 'immediate',
+        triggerType: 'immediate' as WidgetConfiguration['behavior']['triggerType'],
         urlTargeting: { includeUrls: [], excludeUrls: [] },
         deviceTypes: { desktop: true, mobile: true, tablet: true },
       },
     }
+
+    console.log('Widget: transformWidgetConfig - final result:', result)
+    console.log('Widget: transformWidgetConfig - result.primaryType:', result.primaryType)
+
+    return result
   }
 
   function getDefaultModulesForType(type?: string) {
@@ -286,11 +301,11 @@ declare global {
   function getDefaultQuestionForType(type?: string) {
     switch (type?.toUpperCase()) {
       case 'NPS':
-        return 'How likely are you to recommend us to a friend or colleague?'
+        return 'How likely are you to recommend our product to a friend or colleague?'
       case 'CSAT':
-        return 'How satisfied are you with our service?'
+        return 'Please rate your overall satisfaction with our service'
       case 'CES':
-        return 'How easy was it to use our service?'
+        return 'How easy was it to get the help you needed?'
       case 'REVIEW':
         return 'How would you rate your overall experience?'
       case 'BUG_REPORT':
@@ -531,7 +546,7 @@ declare global {
         <div style="padding: 20px; text-align: center;">
           <h3>Feedback Widget</h3>
           <p>There was an issue loading the widget. Please refresh the page.</p>
-          <small>Error: ${error.message}</small>
+          <small>Error: ${error instanceof Error ? error.message : String(error)}</small>
         </div>
       `
     }
