@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select'
 import { Loader2, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react'
 import { useIntegrationProjects, useUpdateJiraIntegration } from '@/hooks/useJiraIntegration'
-import { Integration } from '@/types'
+import type { Integration } from '@/types'
 
 interface JiraConfigureModalProps {
   isOpen: boolean
@@ -40,9 +40,9 @@ export function JiraConfigureModal({
 
   useEffect(() => {
     if (integration && isOpen) {
-      setJiraUrl(integration.config?.jira_url || integration.config?.base_url || '')
-      setEmail(integration.auth_data?.username || '')
-      setApiToken(integration.auth_data?.api_token || '')
+      setJiraUrl(integration.config?.jira_url || (integration.config as any)?.base_url || '')
+      setEmail((integration.auth_data as any)?.username || '')
+      setApiToken((integration.auth_data as any)?.api_token || '')
       const savedDefaultProject =
         integration.config?.default_project_key || integration.config?.project_key
       setDefaultProject(savedDefaultProject || 'none')

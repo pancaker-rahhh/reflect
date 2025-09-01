@@ -113,8 +113,8 @@ export function RoadmapPage() {
 
   const {
     data: integrations = [],
-    isLoading: isLoadingIntegrations,
-    error: integrationsError,
+    isLoading: _isLoadingIntegrations,
+    error: _integrationsError,
   } = useQuery({
     queryKey: ['integrations', project?.id],
     queryFn: () => api.getIntegrations(project?.id),

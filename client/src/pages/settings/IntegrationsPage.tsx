@@ -2,14 +2,14 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+
 import { Badge } from '@/components/ui/badge'
 import { ExternalLink, Plus, Settings, Trash2, TestTube, CheckCircle, Loader2 } from 'lucide-react'
 import { JiraIntegrationModal } from '@/components/integrations/JiraIntegrationModal'
 import { JiraConfigureModal } from '@/components/integrations/JiraConfigureModal'
 import { useDeleteJiraIntegration } from '@/hooks/useJiraIntegration'
 import { useAppContext } from '@/context/AppContext'
-import { Integration } from '@/types'
+import type { Integration } from '@/types'
 
 export function IntegrationsPage() {
   const [isJiraModalOpen, setIsJiraModalOpen] = useState(false)
@@ -223,15 +223,17 @@ export function IntegrationsPage() {
         onClose={() => setIsJiraModalOpen(false)}
         projectId={currentProject?.id || ''}
       />
-      <JiraConfigureModal
-        isOpen={isConfigureModalOpen}
-        onClose={() => {
-          setIsConfigureModalOpen(false)
-          setSelectedIntegration(null)
-        }}
-        integration={selectedIntegration}
-        onUpdate={handleIntegrationUpdate}
-      />
+      {selectedIntegration && (
+        <JiraConfigureModal
+          isOpen={isConfigureModalOpen}
+          onClose={() => {
+            setIsConfigureModalOpen(false)
+            setSelectedIntegration(null)
+          }}
+          integration={selectedIntegration}
+          onUpdate={handleIntegrationUpdate}
+        />
+      )}
     </div>
   )
 }

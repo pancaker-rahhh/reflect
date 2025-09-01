@@ -1,4 +1,5 @@
 import { apiClient } from '../client'
+import type { Integration } from '@/types'
 
 export interface JiraConnectionTestRequest {
   jira_url: string

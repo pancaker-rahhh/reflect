@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
+// import { useNavigate } from 'react-router-dom'; // Currently unused
 
 import {
   FolderOpen,
   Users,
-  Settings,
   Key,
   Webhook,
   Shield,
@@ -14,7 +14,6 @@ import {
   Check,
   Copy,
   RefreshCw,
-  Link,
   Globe,
   Lock,
   AlertTriangle,
@@ -49,7 +48,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
     projects,
     setCurrentProject,
   } = useAppContext()
-  const navigate = useNavigate()
+  // const navigate = useNavigate() // Currently unused
   const [activeTab, setActiveTab] = useState<Tab>('general')
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
@@ -270,17 +269,17 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
     }
   }
 
-  const handleResendInvite = async (memberId: string) => {
-    try {
-      // TODO: Implement resend invite API call
-      setMessage({ type: 'success', text: 'Invitation resent successfully' })
-      setTimeout(() => setMessage(null), 3000)
-    } catch (error) {
-      console.error('Failed to resend invitation:', error)
-      setMessage({ type: 'error', text: 'Failed to resend invitation' })
-      setTimeout(() => setMessage(null), 3000)
-    }
-  }
+  // const handleResendInvite = async (_memberId: string) => {
+  //   try {
+  //     // TODO: Implement resend invite API call
+  //     setMessage({ type: 'success', text: 'Invitation resent successfully' })
+  //     setTimeout(() => setMessage(null), 3000)
+  //   } catch (error) {
+  //     console.error('Failed to resend invitation:', error)
+  //     setMessage({ type: 'error', text: 'Failed to resend invitation' })
+  //     setTimeout(() => setMessage(null), 3000)
+  //   }
+  // }
 
   const handleRemoveMember = (member: ProjectMember) => {
     // Prevent removal of organization owners
@@ -338,7 +337,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
     setTimeout(() => setMessage(null), 2000)
   }
 
-  const handleRegenerateApiKey = (keyId: string) => {
+  const handleRegenerateApiKey = (_keyId: string) => {
     const confirmed = window.confirm(
       'Are you sure you want to regenerate this API key? The old key will stop working immediately.'
     )
@@ -806,7 +805,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
         <ApiKeyModal
           isOpen={showApiKeyModal}
           onClose={() => setShowApiKeyModal(false)}
-          onGenerate={(name, permissions) => {
+          onGenerate={(name, _permissions) => {
             setApiKeys((prev) => [
               ...prev,
               {

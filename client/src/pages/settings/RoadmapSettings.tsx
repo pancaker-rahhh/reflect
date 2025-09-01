@@ -152,7 +152,7 @@ export function RoadmapSettings() {
       status: 'new',
       color: '#6b7280',
       order: columns.length,
-      features: [],
+      action_items: [],
     }
     setColumns((prev) => [...prev, newColumn])
     setIsEdited(true)
@@ -220,7 +220,7 @@ export function RoadmapSettings() {
         // Handle remaining columns (create new, update existing)
         for (const column of columns.filter((col) => !col._markedForDeletion)) {
           if (column.id.startsWith('temp-')) {
-            const { id, features, roadmap_id, _markedForDeletion, ...newColumnData } = column
+            const { id, action_items, roadmap_id, _markedForDeletion, ...newColumnData } = column
             columnPromises.push(
               createColumnMutation.mutateAsync({
                 ...newColumnData,
@@ -230,7 +230,7 @@ export function RoadmapSettings() {
           } else {
             const originalColumn = existingColumns.find((c) => c.id === column.id)
             if (originalColumn && JSON.stringify(originalColumn) !== JSON.stringify(column)) {
-              const { id, features, roadmap_id, _markedForDeletion, ...updateData } = column
+              const { id, action_items, roadmap_id, _markedForDeletion, ...updateData } = column
               columnPromises.push(
                 updateColumnMutation.mutateAsync({
                   id: column.id,
@@ -889,7 +889,7 @@ export function RoadmapSettings() {
                                         : 'text-muted-foreground'
                                     )}
                                   >
-                                    {column.features?.length || 0}
+                                                                         {column.action_items?.length || 0}
                                   </span>
                                 </div>
                                 <span className="text-xs text-muted-foreground">features</span>

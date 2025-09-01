@@ -273,7 +273,7 @@ const roadmaps: Roadmap[] = [
         status: 'new',
         color: '#94A3B8',
         order: 0,
-        features: [],
+        action_items: [],
       },
       {
         id: 'col-2',
@@ -282,7 +282,7 @@ const roadmaps: Roadmap[] = [
         status: 'in-progress',
         color: '#3B82F6',
         order: 1,
-        features: [],
+        action_items: [],
       },
       {
         id: 'col-3',
@@ -291,7 +291,7 @@ const roadmaps: Roadmap[] = [
         status: 'planned',
         color: '#8B5CF6',
         order: 2,
-        features: [],
+        action_items: [],
       },
       {
         id: 'col-4',
@@ -300,7 +300,7 @@ const roadmaps: Roadmap[] = [
         status: 'under-review',
         color: '#F59E0B',
         order: 3,
-        features: [],
+        action_items: [],
       },
     ],
     tags: [],
