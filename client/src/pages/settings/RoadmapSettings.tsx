@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api, organizationApi } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
@@ -426,7 +426,7 @@ export function RoadmapSettings() {
             ></div>
           </div>
           <div className="flex justify-between text-xs text-muted-foreground mt-2">
-            {setupSteps.map((step, index) => (
+            {setupSteps.map((step) => (
               <div key={step.key} className="flex flex-col items-center">
                 <div
                   className={cn(

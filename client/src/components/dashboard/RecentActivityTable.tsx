@@ -29,7 +29,7 @@ const typeConfig: Record<
   ces: { label: 'CES', variant: 'outline' },
 }
 
-export function RecentActivityTable({ activities, projectId }: RecentActivityTableProps) {
+export function RecentActivityTable({ activities, projectId: _projectId }: RecentActivityTableProps) {
   const [selectedFeedback, setSelectedFeedback] = useState<any>(null)
   const [isConversionModalOpen, setIsConversionModalOpen] = useState(false)
   const { convertFeedbackToRoadmap } = useFeedbackConversion()

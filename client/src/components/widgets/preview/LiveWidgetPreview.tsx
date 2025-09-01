@@ -94,7 +94,7 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
   const [previewState, setPreviewState] = useState<PreviewState>('closed')
   const [deviceType, setDeviceType] = useState<DeviceType>('desktop')
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [widgetState, setWidgetState] = useState<WidgetState>({ type: 'closed' })
+  const [_widgetState, setWidgetState] = useState<WidgetState>({ type: 'closed' })
 
   // Watch specific form fields to minimize re-renders
   const formData = form.watch(['appearance', 'content', 'primaryType', 'modules', 'behavior'])
@@ -136,7 +136,7 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
     setPreviewState(current => current === 'closed' ? 'open' : 'closed')
   }, [])
 
-  const handleWidgetSubmit = useCallback(async (data: FeedbackData) => {
+  const handleWidgetSubmit = useCallback(async (_data: FeedbackData) => {
     // Mock submission delay for preview
     return new Promise<void>((resolve) => {
       setTimeout(() => {

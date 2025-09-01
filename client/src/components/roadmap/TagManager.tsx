@@ -5,9 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { Loader2, Plus, Trash2, Tag, Edit2, Check, X } from 'lucide-react'
-import { cn } from '@/lib/utils'
+
+import { Loader2, Plus, Trash2, Tag, Edit2, Check } from 'lucide-react'
 import type { RoadmapTag } from '@/types'
 import { useToast } from '@/components/ui/use-toast'
 

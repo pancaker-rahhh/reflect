@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Search, Filter, RotateCcw, Bug, Calendar, AlertTriangle } from 'lucide-react'
+import { Search, RotateCcw, Bug, AlertTriangle } from 'lucide-react'
 import { api } from '@/services(mock)/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -39,7 +39,7 @@ export function BugReports() {
   }
 
   const filteredBugReports = feedback
-    .filter(item => item.type === 'bug')
+    .filter(item => item.type === 'bug_report')
     .map(item => item as BugReport)
     .filter(bug => {
       if (startDate && new Date(bug.createdAt) < startDate) return false
@@ -228,8 +228,8 @@ export function BugReports() {
                     <Badge variant={getSeverityVariant(bug.severity)}>
                       {bug.severity.toUpperCase()}
                     </Badge>
-                    <Badge variant={getStatusVariant(bug.status)}>
-                      {bug.status.replace('-', ' ').toUpperCase()}
+                    <Badge variant={getStatusVariant(bug.status || 'new')}>
+                      {(bug.status || 'new').replace('-', ' ').toUpperCase()}
                     </Badge>
                   </div>
                 </div>

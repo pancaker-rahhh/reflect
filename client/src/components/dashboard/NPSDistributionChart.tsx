@@ -7,7 +7,7 @@ interface NPSDistributionChartProps {
 
 export function NPSDistributionChart({ feedback }: NPSDistributionChartProps) {
   const npsSurveys = feedback.filter(
-    (f): f is SurveyResponse => f.type === 'survey' && f.surveyType === 'nps'
+    (f): f is SurveyResponse => f.type === 'survey' && f.surveyType === 'NPS'
   )
 
   if (npsSurveys.length === 0) {

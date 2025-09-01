@@ -9,7 +9,6 @@
     "build:widget": "node build-widget-with-css.js",
     "build:widget-base": "vite build --config vite.config.widget.js",
     "dev:widget": "vite --config vite.config.widget.js",
-
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -45,6 +44,7 @@
     "@types/react-select": "^5.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
     "country-list": "^2.4.1",
     "date-fns": "^3.6.0",
     "framer-motion": "^12.23.12",

@@ -11,8 +11,6 @@ import {
   GripVertical,
   Edit3,
   Trash2,
-  MoreHorizontal,
-  Clock,
   Calendar,
   MessageSquare,
   ExternalLink,

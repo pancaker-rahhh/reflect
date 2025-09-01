@@ -18,6 +18,7 @@ export interface Organization {
   updated_at?: string
   members_count?: number
   projects_count?: number
+  subscription?: Subscription
 }
 
 export interface OrganizationMember {
@@ -69,6 +70,12 @@ export interface Widget {
     | 'CSAT'
     | 'CES'
   status: 'draft' | 'active' | 'inactive' | 'archived'
+  modules?: {
+    feedback?: boolean
+    reviews?: boolean
+    bugReporting?: boolean
+    featureRequests?: boolean
+  }
   configuration: {
     modules?: {
       feedback?: boolean
@@ -158,6 +165,12 @@ export interface BugReport extends BaseFeedback {
   expectedBehavior?: string
   actualBehavior?: string
   attachments?: string[]
+  title?: string
+  description?: string
+  status?: 'new' | 'investigating' | 'confirmed' | 'resolved' | 'wont-fix'
+  browser?: string
+  os?: string
+  url?: string
 }
 
 export interface FeatureRequest extends BaseFeedback {
@@ -166,6 +179,10 @@ export interface FeatureRequest extends BaseFeedback {
   suggestedSolution?: string
   benefits?: string
   implementationStatus?: 'backlog' | 'planned' | 'in-progress' | 'completed'
+  title?: string
+  description?: string
+  status?: 'new' | 'under-review' | 'planned' | 'in-progress' | 'completed'
+  upvotes?: number
 }
 
 export type Feedback = SurveyResponse | Review | BugReport | FeatureRequest
@@ -230,6 +247,7 @@ export interface RoadmapColumn {
 export interface Roadmap {
   id: string
   project_id: string
+  projectId?: string
   name: string
   is_public: boolean
   subdomain: string

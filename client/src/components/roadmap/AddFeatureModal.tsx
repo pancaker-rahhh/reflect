@@ -52,17 +52,15 @@ export interface FeatureFormData {
   tagIds: string[]
 }
 
-const formatStatus = (status: string) => {
-  return status.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
-}
+
 
 export function AddFeatureModal({
   isOpen,
   onClose,
   onSubmit,
   isLoading,
-  columnName,
-  columnStatus,
+  columnName: _columnName,
+  columnStatus: _columnStatus,
   roadmapId,
 }: AddFeatureModalProps) {
   const [formData, setFormData] = useState<FeatureFormData>({

@@ -25,7 +25,6 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         widget: resolve(__dirname, 'src/widget.tsx'),
-        testPage: resolve(__dirname, 'widget-test.html'),
       },
       output: {
         entryFileNames: `assets/[name].js`,

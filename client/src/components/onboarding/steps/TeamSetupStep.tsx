@@ -27,7 +27,7 @@ export const TeamSetupStep: React.FC = () => {
   useEffect(() => {
     const existingTeamData = onboardingDataService.getTeamData();
     if (existingTeamData?.members && existingTeamData.members.length > 0) {
-      setTeamMembers(existingTeamData.members);
+      setTeamMembers(existingTeamData.members as TeamMember[]);
     }
   }, []);
 

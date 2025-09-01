@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users } from 'lucide-react';
+
 
 interface ProjectTeamHeaderProps {
   onAddMember: () => void;

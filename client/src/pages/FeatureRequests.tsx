@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Search, Filter, RotateCcw, Lightbulb, ThumbsUp, Calendar } from 'lucide-react'
+import { Search, RotateCcw, Lightbulb, ThumbsUp } from 'lucide-react'
 import { api } from '@/services(mock)/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -49,7 +49,7 @@ export function FeatureRequests() {
   }
 
   const filteredFeatureRequests = feedback
-    .filter(item => item.type === 'feature')
+    .filter(item => item.type === 'feature_request')
     .map(item => item as FeatureRequest)
     .filter(feature => {
       if (startDate && new Date(feature.createdAt) < startDate) return false
@@ -74,7 +74,7 @@ export function FeatureRequests() {
     .sort((a, b) => {
       switch (sortBy) {
         case 'upvotes':
-          return b.upvotes - a.upvotes
+          return (b.upvotes || 0) - (a.upvotes || 0)
         case 'oldest':
           return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         case 'newest':
@@ -95,17 +95,7 @@ export function FeatureRequests() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'new': return 'text-blue-600'
-      case 'under-review': return 'text-yellow-600'
-      case 'planned': return 'text-purple-600'
-      case 'in-progress': return 'text-orange-600'
-      case 'completed': return 'text-green-600'
-      case 'declined': return 'text-red-600'
-      default: return 'text-gray-600'
-    }
-  }
+
 
   const handleUpvote = (featureId: string) => {
     upvoteMutation.mutate(featureId)
@@ -235,11 +225,11 @@ export function FeatureRequests() {
                       disabled={upvoteMutation.isPending}
                       className={cn(
                         "flex flex-col h-auto py-2 px-3",
-                        feature.upvotes > 0 && "bg-primary/10 border-primary/20"
+                        (feature.upvotes || 0) > 0 && "bg-primary/10 border-primary/20"
                       )}
                     >
                       <ThumbsUp className="h-4 w-4 mb-1" />
-                      <span className="text-xs font-semibold">{feature.upvotes}</span>
+                      <span className="text-xs font-semibold">{feature.upvotes || 0}</span>
                     </Button>
                     <span className="text-xs text-muted-foreground">upvotes</span>
                   </div>
@@ -259,8 +249,8 @@ export function FeatureRequests() {
                           <span>{format(new Date(feature.createdAt), 'PPP')}</span>
                         </div>
                       </div>
-                      <Badge variant={getStatusVariant(feature.status)}>
-                        {feature.status.replace('-', ' ').toUpperCase()}
+                      <Badge variant={getStatusVariant(feature.status || 'new')}>
+                        {(feature.status || 'new').replace('-', ' ').toUpperCase()}
                       </Badge>
                     </div>
                     

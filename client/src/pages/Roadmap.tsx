@@ -109,11 +109,7 @@ export function RoadmapPage() {
     enabled: !!project,
   })
 
-  const { data: tags = [] } = useQuery({
-    queryKey: ['roadmapTags', roadmap?.id],
-    queryFn: () => (roadmap ? api.getRoadmapTags(roadmap.id) : []),
-    enabled: !!roadmap?.id,
-  })
+
 
   const {
     data: integrations = [],
@@ -266,9 +262,7 @@ export function RoadmapPage() {
     })
   }
 
-  const toggleTag = (tagId: string) => {
-    // This function is no longer needed as AddFeatureModal handles tags
-  }
+
 
   const handleOpenAddFeatureModal = (column: RoadmapColumn) => {
     setSelectedColumn({
@@ -348,59 +342,7 @@ export function RoadmapPage() {
     return [...features].sort((a, b) => a.order - b.order)
   }
 
-  const getColumnStatus = (column: RoadmapColumn) => {
-    if (
-      column.status &&
-      ['new', 'in-progress', 'planned', 'under-review', 'completed', 'declined'].includes(
-        column.status
-      )
-    ) {
-      return column.status
-    }
 
-    const name = column.name.toLowerCase()
-
-    if (
-      name.includes('new') ||
-      name.includes('backlog') ||
-      name.includes('todo') ||
-      name.includes('1')
-    ) {
-      return 'new'
-    }
-    if (
-      name.includes('progress') ||
-      name.includes('doing') ||
-      name.includes('active') ||
-      name.includes('work')
-    ) {
-      return 'in-progress'
-    }
-    if (name.includes('planned') || name.includes('scheduled') || name.includes('2')) {
-      return 'planned'
-    }
-    if (
-      name.includes('review') ||
-      name.includes('testing') ||
-      name.includes('qa') ||
-      name.includes('check')
-    ) {
-      return 'under-review'
-    }
-    if (name.includes('complete') || name.includes('done') || name.includes('finished')) {
-      return 'completed'
-    }
-    if (name.includes('decline') || name.includes('rejected') || name.includes('cancelled')) {
-      return 'declined'
-    }
-
-    if (column.order === 0) return 'new'
-    if (column.order === 1) return 'in-progress'
-    if (column.order === 2) return 'planned'
-    if (column.order === 3) return 'under-review'
-
-    return 'new'
-  }
 
   const isLoading = isLoadingOrgs || isLoadingProjects || isLoadingRoadmap || isLoadingUser
 

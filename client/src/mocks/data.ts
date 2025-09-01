@@ -29,14 +29,17 @@ const organizations: Organization[] = [
     id: 'org-1',
     name: 'webapp',
     slug: 'webapp',
-    ownerId: 'user-1',
-    members: [
-      {
-        userId: 'user-1',
-        role: 'owner',
-        joinedAt: new Date('2024-01-01'),
-      },
-    ],
+    subscription_tier: 'free',
+    settings: {},
+    created_at: '2024-01-01T00:00:00Z',
+    // ownerId: 'user-1', // Not part of Organization interface
+    // members: [ // Not part of Organization interface
+    //   {
+    //     userId: 'user-1',
+    //     role: 'owner',
+    //     joinedAt: new Date('2024-01-01'),
+    //   },
+    // ],
     subscription: {
       plan: 'free',
       status: 'active',
@@ -45,15 +48,14 @@ const organizations: Organization[] = [
       widgetLimit: 1,
       responseLimit: 20,
     },
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
+    updated_at: '2024-01-01T00:00:00Z',
   },
 ]
 
 const projects: Project[] = [
   {
     id: 'project-1',
-    organizationId: 'org-1',
+    organization_id: 'org-1',
     name: 'Main App',
     displayName: 'Main Application',
     logoUrl: 'https://api.dicebear.com/7.x/shapes/svg?seed=mainapp',
@@ -62,6 +64,7 @@ const projects: Project[] = [
     publicReviewsEnabled: false,
     allowNewReviews: true,
     reviewSortOrder: 'newest',
+    settings: {},
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   },
@@ -70,49 +73,47 @@ const projects: Project[] = [
 const widgets: Widget[] = [
   {
     id: 'widget-1',
-    projectId: 'project-1',
+    project_id: 'project-1',
     name: 'webapp feedback widget',
-    isActive: true,
+    is_active: true,
     modules: {
       feedback: true,
       reviews: true,
       bugReporting: true,
       featureRequests: true,
     },
-    primaryType: 'nps',
-    content: {
-      headerTitle: 'We value your feedback',
-      mainQuestion: 'How likely are you to recommend our product to a friend or colleague?',
-      submitButtonText: 'Submit Feedback',
-      thankYouTitle: 'Thank you!',
-      thankYouMessage: 'Your feedback helps us improve.',
-    },
-    appearance: {
-      theme: 'default',
-      position: 'bottom-right',
-      colors: {
-        primary: '#6B46C1',
-        background: '#FFFFFF',
-        text: '#1F2937',
-        buttonColor: '#6B46C1',
-        buttonTextColor: '#FFFFFF',
+    widget_type: 'NPS',
+    status: 'active',
+    configuration: {
+      modules: {
+        feedback: true,
+        reviews: true,
+        bugReporting: true,
+        featureRequests: true,
       },
-      showBranding: true,
-    },
-    behavior: {
-      triggerType: 'immediate',
-      urlTargeting: {
-        includeUrls: [],
-        excludeUrls: [],
-      },
-      deviceTypes: {
-        desktop: true,
-        mobile: true,
-        tablet: true,
+      content: {
+        headerTitle: 'We value your feedback',
+        mainQuestion: 'How likely are you to recommend our product to a friend or colleague?',
+        submitButtonText: 'Submit Feedback',
+        thankYouTitle: 'Thank you!',
+        thankYouMessage: 'Your feedback helps us improve.',
       },
     },
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
+    theme_configuration: {
+      theme_name: 'default',
+      primary: '#6B46C1',
+      background: '#FFFFFF',
+      text: '#1F2937',
+      buttonColor: '#6B46C1',
+      buttonTextColor: '#FFFFFF',
+      show_branding: true,
+    },
+    position: 'bottom_right',
+    targeting_rules: [],
+    embed_code: '<script src="https://webapp.reflect.app/widget.js" data-widget-id="widget-1"></script>',
+    public_key: 'pk_test_123456789',
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z',
   },
 ]
 
@@ -173,12 +174,17 @@ const generateFeedback = (): Feedback[] => {
       id: `bug-${i}`,
       projectId: 'project-1',
       widgetId: 'widget-1',
-      type: 'bug',
-      title: bugTitles[i % bugTitles.length],
-      description:
-        'When I try to click the button, nothing happens. This started happening after the last update.',
+      type: 'bug_report',
+      ...(({
+        title: bugTitles[i % bugTitles.length],
+        description:
+          'When I try to click the button, nothing happens. This started happening after the last update.',
+        status: (['new', 'investigating', 'confirmed'] as const)[Math.floor(Math.random() * 3)],
+        browser: 'Chrome 120',
+        os: 'Windows 11',
+        url: 'https://example.com/page'
+      }) as any),
       severity: (['low', 'medium', 'high', 'critical'] as const)[Math.floor(Math.random() * 4)],
-      status: (['new', 'investigating', 'confirmed'] as const)[Math.floor(Math.random() * 3)],
       browser: 'Chrome 120',
       os: 'Windows 11',
       url: 'https://example.com/dashboard',
@@ -201,14 +207,16 @@ const generateFeedback = (): Feedback[] => {
       id: `feature-${i}`,
       projectId: 'project-1',
       widgetId: 'widget-1',
-      type: 'feature',
-      title: featureTitles[i % featureTitles.length],
-      description:
-        'It would be great if we could have this feature. It would really help our team be more productive.',
-      status: (['new', 'under-review', 'planned', 'in-progress'] as const)[
-        Math.floor(Math.random() * 4)
-      ],
-      upvotes: Math.floor(Math.random() * 50) + 1,
+      type: 'feature_request',
+      ...(({
+        title: featureTitles[i % featureTitles.length],
+        description:
+          'It would be great if we could have this feature. It would really help our team be more productive.',
+        status: (['new', 'under-review', 'planned', 'in-progress'] as const)[
+          Math.floor(Math.random() * 4)
+        ],
+        upvotes: Math.floor(Math.random() * 50) + 1,
+      }) as any),
       userEmail: `requester${i}@example.com`,
       userName: `Requester ${i}`,
       createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
@@ -226,9 +234,9 @@ const dashboardMetrics: DashboardMetrics = {
   feedbackChange: 12.5,
   averageRating: 4.2,
   ratingChange: 0.3,
-  newBugReports: feedback.filter((f) => f.type === 'bug').length,
+  newBugReports: feedback.filter((f) => f.type === 'bug_report').length,
   bugReportsChange: -2,
-  newFeatureRequests: feedback.filter((f) => f.type === 'feature').length,
+  newFeatureRequests: feedback.filter((f) => f.type === 'feature_request').length,
   featureRequestsChange: 5,
 }
 
@@ -241,7 +249,7 @@ const recentActivity: RecentActivity[] = feedback
     summary:
       f.type === 'survey'
         ? `NPS Score: ${(f as SurveyResponse).score}`
-        : 'title' in f
+        : 'title' in f && f.title
           ? f.title
           : 'New feedback',
     submittedBy: f.userName || f.userEmail || 'Anonymous',
@@ -251,47 +259,53 @@ const recentActivity: RecentActivity[] = feedback
 const roadmaps: Roadmap[] = [
   {
     id: 'roadmap-1',
+    project_id: 'project-1',
     projectId: 'project-1',
     name: 'Product Roadmap',
-    isPublic: true,
+    is_public: true,
     subdomain: 'roadmap',
-    logoUrl: 'https://api.dicebear.com/7.x/shapes/svg?seed=roadmap',
+    logo_url: 'https://api.dicebear.com/7.x/shapes/svg?seed=roadmap',
     columns: [
       {
         id: 'col-1',
-        roadmapId: 'roadmap-1',
+        roadmap_id: 'roadmap-1',
         name: 'New',
         status: 'new',
         color: '#94A3B8',
         order: 0,
+        features: [],
       },
       {
         id: 'col-2',
-        roadmapId: 'roadmap-1',
+        roadmap_id: 'roadmap-1',
         name: 'In Progress',
         status: 'in-progress',
         color: '#3B82F6',
         order: 1,
+        features: [],
       },
       {
         id: 'col-3',
-        roadmapId: 'roadmap-1',
+        roadmap_id: 'roadmap-1',
         name: 'Planned',
         status: 'planned',
         color: '#8B5CF6',
         order: 2,
+        features: [],
       },
       {
         id: 'col-4',
-        roadmapId: 'roadmap-1',
+        roadmap_id: 'roadmap-1',
         name: 'Under Review',
         status: 'under-review',
         color: '#F59E0B',
         order: 3,
+        features: [],
       },
     ],
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
+    tags: [],
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z',
   },
 ]
 

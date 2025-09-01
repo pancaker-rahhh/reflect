@@ -33,13 +33,13 @@ export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChar
     },
     {
       name: 'Bug Reports',
-      value: feedback.filter(f => f.type === 'bug').length,
+      value: feedback.filter(f => f.type === 'bug_report').length,
       color: '#dc2626',
       icon: Bug
     },
     {
       name: 'Feature Requests',
-      value: feedback.filter(f => f.type === 'feature').length,
+      value: feedback.filter(f => f.type === 'feature_request').length,
       color: '#8b5cf6',
       icon: Lightbulb
     },

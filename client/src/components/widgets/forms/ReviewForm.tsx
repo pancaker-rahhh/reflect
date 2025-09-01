@@ -65,7 +65,7 @@ export function ReviewForm({ onSubmit, isSubmitting, colors, content }: ReviewFo
 
     return {
       text: texts[currentRating] || '',
-      color: colors[currentRating] || colors.text,
+      color: colors[currentRating] || (colors as any).text,
     }
   }
 
