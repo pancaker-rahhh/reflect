@@ -279,3 +279,28 @@ export interface NotificationSettings {
   newBugReports: boolean
   newFeatureRequests: boolean
 }
+
+export interface Integration {
+  id: string
+  project_id: string
+  name: string
+  integration_type: 'jira' | 'github' | 'slack' | 'discord'
+  type?: 'JIRA' | 'GITHUB' | 'SLACK' | 'DISCORD' // Legacy field
+  config: {
+    jira_url?: string
+    project_key?: string
+    default_project_key?: string
+    default_issue_type?: string
+    default_priority?: string
+    auto_create_issues?: boolean
+    include_metadata?: boolean
+    default_assignee?: string
+    default_reporter?: string
+    components?: string[]
+    labels?: string[]
+    status_mapping?: Record<string, string>
+  }
+  auth_data: Record<string, unknown>
+  created_at: string
+  updated_at: string
+}

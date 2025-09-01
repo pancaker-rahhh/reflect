@@ -13,12 +13,13 @@ import {
 } from '@/components/ui/select'
 import { Loader2, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react'
 import { useIntegrationProjects, useUpdateJiraIntegration } from '@/hooks/useJiraIntegration'
+import { Integration } from '@/types'
 
 interface JiraConfigureModalProps {
   isOpen: boolean
   onClose: () => void
-  integration: any
-  onUpdate?: (updatedIntegration: any) => void
+  integration: Integration
+  onUpdate?: (updatedIntegration: Integration) => void
 }
 
 export function JiraConfigureModal({

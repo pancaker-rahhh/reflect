@@ -62,7 +62,7 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
     const authData =
       authType === 'api_token' ? { username: email, api_token: apiToken } : { username, password }
 
-    const config: any = {
+    const config: Record<string, unknown> = {
       auto_create_issues: autoCreate,
       include_metadata: true,
     }

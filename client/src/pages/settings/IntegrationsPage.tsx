@@ -9,11 +9,12 @@ import { JiraIntegrationModal } from '@/components/integrations/JiraIntegrationM
 import { JiraConfigureModal } from '@/components/integrations/JiraConfigureModal'
 import { useDeleteJiraIntegration } from '@/hooks/useJiraIntegration'
 import { useAppContext } from '@/context/AppContext'
+import { Integration } from '@/types'
 
 export function IntegrationsPage() {
   const [isJiraModalOpen, setIsJiraModalOpen] = useState(false)
   const [isConfigureModalOpen, setIsConfigureModalOpen] = useState(false)
-  const [selectedIntegration, setSelectedIntegration] = useState<any>(null)
+  const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null)
   const { currentProject } = useAppContext()
 
   const { data: integrations = [], isLoading } = useQuery({
@@ -22,14 +23,14 @@ export function IntegrationsPage() {
     enabled: !!currentProject?.id,
   })
 
-  const handleIntegrationUpdate = (updatedIntegration: any) => {
+  const handleIntegrationUpdate = (updatedIntegration: Integration) => {
     setSelectedIntegration(updatedIntegration)
   }
 
   const deleteIntegration = useDeleteJiraIntegration()
 
   const jiraIntegrations = integrations.filter(
-    (integration: any) => integration.integration_type?.toLowerCase() === 'jira'
+    (integration: Integration) => integration.integration_type?.toLowerCase() === 'jira'
   )
 
   const handleDeleteIntegration = async (integrationId: string) => {
@@ -112,7 +113,7 @@ export function IntegrationsPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {jiraIntegrations.map((integration: any) => (
+              {jiraIntegrations.map((integration: Integration) => (
                 <div
                   key={integration.id}
                   className="border border-gray-200 rounded-xl p-6 bg-white shadow-sm hover:shadow-md transition-shadow"

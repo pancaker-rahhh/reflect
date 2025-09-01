@@ -17,13 +17,13 @@ import {
   useIntegrationProjects,
   useIntegrationIssueTypes,
 } from '@/hooks/useJiraIntegration'
-import type { RoadmapActionItem } from '@/types'
+import type { RoadmapActionItem, Integration } from '@/types'
 
 interface BulkJiraModalProps {
   isOpen: boolean
   onClose: () => void
   selectedItems: RoadmapActionItem[]
-  jiraIntegrations: any[]
+  jiraIntegrations: Integration[]
 }
 
 export function BulkJiraModal({
@@ -129,7 +129,7 @@ export function BulkJiraModal({
     : null
   const projectName = projectsQuery.data?.projects?.find((p) => p.key === selectedProjectKey)?.name
 
-  const getProjectDisplayName = (integration: any) => {
+  const getProjectDisplayName = (integration: Integration) => {
     if (!integration) return 'JIRA Project'
 
     const project = projectsQuery.data?.projects?.find(
@@ -324,7 +324,10 @@ export function BulkJiraModal({
                       <div className="flex items-center justify-between">
                         <span className="font-medium text-sm text-gray-700">Project:</span>
                         <span className="text-gray-600 text-sm">
-                          {projectName || getProjectDisplayName(selectedIntegration) || 'Unknown'}
+                          {projectName ||
+                            (selectedIntegration
+                              ? getProjectDisplayName(selectedIntegration)
+                              : 'Unknown')}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">

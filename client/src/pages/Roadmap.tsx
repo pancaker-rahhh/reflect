@@ -21,7 +21,7 @@ import { BulkJiraModal } from '@/components/roadmap/BulkJiraModal'
 import { IndividualJiraModal } from '@/components/roadmap/IndividualJiraModal'
 import { useToast } from '@/components/ui/use-toast'
 import { supabase } from '@/lib/supabase'
-import type { RoadmapColumn, RoadmapActionItem } from '@/types'
+import type { RoadmapColumn, RoadmapActionItem, Integration } from '@/types'
 
 interface DragItem {
   featureId: string
@@ -126,7 +126,8 @@ export function RoadmapPage() {
   })
 
   const jiraIntegrations = integrations.filter(
-    (integration: any) => integration.integration_type === 'jira' || integration.type === 'JIRA'
+    (integration: Integration) =>
+      integration.integration_type === 'jira' || integration.type === 'JIRA'
   )
 
   const createFeatureMutation = useMutation({

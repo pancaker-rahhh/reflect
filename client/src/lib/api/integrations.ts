@@ -126,7 +126,7 @@ export interface JiraIntegrationResponse {
   success: boolean
   data: {
     integration_id: string
-    integration: any
+    integration: Integration
   }
   message: string
   errors: string[]
@@ -163,9 +163,9 @@ export interface BulkJiraCreateResponse {
 }
 
 export const integrationsApi = {
-  getIntegrations: async (projectId?: string): Promise<any[]> => {
+  getIntegrations: async (projectId?: string): Promise<Integration[]> => {
     const params = projectId ? `?project_id=${projectId}` : ''
-    return apiClient.get<any[]>(`/integrations${params}`)
+    return apiClient.get<Integration[]>(`/integrations${params}`)
   },
 
   testJiraConnection: async (
@@ -193,8 +193,12 @@ export const integrationsApi = {
     return apiClient.post<JiraIntegrationResponse>('/integrations/jira', request)
   },
 
-  getJiraIntegration: async (integrationId: string): Promise<any> => {
-    return apiClient.get<any>(`/integrations/jira/${integrationId}`)
+  getJiraIntegration: async (
+    integrationId: string
+  ): Promise<{ integration: Integration; config: any }> => {
+    return apiClient.get<{ integration: Integration; config: any }>(
+      `/integrations/jira/${integrationId}`
+    )
   },
 
   updateJiraIntegration: async (integrationId: string, config: JiraConfigUpdate): Promise<any> => {
