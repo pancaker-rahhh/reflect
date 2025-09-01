@@ -1,4 +1,4 @@
-export type FeedbackType = 
+export type FeedbackType =
   | 'FEEDBACK'
   | 'SURVEY'
   | 'REVIEW'
@@ -10,7 +10,7 @@ export type FeedbackType =
 
 export type WidgetMode = 'preview' | 'production'
 
-export type WidgetState = 
+export type WidgetState =
   | { type: 'loading' }
   | { type: 'error'; message: string }
   | { type: 'closed' }
@@ -74,13 +74,72 @@ export interface WidgetConfiguration {
   appearance: AppearanceConfig
   behavior: BehaviorConfig
   publicKey?: string
+  widgetKey?: string
+}
+
+// Type-specific data interfaces
+export interface NPSFeedbackData {
+  nps_score: number
+  promoter_category: 'promoter' | 'passive' | 'detractor'
+  follow_up_comment: string
+}
+
+export interface CSATFeedbackData {
+  csat_score: number
+  satisfaction_level:
+    | 'very_dissatisfied'
+    | 'dissatisfied'
+    | 'neutral'
+    | 'satisfied'
+    | 'very_satisfied'
+  follow_up_comment: string
+}
+
+export interface CESFeedbackData {
+  ces_score: number
+  ease_level: 'very_difficult' | 'difficult' | 'neutral' | 'easy' | 'very_easy'
+  follow_up_comment: string
+}
+
+export interface ReviewFeedbackData {
+  overall_rating: number
+  pros: string
+  cons: string
+}
+
+export interface BugReportFeedbackData {
+  title: string
+  severity: string
+  steps_to_reproduce: string
+  expected_result: string
+  actual_result: string
+  visual_proof: Record<string, unknown>
+}
+
+export interface FeatureRequestFeedbackData {
+  title: string
+  suggested_solution: string
+  benefits: string
+  use_case: string
+}
+
+export interface GeneralFeedbackData {
+  title: string
+  message: string
 }
 
 export interface FeedbackData {
   response: string
   rating?: number
   feedbackType: FeedbackType
-  typeSpecificData?: any
+  typeSpecificData?:
+    | NPSFeedbackData
+    | CSATFeedbackData
+    | CESFeedbackData
+    | ReviewFeedbackData
+    | BugReportFeedbackData
+    | FeatureRequestFeedbackData
+    | GeneralFeedbackData
 }
 
 export interface WidgetCoreProps {
@@ -110,48 +169,48 @@ export const FEEDBACK_TYPE_INFO: Record<FeedbackType, FeedbackTypeInfo> = {
     type: 'FEEDBACK',
     title: 'General Feedback',
     description: 'Share your thoughts and suggestions',
-    icon: '💬'
+    icon: '💬',
   },
   SURVEY: {
     type: 'SURVEY',
     title: 'Survey',
     description: 'Answer a quick survey',
-    icon: '📝'
+    icon: '📝',
   },
   REVIEW: {
     type: 'REVIEW',
     title: 'Leave a Review',
     description: 'Rate your experience',
-    icon: '⭐'
+    icon: '⭐',
   },
   BUG_REPORT: {
     type: 'BUG_REPORT',
     title: 'Report a Bug',
     description: 'Tell us about any issues you found',
-    icon: '🐛'
+    icon: '🐛',
   },
   FEATURE_REQUEST: {
     type: 'FEATURE_REQUEST',
     title: 'Request Feature',
     description: 'Suggest new features or improvements',
-    icon: '✨'
+    icon: '✨',
   },
   NPS: {
     type: 'NPS',
     title: 'Rate Recommendation',
     description: 'How likely are you to recommend us?',
-    icon: '📊'
+    icon: '📊',
   },
   CSAT: {
     type: 'CSAT',
     title: 'Satisfaction Rating',
     description: 'How satisfied are you with our service?',
-    icon: '😊'
+    icon: '😊',
   },
   CES: {
     type: 'CES',
     title: 'Effort Rating',
     description: 'How easy was it to get help?',
-    icon: '⚡'
-  }
+    icon: '⚡',
+  },
 }

@@ -209,7 +209,7 @@ export function FeedbackTypeSelector({
       {/* Alternative: Skip all feedback */}
       <div className="text-center">
         <p className="text-xs opacity-60" style={{ color: textColor }}>
-          Or you can close this widget if you don't need to provide feedback right now
+          Or you can close this widget if you don&apos;t need to provide feedback right now
         </p>
       </div>
     </div>

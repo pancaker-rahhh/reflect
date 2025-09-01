@@ -12,6 +12,7 @@ export default defineConfig({
       'react': 'preact/compat',
       'react-dom': 'preact/compat',
       'react/jsx-runtime': 'preact/jsx-runtime',
+      'preact/hooks': 'preact/hooks',
     },
   },
   build: {
@@ -59,6 +60,9 @@ export default defineConfig({
     // Configure JSX for Preact
     jsxFactory: 'h',
     jsxFragment: 'Fragment',
-    jsxInject: `import { h, Fragment } from 'preact'`,
+    jsxImportSource: 'preact',
+  },
+  optimizeDeps: {
+    include: ['preact', 'preact/compat']
   }
 })

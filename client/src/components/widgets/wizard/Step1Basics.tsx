@@ -59,11 +59,16 @@ interface PrimaryTypeSelectorProps {
 }
 
 function PrimaryTypeSelector({ modules, form }: PrimaryTypeSelectorProps) {
-  const safeModules = modules || { feedback: true, reviews: false, bugReporting: false, featureRequests: false }
-  
+  const safeModules = modules || {
+    feedback: true,
+    reviews: false,
+    bugReporting: false,
+    featureRequests: false,
+  }
+
   // Only show selector if feedback module is enabled (since only feedback can be primary)
   if (!safeModules.feedback) return null
-  
+
   const enabledModules = Object.entries(safeModules).filter(([, enabled]) => Boolean(enabled))
 
   const moduleTypeMap: Record<string, { value: string; label: string }[]> = {
@@ -72,14 +77,14 @@ function PrimaryTypeSelector({ modules, form }: PrimaryTypeSelectorProps) {
       { value: 'NPS', label: 'NPS Survey' },
       { value: 'CSAT', label: 'CSAT Survey' },
       { value: 'CES', label: 'CES Survey' },
-      { value: 'SURVEY', label: 'Custom Survey' }
+      { value: 'SURVEY', label: 'Custom Survey' },
     ],
     // Remove primary widget type options for reviews, bugReporting, featureRequests
     reviews: [],
     bugReporting: [],
-    featureRequests: []
+    featureRequests: [],
   }
-  
+
   const allOptions: { value: string; label: string }[] = []
   enabledModules.forEach(([moduleKey]) => {
     const options = moduleTypeMap[moduleKey] || []
@@ -96,10 +101,9 @@ function PrimaryTypeSelector({ modules, form }: PrimaryTypeSelectorProps) {
             {enabledModules.length > 1 ? 'Primary Feedback Type' : 'Feedback Type'}
           </FormLabel>
           <FormDescription>
-            {enabledModules.length > 1 
-              ? 'Choose the main type users will see first' 
-              : 'Choose the type of feedback to collect'
-            }
+            {enabledModules.length > 1
+              ? 'Choose the main type users will see first'
+              : 'Choose the type of feedback to collect'}
           </FormDescription>
           <Select onValueChange={field.onChange} value={field.value}>
             <FormControl>
@@ -108,18 +112,15 @@ function PrimaryTypeSelector({ modules, form }: PrimaryTypeSelectorProps) {
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {allOptions.length > 0 
-                ? allOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))
-                : (
-                    <SelectItem value="FEEDBACK">
-                      General Feedback
-                    </SelectItem>
-                  )
-              }
+              {allOptions.length > 0 ? (
+                allOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="FEEDBACK">General Feedback</SelectItem>
+              )}
             </SelectContent>
           </Select>
           <FormMessage />
@@ -130,46 +131,35 @@ function PrimaryTypeSelector({ modules, form }: PrimaryTypeSelectorProps) {
 }
 
 export function Step1Basics({ form }: Step1BasicsProps) {
-  const modules = form.watch('modules') || { feedback: true, reviews: false, bugReporting: false, featureRequests: false }
-  
-  // Auto-select primaryType based on enabled modules
+  const modules = form.watch('modules') || {
+    feedback: true,
+    reviews: false,
+    bugReporting: false,
+    featureRequests: false,
+  }
+
+  // Auto-set primaryType based on enabled modules
   useEffect(() => {
     if (!modules || typeof modules !== 'object') return
-    
+
     const enabledModules = Object.entries(modules).filter(([, enabled]) => Boolean(enabled))
     const currentPrimaryType = form.getValues('primaryType')
-    
-    // If feedback is disabled, clear the primaryType since only feedback can be primary
-    if (!modules.feedback) {
-      form.setValue('primaryType', '')
-      return
-    }
-    
+
+    // Auto-set primaryType based on enabled modules
     if (enabledModules.length === 1) {
       const [moduleKey] = enabledModules[0]
-      
-      // For single-module selection, only auto-select if primaryType is not already set appropriately
-      const moduleTypeMap: Record<string, string[]> = {
-        feedback: ['FEEDBACK', 'NPS', 'CSAT', 'CES', 'SURVEY'],
-        reviews: [], // Reviews no longer have primary widget type options
-        bugReporting: [], // Bug reports no longer have primary widget type options
-        featureRequests: [] // Feature requests no longer have primary widget type options
+
+      // Map modules to their primary types
+      const moduleTypeMap: Record<string, WidgetFormData['primaryType']> = {
+        feedback: 'FEEDBACK',
+        reviews: 'REVIEW',
+        bugReporting: 'BUG_REPORT',
+        featureRequests: 'FEATURE_REQUEST',
       }
-      
-      const allowedTypes = moduleTypeMap[moduleKey] || []
-      
-      // If current primaryType is not valid for the enabled module, set default
-      if (!currentPrimaryType || !allowedTypes.includes(currentPrimaryType)) {
-        if (moduleKey === 'feedback') {
-          form.setValue('primaryType', 'FEEDBACK')
-        } else {
-          // For non-feedback modules, default to feedback type since they can't be primary
-          form.setValue('primaryType', 'FEEDBACK')
-          // Also enable feedback module if it's not enabled
-          if (!modules.feedback) {
-            form.setValue('modules.feedback', true)
-          }
-        }
+
+      const newPrimaryType = moduleTypeMap[moduleKey]
+      if (newPrimaryType && newPrimaryType !== currentPrimaryType) {
+        form.setValue('primaryType', newPrimaryType)
       }
     } else if (enabledModules.length === 0) {
       // Default to feedback if no modules selected
@@ -188,7 +178,8 @@ export function Step1Basics({ form }: Step1BasicsProps) {
             <FormItem>
               <FormLabel className="text-lg font-semibold mb-4">Widget Name</FormLabel>
               <FormDescription>
-                Internal name to identify this widget (not visible to users)
+                Internal name to identify this widget (not visible to users). Must be 1-255
+                characters.
               </FormDescription>
               <FormControl>
                 <Input placeholder="e.g., Main App Feedback Widget" {...field} />
@@ -214,9 +205,13 @@ export function Step1Basics({ form }: Step1BasicsProps) {
                   control={form.control}
                   name={fieldName}
                   render={({ field }) => (
-                    <FormItem className={`flex items-start space-x-3 space-y-0 rounded-lg border p-4 ${
-                      module.featured ? 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30' : ''
-                    }`}>
+                    <FormItem
+                      className={`flex items-start space-x-3 space-y-0 rounded-lg border p-4 ${
+                        module.featured
+                          ? 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30'
+                          : ''
+                      }`}
+                    >
                       <FormControl>
                         <Switch checked={field.value as boolean} onCheckedChange={field.onChange} />
                       </FormControl>
@@ -240,7 +235,7 @@ export function Step1Basics({ form }: Step1BasicsProps) {
           </div>
         </div>
 
-<PrimaryTypeSelector modules={modules} form={form} />
+        <PrimaryTypeSelector modules={modules} form={form} />
       </div>
     </Form>
   )

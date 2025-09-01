@@ -20,7 +20,6 @@ interface Step2ContentProps {
 
 export function Step2Content({ form }: Step2ContentProps) {
   const primaryType = form.watch('primaryType')
-  const isScoringType = ['NPS', 'CSAT', 'CES'].includes(primaryType)
 
   const getTypeDefaults = React.useCallback(() => {
     switch (primaryType) {
@@ -70,7 +69,8 @@ export function Step2Content({ form }: Step2ContentProps) {
           mainQuestion: 'What feature would you like to see added?',
           submitButtonText: 'Submit Request',
           thankYouTitle: 'Thanks for your suggestion!',
-          thankYouMessage: 'We appreciate your input and will consider this feature for future updates.',
+          thankYouMessage:
+            'We appreciate your input and will consider this feature for future updates.',
         }
       case 'SURVEY':
         return {
@@ -95,17 +95,18 @@ export function Step2Content({ form }: Step2ContentProps) {
   React.useEffect(() => {
     const currentValues = form.getValues('content')
     const defaults = getTypeDefaults()
-    
+
     // Only update if the current values appear to be defaults (to avoid overriding user changes)
-    const isUsingDefaults = !currentValues?.headerTitle || 
-                           currentValues.headerTitle === 'We value your feedback' ||
-                           currentValues.headerTitle === 'How satisfied are you?' ||
-                           currentValues.headerTitle === 'Help us improve' ||
-                           currentValues.headerTitle === 'Share your experience' ||
-                           currentValues.headerTitle === 'Report an Issue' ||
-                           currentValues.headerTitle === 'Suggest a Feature' ||
-                           currentValues.headerTitle === 'Quick Survey'
-    
+    const isUsingDefaults =
+      !currentValues?.headerTitle ||
+      currentValues.headerTitle === 'We value your feedback' ||
+      currentValues.headerTitle === 'How satisfied are you?' ||
+      currentValues.headerTitle === 'Help us improve' ||
+      currentValues.headerTitle === 'Share your experience' ||
+      currentValues.headerTitle === 'Report an Issue' ||
+      currentValues.headerTitle === 'Suggest a Feature' ||
+      currentValues.headerTitle === 'Quick Survey'
+
     if (isUsingDefaults) {
       form.setValue('content.headerTitle', defaults.headerTitle)
       form.setValue('content.mainQuestion', defaults.mainQuestion)
@@ -152,7 +153,6 @@ export function Step2Content({ form }: Step2ContentProps) {
           )}
         />
 
-
         <FormField
           control={form.control}
           name="content.submitButtonText"
@@ -161,10 +161,7 @@ export function Step2Content({ form }: Step2ContentProps) {
               <FormLabel className="text-lg font-semibold mb-4">Submit Button Text</FormLabel>
               <FormDescription>Text displayed on the submit button</FormDescription>
               <FormControl>
-                <Input
-                  placeholder={getTypeDefaults().submitButtonText}
-                  {...field}
-                />
+                <Input placeholder={getTypeDefaults().submitButtonText} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -218,7 +215,7 @@ export function Step2Content({ form }: Step2ContentProps) {
               <span>⭐</span>
               Review Settings
             </h4>
-            
+
             <FormField
               control={form.control}
               name="content.reviewPrompt"
@@ -229,10 +226,7 @@ export function Step2Content({ form }: Step2ContentProps) {
                     Additional text to encourage detailed reviews
                   </FormDescription>
                   <FormControl>
-                    <Input 
-                      placeholder="Share your thoughts about your experience"
-                      {...field} 
-                    />
+                    <Input placeholder="Share your thoughts about your experience" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -251,10 +245,7 @@ export function Step2Content({ form }: Step2ContentProps) {
                     </FormDescription>
                   </div>
                   <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
                   </FormControl>
                 </FormItem>
               )}
@@ -277,22 +268,20 @@ export function Step2Content({ form }: Step2ContentProps) {
                   <div className="space-y-0.5">
                     <FormLabel className="text-base">Require reproduction steps</FormLabel>
                     <FormDescription>
-                      Make the "Steps to Reproduce" field mandatory
+                      Make the &quot;Steps to Reproduce&quot; field mandatory
                     </FormDescription>
                   </div>
                   <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
                   </FormControl>
                 </FormItem>
               )}
             />
-            
+
             <div className="bg-blue-50 p-3 rounded-lg">
               <p className="text-sm text-blue-700">
-                <strong>Note:</strong> Bug reports automatically include category selection, severity rating, title, and description fields.
+                <strong>Note:</strong> Bug reports automatically include category selection,
+                severity rating, title, and description fields.
               </p>
             </div>
           </div>
@@ -313,22 +302,20 @@ export function Step2Content({ form }: Step2ContentProps) {
                   <div className="space-y-0.5">
                     <FormLabel className="text-base">Require use case description</FormLabel>
                     <FormDescription>
-                      Make the "Use Case & Benefits" field mandatory
+                      Make the &quot;Use Case & Benefits&quot; field mandatory
                     </FormDescription>
                   </div>
                   <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
                   </FormControl>
                 </FormItem>
               )}
             />
-            
+
             <div className="bg-green-50 p-3 rounded-lg">
               <p className="text-sm text-green-700">
-                <strong>Note:</strong> Feature requests automatically include title, category, priority, description, and use case fields.
+                <strong>Note:</strong> Feature requests automatically include title, category,
+                priority, description, and use case fields.
               </p>
             </div>
           </div>
