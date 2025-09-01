@@ -12,13 +12,16 @@ import {
   ExternalLink,
   Loader2,
   Settings,
+  CheckSquare,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { RoadmapCard } from '@/components/roadmap/RoadmapCard'
 import { AddFeatureModal } from '@/components/roadmap/AddFeatureModal'
+import { BulkJiraModal } from '@/components/roadmap/BulkJiraModal'
+import { IndividualJiraModal } from '@/components/roadmap/IndividualJiraModal'
 import { useToast } from '@/components/ui/use-toast'
 import { supabase } from '@/lib/supabase'
-import type { RoadmapColumn } from '@/types'
+import type { RoadmapColumn, RoadmapActionItem, Integration } from '@/types'
 
 interface DragItem {
   featureId: string
@@ -33,6 +36,13 @@ interface FeatureFormData {
 
 export function RoadmapPage() {
   const [addFeatureModalOpen, setAddFeatureModalOpen] = useState(false)
+  const [bulkJiraModalOpen, setBulkJiraModalOpen] = useState(false)
+  const [individualJiraModalOpen, setIndividualJiraModalOpen] = useState(false)
+  const [selectedFeatureForJira, setSelectedFeatureForJira] = useState<RoadmapActionItem | null>(
+    null
+  )
+  const [selectedItems, setSelectedItems] = useState<RoadmapActionItem[]>([])
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedColumn, setSelectedColumn] = useState<{
     id: string
     name: string
@@ -93,7 +103,9 @@ export function RoadmapPage() {
 
   const { data: roadmap, isLoading: isLoadingRoadmap } = useQuery({
     queryKey: ['roadmap', project?.id],
-    queryFn: () => (project ? api.getRoadmap(project.id) : null),
+    queryFn: () => {
+      return project ? api.getRoadmap(project.id) : null
+    },
     enabled: !!project,
   })
 
@@ -102,6 +114,21 @@ export function RoadmapPage() {
     queryFn: () => (roadmap ? api.getRoadmapTags(roadmap.id) : []),
     enabled: !!roadmap?.id,
   })
+
+  const {
+    data: integrations = [],
+    isLoading: isLoadingIntegrations,
+    error: integrationsError,
+  } = useQuery({
+    queryKey: ['integrations', project?.id],
+    queryFn: () => api.getIntegrations(project?.id),
+    enabled: !!project?.id,
+  })
+
+  const jiraIntegrations = integrations.filter(
+    (integration: Integration) =>
+      integration.integration_type === 'jira' || integration.type === 'JIRA'
+  )
 
   const createFeatureMutation = useMutation({
     mutationFn: (data: {
@@ -113,7 +140,7 @@ export function RoadmapPage() {
       submitter_email?: string
     }) => api.createRoadmapActionItem(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
       setAddFeatureModalOpen(false)
       toast({
         title: 'Feature created',
@@ -133,7 +160,7 @@ export function RoadmapPage() {
     mutationFn: (updates: { id: string; order: number; column_id?: string }[]) =>
       api.updateFeaturesOrder(updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
       toast({
         title: 'Feature moved',
         description: 'Feature has been moved to the new column.',
@@ -265,6 +292,38 @@ export function RoadmapPage() {
     })
   }
 
+  const handleToggleSelection = (feature: RoadmapActionItem) => {
+    setSelectedItems((prev) => {
+      const isSelected = prev.some((item) => item.id === feature.id)
+      if (isSelected) {
+        return prev.filter((item) => item.id !== feature.id)
+      } else {
+        return [...prev, feature]
+      }
+    })
+  }
+
+  const handleConvertToJira = (feature: RoadmapActionItem) => {
+    setSelectedFeatureForJira(feature)
+    setIndividualJiraModalOpen(true)
+  }
+
+  const handleSelectAll = () => {
+    if (roadmap) {
+      const allFeatures = roadmap.columns.flatMap((col) => getFeaturesByColumn(col.id))
+      setSelectedItems(allFeatures)
+    }
+  }
+
+  const handleClearSelection = () => {
+    setSelectedItems([])
+    setIsSelectionMode(false)
+  }
+
+  const handleBulkJiraPush = () => {
+    setBulkJiraModalOpen(true)
+  }
+
   const scrollToColumn = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
       const scrollAmount = 512 // Column width (320) + gap (64) + padding adjustments (128)
@@ -285,7 +344,7 @@ export function RoadmapPage() {
     const column = roadmap.columns.find((c) => c.id === columnId)
     if (!column) return []
 
-    const features = column.features || []
+    const features = column.action_items || []
     return [...features].sort((a, b) => a.order - b.order)
   }
 
@@ -460,6 +519,45 @@ export function RoadmapPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {isSelectionMode && (
+              <>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>{selectedItems.length} selected</span>
+                  <Button variant="ghost" size="sm" onClick={handleSelectAll} className="text-xs">
+                    Select All
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearSelection}
+                    className="text-xs"
+                  >
+                    Clear
+                  </Button>
+                </div>
+                {jiraIntegrations.length > 0 && (
+                  <Button
+                    onClick={handleBulkJiraPush}
+                    disabled={selectedItems.length === 0}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    Push to JIRA ({selectedItems.length})
+                  </Button>
+                )}
+              </>
+            )}
+
+            {!isSelectionMode && jiraIntegrations.length > 0 && (
+              <Button
+                variant="outline"
+                onClick={() => setIsSelectionMode(true)}
+                className="hover:bg-primary/5 hover:border-primary/30 transition-colors"
+              >
+                <CheckSquare className="h-4 w-4 mr-2" />
+                Bulk JIRA
+              </Button>
+            )}
+
             {publicUrl && (
               <Button
                 variant="outline"
@@ -496,6 +594,27 @@ export function RoadmapPage() {
         columnStatus={selectedColumn?.status || ''}
         roadmapId={roadmap?.id || ''}
       />
+
+      {/* Bulk JIRA Modal */}
+      <BulkJiraModal
+        isOpen={bulkJiraModalOpen}
+        onClose={() => setBulkJiraModalOpen(false)}
+        selectedItems={selectedItems}
+        jiraIntegrations={jiraIntegrations}
+      />
+
+      {/* Individual JIRA Modal */}
+      {selectedFeatureForJira && (
+        <IndividualJiraModal
+          isOpen={individualJiraModalOpen}
+          onClose={() => {
+            setIndividualJiraModalOpen(false)
+            setSelectedFeatureForJira(null)
+          }}
+          feature={selectedFeatureForJira}
+          jiraIntegrations={jiraIntegrations}
+        />
+      )}
 
       <div className="relative">
         {/* Enhanced navigation buttons with better positioning and animations */}
@@ -606,6 +725,11 @@ export function RoadmapPage() {
                             onDragStart={handleDragStart}
                             onDragEnd={handleDragEnd}
                             isDragged={draggedItem?.featureId === feature.id}
+                            isSelectionMode={isSelectionMode}
+                            isSelected={selectedItems.some((item) => item.id === feature.id)}
+                            onToggleSelection={handleToggleSelection}
+                            jiraIntegrations={jiraIntegrations}
+                            onConvertToJira={handleConvertToJira}
                           />
                         </div>
                       ))}

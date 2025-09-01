@@ -11,9 +11,11 @@ from app.models.roadmap_model import (
     RoadmapItemAssignment,
     RoadmapTag,
     RoadmapActionItemTag,
+    RoadmapActionItemIntegration,
 )
 from app.repositories.base_repository import BaseRepository
 from app.core.logging import get_logger
+from datetime import datetime
 
 logger = get_logger(__name__)
 
@@ -254,6 +256,32 @@ class RoadmapActionItemRepository(BaseRepository[RoadmapActionItem]):
             logger.error(f'Error fetching feature {id} with tags: {str(e)}')
             raise
 
+    async def get_with_integrations(
+        self, db: AsyncSession, id: UUID
+    ) -> Optional[RoadmapActionItem]:
+        try:
+            stmt = (
+                select(RoadmapActionItem)
+                .where(RoadmapActionItem.id == id)
+                .options(
+                    selectinload(RoadmapActionItem.integrations).selectinload(
+                        RoadmapActionItemIntegration.integration
+                    ),
+                    selectinload(RoadmapActionItem.column)
+                    .selectinload(RoadmapColumn.roadmap)
+                    .selectinload(Roadmap.project),
+                    selectinload(RoadmapActionItem.action_item_tags).selectinload(
+                        RoadmapActionItemTag.tag
+                    ),
+                    selectinload(RoadmapActionItem.converted_feedback),
+                )
+            )
+            result = await db.execute(stmt)
+            return result.scalar_one_or_none()
+        except Exception as e:
+            logger.error(f'Error fetching feature {id} with integrations: {str(e)}')
+            raise
+
     async def get_by_column(
         self, db: AsyncSession, column_id: UUID
     ) -> List[RoadmapActionItem]:
@@ -464,6 +492,12 @@ class RoadmapRepository(BaseRepository[Roadmap]):
                     .selectinload(RoadmapActionItem.action_item_tags)
                     .selectinload(RoadmapActionItemTag.tag)
                 )
+                .options(
+                    selectinload(Roadmap.columns)
+                    .selectinload(RoadmapColumn.action_items)
+                    .selectinload(RoadmapActionItem.integrations)
+                    .selectinload(RoadmapActionItemIntegration.integration)
+                )
                 .options(selectinload(Roadmap.tags))
             )
             result = await db.execute(stmt)
@@ -488,6 +522,12 @@ class RoadmapRepository(BaseRepository[Roadmap]):
                     .selectinload(RoadmapColumn.action_items)
                     .selectinload(RoadmapActionItem.action_item_tags)
                     .selectinload(RoadmapActionItemTag.tag)
+                )
+                .options(
+                    selectinload(Roadmap.columns)
+                    .selectinload(RoadmapColumn.action_items)
+                    .selectinload(RoadmapActionItem.integrations)
+                    .selectinload(RoadmapActionItemIntegration.integration)
                 )
                 .options(selectinload(Roadmap.tags))
             )
@@ -514,6 +554,12 @@ class RoadmapRepository(BaseRepository[Roadmap]):
                     .selectinload(RoadmapActionItem.action_item_tags)
                     .selectinload(RoadmapActionItemTag.tag)
                 )
+                .options(
+                    selectinload(Roadmap.columns)
+                    .selectinload(RoadmapColumn.action_items)
+                    .selectinload(RoadmapActionItem.integrations)
+                    .selectinload(RoadmapActionItemIntegration.integration)
+                )
                 .options(selectinload(Roadmap.tags))
             )
             result = await db.execute(stmt)
@@ -536,6 +582,12 @@ class RoadmapRepository(BaseRepository[Roadmap]):
                     .selectinload(RoadmapColumn.action_items)
                     .selectinload(RoadmapActionItem.action_item_tags)
                     .selectinload(RoadmapActionItemTag.tag)
+                )
+                .options(
+                    selectinload(Roadmap.columns)
+                    .selectinload(RoadmapColumn.action_items)
+                    .selectinload(RoadmapActionItem.integrations)
+                    .selectinload(RoadmapActionItemIntegration.integration)
                 )
                 .options(selectinload(Roadmap.tags))
             )
@@ -731,3 +783,102 @@ class RoadmapAssignmentRepository(BaseRepository[RoadmapItemAssignment]):
 
 
 roadmap_assignment_repository = RoadmapAssignmentRepository()
+
+
+class RoadmapActionItemIntegrationRepository(
+    BaseRepository[RoadmapActionItemIntegration]
+):
+    def __init__(self):
+        super().__init__(RoadmapActionItemIntegration)
+
+    async def get_by_action_item(
+        self, db: AsyncSession, action_item_id: UUID
+    ) -> List[RoadmapActionItemIntegration]:
+        try:
+            stmt = (
+                select(RoadmapActionItemIntegration)
+                .where(RoadmapActionItemIntegration.action_item_id == action_item_id)
+                .options(selectinload(RoadmapActionItemIntegration.integration))
+            )
+            result = await db.execute(stmt)
+            return list(result.scalars().all())
+        except Exception as e:
+            logger.error(
+                f'Error fetching integrations for action item {action_item_id}: {str(e)}'
+            )
+            return []
+
+    async def get_by_integration(
+        self, db: AsyncSession, integration_id: UUID
+    ) -> List[RoadmapActionItemIntegration]:
+        try:
+            stmt = (
+                select(RoadmapActionItemIntegration)
+                .where(RoadmapActionItemIntegration.integration_id == integration_id)
+                .options(selectinload(RoadmapActionItemIntegration.action_item))
+            )
+            result = await db.execute(stmt)
+            return list(result.scalars().all())
+        except Exception as e:
+            logger.error(
+                f'Error fetching action items for integration {integration_id}: {str(e)}'
+            )
+            return []
+
+    async def get_by_action_item_and_integration(
+        self, db: AsyncSession, action_item_id: UUID, integration_id: UUID
+    ) -> Optional[RoadmapActionItemIntegration]:
+        try:
+            stmt = (
+                select(RoadmapActionItemIntegration)
+                .where(
+                    RoadmapActionItemIntegration.action_item_id == action_item_id,
+                    RoadmapActionItemIntegration.integration_id == integration_id,
+                )
+                .options(selectinload(RoadmapActionItemIntegration.integration))
+            )
+            result = await db.execute(stmt)
+            return result.scalar_one_or_none()
+        except Exception as e:
+            logger.error(
+                f'Error fetching integration record for action item {action_item_id} and integration {integration_id}: {str(e)}'
+            )
+            return None
+
+    async def get_by_external_id(
+        self, db: AsyncSession, external_id: str
+    ) -> Optional[RoadmapActionItemIntegration]:
+        try:
+            stmt = (
+                select(RoadmapActionItemIntegration)
+                .where(RoadmapActionItemIntegration.external_id == external_id)
+                .options(selectinload(RoadmapActionItemIntegration.integration))
+            )
+            result = await db.execute(stmt)
+            return result.scalar_one_or_none()
+        except Exception as e:
+            logger.error(
+                f'Error fetching integration record by external ID {external_id}: {str(e)}'
+            )
+            return None
+
+    async def update_sync_status(
+        self,
+        db: AsyncSession,
+        record_id: UUID,
+        sync_status: str,
+        last_synced_at: Optional[datetime] = None,
+    ) -> bool:
+        try:
+            update_data = {'sync_status': sync_status}
+            if last_synced_at:
+                update_data['last_synced_at'] = last_synced_at
+
+            await self.update(db, record_id, **update_data)
+            return True
+        except Exception as e:
+            logger.error(f'Error updating sync status for record {record_id}: {str(e)}')
+            return False
+
+
+roadmap_action_item_integration_repository = RoadmapActionItemIntegrationRepository()

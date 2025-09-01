@@ -39,6 +39,25 @@ export {
   type ConversionPreview,
 } from './feedback'
 export { dashboardApi } from './dashboard'
+export {
+  integrationsApi,
+  type JiraConnectionTestRequest,
+  type JiraConnectionTestResponse,
+  type JiraConfig,
+  type JiraConfigUpdate,
+  type JiraProject,
+  type JiraProjectsResponse,
+  type JiraIssueType,
+  type JiraIssueTypesResponse,
+  type JiraPriority,
+  type JiraPrioritiesResponse,
+  type JiraComponent,
+  type JiraComponentsResponse,
+  type JiraIntegrationCreateRequest,
+  type JiraIntegrationResponse,
+  type BulkJiraCreateRequest,
+  type BulkJiraCreateResponse,
+} from './integrations'
 
 // Re-export client and error handling for advanced usage
 export { apiClient } from '../client'
@@ -51,6 +70,7 @@ import { widgetApi } from './widget'
 import { roadmapApi } from './roadmap'
 import { feedbackApi } from './feedback'
 import { dashboardApi } from './dashboard'
+import { integrationsApi } from './integrations'
 import type { UserProfileUpdateRequest } from './user'
 import type { ProjectCreateRequest } from './project'
 import type { WidgetCreateRequest } from './widget'
@@ -121,4 +141,7 @@ export const api = {
   getRecentActivity: (projectId?: string) => dashboardApi.getRecentActivity(projectId),
   getFeedbackData: (projectId?: string, timeRange?: string) =>
     dashboardApi.getFeedbackData(projectId, timeRange),
+
+  // Integration APIs
+  getIntegrations: (projectId?: string) => integrationsApi.getIntegrations(projectId),
 }

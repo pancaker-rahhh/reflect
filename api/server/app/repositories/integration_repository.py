@@ -45,6 +45,17 @@ class IntegrationRepository(BaseRepository[Integration]):
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_with_project(
+        self, db: AsyncSession, integration_id: UUID
+    ) -> Optional[Integration]:
+        stmt = (
+            select(Integration)
+            .where(Integration.id == integration_id)
+            .options(selectinload(Integration.project))
+        )
+        result = await db.execute(stmt)
+        return result.scalar_one_or_none()
+
 
 class IntegrationMappingRepository(BaseRepository[IntegrationMapping]):
     def __init__(self):

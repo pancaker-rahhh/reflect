@@ -89,14 +89,7 @@ export function RoadmapCardDetail({
   // Reset form when feature changes
   useEffect(() => {
     if (feature) {
-      console.log('🔍 DEBUG: Feature created_at value:', feature.created_at)
-      console.log('🔍 DEBUG: Feature created_at type:', typeof feature.created_at)
-      console.log(
-        '🔍 DEBUG: Feature created_at constructor:',
-        feature.created_at?.constructor?.name
-      )
       if (feature.created_at) {
-        console.log('🔍 DEBUG: Feature created_at toString():', feature.created_at.toString())
         if (feature.created_at instanceof Date) {
           console.log(
             '🔍 DEBUG: Feature created_at toISOString():',
