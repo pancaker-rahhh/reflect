@@ -11,7 +11,7 @@ from app.models.integration_model import Integration, IntegrationType
 logger = get_logger(__name__)
 
 
-class JiraIntegrationService:
+class JiraService:
     def __init__(self):
         self.auth_service = jira_auth_service
         self.project_service = jira_project_service
@@ -90,14 +90,11 @@ class JiraIntegrationService:
         integration: Integration,
         action_item_id: UUID,
         push_to_jira: bool = True,
-        custom_config: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         try:
             from app.repositories.roadmap_repository import roadmap_feature_repository
 
-            action_item = await roadmap_feature_repository.get_with_integrations(
-                db, action_item_id
-            )
+            action_item = await roadmap_feature_repository.get(db, action_item_id)
             if not action_item:
                 return {'status': 'error', 'message': 'Action item not found'}
 
@@ -107,84 +104,33 @@ class JiraIntegrationService:
                 return {
                     'status': 'success',
                     'message': 'Already synced with JIRA',
-                    'issue_key': existing_integration.external_id,
-                    'issue_url': existing_integration.external_url,
+                    'external_id': existing_integration.external_id,
                 }
 
-            # If force_sync is True, we should create a new issue even if one exists
-            # We'll determine this by checking if custom_config has a different project_key
-            force_create_new = False
-            if (
-                existing_integration
-                and custom_config
-                and custom_config.get('project_key')
-            ):
-                existing_project_key = (
-                    existing_integration.integration_metadata.get('project_key')
-                    if existing_integration.integration_metadata
-                    else None
-                )
-                if existing_project_key != custom_config.get('project_key'):
-                    force_create_new = True
-                    logger.info(
-                        f'Force creating new issue due to project change: {existing_project_key} -> {custom_config.get("project_key")}'
-                    )
-
-            # Merge custom config with integration config
             jira_config = {
-                'project_key': custom_config.get('project_key')
-                if custom_config
-                else integration.config.get('project_key'),
-                'issue_type': custom_config.get('issue_type')
-                if custom_config
-                else integration.config.get('issue_type', 'Task'),
-                'priority': custom_config.get('priority')
-                if custom_config
-                else integration.config.get('priority'),
-                'components': custom_config.get(
-                    'components', integration.config.get('components', [])
-                ),
-                'assignee': custom_config.get(
-                    'assignee', integration.config.get('default_assignee')
-                ),
+                'project_key': integration.config.get('project_key'),
+                'issue_type': integration.config.get('issue_type', 'Task'),
+                'priority': integration.config.get('priority'),
+                'components': integration.config.get('components', []),
+                'assignee': integration.config.get('default_assignee'),
                 'reporter': integration.config.get('default_reporter'),
             }
 
-            if existing_integration and not force_create_new:
-                # Prepare update data, but be careful with priority field
-                update_data = {
-                    'title': action_item.title,
-                    'description': action_item.description,
-                    'labels': [tag.name for tag in action_item.tags]
-                    if action_item.tags
-                    else [],
-                }
-
-                # Only include priority if it's not in failed fields
-                if jira_config.get('priority') and 'priority' not in jira_config.get(
-                    'failed_fields', []
-                ):
-                    update_data['priority'] = jira_config.get('priority')
-
+            if existing_integration:
                 result = await self.issue_service.update_issue(
                     integration.config,
                     integration.auth_data,
                     existing_integration.external_id,
-                    update_data,
+                    {
+                        'title': action_item.title,
+                        'description': action_item.description,
+                        'priority': jira_config.get('priority'),
+                        'labels': [tag.name for tag in action_item.tags]
+                        if action_item.tags
+                        else [],
+                    },
                 )
-
-                # Ensure consistent response format for updates
-                if result.get('status') == 'success':
-                    return {
-                        'status': 'success',
-                        'message': 'JIRA issue updated successfully',
-                        'issue_key': existing_integration.external_id,
-                        'issue_url': existing_integration.external_url,
-                    }
-                else:
-                    return result
             else:
-                # Create new issue (either no existing integration or force_create_new is True)
                 result = await self.issue_service.create_issue_from_action_item(
                     db, integration, action_item_id, jira_config
                 )
@@ -235,4 +181,4 @@ class JiraIntegrationService:
         await self.auth_service.close()
 
 
-jira_integration_service = JiraIntegrationService()
+jira_service = JiraService()

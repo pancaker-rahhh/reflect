@@ -13,6 +13,8 @@ from app.router.v1 import (
     onboarding_router,
     invitation_router,
     dashboard_router,
+    integrations_router,
+    roadmap_integrations_router,
 )
 
 api_router = APIRouter(prefix='/api/v1')
@@ -25,6 +27,12 @@ api_router.include_router(project_router.router)
 api_router.include_router(onboarding_router.router)
 api_router.include_router(invitation_router.router)
 api_router.include_router(dashboard_router.dashboard_router)
+api_router.include_router(integrations_router.router)
+api_router.include_router(
+    roadmap_integrations_router.router,
+    prefix='/roadmap-integrations',
+    tags=['Roadmap Integrations'],
+)
 api_router.include_router(
     widget_router.project_widgets_router,
     prefix='/projects/{project_id}/widgets',
