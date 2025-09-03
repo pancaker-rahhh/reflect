@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Search, Filter, RotateCcw, Lightbulb, ThumbsUp, Calendar } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { Search, RotateCcw, Lightbulb, ThumbsUp } from 'lucide-react'
 import { api } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { useAppContext } from '@/context/AppContext'
-import type { FeatureRequest } from '@/types'
+
 
 export function FeatureRequests() {
   const [startDate, setStartDate] = useState<Date | undefined>()
@@ -27,7 +27,7 @@ export function FeatureRequests() {
   const [sortBy, setSortBy] = useState<string>('newest')
   const [searchQuery, setSearchQuery] = useState('')
 
-  const queryClient = useQueryClient()
+
   const { currentProject } = useAppContext()
 
   const { data: feedback = [], isLoading } = useQuery({
@@ -109,29 +109,9 @@ export function FeatureRequests() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'new':
-        return 'text-blue-600'
-      case 'under-review':
-        return 'text-yellow-600'
-      case 'planned':
-        return 'text-purple-600'
-      case 'in-progress':
-        return 'text-orange-600'
-      case 'completed':
-        return 'text-green-600'
-      case 'declined':
-        return 'text-red-600'
-      default:
-        return 'text-gray-600'
-    }
-  }
 
-  const handleUpvote = (featureId: string) => {
-    // Remove upvote functionality since API doesn't exist
-    console.log('Upvote not implemented yet')
-  }
+
+
 
   return (
     <div className="space-y-6">
@@ -237,7 +217,7 @@ export function FeatureRequests() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleUpvote(feature.id)}
+                      onClick={() => console.log('Upvote not implemented yet')}
                       disabled={false} // Remove upvoteMutation.isPending
                       className={cn(
                         'flex flex-col h-auto py-2 px-3',
@@ -263,8 +243,8 @@ export function FeatureRequests() {
                           <span>{format(new Date(feature.created_at), 'PPP')}</span>
                         </div>
                       </div>
-                      <Badge variant={getStatusVariant(feature.status)}>
-                        {feature.status.replace('-', ' ').toUpperCase()}
+                      <Badge variant={getStatusVariant(feature.status || 'new')}>
+                        {(feature.status || 'new').replace('-', ' ').toUpperCase()}
                       </Badge>
                     </div>
 

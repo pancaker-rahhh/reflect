@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
+
 import { Loader2, CheckCircle, XCircle, ExternalLink, Settings, FolderOpen } from 'lucide-react'
 import {
   useJiraConnectionTest,

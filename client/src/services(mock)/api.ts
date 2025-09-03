@@ -75,12 +75,12 @@ class ApiService {
       resolve(mockData.projects.find(p => p.id === id) || mockData.projects[0]), 500))
   }
 
-  async updateProject(id: string, data: Partial<Project>): Promise<Project> {
+  async updateProject(_id: string, data: Partial<Project>): Promise<Project> {
     return new Promise(resolve => setTimeout(() => 
       resolve({ ...mockData.projects[0], ...data }), 500))
   }
 
-  async deleteProject(id: string): Promise<void> {
+  async deleteProject(_id: string): Promise<void> {
     return new Promise(resolve => setTimeout(() => resolve(), 500))
   }
 
@@ -89,17 +89,17 @@ class ApiService {
     return new Promise(resolve => setTimeout(() => resolve(mockData.widgets), 500))
   }
 
-  async createWidget(widget: Omit<Widget, 'id' | 'createdAt' | 'updatedAt'>): Promise<Widget> {
+  async createWidget(widget: Omit<Widget, 'id' | 'created_at' | 'updated_at'>): Promise<Widget> {
     return new Promise(resolve => setTimeout(() => 
-      resolve({ ...widget, id: Date.now().toString(), createdAt: new Date(), updatedAt: new Date() }), 500))
+      resolve({ ...widget, id: Date.now().toString(), created_at: new Date().toISOString(), updated_at: new Date().toISOString() }), 500))
   }
 
-  async updateWidget(id: string, data: Partial<Widget>): Promise<Widget> {
+  async updateWidget(_id: string, data: Partial<Widget>): Promise<Widget> {
     return new Promise(resolve => setTimeout(() => 
       resolve({ ...mockData.widgets[0], ...data }), 500))
   }
 
-  async deleteWidget(id: string): Promise<void> {
+  async deleteWidget(_id: string): Promise<void> {
     return new Promise(resolve => setTimeout(() => resolve(), 500))
   }
 
@@ -113,7 +113,7 @@ class ApiService {
   }
 
   // Feedback - MOCKED (not implemented in backend yet)
-  async getFeedback(filters?: {
+  async getFeedback(_filters?: {
     type?: string
     startDate?: Date
     endDate?: Date
@@ -128,16 +128,16 @@ class ApiService {
   }
 
   // Feature Requests - MOCKED (not implemented in backend yet)
-  async upvoteFeature(featureId: string): Promise<void> {
+  async upvoteFeature(_featureId: string): Promise<void> {
     return new Promise(resolve => setTimeout(() => resolve(), 500))
   }
 
   // Roadmap - MOCKED (not implemented in backend yet)
-  async getRoadmap(projectId: string): Promise<Roadmap> {
+  async getRoadmap(_projectId: string): Promise<Roadmap> {
     return new Promise(resolve => setTimeout(() => resolve(mockData.roadmaps[0]), 500))
   }
 
-  async updateRoadmap(id: string, data: Partial<Roadmap>): Promise<Roadmap> {
+  async updateRoadmap(_id: string, data: Partial<Roadmap>): Promise<Roadmap> {
     return new Promise(resolve => setTimeout(() => resolve({ ...mockData.roadmaps[0], ...data }), 500))
   }
 

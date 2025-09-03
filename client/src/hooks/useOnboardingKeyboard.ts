@@ -41,49 +41,40 @@ export const useOnboardingKeyboard = ({
   useEffect(() => {
     if (!enabled) return;
 
-    const shortcuts = [];
+    const shortcuts: Array<{ key: string; handler: () => void }> = [];
 
     if (handlersRef.current.onNext) {
       shortcuts.push({
         key: 'Enter',
-        handler: () => handlersRef.current.onNext?.(),
-        description: 'Go to next step'
+        handler: () => handlersRef.current.onNext?.()
       });
     }
 
     if (handlersRef.current.onSubmit) {
       shortcuts.push({
         key: 'Enter',
-        ctrl: true,
-        handler: () => handlersRef.current.onSubmit?.(),
-        description: 'Submit form'
+        handler: () => handlersRef.current.onSubmit?.()
       });
     }
 
     if (handlersRef.current.onPrevious) {
       shortcuts.push({
         key: 'ArrowLeft',
-        alt: true,
-        handler: () => handlersRef.current.onPrevious?.(),
-        description: 'Go to previous step'
+        handler: () => handlersRef.current.onPrevious?.()
       });
     }
 
     if (handlersRef.current.onSkip) {
       shortcuts.push({
         key: 's',
-        ctrl: true,
-        handler: () => handlersRef.current.onSkip?.(),
-        description: 'Skip current step'
+        handler: () => handlersRef.current.onSkip?.()
       });
     }
 
     if (handlersRef.current.onAddMember) {
       shortcuts.push({
         key: 'a',
-        ctrl: true,
-        handler: () => handlersRef.current.onAddMember?.(),
-        description: 'Add team member'
+        handler: () => handlersRef.current.onAddMember?.()
       });
     }
 

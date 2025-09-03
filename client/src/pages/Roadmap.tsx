@@ -109,16 +109,12 @@ export function RoadmapPage() {
     enabled: !!project,
   })
 
-  const { data: tags = [] } = useQuery({
-    queryKey: ['roadmapTags', roadmap?.id],
-    queryFn: () => (roadmap ? api.getRoadmapTags(roadmap.id) : []),
-    enabled: !!roadmap?.id,
-  })
+
 
   const {
     data: integrations = [],
-    isLoading: isLoadingIntegrations,
-    error: integrationsError,
+    isLoading: _isLoadingIntegrations,
+    error: _integrationsError,
   } = useQuery({
     queryKey: ['integrations', project?.id],
     queryFn: () => api.getIntegrations(project?.id),
@@ -220,8 +216,8 @@ export function RoadmapPage() {
     }
 
     if (draggedItem && draggedItem.sourceColumnId !== targetColumnId && roadmap) {
-      const sourceColumn = roadmap.columns.find((col) => col.id === draggedItem.sourceColumnId)
-      const targetColumn = roadmap.columns.find((col) => col.id === targetColumnId)
+      const sourceColumn = roadmap.columns.find((col: any) => col.id === draggedItem.sourceColumnId)
+      const targetColumn = roadmap.columns.find((col: any) => col.id === targetColumnId)
 
       if (!sourceColumn || !targetColumn) {
         console.error('Source or target column not found:', { sourceColumn, targetColumn })
@@ -266,9 +262,7 @@ export function RoadmapPage() {
     })
   }
 
-  const toggleTag = (tagId: string) => {
-    // This function is no longer needed as AddFeatureModal handles tags
-  }
+
 
   const handleOpenAddFeatureModal = (column: RoadmapColumn) => {
     setSelectedColumn({
@@ -310,7 +304,7 @@ export function RoadmapPage() {
 
   const handleSelectAll = () => {
     if (roadmap) {
-      const allFeatures = roadmap.columns.flatMap((col) => getFeaturesByColumn(col.id))
+      const allFeatures = roadmap.columns.flatMap((col: any) => getFeaturesByColumn(col.id))
       setSelectedItems(allFeatures)
     }
   }
@@ -341,66 +335,14 @@ export function RoadmapPage() {
   const getFeaturesByColumn = (columnId: string) => {
     if (!roadmap) return []
 
-    const column = roadmap.columns.find((c) => c.id === columnId)
+    const column = roadmap.columns.find((c: any) => c.id === columnId)
     if (!column) return []
 
     const features = column.action_items || []
     return [...features].sort((a, b) => a.order - b.order)
   }
 
-  const getColumnStatus = (column: RoadmapColumn) => {
-    if (
-      column.status &&
-      ['new', 'in-progress', 'planned', 'under-review', 'completed', 'declined'].includes(
-        column.status
-      )
-    ) {
-      return column.status
-    }
 
-    const name = column.name.toLowerCase()
-
-    if (
-      name.includes('new') ||
-      name.includes('backlog') ||
-      name.includes('todo') ||
-      name.includes('1')
-    ) {
-      return 'new'
-    }
-    if (
-      name.includes('progress') ||
-      name.includes('doing') ||
-      name.includes('active') ||
-      name.includes('work')
-    ) {
-      return 'in-progress'
-    }
-    if (name.includes('planned') || name.includes('scheduled') || name.includes('2')) {
-      return 'planned'
-    }
-    if (
-      name.includes('review') ||
-      name.includes('testing') ||
-      name.includes('qa') ||
-      name.includes('check')
-    ) {
-      return 'under-review'
-    }
-    if (name.includes('complete') || name.includes('done') || name.includes('finished')) {
-      return 'completed'
-    }
-    if (name.includes('decline') || name.includes('rejected') || name.includes('cancelled')) {
-      return 'declined'
-    }
-
-    if (column.order === 0) return 'new'
-    if (column.order === 1) return 'in-progress'
-    if (column.order === 2) return 'planned'
-    if (column.order === 3) return 'under-review'
-
-    return 'new'
-  }
 
   const isLoading = isLoadingOrgs || isLoadingProjects || isLoadingRoadmap || isLoadingUser
 
@@ -644,7 +586,7 @@ export function RoadmapPage() {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             <div className="flex gap-6 min-w-max px-32">
-              {roadmap.columns.map((column, columnIndex) => {
+              {roadmap.columns.map((column: any, columnIndex: any) => {
                 const columnFeatures = getFeaturesByColumn(column.id)
 
                 return (

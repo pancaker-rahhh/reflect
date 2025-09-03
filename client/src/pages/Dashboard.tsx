@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+
 import { api } from '@/lib/api'
 import { MetricsCards } from '@/components/dashboard/MetricsCards'
 import { TimeRangeFilter } from '@/components/dashboard/TimeRangeFilter'
@@ -9,7 +9,7 @@ import { NPSDistributionChart } from '@/components/dashboard/NPSDistributionChar
 import { FeedbackDistributionChart } from '@/components/dashboard/FeedbackDistributionChart'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAppContext } from '@/context/AppContext'
-import { FolderOpen, Plus, AlertCircle, RefreshCw } from 'lucide-react'
+import { AlertCircle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
@@ -17,8 +17,7 @@ export type TimeRange = 'all' | 'week' | 'month' | 'year'
 
 export function Dashboard() {
   const [timeRange, setTimeRange] = useState<TimeRange>('all')
-  const navigate = useNavigate()
-  const { projects, currentProject, isLoading: appLoading } = useAppContext()
+  const { currentProject } = useAppContext()
 
   const {
     data: metrics,
@@ -62,7 +61,7 @@ export function Dashboard() {
     retryDelay: 1000,
   })
 
-  const renderErrorState = (error: any, refetch: () => void, title: string) => (
+  const renderErrorState = (_error: any, refetch: () => void, title: string) => (
     <Alert variant="destructive" className="mb-4">
       <AlertCircle className="h-4 w-4" />
       <AlertDescription className="flex items-center justify-between">

@@ -122,7 +122,7 @@ export function useFeedbackSubmission({
 
   const handleScoreSubmission = useCallback(
     async (score: number, feedbackType: FeedbackType) => {
-      const type = feedbackType.toLowerCase()
+
 
       // Prepare type-specific data based on feedback type
       let typeSpecificData: NPSFeedbackData | CSATFeedbackData | CESFeedbackData

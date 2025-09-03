@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Search, Filter, RotateCcw, Bug, Calendar, AlertTriangle } from 'lucide-react'
-import { api } from '@/lib/api'
+import { Search, RotateCcw, Bug, AlertTriangle } from 'lucide-react'
+import { api } from '@/services(mock)/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
-import { format } from 'date-fns'
+
 import { useAppContext } from '@/context/AppContext'
 import type { BugReport } from '@/types'
 
@@ -30,7 +30,7 @@ export function BugReports() {
 
   const { data: feedback = [], isLoading } = useQuery({
     queryKey: ['feedback', { type: 'bug_report' }, currentProject?.id],
-    queryFn: () => api.getFeedbackData('bug_report', currentProject?.id),
+    queryFn: () => api.getFeedback({ type: 'bug_report' }),
     refetchInterval: 30000,
     enabled: !!currentProject?.id,
   })
@@ -44,26 +44,20 @@ export function BugReports() {
   }
 
   const filteredBugReports = feedback
-    .filter((item) => item.feedback_type === 'bug_report')
-    .filter((bug) => {
-      if (startDate && new Date(bug.created_at) < startDate) return false
-      if (endDate && new Date(bug.created_at) > endDate) return false
-
-      // Fix: Use severity_level instead of severity, and handle undefined case
-      if (severityFilter !== 'all') {
-        const bugSeverity = bug.severity_level || bug.severity || 'medium'
-        if (bugSeverity !== severityFilter) return false
-      }
-
+    .filter((item: any) => item.type === 'bug_report')
+    .map((item: any) => item as BugReport)
+    .filter((bug: BugReport) => {
+      if (startDate && new Date(bug.createdAt) < startDate) return false
+      if (endDate && new Date(bug.createdAt) > endDate) return false
+      
+      if (severityFilter !== 'all' && bug.severity !== severityFilter) return false
       if (statusFilter !== 'all' && bug.status !== statusFilter) return false
 
       if (searchQuery) {
         const query = searchQuery.toLowerCase()
         const searchableText = [
           bug.title,
-          bug.message,
-          bug.submitter_name,
-          bug.submitter_email,
+          bug.description,
           bug.browser,
           bug.os,
           bug.url,
@@ -214,55 +208,56 @@ export function BugReports() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {filteredBugReports.map((bug) => (
+          {filteredBugReports.map((bug: BugReport) => (
             <Card key={bug.id}>
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-2">
-                      {getSeverityIcon(bug.severity_level || bug.severity || 'medium')}
+                      {getSeverityIcon(bug.severity || 'medium')}
                       <h3 className="font-semibold text-lg">{bug.title}</h3>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>Reported by {bug.submitter_name || 'Anonymous'}</span>
-                      {bug.submitter_email && <span>({bug.submitter_email})</span>}
-                      <span>{format(new Date(bug.created_at), 'PPP')}</span>
-                    </div>
+                    {/* commented out because we don't have submitterName and submitterEmail in the BugReport type */}
+                    {/* <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span>Reported by {bug.submitterName || 'Anonymous'}</span>
+                      {bug.submitterEmail && <span>({bug.submitterEmail})</span>}
+                      <span>{format(new Date(bug.createdAt), 'PPP')}</span>
+                    </div> */}
                   </div>
                   <div className="flex gap-2">
                     <Badge
-                      variant={getSeverityVariant(bug.severity_level || bug.severity || 'medium')}
+                      variant={getSeverityVariant(bug.severity || 'medium')}
                     >
-                      {(bug.severity_level || bug.severity || 'medium').toUpperCase()}
+                      {(bug.severity || 'medium').toUpperCase()}
                     </Badge>
-                    <Badge variant={getStatusVariant(bug.status)}>
-                      {bug.status.replace('-', ' ').toUpperCase()}
+                    <Badge variant={getStatusVariant(bug.status || 'new')}>
+                      {(bug.status || 'new').replace('-', ' ').toUpperCase()}
                     </Badge>
                   </div>
                 </div>
 
                 <div className="bg-muted/50 rounded-lg p-4 mb-4">
                   <p className="text-sm">
-                    {bug.actual_behavior || bug.message || 'No description provided'}
+                    {bug.actualBehavior || bug.description || 'No description provided'}
                   </p>
                 </div>
 
-                {(bug.steps_to_reproduce || bug.expected_behavior) && (
+                {(bug.stepsToReproduce || bug.expectedBehavior) && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
-                    {bug.steps_to_reproduce && (
+                    {bug.stepsToReproduce && (
                       <div>
                         <span className="font-medium text-muted-foreground">
                           Steps to Reproduce:
                         </span>
-                        <p>{bug.steps_to_reproduce}</p>
+                        <p>{bug.stepsToReproduce}</p>
                       </div>
                     )}
-                    {bug.expected_behavior && (
+                    {bug.expectedBehavior && (
                       <div>
                         <span className="font-medium text-muted-foreground">
                           Expected Behavior:
                         </span>
-                        <p>{bug.expected_behavior}</p>
+                        <p>{bug.expectedBehavior}</p>
                       </div>
                     )}
                   </div>

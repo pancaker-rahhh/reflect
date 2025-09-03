@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Search, Calendar, Filter, RotateCcw, MessageCircle } from 'lucide-react'
+import { Search, RotateCcw, MessageCircle } from 'lucide-react'
 import { api } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -17,7 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { format } from 'date-fns'
 import { useAppContext } from '@/context/AppContext'
-import type { Feedback, SurveyResponse } from '@/types'
+import type { SurveyResponse } from '@/types'
 
 export function Responses() {
   const [startDate, setStartDate] = useState<Date | undefined>()

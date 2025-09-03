@@ -6,7 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
+
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -533,7 +533,7 @@ export function RoadmapCardDetail({
                   <div className="space-y-3">
                     <Label className="text-sm font-medium">Select tags for this feature</Label>
                     <div className="flex flex-wrap gap-2 pt-2">
-                      {tags.map((tag) => {
+                      {tags.map((tag: any) => {
                         const isSelected = formData.tagIds.includes(tag.id)
                         return (
                           <Badge

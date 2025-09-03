@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api, organizationApi } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
@@ -152,7 +152,7 @@ export function RoadmapSettings() {
       status: 'new',
       color: '#6b7280',
       order: columns.length,
-      features: [],
+      action_items: [],
     }
     setColumns((prev) => [...prev, newColumn])
     setIsEdited(true)
@@ -212,15 +212,15 @@ export function RoadmapSettings() {
         const columnPromises = []
 
         // Delete columns that were marked for deletion
-        const columnsToDelete = existingColumns.filter((ec) =>
+        const columnsToDelete = existingColumns.filter((ec: any) =>
           columns.some((c) => c.id === ec.id && c._markedForDeletion)
         )
-        columnPromises.push(...columnsToDelete.map((c) => deleteColumnMutation.mutateAsync(c.id)))
+        columnPromises.push(...columnsToDelete.map((c: any) => deleteColumnMutation.mutateAsync(c.id)))
 
         // Handle remaining columns (create new, update existing)
         for (const column of columns.filter((col) => !col._markedForDeletion)) {
           if (column.id.startsWith('temp-')) {
-            const { id, features, roadmap_id, _markedForDeletion, ...newColumnData } = column
+            const { id, action_items, roadmap_id, _markedForDeletion, ...newColumnData } = column
             columnPromises.push(
               createColumnMutation.mutateAsync({
                 ...newColumnData,
@@ -228,9 +228,9 @@ export function RoadmapSettings() {
               })
             )
           } else {
-            const originalColumn = existingColumns.find((c) => c.id === column.id)
+            const originalColumn = existingColumns.find((c: any) => c.id === column.id)
             if (originalColumn && JSON.stringify(originalColumn) !== JSON.stringify(column)) {
-              const { id, features, roadmap_id, _markedForDeletion, ...updateData } = column
+              const { id, action_items, roadmap_id, _markedForDeletion, ...updateData } = column
               columnPromises.push(
                 updateColumnMutation.mutateAsync({
                   id: column.id,
@@ -426,7 +426,7 @@ export function RoadmapSettings() {
             ></div>
           </div>
           <div className="flex justify-between text-xs text-muted-foreground mt-2">
-            {setupSteps.map((step, index) => (
+            {setupSteps.map((step) => (
               <div key={step.key} className="flex flex-col items-center">
                 <div
                   className={cn(
@@ -889,7 +889,7 @@ export function RoadmapSettings() {
                                         : 'text-muted-foreground'
                                     )}
                                   >
-                                    {column.features?.length || 0}
+                                                                         {column.action_items?.length || 0}
                                   </span>
                                 </div>
                                 <span className="text-xs text-muted-foreground">features</span>

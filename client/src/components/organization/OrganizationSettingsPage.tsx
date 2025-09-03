@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Building2,
   Users,
-  Settings,
+
   Shield,
   Save,
   Trash2,
@@ -15,7 +15,7 @@ import { organizationApi, type OrganizationMember } from '../../lib/api/organiza
 import { useAppContext } from '../../context/AppContext';
 import { AnimatedInput, AnimatedTextarea } from '../onboarding/shared/AnimatedInput';
 import { InviteMemberModal } from './InviteMemberModal';
-import type { Organization } from '@/types';
+
 
 interface OrganizationSettingsPageProps {
   organizationId?: string;
@@ -56,11 +56,11 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
         organizationApi.getMembers(orgId)
       ]);
       
-      setOrganization(orgData);
+      // Organization is managed by context
       setMembers(membersData);
       setFormData({
         name: orgData.name || '',
-        description: orgData.description || ''
+        description: (orgData as any).description || ''
       });
     } catch (error) {
       console.error('Failed to load organization data:', error);
@@ -238,14 +238,14 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
                         <span className={`font-semibold ${
                           member.is_pending ? 'text-yellow-600' : 'text-indigo-600'
                         }`}>
-                          {member.name?.[0] || member.email?.[0] || 'U'}
+                          {(member as any).name?.[0] || (member as any).email?.[0] || 'U'}
                         </span>
                       </div>
                       <div className="flex flex-col">
                         <p className="text-sm font-medium text-gray-900">
-                          {member.name || member.email}
+                          {(member as any).name || (member as any).email}
                         </p>
-                        <p className="text-sm text-gray-500">{member.email}</p>
+                        <p className="text-sm text-gray-500">{(member as any).email}</p>
                       </div>
                     </div>
                   </div>
@@ -316,6 +316,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
     </div>
   );
 
+  /*
   const _renderBillingSettings = () => (
     <div className="p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Billing & Subscription</h3>
@@ -375,6 +376,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
       </div>
     </div>
   );
+  */
 
   const renderTabContent = () => {
     switch (activeTab) {

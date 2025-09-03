@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { organizationApi, type Organization } from '../lib/api/organization';
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { organizationApi } from '../lib/api/organization';
+import type { Organization } from '@/types';
 import { projectApi } from '../lib/api/project';
 import type { Project } from '@/types';
 

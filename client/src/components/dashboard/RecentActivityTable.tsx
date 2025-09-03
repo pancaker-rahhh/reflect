@@ -1,11 +1,11 @@
 import { formatDistanceToNow } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, CheckCircle, Archive } from 'lucide-react'
+import { ArrowRight, CheckCircle } from 'lucide-react'
 import { useState } from 'react'
 import { FeedbackConversionModal } from '@/components/feedback/FeedbackConversionModal'
 import { useFeedbackConversion } from '@/hooks/useFeedbackConversion'
-import type { RecentActivity, FeedbackType } from '@/types'
+import type { RecentActivity } from '@/types'
 
 interface ConversionData {
   priority: 'low' | 'medium' | 'high' | 'critical'
@@ -35,7 +35,7 @@ const typeConfig: Record<
   CES: { label: 'CES', variant: 'outline' },
 }
 
-export function RecentActivityTable({ activities, projectId }: RecentActivityTableProps) {
+export function RecentActivityTable({ activities, projectId: _projectId }: RecentActivityTableProps) {
   const [selectedFeedback, setSelectedFeedback] = useState<RecentActivity | null>(null)
   const [isConversionModalOpen, setIsConversionModalOpen] = useState(false)
   const { convertFeedbackToRoadmap } = useFeedbackConversion()
@@ -169,12 +169,19 @@ export function RecentActivityTable({ activities, projectId }: RecentActivityTab
         </table>
       </div>
 
-      <FeedbackConversionModal
-        isOpen={isConversionModalOpen}
-        onClose={closeConversionModal}
-        onConvert={handleConvertFeedback}
-        feedback={selectedFeedback}
-      />
+      {selectedFeedback && (
+          <FeedbackConversionModal
+            isOpen={isConversionModalOpen}
+            onClose={closeConversionModal}
+            onConvert={handleConvertFeedback}
+            feedback={{
+              id: selectedFeedback.id,
+              feedback_type: selectedFeedback.type,
+              title: selectedFeedback.summary,
+              message: undefined
+            }}
+          />
+        )}
     </>
   )
 }

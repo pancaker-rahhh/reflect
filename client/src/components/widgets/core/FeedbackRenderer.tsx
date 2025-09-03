@@ -10,9 +10,7 @@ import { LoadingSpinner } from './LoadingSpinner'
 import type {
   FeedbackType,
   FeedbackData,
-  NPSFeedbackData,
-  CSATFeedbackData,
-  CESFeedbackData,
+
   BugReportFeedbackData,
   FeatureRequestFeedbackData,
   ReviewFeedbackData,

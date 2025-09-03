@@ -69,7 +69,7 @@ export function useFeedbackConversion() {
     }
   }
 
-  const getFeedbackConversionStatus = async (feedbackId: string) => {
+  const getFeedbackConversionStatus = async (_feedbackId: string) => {
     try {
       // This would be a new endpoint to get conversion status
       // For now, we'll return null as the backend doesn't have this yet

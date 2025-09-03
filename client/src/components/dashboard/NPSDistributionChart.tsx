@@ -8,7 +8,6 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts'
-import type { Feedback, SurveyResponse } from '@/types'
 
 interface NPSDistributionChartProps {
   feedback: Array<{
@@ -48,8 +47,8 @@ export function NPSDistributionChart({ feedback }: NPSDistributionChartProps) {
     return '#10b981'
   }
 
-  const detractors = npsSurveys.filter((s) => s.rating <= 6).length
-  const promoters = npsSurveys.filter((s) => s.rating >= 9).length
+  const detractors = npsSurveys.filter((s) => s.rating && s.rating <= 6).length
+  const promoters = npsSurveys.filter((s) => s.rating && s.rating >= 9).length
   const npsScore = Math.round(((promoters - detractors) / npsSurveys.length) * 100)
 
   const CustomTooltip = ({

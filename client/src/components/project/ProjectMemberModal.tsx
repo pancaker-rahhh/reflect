@@ -12,7 +12,7 @@ interface ProjectMemberModalProps {
 }
 
 export const ProjectMemberModal: React.FC<ProjectMemberModalProps> = ({
-  projectId,
+  projectId: _projectId,
   isOpen,
   onClose,
   onAdd,

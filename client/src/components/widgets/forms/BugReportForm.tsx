@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertTriangle, Bug, Zap } from 'lucide-react'
+import { Bug } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface BugReportFormProps {

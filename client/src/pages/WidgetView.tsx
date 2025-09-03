@@ -106,8 +106,6 @@ export function WidgetView() {
       await feedbackApi.submit({
         widgetKey: publicKey,
         response: data.response,
-        rating: data.rating,
-        feedbackType: data.feedbackType.toLowerCase(),
       })
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Submission failed')

@@ -1,1 +1,1 @@
-export { PublicRoadmap } from './PublicRoadmap'
+export { PublicRoadmap } from '../PublicRoadmap'

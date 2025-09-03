@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../lib/client';
 import { Save, AlertCircle } from 'lucide-react';
@@ -27,13 +27,16 @@ export const OrganizationDetails: React.FC<OrganizationDetailsProps> = ({ organi
   const { data: organization, isLoading } = useQuery({
     queryKey: ['organization', organizationId],
     queryFn: () => apiClient.get<Organization>(`/organizations/${organizationId}`),
-    onSuccess: (data) => {
-      setFormData({
-        name: data.name || '',
-        description: data.description || '',
-      });
-    },
   });
+
+  useEffect(() => {
+    if (organization) {
+      setFormData({
+        name: organization.name || '',
+        description: (organization as any).description || '',
+      });
+    }
+  }, [organization]);
 
   const updateMutation = useMutation({
     mutationFn: (data: { name: string; description: string }) =>
@@ -93,7 +96,7 @@ export const OrganizationDetails: React.FC<OrganizationDetailsProps> = ({ organi
             </label>
             <div className="flex items-center">
               <span className="text-gray-500 text-sm">reflect.app/</span>
-              <span className="ml-1 font-mono text-sm text-gray-900">{organization?.slug}</span>
+              <span className="ml-1 font-mono text-sm text-gray-900">{(organization as any)?.slug}</span>
             </div>
             <p className="text-xs text-gray-500 mt-1">
               Contact support to change your organization URL
@@ -117,7 +120,7 @@ export const OrganizationDetails: React.FC<OrganizationDetailsProps> = ({ organi
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <AlertCircle className="w-4 h-4" />
-              <span>Created on {new Date(organization?.created_at || '').toLocaleDateString()}</span>
+              <span>Created on {new Date((organization as any)?.created_at || '').toLocaleDateString()}</span>
             </div>
           </div>
 
