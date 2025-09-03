@@ -11,7 +11,10 @@ import {
 import type { Feedback, SurveyResponse } from '@/types'
 
 interface NPSDistributionChartProps {
-  feedback: any[]
+  feedback: Array<{
+    type: string
+    rating: number | null
+  }>
 }
 
 export function NPSDistributionChart({ feedback }: NPSDistributionChartProps) {

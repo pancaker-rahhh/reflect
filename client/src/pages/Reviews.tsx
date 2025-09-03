@@ -35,14 +35,14 @@ export function Reviews() {
   // Debug: Log the feedback data to see what's being returned
   console.log('Reviews - Raw feedback data:', feedback)
 
-  const reviews = feedback.filter((f) => f.feedback_type === 'review').map((item) => item as any) // Cast to any to access dynamic properties
+  const reviews = feedback.filter((f) => f.feedback_type === 'review')
 
   const resetFilters = () => {
     setSearchQuery('')
     setTimeframe('all')
   }
 
-  const filterReviewsByTimeframe = (reviews: any[]) => {
+  const filterReviewsByTimeframe = (reviews: typeof feedback) => {
     if (timeframe === 'all') return reviews
 
     const now = new Date()

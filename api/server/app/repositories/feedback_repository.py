@@ -1,8 +1,8 @@
 from typing import List, Optional, Any, Dict
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, text
-from datetime import datetime, timedelta
+from sqlalchemy import select, text, and_
+from datetime import datetime, timedelta, timezone
 from app.models.feedback_model import (
     Feedback,
     FeedbackStatus,
@@ -119,8 +119,6 @@ class FeedbackRepository(BaseRepository[Feedback]):
         self, db: AsyncSession, widget_id: UUID, feedback_type: FeedbackType
     ) -> List[Feedback]:
         """Get all feedback for a specific widget and type"""
-        from sqlalchemy import select
-
         # Use the base Feedback model and filter by feedback_type and widget_id
         stmt = select(Feedback).where(
             Feedback.widget_id == widget_id, Feedback.feedback_type == feedback_type
@@ -140,9 +138,6 @@ class FeedbackRepository(BaseRepository[Feedback]):
         Check for existing feedback from the same user context to prevent duplicates.
         Looks for feedback with matching IP, user agent, and widget within the specified time window.
         """
-        from sqlalchemy import and_, select
-        from datetime import datetime, timedelta, timezone
-        from app.models.feedback_model import FeedbackType
 
         # Convert WidgetType to FeedbackType if needed
         if hasattr(feedback_type, 'value'):
@@ -272,23 +267,25 @@ class FeedbackRepository(BaseRepository[Feedback]):
 
         bug_result = await db.execute(
             text(
-                f"SELECT COUNT(*) FROM feedback f {base_where} AND f.feedback_type = 'bug_report'"
+                f'SELECT COUNT(*) FROM feedback f {base_where} AND f.feedback_type = :bug_type'
             ),
-            params,
+            {**params, 'bug_type': 'bug_report'},
         )
         new_bug_reports = bug_result.scalar() or 0
 
         feature_result = await db.execute(
             text(
-                f"SELECT COUNT(*) FROM feedback f {base_where} AND f.feedback_type = 'feature_request'"
+                f'SELECT COUNT(*) FROM feedback f {base_where} AND f.feedback_type = :feature_type'
             ),
-            params,
+            {**params, 'feature_type': 'feature_request'},
         )
         new_feature_requests = feature_result.scalar() or 0
 
         pending_result = await db.execute(
-            text(f"SELECT COUNT(*) FROM feedback f {base_where} AND f.status = 'NEW'"),
-            params,
+            text(
+                f'SELECT COUNT(*) FROM feedback f {base_where} AND f.status = :status'
+            ),
+            {**params, 'status': 'NEW'},
         )
         pending_feedback_review = pending_result.scalar() or 0
 

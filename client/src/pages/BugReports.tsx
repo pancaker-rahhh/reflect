@@ -45,7 +45,6 @@ export function BugReports() {
 
   const filteredBugReports = feedback
     .filter((item) => item.feedback_type === 'bug_report')
-    .map((item) => item as any) // Cast to any to access dynamic properties
     .filter((bug) => {
       if (startDate && new Date(bug.created_at) < startDate) return false
       if (endDate && new Date(bug.created_at) > endDate) return false

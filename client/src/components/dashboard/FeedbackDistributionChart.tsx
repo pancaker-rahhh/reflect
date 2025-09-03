@@ -3,7 +3,12 @@ import { MessageSquare, Bug, Lightbulb, Star } from 'lucide-react'
 import type { Feedback } from '@/types'
 
 interface FeedbackDistributionChartProps {
-  feedback: any[]
+  feedback: Array<{
+    type: string
+    title?: string
+    message?: string
+    rating?: number
+  }>
 }
 
 interface TooltipProps {

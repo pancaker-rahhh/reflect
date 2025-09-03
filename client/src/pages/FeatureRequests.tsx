@@ -55,7 +55,6 @@ export function FeatureRequests() {
 
   const filteredFeatureRequests = feedback
     .filter((item) => item.feedback_type === 'feature_request')
-    .map((item) => item as any) // Cast to any to access dynamic properties
     .filter((feature) => {
       if (startDate && new Date(feature.created_at) < startDate) return false
       if (endDate && new Date(feature.created_at) > endDate) return false

@@ -7,6 +7,12 @@ import { FeedbackConversionModal } from '@/components/feedback/FeedbackConversio
 import { useFeedbackConversion } from '@/hooks/useFeedbackConversion'
 import type { RecentActivity, FeedbackType } from '@/types'
 
+interface ConversionData {
+  priority: 'low' | 'medium' | 'high' | 'critical'
+  conversion_notes?: string
+  custom_tags?: string[]
+}
+
 interface RecentActivityTableProps {
   activities: RecentActivity[]
   projectId?: string
@@ -30,11 +36,11 @@ const typeConfig: Record<
 }
 
 export function RecentActivityTable({ activities, projectId }: RecentActivityTableProps) {
-  const [selectedFeedback, setSelectedFeedback] = useState<any>(null)
+  const [selectedFeedback, setSelectedFeedback] = useState<RecentActivity | null>(null)
   const [isConversionModalOpen, setIsConversionModalOpen] = useState(false)
   const { convertFeedbackToRoadmap } = useFeedbackConversion()
 
-  const handleConvertFeedback = async (conversionData: any) => {
+  const handleConvertFeedback = async (conversionData: ConversionData) => {
     if (!selectedFeedback?.id) return
 
     try {
@@ -44,7 +50,7 @@ export function RecentActivityTable({ activities, projectId }: RecentActivityTab
     }
   }
 
-  const openConversionModal = (feedback: any) => {
+  const openConversionModal = (feedback: RecentActivity) => {
     setSelectedFeedback(feedback)
     setIsConversionModalOpen(true)
   }

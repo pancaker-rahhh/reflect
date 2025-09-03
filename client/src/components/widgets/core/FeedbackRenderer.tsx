@@ -15,6 +15,8 @@ import type {
   CESFeedbackData,
   BugReportFeedbackData,
   FeatureRequestFeedbackData,
+  ReviewFeedbackData,
+  GeneralFeedbackData,
 } from './types'
 
 interface FeedbackRendererProps {
@@ -61,7 +63,7 @@ export function FeedbackRenderer({
         overall_rating: data.rating,
         pros: data.review || '',
         cons: '',
-      } as any, // TODO: Fix this type
+      } as ReviewFeedbackData,
     })
   }
 
@@ -130,7 +132,7 @@ export function FeedbackRenderer({
       typeSpecificData: {
         title: `${feedbackType} Feedback`,
         message: feedback,
-      } as any, // TODO: Fix this type
+      } as GeneralFeedbackData,
     })
   }
 
