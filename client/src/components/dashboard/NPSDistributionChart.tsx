@@ -8,7 +8,6 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts'
-import type { Feedback, SurveyResponse } from '@/types'
 
 interface NPSDistributionChartProps {
   feedback: Array<{

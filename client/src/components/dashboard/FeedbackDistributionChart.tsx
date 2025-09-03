@@ -1,6 +1,5 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import { MessageSquare, Bug, Lightbulb, Star } from 'lucide-react'
-import type { Feedback } from '@/types'
 
 interface FeedbackDistributionChartProps {
   feedback: Array<{

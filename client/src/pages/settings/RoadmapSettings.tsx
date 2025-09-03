@@ -212,10 +212,10 @@ export function RoadmapSettings() {
         const columnPromises = []
 
         // Delete columns that were marked for deletion
-        const columnsToDelete = existingColumns.filter((ec) =>
+        const columnsToDelete = existingColumns.filter((ec: any) =>
           columns.some((c) => c.id === ec.id && c._markedForDeletion)
         )
-        columnPromises.push(...columnsToDelete.map((c) => deleteColumnMutation.mutateAsync(c.id)))
+        columnPromises.push(...columnsToDelete.map((c: any) => deleteColumnMutation.mutateAsync(c.id)))
 
         // Handle remaining columns (create new, update existing)
         for (const column of columns.filter((col) => !col._markedForDeletion)) {
@@ -228,7 +228,7 @@ export function RoadmapSettings() {
               })
             )
           } else {
-            const originalColumn = existingColumns.find((c) => c.id === column.id)
+            const originalColumn = existingColumns.find((c: any) => c.id === column.id)
             if (originalColumn && JSON.stringify(originalColumn) !== JSON.stringify(column)) {
               const { id, action_items, roadmap_id, _markedForDeletion, ...updateData } = column
               columnPromises.push(

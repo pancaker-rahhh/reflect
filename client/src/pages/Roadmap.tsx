@@ -216,8 +216,8 @@ export function RoadmapPage() {
     }
 
     if (draggedItem && draggedItem.sourceColumnId !== targetColumnId && roadmap) {
-      const sourceColumn = roadmap.columns.find((col) => col.id === draggedItem.sourceColumnId)
-      const targetColumn = roadmap.columns.find((col) => col.id === targetColumnId)
+      const sourceColumn = roadmap.columns.find((col: any) => col.id === draggedItem.sourceColumnId)
+      const targetColumn = roadmap.columns.find((col: any) => col.id === targetColumnId)
 
       if (!sourceColumn || !targetColumn) {
         console.error('Source or target column not found:', { sourceColumn, targetColumn })
@@ -304,7 +304,7 @@ export function RoadmapPage() {
 
   const handleSelectAll = () => {
     if (roadmap) {
-      const allFeatures = roadmap.columns.flatMap((col) => getFeaturesByColumn(col.id))
+      const allFeatures = roadmap.columns.flatMap((col: any) => getFeaturesByColumn(col.id))
       setSelectedItems(allFeatures)
     }
   }
@@ -335,7 +335,7 @@ export function RoadmapPage() {
   const getFeaturesByColumn = (columnId: string) => {
     if (!roadmap) return []
 
-    const column = roadmap.columns.find((c) => c.id === columnId)
+    const column = roadmap.columns.find((c: any) => c.id === columnId)
     if (!column) return []
 
     const features = column.action_items || []
@@ -586,7 +586,7 @@ export function RoadmapPage() {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             <div className="flex gap-6 min-w-max px-32">
-              {roadmap.columns.map((column, columnIndex) => {
+              {roadmap.columns.map((column: any, columnIndex: any) => {
                 const columnFeatures = getFeaturesByColumn(column.id)
 
                 return (

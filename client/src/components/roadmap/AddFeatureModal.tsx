@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { api } from '@/lib/api'
 import {
   Dialog,
   DialogContent,
@@ -65,7 +64,9 @@ export function AddFeatureModal({
   // Fetch tags
   const { data: tags = [] } = useQuery({
     queryKey: ['roadmapTags', roadmapId],
-    queryFn: () => (roadmapId ? api.getRoadmapTags(roadmapId) : []),
+    // commented out because we don't have the getRoadmapTags function in the api.ts file
+    // queryFn: () => (roadmapId ? api.getRoadmapTags(roadmapId) : []),
+    queryFn: () => [],
     enabled: !!roadmapId,
   })
 

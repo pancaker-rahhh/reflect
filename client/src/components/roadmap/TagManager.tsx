@@ -283,7 +283,7 @@ export function TagManager({ roadmapId }: TagManagerProps) {
           </div>
         ) : (
           <div className="space-y-4">
-            {tags.map((tag) => (
+            {tags.map((tag: any) => (
               <div
                 key={tag.id}
                 className="group relative p-4 border border-border/50 rounded-lg bg-muted/20 hover:bg-muted/30 transition-all duration-200 hover:shadow-md"
@@ -401,14 +401,14 @@ export function TagManager({ roadmapId }: TagManagerProps) {
               </div>
               <div>
                 <div className="text-2xl font-bold text-foreground">
-                  {tags.filter((tag) => tag.color && tag.color !== '#6B7280').length}
+                  {tags.filter((tag: any) => tag.color && tag.color !== '#6B7280').length}
                 </div>
                 <div className="text-xs text-muted-foreground">Custom Colors</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-foreground">
                   {Math.round(
-                    (tags.filter((tag) => tag.name.length > 3).length / tags.length) * 100
+                    (tags.filter((tag: any) => tag.name.length > 3).length / tags.length) * 100
                   )}
                   %
                 </div>

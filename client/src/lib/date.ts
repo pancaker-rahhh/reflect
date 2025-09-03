@@ -141,7 +141,7 @@ export function transformDates<T>(data: T): T {
         transformed[key] = transformDates(value)
       }
     }
-    return transformed
+    return transformed as T
   }
 
   return data

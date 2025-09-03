@@ -14,7 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, Tag, ArrowRight, CheckCircle } from 'lucide-react'
-import { api, type ConversionPreview } from '@/lib/api'
+import { type ConversionPreview } from '@/lib/api'
 import type { ConversionData } from '@/lib/api/feedback'
 
 interface FeedbackConversionModalProps {

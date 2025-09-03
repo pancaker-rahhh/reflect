@@ -68,14 +68,13 @@ import { userApi } from './user'
 import { projectApi } from './project'
 import { widgetApi } from './widget'
 import { roadmapApi } from './roadmap'
-import { feedbackApi } from './feedback'
 import { dashboardApi } from './dashboard'
 import { integrationsApi } from './integrations'
+import { feedbackApi } from './feedback'
 import type { UserProfileUpdateRequest } from './user'
 import type { ProjectCreateRequest } from './project'
 import type { WidgetCreateRequest } from './widget'
 import type { RoadmapCreateRequest } from './roadmap'
-import type { RoadmapColumnCreateRequest } from './roadmap'
 
 // Convenience API object for backward compatibility
 export const api = {
@@ -98,8 +97,27 @@ export const api = {
   deleteWidget: (id: string) => widgetApi.deleteWidget(id),
 
   getRoadmapsByProject: (projectId: string) => roadmapApi.getByProject(projectId),
+  getRoadmap: (projectId: string) => roadmapApi.getByProject(projectId),
   createRoadmap: (data: RoadmapCreateRequest) => roadmapApi.createRoadmap(data),
   updateRoadmap: (id: string, data: any) => roadmapApi.updateRoadmap(id, data),
+  
+  // Roadmap features
+  createRoadmapActionItem: (data: any) => roadmapApi.createFeature(data),
+  updateRoadmapActionItem: (id: string, data: any) => roadmapApi.updateFeature(id, data),
+  deleteRoadmapActionItem: (id: string) => roadmapApi.deleteFeature(id),
+  upvoteFeature: (id: string) => roadmapApi.upvoteFeature(id),
+  updateFeaturesOrder: (updates: any[]) => roadmapApi.updateFeaturesOrder(updates),
+  
+  // Roadmap columns
+  createRoadmapColumn: (data: any) => roadmapApi.createColumn(data),
+  updateRoadmapColumn: (id: string, data: any) => roadmapApi.updateColumn(id, data),
+  deleteRoadmapColumn: (id: string) => roadmapApi.deleteColumn(id),
+  
+  // Roadmap tags
+  getRoadmapTags: (roadmapId: string) => roadmapApi.getRoadmapTags(roadmapId),
+  createRoadmapTag: (data: any) => roadmapApi.createTag(data),
+  updateRoadmapTag: (id: string, data: any) => roadmapApi.updateTag(id, data),
+  deleteRoadmapTag: (id: string) => roadmapApi.deleteTag(id),
 
   getDashboardMetrics: (timeRange?: string, projectId?: string) =>
     dashboardApi.getDashboardMetrics(timeRange, projectId),
@@ -108,7 +126,13 @@ export const api = {
     dashboardApi.getFeedbackData(feedbackType, projectId),
 
   getIntegrationsByProject: (projectId: string) => integrationsApi.getIntegrations(projectId),
+  getIntegrations: (projectId?: string) => integrationsApi.getIntegrations(projectId),
   createIntegration: (data: any) => integrationsApi.createJiraIntegration(data),
   updateIntegration: (id: string, data: any) => integrationsApi.updateJiraIntegration(id, data),
   deleteIntegration: (id: string) => integrationsApi.deleteJiraIntegration(id),
+  
+  // Feedback
+  getActionableFeedback: () => feedbackApi.getActionableFeedback(),
+  getConversionPreview: (feedbackId: string) => feedbackApi.getConversionPreview(feedbackId),
+  convertToRoadmap: (feedbackId: string, conversionData: any) => feedbackApi.convertToRoadmap(feedbackId, conversionData),
 }

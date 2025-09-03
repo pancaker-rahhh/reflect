@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Search, RotateCcw, ExternalLink, TrendingUp, Star } from 'lucide-react'
 import { api } from '@/lib/api'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge'
 import { StarRating } from '@/components/ui/star-rating'
 import { format } from 'date-fns'
 import { useAppContext } from '@/context/AppContext'
-import type { Review } from '@/types'
+
 
 export function Reviews() {
   const [searchQuery, setSearchQuery] = useState('')

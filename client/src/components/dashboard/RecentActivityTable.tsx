@@ -1,11 +1,11 @@
 import { formatDistanceToNow } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, CheckCircle, Archive } from 'lucide-react'
+import { ArrowRight, CheckCircle } from 'lucide-react'
 import { useState } from 'react'
 import { FeedbackConversionModal } from '@/components/feedback/FeedbackConversionModal'
 import { useFeedbackConversion } from '@/hooks/useFeedbackConversion'
-import type { RecentActivity, FeedbackType } from '@/types'
+import type { RecentActivity } from '@/types'
 
 interface ConversionData {
   priority: 'low' | 'medium' | 'high' | 'critical'

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Search, Filter, RotateCcw, Bug, Calendar, AlertTriangle } from 'lucide-react'
+import { Search, RotateCcw, Bug, AlertTriangle } from 'lucide-react'
 import { api } from '@/services(mock)/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
-import { format } from 'date-fns'
+
 import { useAppContext } from '@/context/AppContext'
 import type { BugReport } from '@/types'
 

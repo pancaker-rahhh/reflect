@@ -9,7 +9,7 @@ import { NPSDistributionChart } from '@/components/dashboard/NPSDistributionChar
 import { FeedbackDistributionChart } from '@/components/dashboard/FeedbackDistributionChart'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAppContext } from '@/context/AppContext'
-import { FolderOpen, Plus, AlertCircle, RefreshCw } from 'lucide-react'
+import { AlertCircle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
@@ -61,7 +61,7 @@ export function Dashboard() {
     retryDelay: 1000,
   })
 
-  const renderErrorState = (error: any, refetch: () => void, title: string) => (
+  const renderErrorState = (_error: any, refetch: () => void, title: string) => (
     <Alert variant="destructive" className="mb-4">
       <AlertCircle className="h-4 w-4" />
       <AlertDescription className="flex items-center justify-between">
