@@ -1,10 +1,16 @@
-import { apiClient } from '../client'
 import type { DashboardMetrics, RecentActivity } from '@/types'
+import { apiClient } from '../client'
 
-async function getDashboardMetrics(timeRange?: string): Promise<DashboardMetrics> {
+async function getDashboardMetrics(
+  timeRange?: string,
+  projectId?: string
+): Promise<DashboardMetrics> {
   const params = new URLSearchParams()
   if (timeRange && timeRange !== 'all') {
     params.append('time_range', timeRange)
+  }
+  if (projectId) {
+    params.append('project_id', projectId)
   }
 
   return apiClient.get(`/dashboard/metrics?${params.toString()}`)
@@ -16,19 +22,19 @@ async function getRecentActivity(projectId?: string): Promise<RecentActivity[]> 
     params.append('project_id', projectId)
   }
 
-  return apiClient.get(`/feedback/actionable?${params.toString()}`)
+  return apiClient.get(`/dashboard/recent-activity?${params.toString()}`)
 }
 
-async function getFeedbackData(projectId?: string, timeRange?: string): Promise<any[]> {
+async function getFeedbackData(feedbackType?: string, projectId?: string): Promise<any[]> {
   const params = new URLSearchParams()
+  if (feedbackType) {
+    params.append('feedback_type', feedbackType)
+  }
   if (projectId) {
     params.append('project_id', projectId)
   }
-  if (timeRange) {
-    params.append('time_range', timeRange)
-  }
 
-  return apiClient.get(`/feedback/chart-data?${params.toString()}`)
+  return apiClient.get(`/dashboard/feedback-data?${params.toString()}`)
 }
 
 export const dashboardApi = {

@@ -19,7 +19,12 @@ import { api, type ConversionPreview } from '@/lib/api'
 interface FeedbackConversionModalProps {
   isOpen: boolean
   onClose: () => void
-  feedback: any
+  feedback: {
+    id: string
+    feedback_type: string
+    title?: string
+    message?: string
+  }
   onConvert: (data: ConversionData) => Promise<void>
 }
 

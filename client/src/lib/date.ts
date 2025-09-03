@@ -101,7 +101,7 @@ export function transformDates<T>(data: T): T {
       return data.map(transformDates) as T
     }
 
-    const transformed: any = {}
+    const transformed: Record<string, unknown> = {}
     for (const [key, value] of Object.entries(data)) {
       // Handle date fields (both snake_case and camelCase)
       if (

@@ -234,6 +234,30 @@ export function WidgetCore({
       case 'active':
         return (
           <div className="p-6 space-y-6">
+            {/* Back button */}
+            <div className="flex items-center mb-4">
+              <button
+                onClick={() =>
+                  updateState({ type: 'menu', availableTypes: getAvailableFeedbackTypes() })
+                }
+                className="flex items-center text-sm opacity-70 hover:opacity-100 transition-opacity duration-200"
+                style={{ color: textColor }}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className="mr-2"
+                >
+                  <polyline points="15,18 9,12 15,6"></polyline>
+                </svg>
+                Back to menu
+              </button>
+            </div>
+
             <div className="text-center">
               <h3 className="text-xl font-bold mb-2" style={{ color: textColor }}>
                 {content.headerTitle}
@@ -308,7 +332,7 @@ export function WidgetCore({
       </div>
 
       {/* Main content */}
-      <div className="flex-1 overflow-hidden">{renderContent()}</div>
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">{renderContent()}</div>
 
       {/* Branding */}
       {theme.showBranding && (

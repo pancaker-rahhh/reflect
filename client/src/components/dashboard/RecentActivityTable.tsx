@@ -7,13 +7,19 @@ import { FeedbackConversionModal } from '@/components/feedback/FeedbackConversio
 import { useFeedbackConversion } from '@/hooks/useFeedbackConversion'
 import type { RecentActivity, FeedbackType } from '@/types'
 
+interface ConversionData {
+  priority: 'low' | 'medium' | 'high' | 'critical'
+  conversion_notes?: string
+  custom_tags?: string[]
+}
+
 interface RecentActivityTableProps {
   activities: RecentActivity[]
   projectId?: string
 }
 
 const typeConfig: Record<
-  FeedbackType,
+  string,
   {
     label: string
     variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning'
@@ -24,17 +30,17 @@ const typeConfig: Record<
   review: { label: 'Review', variant: 'success' },
   bug_report: { label: 'Bug Report', variant: 'destructive' },
   feature_request: { label: 'Feature Request', variant: 'secondary' },
-  nps: { label: 'NPS', variant: 'outline' },
-  csat: { label: 'CSAT', variant: 'outline' },
-  ces: { label: 'CES', variant: 'outline' },
+  NPS: { label: 'NPS', variant: 'outline' },
+  CSAT: { label: 'CSAT', variant: 'outline' },
+  CES: { label: 'CES', variant: 'outline' },
 }
 
 export function RecentActivityTable({ activities, projectId }: RecentActivityTableProps) {
-  const [selectedFeedback, setSelectedFeedback] = useState<any>(null)
+  const [selectedFeedback, setSelectedFeedback] = useState<RecentActivity | null>(null)
   const [isConversionModalOpen, setIsConversionModalOpen] = useState(false)
   const { convertFeedbackToRoadmap } = useFeedbackConversion()
 
-  const handleConvertFeedback = async (conversionData: any) => {
+  const handleConvertFeedback = async (conversionData: ConversionData) => {
     if (!selectedFeedback?.id) return
 
     try {
@@ -44,7 +50,7 @@ export function RecentActivityTable({ activities, projectId }: RecentActivityTab
     }
   }
 
-  const openConversionModal = (feedback: any) => {
+  const openConversionModal = (feedback: RecentActivity) => {
     setSelectedFeedback(feedback)
     setIsConversionModalOpen(true)
   }
@@ -92,53 +98,69 @@ export function RecentActivityTable({ activities, projectId }: RecentActivityTab
             {activities.map((activity) => {
               const isConverted = activity.converted_to_action_item_id
               const isActionable = activity.is_actionable !== false
+              const typeConfigItem = typeConfig[activity.type] || {
+                label: activity.type,
+                variant: 'default',
+              }
 
               return (
                 <tr key={activity.id} className="border-b hover:bg-muted/30 transition-colors">
                   <td className="px-4 py-4">
-                    <Badge variant={typeConfig[activity.type].variant}>
-                      {typeConfig[activity.type].label}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-4 text-sm font-medium">{activity.summary}</td>
-                  <td className="px-4 py-4 text-sm text-muted-foreground">
-                    {activity.submittedBy}
-                  </td>
-                  <td className="px-4 py-4 text-sm text-muted-foreground">
-                    {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
+                    <Badge variant={typeConfigItem.variant}>{typeConfigItem.label}</Badge>
                   </td>
                   <td className="px-4 py-4">
-                    {isConverted ? (
-                      <Badge variant="success" className="flex items-center gap-1">
-                        <CheckCircle className="h-3 w-3" />
-                        Converted
-                      </Badge>
-                    ) : !isActionable ? (
-                      <Badge variant="secondary" className="flex items-center gap-1">
-                        <Archive className="h-3 w-3" />
-                        Not Actionable
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline">New</Badge>
-                    )}
+                    <div className="max-w-xs">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {activity.summary}
+                      </p>
+                    </div>
                   </td>
                   <td className="px-4 py-4">
-                    {isActionable && !isConverted && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openConversionModal(activity)}
-                        className="flex items-center gap-2"
-                      >
-                        <ArrowRight className="h-3 w-3" />
-                        Convert
-                      </Button>
-                    )}
-                    {isConverted && (
-                      <Button variant="ghost" size="sm" disabled className="text-muted-foreground">
-                        Already Converted
-                      </Button>
-                    )}
+                    <p className="text-sm text-muted-foreground">{activity.submittedBy}</p>
+                  </td>
+                  <td className="px-4 py-4">
+                    <p className="text-sm text-muted-foreground">
+                      {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
+                    </p>
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="flex items-center gap-2">
+                      {isConverted ? (
+                        <Badge variant="success" className="flex items-center gap-1">
+                          <CheckCircle className="h-3 w-3" />
+                          Converted
+                        </Badge>
+                      ) : (
+                        <Badge variant={isActionable ? 'default' : 'secondary'}>
+                          {isActionable ? 'Actionable' : 'Archived'}
+                        </Badge>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="flex items-center gap-2">
+                      {!isConverted && isActionable && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openConversionModal(activity)}
+                          className="h-8 px-3"
+                        >
+                          Convert
+                          <ArrowRight className="ml-1 h-3 w-3" />
+                        </Button>
+                      )}
+                      {isConverted && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 px-3 text-green-600 hover:text-green-700"
+                        >
+                          View Roadmap
+                          <ArrowRight className="ml-1 h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               )
@@ -147,15 +169,12 @@ export function RecentActivityTable({ activities, projectId }: RecentActivityTab
         </table>
       </div>
 
-      {/* Conversion Modal */}
-      {selectedFeedback && (
-        <FeedbackConversionModal
-          isOpen={isConversionModalOpen}
-          onClose={closeConversionModal}
-          feedback={selectedFeedback}
-          onConvert={handleConvertFeedback}
-        />
-      )}
+      <FeedbackConversionModal
+        isOpen={isConversionModalOpen}
+        onClose={closeConversionModal}
+        onConvert={handleConvertFeedback}
+        feedback={selectedFeedback}
+      />
     </>
   )
 }
