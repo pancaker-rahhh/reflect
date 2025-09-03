@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Search, RotateCcw, Lightbulb, ThumbsUp } from 'lucide-react'
-import { api } from '@/services(mock)/api'
+import { Search, Filter, RotateCcw, Lightbulb, ThumbsUp, Calendar } from 'lucide-react'
+import { api } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { useAppContext } from '@/context/AppContext'
 import type { FeatureRequest } from '@/types'
 
 export function FeatureRequests() {
@@ -27,18 +28,22 @@ export function FeatureRequests() {
   const [searchQuery, setSearchQuery] = useState('')
 
   const queryClient = useQueryClient()
+  const { currentProject } = useAppContext()
 
   const { data: feedback = [], isLoading } = useQuery({
-    queryKey: ['feedback', { type: 'feature' }],
-    queryFn: () => api.getFeedback({ type: 'feature' })
+    queryKey: ['feedback', { type: 'feature_request' }, currentProject?.id],
+    queryFn: () => api.getFeedbackData('feature_request', currentProject?.id),
+    refetchInterval: 30000,
+    enabled: !!currentProject?.id,
   })
 
-  const upvoteMutation = useMutation({
-    mutationFn: (featureId: string) => api.upvoteFeature(featureId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['feedback'] })
-    }
-  })
+  // Remove upvoteMutation since upvoteFeature doesn't exist in the API
+  // const upvoteMutation = useMutation({
+  //   mutationFn: (featureId: string) => api.upvoteFeature(featureId),
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries({ queryKey: ['feedback'] })
+  //   }
+  // })
 
   const resetFilters = () => {
     setStartDate(undefined)
@@ -49,26 +54,28 @@ export function FeatureRequests() {
   }
 
   const filteredFeatureRequests = feedback
-    .filter(item => item.type === 'feature_request')
-    .map(item => item as FeatureRequest)
-    .filter(feature => {
-      if (startDate && new Date(feature.createdAt) < startDate) return false
-      if (endDate && new Date(feature.createdAt) > endDate) return false
-      
+    .filter((item) => item.feedback_type === 'feature_request')
+    .filter((feature) => {
+      if (startDate && new Date(feature.created_at) < startDate) return false
+      if (endDate && new Date(feature.created_at) > endDate) return false
+
       if (statusFilter !== 'all' && feature.status !== statusFilter) return false
-      
+
       if (searchQuery) {
         const query = searchQuery.toLowerCase()
         const searchableText = [
           feature.title,
-          feature.description,
-          feature.userName,
-          feature.userEmail
-        ].filter(Boolean).join(' ').toLowerCase()
-        
+          feature.message,
+          feature.submitter_name,
+          feature.submitter_email,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+
         if (!searchableText.includes(query)) return false
       }
-      
+
       return true
     })
     .sort((a, b) => {
@@ -76,29 +83,54 @@ export function FeatureRequests() {
         case 'upvotes':
           return (b.upvotes || 0) - (a.upvotes || 0)
         case 'oldest':
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
         case 'newest':
         default:
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       }
     })
 
   const getStatusVariant = (status: string) => {
     switch (status) {
-      case 'new': return 'default'
-      case 'under-review': return 'secondary'
-      case 'planned': return 'default'
-      case 'in-progress': return 'secondary'
-      case 'completed': return 'outline'
-      case 'declined': return 'destructive'
-      default: return 'outline'
+      case 'new':
+        return 'default'
+      case 'under-review':
+        return 'secondary'
+      case 'planned':
+        return 'default'
+      case 'in-progress':
+        return 'secondary'
+      case 'completed':
+        return 'outline'
+      case 'declined':
+        return 'destructive'
+      default:
+        return 'outline'
     }
   }
 
-
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'new':
+        return 'text-blue-600'
+      case 'under-review':
+        return 'text-yellow-600'
+      case 'planned':
+        return 'text-purple-600'
+      case 'in-progress':
+        return 'text-orange-600'
+      case 'completed':
+        return 'text-green-600'
+      case 'declined':
+        return 'text-red-600'
+      default:
+        return 'text-gray-600'
+    }
+  }
 
   const handleUpvote = (featureId: string) => {
-    upvoteMutation.mutate(featureId)
+    // Remove upvote functionality since API doesn't exist
+    console.log('Upvote not implemented yet')
   }
 
   return (
@@ -119,18 +151,10 @@ export function FeatureRequests() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-            <DatePicker
-              date={startDate}
-              onDateChange={setStartDate}
-              placeholder="Start date"
-            />
-            
-            <DatePicker
-              date={endDate}
-              onDateChange={setEndDate}
-              placeholder="End date"
-            />
-            
+            <DatePicker date={startDate} onDateChange={setStartDate} placeholder="Start date" />
+
+            <DatePicker date={endDate} onDateChange={setEndDate} placeholder="End date" />
+
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Status" />
@@ -145,7 +169,7 @@ export function FeatureRequests() {
                 <SelectItem value="declined">Declined</SelectItem>
               </SelectContent>
             </Select>
-            
+
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger>
                 <SelectValue placeholder="Sort by" />
@@ -156,7 +180,7 @@ export function FeatureRequests() {
                 <SelectItem value="upvotes">Most Upvotes</SelectItem>
               </SelectContent>
             </Select>
-            
+
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
@@ -166,12 +190,8 @@ export function FeatureRequests() {
                 className="pl-10"
               />
             </div>
-            
-            <Button 
-              variant="outline" 
-              onClick={resetFilters}
-              className="w-full"
-            >
+
+            <Button variant="outline" onClick={resetFilters} className="w-full">
               <RotateCcw className="mr-2 h-4 w-4" />
               Reset filters
             </Button>
@@ -201,11 +221,7 @@ export function FeatureRequests() {
             <p className="text-muted-foreground text-center max-w-sm">
               Feature requests will appear here when users suggest new ideas for your application
             </p>
-            <Button 
-              variant="outline" 
-              onClick={resetFilters}
-              className="mt-4"
-            >
+            <Button variant="outline" onClick={resetFilters} className="mt-4">
               <RotateCcw className="mr-2 h-4 w-4" />
               Reset Filters
             </Button>
@@ -222,10 +238,10 @@ export function FeatureRequests() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleUpvote(feature.id)}
-                      disabled={upvoteMutation.isPending}
+                      disabled={false} // Remove upvoteMutation.isPending
                       className={cn(
-                        "flex flex-col h-auto py-2 px-3",
-                        (feature.upvotes || 0) > 0 && "bg-primary/10 border-primary/20"
+                        'flex flex-col h-auto py-2 px-3',
+                        (feature.upvotes || 0) > 0 && 'bg-primary/10 border-primary/20'
                       )}
                     >
                       <ThumbsUp className="h-4 w-4 mb-1" />
@@ -233,7 +249,7 @@ export function FeatureRequests() {
                     </Button>
                     <span className="text-xs text-muted-foreground">upvotes</span>
                   </div>
-                  
+
                   <div className="flex-1 space-y-3">
                     <div className="flex items-start justify-between">
                       <div className="space-y-1 flex-1">
@@ -242,21 +258,38 @@ export function FeatureRequests() {
                           <h3 className="font-semibold text-lg">{feature.title}</h3>
                         </div>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>Requested by {feature.userName || 'Anonymous'}</span>
-                          {feature.userEmail && (
-                            <span>({feature.userEmail})</span>
-                          )}
-                          <span>{format(new Date(feature.createdAt), 'PPP')}</span>
+                          <span>Requested by {feature.submitter_name || 'Anonymous'}</span>
+                          {feature.submitter_email && <span>({feature.submitter_email})</span>}
+                          <span>{format(new Date(feature.created_at), 'PPP')}</span>
                         </div>
                       </div>
                       <Badge variant={getStatusVariant(feature.status || 'new')}>
                         {(feature.status || 'new').replace('-', ' ').toUpperCase()}
                       </Badge>
                     </div>
-                    
+
                     <div className="bg-muted/50 rounded-lg p-4">
-                      <p className="text-sm">{feature.description}</p>
+                      <p className="text-sm">
+                        {feature.suggested_solution || feature.message || 'No description provided'}
+                      </p>
                     </div>
+
+                    {(feature.use_case || feature.benefits) && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-4">
+                        {feature.use_case && (
+                          <div>
+                            <span className="font-medium text-muted-foreground">Use Case:</span>
+                            <p>{feature.use_case}</p>
+                          </div>
+                        )}
+                        {feature.benefits && (
+                          <div>
+                            <span className="font-medium text-muted-foreground">Benefits:</span>
+                            <p>{feature.benefits}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>

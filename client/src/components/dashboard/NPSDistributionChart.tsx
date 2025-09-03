@@ -1,13 +1,25 @@
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from 'recharts'
 import type { Feedback, SurveyResponse } from '@/types'
 
 interface NPSDistributionChartProps {
-  feedback: Feedback[]
+  feedback: Array<{
+    type: string
+    rating: number | null
+  }>
 }
 
 export function NPSDistributionChart({ feedback }: NPSDistributionChartProps) {
   const npsSurveys = feedback.filter(
-    (f): f is SurveyResponse => f.type === 'survey' && f.surveyType === 'NPS'
+    (f) => f.type === 'NPS' && f.rating !== null && f.rating !== undefined
   )
 
   if (npsSurveys.length === 0) {
@@ -23,21 +35,32 @@ export function NPSDistributionChart({ feedback }: NPSDistributionChartProps) {
 
   const distribution = Array.from({ length: 11 }, (_, i) => ({
     score: i,
-    count: npsSurveys.filter(s => s.score === i).length,
-    percentage: (npsSurveys.filter(s => s.score === i).length / npsSurveys.length * 100).toFixed(1)
+    count: npsSurveys.filter((s) => s.rating === i).length,
+    percentage: (
+      (npsSurveys.filter((s) => s.rating === i).length / npsSurveys.length) *
+      100
+    ).toFixed(1),
   }))
 
   const getBarColor = (score: number) => {
-    if (score <= 6) return '#dc2626' // Detractor - red
-    if (score <= 8) return '#f59e0b' // Passive - amber
-    return '#10b981' // Promoter - green
+    if (score <= 6) return '#dc2626'
+    if (score <= 8) return '#f59e0b'
+    return '#10b981'
   }
 
-  const detractors = npsSurveys.filter(s => s.score <= 6).length
-  const promoters = npsSurveys.filter(s => s.score >= 9).length
+  const detractors = npsSurveys.filter((s) => s.rating && s.rating <= 6).length
+  const promoters = npsSurveys.filter((s) => s.rating && s.rating >= 9).length
   const npsScore = Math.round(((promoters - detractors) / npsSurveys.length) * 100)
 
-  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; payload: { percentage: string } }>; label?: string }) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+    label,
+  }: {
+    active?: boolean
+    payload?: Array<{ value: number; payload: { percentage: string } }>
+    label?: string
+  }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-popover text-popover-foreground border rounded-lg shadow-lg p-3">
@@ -45,9 +68,7 @@ export function NPSDistributionChart({ feedback }: NPSDistributionChartProps) {
           <p className="text-sm">
             <span className="font-medium">{payload[0].value}</span> responses
           </p>
-          <p className="text-sm text-muted-foreground">
-            {payload[0].payload.percentage}% of total
-          </p>
+          <p className="text-sm text-muted-foreground">{payload[0].payload.percentage}% of total</p>
         </div>
       )
     }
@@ -76,23 +97,26 @@ export function NPSDistributionChart({ feedback }: NPSDistributionChartProps) {
           <p className="text-2xl font-bold">{npsScore}</p>
         </div>
       </div>
-      
+
       <div className="h-56 -mx-2">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={distribution} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted/20" vertical={false} />
-            <XAxis 
-              dataKey="score" 
+            <XAxis
+              dataKey="score"
               tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
               axisLine={{ stroke: 'hsl(var(--border))' }}
               tickLine={{ stroke: 'hsl(var(--border))' }}
             />
-            <YAxis 
+            <YAxis
               tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
               axisLine={{ stroke: 'hsl(var(--border))' }}
               tickLine={{ stroke: 'hsl(var(--border))' }}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))', opacity: 0.1 }} />
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{ fill: 'hsl(var(--muted))', opacity: 0.1 }}
+            />
             <Bar dataKey="count" radius={[4, 4, 0, 0]}>
               {distribution.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={getBarColor(entry.score)} />

@@ -1,7 +1,7 @@
 export interface ApiError {
   message: string
   status: number
-  details?: any
+  details?: Record<string, unknown>
 }
 
 export class ApiException extends Error {
@@ -26,54 +26,57 @@ interface ErrorPattern {
 
 class ErrorSanitizer {
   private readonly errorPatterns: ErrorPattern[] = [
-    { 
+    {
       pattern: /duplicate key|unique constraint|already exists/i,
       userMessage: 'This item already exists. Please try a different name.',
-      category: 'validation'
+      category: 'validation',
     },
     {
       pattern: /not found|404/i,
       userMessage: 'The requested resource was not found.',
-      category: 'validation'
+      category: 'validation',
     },
     {
       pattern: /unauthorized|401/i,
       userMessage: 'You are not authorized to perform this action.',
-      category: 'authentication'
+      category: 'authentication',
     },
     {
       pattern: /forbidden|403/i,
       userMessage: 'You do not have permission to access this resource.',
-      category: 'authorization'
+      category: 'authorization',
     },
     {
       pattern: /validation error|invalid input/i,
       userMessage: 'Please check your input and try again.',
-      category: 'validation'
+      category: 'validation',
     },
     {
       pattern: /network error|fetch failed|connection/i,
       userMessage: 'Network error. Please check your connection and try again.',
-      category: 'network'
+      category: 'network',
     },
     {
       pattern: /timeout/i,
       userMessage: 'The request timed out. Please try again.',
-      category: 'network'
+      category: 'network',
     },
     {
       pattern: /rate limit|too many requests|429/i,
       userMessage: 'Too many requests. Please wait a moment and try again.',
-      category: 'server'
+      category: 'server',
     },
     {
       pattern: /server error|500|502|503|504/i,
       userMessage: 'A server error occurred. Please try again later.',
-      category: 'server'
-    }
+      category: 'server',
+    },
   ]
 
-  sanitize(error: Error | string, isDevelopment: boolean = process.env.NODE_ENV === 'development'): string {
+  sanitize(
+    error: Error | string,
+    isDevelopment: boolean = process.env.NODE_ENV === 'development'
+  ): string {
     const errorMessage = typeof error === 'string' ? error : error.message
 
     // In development, return the original error for debugging
