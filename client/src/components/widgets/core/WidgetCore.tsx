@@ -13,7 +13,7 @@ export function WidgetCore({
   mode,
   state: externalState,
   onSubmit,
-  onClose: _onClose,
+  onClose,
   onStateChange,
 }: WidgetCoreProps) {
   // Use custom hooks for state management
@@ -384,7 +384,7 @@ export function WidgetCore({
 
         {/* Close button */}
         <button
-          onClick={() => updateState({ type: 'closed' })}
+          onClick={onClose || (() => updateState({ type: 'closed' }))}
           className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/20 hover:bg-white/30 transition-colors duration-200 flex items-center justify-center"
         >
           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
