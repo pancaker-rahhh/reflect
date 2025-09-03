@@ -16,6 +16,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { format } from 'date-fns'
+import { useAppContext } from '@/context/AppContext'
 import type { BugReport } from '@/types'
 
 export function BugReports() {
@@ -25,10 +26,13 @@ export function BugReports() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
 
+  const { currentProject } = useAppContext()
+
   const { data: feedback = [], isLoading } = useQuery({
-    queryKey: ['feedback', { type: 'bug_report' }],
-    queryFn: () => api.getFeedbackData('bug_report'),
+    queryKey: ['feedback', { type: 'bug_report' }, currentProject?.id],
+    queryFn: () => api.getFeedbackData('bug_report', currentProject?.id),
     refetchInterval: 30000,
+    enabled: !!currentProject?.id,
   })
 
   const resetFilters = () => {
@@ -239,8 +243,31 @@ export function BugReports() {
                 </div>
 
                 <div className="bg-muted/50 rounded-lg p-4 mb-4">
-                  <p className="text-sm">{bug.message}</p>
+                  <p className="text-sm">
+                    {bug.actual_behavior || bug.message || 'No description provided'}
+                  </p>
                 </div>
+
+                {(bug.steps_to_reproduce || bug.expected_behavior) && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
+                    {bug.steps_to_reproduce && (
+                      <div>
+                        <span className="font-medium text-muted-foreground">
+                          Steps to Reproduce:
+                        </span>
+                        <p>{bug.steps_to_reproduce}</p>
+                      </div>
+                    )}
+                    {bug.expected_behavior && (
+                      <div>
+                        <span className="font-medium text-muted-foreground">
+                          Expected Behavior:
+                        </span>
+                        <p>{bug.expected_behavior}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {(bug.browser || bug.os || bug.url) && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">

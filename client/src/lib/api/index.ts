@@ -101,7 +101,8 @@ export const api = {
   createRoadmap: (data: RoadmapCreateRequest) => roadmapApi.createRoadmap(data),
   updateRoadmap: (id: string, data: any) => roadmapApi.updateRoadmap(id, data),
 
-  getDashboardMetrics: (timeRange?: string) => dashboardApi.getDashboardMetrics(timeRange),
+  getDashboardMetrics: (timeRange?: string, projectId?: string) =>
+    dashboardApi.getDashboardMetrics(timeRange, projectId),
   getRecentActivity: (projectId?: string) => dashboardApi.getRecentActivity(projectId),
   getFeedbackData: (feedbackType?: string, projectId?: string) =>
     dashboardApi.getFeedbackData(feedbackType, projectId),

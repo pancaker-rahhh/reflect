@@ -16,17 +16,24 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { StarRating } from '@/components/ui/star-rating'
 import { format } from 'date-fns'
+import { useAppContext } from '@/context/AppContext'
 import type { Review } from '@/types'
 
 export function Reviews() {
   const [searchQuery, setSearchQuery] = useState('')
   const [timeframe, setTimeframe] = useState('all')
 
+  const { currentProject } = useAppContext()
+
   const { data: feedback = [], isLoading } = useQuery({
-    queryKey: ['reviews'],
-    queryFn: () => api.getFeedbackData('review'),
+    queryKey: ['reviews', currentProject?.id],
+    queryFn: () => api.getFeedbackData('review', currentProject?.id),
     refetchInterval: 30000,
+    enabled: !!currentProject?.id,
   })
+
+  // Debug: Log the feedback data to see what's being returned
+  console.log('Reviews - Raw feedback data:', feedback)
 
   const reviews = feedback.filter((f) => f.feedback_type === 'review').map((item) => item as any) // Cast to any to access dynamic properties
 
@@ -70,14 +77,17 @@ export function Reviews() {
     return searchableText.includes(query)
   })
 
+  // Fix: Use overall_rating for reviews, fallback to rating
   const averageRating =
     reviews.length > 0
-      ? reviews.reduce((sum, review) => sum + (review.rating || 0), 0) / reviews.length
+      ? reviews.reduce((sum, review) => sum + (review.overall_rating || review.rating || 0), 0) /
+        reviews.length
       : 0
 
   const ratingDistribution = Array.from({ length: 5 }, (_, i) => {
     const rating = 5 - i
-    const count = reviews.filter((r) => (r.rating || 0) === rating).length
+    // Fix: Use overall_rating for reviews, fallback to rating
+    const count = reviews.filter((r) => (r.overall_rating || r.rating || 0) === rating).length
     const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0
     return { rating, count, percentage }
   })
@@ -236,7 +246,10 @@ export function Reviews() {
                     <div>
                       <h4 className="font-semibold text-lg">{review.title}</h4>
                       <div className="flex items-center gap-4 mt-1">
-                        <StarRating rating={review.rating || 0} size="sm" />
+                        <StarRating
+                          rating={review.overall_rating || review.rating || 0}
+                          size="sm"
+                        />
                         <span className="text-sm text-muted-foreground">
                           by {review.submitter_name || 'Anonymous'}
                           {review.submitter_email && ` (${review.submitter_email})`}

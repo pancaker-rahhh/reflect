@@ -16,6 +16,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { format } from 'date-fns'
+import { useAppContext } from '@/context/AppContext'
 import type { Feedback, SurveyResponse } from '@/types'
 
 export function Responses() {
@@ -25,10 +26,21 @@ export function Responses() {
   const [scoreFilter, setScoreFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
 
+  const { currentProject } = useAppContext()
+
   const { data: feedback = [], isLoading } = useQuery({
-    queryKey: ['feedback', { type: submissionType === 'all' ? undefined : submissionType }],
-    queryFn: () => api.getFeedbackData(submissionType === 'all' ? undefined : submissionType),
+    queryKey: [
+      'feedback',
+      { type: submissionType === 'all' ? undefined : submissionType },
+      currentProject?.id,
+    ],
+    queryFn: () =>
+      api.getFeedbackData(
+        submissionType === 'all' ? undefined : submissionType,
+        currentProject?.id
+      ),
     refetchInterval: 30000,
+    enabled: !!currentProject?.id,
   })
 
   const resetFilters = () => {
@@ -39,11 +51,11 @@ export function Responses() {
     setSearchQuery('')
   }
 
-  const filteredResponses = feedback.filter((item) => {
+  const filteredResponses = feedback.filter((item: any) => {
     if (startDate && new Date(item.created_at) < startDate) return false
     if (endDate && new Date(item.created_at) > endDate) return false
 
-    if (scoreFilter !== 'all' && item.type === 'survey') {
+    if (scoreFilter !== 'all' && item.feedback_type === 'survey') {
       const survey = item as SurveyResponse
       const score = survey.score
       if (scoreFilter === 'promoters' && score < 9) return false
@@ -56,7 +68,7 @@ export function Responses() {
       const searchableText = [
         item.submitter_name,
         item.submitter_email,
-        item.type === 'survey' ? (item as SurveyResponse).comment : '',
+        item.feedback_type === 'survey' ? (item as SurveyResponse).comment : '',
         'title' in item ? item.title : '',
         'message' in item ? item.message : '',
         'description' in item ? item.description : '',
@@ -71,7 +83,9 @@ export function Responses() {
     return true
   })
 
-  const surveyResponses = filteredResponses.filter((f) => f.type === 'survey') as SurveyResponse[]
+  const surveyResponses = filteredResponses.filter(
+    (f) => f.feedback_type === 'survey'
+  ) as SurveyResponse[]
 
   return (
     <div className="space-y-6">

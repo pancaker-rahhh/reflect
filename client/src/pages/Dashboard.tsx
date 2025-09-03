@@ -27,7 +27,7 @@ export function Dashboard() {
     refetch: refetchMetrics,
   } = useQuery({
     queryKey: ['dashboard-metrics', timeRange, currentProject?.id],
-    queryFn: () => api.getDashboardMetrics(timeRange),
+    queryFn: () => api.getDashboardMetrics(timeRange, currentProject?.id),
     refetchInterval: 30000,
     enabled: !!currentProject?.id,
     retry: 3,

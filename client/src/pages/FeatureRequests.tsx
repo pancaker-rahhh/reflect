@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { useAppContext } from '@/context/AppContext'
 import type { FeatureRequest } from '@/types'
 
 export function FeatureRequests() {
@@ -27,11 +28,13 @@ export function FeatureRequests() {
   const [searchQuery, setSearchQuery] = useState('')
 
   const queryClient = useQueryClient()
+  const { currentProject } = useAppContext()
 
   const { data: feedback = [], isLoading } = useQuery({
-    queryKey: ['feedback', { type: 'feature_request' }],
-    queryFn: () => api.getFeedbackData('feature_request'),
+    queryKey: ['feedback', { type: 'feature_request' }, currentProject?.id],
+    queryFn: () => api.getFeedbackData('feature_request', currentProject?.id),
     refetchInterval: 30000,
+    enabled: !!currentProject?.id,
   })
 
   // Remove upvoteMutation since upvoteFeature doesn't exist in the API
@@ -267,8 +270,27 @@ export function FeatureRequests() {
                     </div>
 
                     <div className="bg-muted/50 rounded-lg p-4">
-                      <p className="text-sm">{feature.message}</p>
+                      <p className="text-sm">
+                        {feature.suggested_solution || feature.message || 'No description provided'}
+                      </p>
                     </div>
+
+                    {(feature.use_case || feature.benefits) && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-4">
+                        {feature.use_case && (
+                          <div>
+                            <span className="font-medium text-muted-foreground">Use Case:</span>
+                            <p>{feature.use_case}</p>
+                          </div>
+                        )}
+                        {feature.benefits && (
+                          <div>
+                            <span className="font-medium text-muted-foreground">Benefits:</span>
+                            <p>{feature.benefits}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>

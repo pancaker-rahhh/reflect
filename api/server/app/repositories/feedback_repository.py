@@ -1,7 +1,8 @@
 from typing import List, Optional, Any, Dict
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, text
+from datetime import datetime, timedelta
 from app.models.feedback_model import (
     Feedback,
     FeedbackStatus,
@@ -218,15 +219,12 @@ class FeedbackRepository(BaseRepository[Feedback]):
         project_id: Optional[UUID] = None,
         time_range: str = 'all',
     ) -> Dict[str, Any]:
-        from sqlalchemy import text
-        from datetime import datetime, timedelta
-
         where_conditions = []
         params = {}
 
         if project_id:
-            where_conditions.append('project_id = :project_id')
-            params['project_id'] = project_id
+            where_conditions.append('f.project_id = :project_id')
+            params['project_id'] = str(project_id)
 
         if time_range != 'all':
             now = datetime.utcnow()
@@ -239,25 +237,42 @@ class FeedbackRepository(BaseRepository[Feedback]):
             else:
                 cutoff_date = now - timedelta(days=30)
 
-            where_conditions.append('created_at >= :cutoff_date')
+            where_conditions.append('f.created_at >= :cutoff_date')
             params['cutoff_date'] = cutoff_date
 
         where_clause = ' AND '.join(where_conditions) if where_conditions else '1=1'
         base_where = f'WHERE {where_clause}'
 
         total_result = await db.execute(
-            text(f'SELECT COUNT(*) FROM feedback {base_where}'), params
+            text(f'SELECT COUNT(*) FROM feedback f {base_where}'), params
         )
         total_feedback_count = total_result.scalar() or 0
 
-        rating_result = await db.execute(
-            text(f'SELECT AVG(rating) FROM feedback {base_where}'), params
-        )
+        rating_query = f"""
+        SELECT AVG(rating_value) as avg_rating
+        FROM (
+            SELECT f.id, f.rating as rating_value FROM feedback f {base_where} AND f.rating IS NOT NULL
+            UNION ALL
+            SELECT f.id, rf.overall_rating as rating_value FROM feedback f
+            JOIN review_feedback rf ON f.id = rf.id {base_where} AND rf.overall_rating IS NOT NULL
+            UNION ALL
+            SELECT f.id, nf.nps_score as rating_value FROM feedback f
+            JOIN nps_feedback nf ON f.id = nf.id {base_where} AND nf.nps_score IS NOT NULL
+            UNION ALL
+            SELECT f.id, cf.csat_score as rating_value FROM feedback f
+            JOIN csat_feedback cf ON f.id = cf.id {base_where} AND cf.csat_score IS NOT NULL
+            UNION ALL
+            SELECT f.id, ces.ces_score as rating_value FROM feedback f
+            JOIN ces_feedback ces ON f.id = ces.id {base_where} AND ces.ces_score IS NOT NULL
+        ) all_ratings
+        """
+
+        rating_result = await db.execute(text(rating_query), params)
         average_rating = float(rating_result.scalar() or 0)
 
         bug_result = await db.execute(
             text(
-                f"SELECT COUNT(*) FROM feedback {base_where} AND feedback_type = 'bug_report'"
+                f"SELECT COUNT(*) FROM feedback f {base_where} AND f.feedback_type = 'bug_report'"
             ),
             params,
         )
@@ -265,14 +280,14 @@ class FeedbackRepository(BaseRepository[Feedback]):
 
         feature_result = await db.execute(
             text(
-                f"SELECT COUNT(*) FROM feedback {base_where} AND feedback_type = 'feature_request'"
+                f"SELECT COUNT(*) FROM feedback f {base_where} AND f.feedback_type = 'feature_request'"
             ),
             params,
         )
         new_feature_requests = feature_result.scalar() or 0
 
         pending_result = await db.execute(
-            text(f"SELECT COUNT(*) FROM feedback {base_where} AND status = 'NEW'"),
+            text(f"SELECT COUNT(*) FROM feedback f {base_where} AND f.status = 'NEW'"),
             params,
         )
         pending_feedback_review = pending_result.scalar() or 0
@@ -293,7 +308,6 @@ class FeedbackRepository(BaseRepository[Feedback]):
     async def get_recent_activities(
         self, db: AsyncSession, project_id: Optional[UUID] = None, limit: int = 10
     ) -> List[Dict[str, Any]]:
-        """Get recent feedback activities for dashboard"""
         query = select(Feedback).order_by(Feedback.created_at.desc()).limit(limit)
 
         if project_id:
@@ -336,46 +350,106 @@ class FeedbackRepository(BaseRepository[Feedback]):
         limit: int = 100,
         offset: int = 0,
     ) -> List[Dict[str, Any]]:
-        """Get public feedback data for dashboard"""
-        query = (
-            select(Feedback)
-            .order_by(Feedback.created_at.desc())
-            .limit(limit)
-            .offset(offset)
-        )
+        base_query = """
+        SELECT
+            f.id,
+            f.feedback_type,
+            f.title,
+            f.message,
+            f.rating,
+            f.status,
+            f.created_at,
+            f.submitter_name,
+            f.submitter_email,
+            f.feedback_votes,
+            f.is_anonymous,
+            f.is_actionable,
+            f.feedback_metadata,
+            -- Review specific fields
+            rf.overall_rating,
+            rf.is_published,
+            -- Bug report specific fields
+            brf.severity_level,
+            brf.steps_to_reproduce,
+            brf.expected_behavior,
+            brf.actual_behavior,
+            -- Feature request specific fields
+            frf.use_case,
+            frf.suggested_solution,
+            frf.benefits,
+            frf.implementation_status
+        FROM feedback f
+        LEFT JOIN review_feedback rf ON f.id = rf.id
+        LEFT JOIN bug_report_feedback brf ON f.id = brf.id
+        LEFT JOIN feature_request_feedback frf ON f.id = frf.id
+        WHERE 1=1
+        """
+
+        params = {}
 
         if project_id:
-            query = query.where(Feedback.project_id == project_id)
+            base_query += ' AND f.project_id = :project_id'
+            params['project_id'] = str(project_id)
 
         if feedback_type:
-            try:
-                ftype = FeedbackType(feedback_type.lower())
-                query = query.where(Feedback.feedback_type == ftype)
-            except ValueError:
-                pass
+            base_query += ' AND f.feedback_type = :feedback_type'
+            params['feedback_type'] = feedback_type
 
-        result = await db.execute(query)
-        feedback_items = result.scalars().all()
+        base_query += ' ORDER BY f.created_at DESC LIMIT :limit OFFSET :offset'
+        params['limit'] = limit
+        params['offset'] = offset
+
+        result = await db.execute(text(base_query), params)
+        rows = result.fetchall()
 
         feedback_data = []
-        for item in feedback_items:
+        for row in rows:
             feedback_item = {
-                'id': str(item.id),
-                'type': item.feedback_type,
-                'title': item.title,
-                'message': item.message,
-                'rating': item.rating,
-                'status': item.status,
-                'created_at': item.created_at,
-                'submitter_name': item.submitter_name,
-                'submitter_email': item.submitter_email,
-                'feedback_votes': item.feedback_votes,
-                'is_anonymous': item.is_anonymous,
-                'is_actionable': item.is_actionable,
+                'id': str(row.id),
+                'type': row.feedback_type,
+                'feedback_type': row.feedback_type,
+                'title': row.title,
+                'message': row.message,
+                'rating': row.rating,
+                'status': row.status,
+                'created_at': row.created_at,
+                'submitter_name': row.submitter_name,
+                'submitter_email': row.submitter_email,
+                'feedback_votes': row.feedback_votes,
+                'is_anonymous': row.is_anonymous,
+                'is_actionable': row.is_actionable,
             }
 
-            if item.feedback_metadata:
-                feedback_item.update(item.feedback_metadata)
+            if row.feedback_type == 'review':
+                feedback_item.update(
+                    {
+                        'overall_rating': row.overall_rating,
+                        'is_published': row.is_published,
+                    }
+                )
+
+            elif row.feedback_type == 'bug_report':
+                feedback_item.update(
+                    {
+                        'severity_level': row.severity_level,
+                        'steps_to_reproduce': row.steps_to_reproduce,
+                        'expected_behavior': row.expected_behavior,
+                        'actual_behavior': row.actual_behavior,
+                    }
+                )
+
+            elif row.feedback_type == 'feature_request':
+                feedback_item.update(
+                    {
+                        'use_case': row.use_case,
+                        'suggested_solution': row.suggested_solution,
+                        'benefits': row.benefits,
+                        'implementation_status': row.implementation_status,
+                    }
+                )
+
+            if row.feedback_metadata:
+                feedback_item.update(row.feedback_metadata)
 
             feedback_data.append(feedback_item)
 

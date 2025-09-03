@@ -1,10 +1,16 @@
 import type { DashboardMetrics, RecentActivity } from '@/types'
 import { apiClient } from '../client'
 
-async function getDashboardMetrics(timeRange?: string): Promise<DashboardMetrics> {
+async function getDashboardMetrics(
+  timeRange?: string,
+  projectId?: string
+): Promise<DashboardMetrics> {
   const params = new URLSearchParams()
   if (timeRange && timeRange !== 'all') {
     params.append('time_range', timeRange)
+  }
+  if (projectId) {
+    params.append('project_id', projectId)
   }
 
   return apiClient.get(`/dashboard/metrics?${params.toString()}`)
