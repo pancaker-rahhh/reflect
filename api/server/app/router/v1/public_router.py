@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
+from app.core.exceptions import HTTPException
 from app.schemas.widget_schema import WidgetReadPublic
 from app.schemas.feedback_schema import FeedbackResponsePayload
 from app.services.widget_service import widget_service, WidgetService
@@ -12,7 +13,9 @@ from typing import Optional, Dict, Any, List
 from app.repositories.feedback_repository import feedback_repository
 from app.core.rate_limiting import create_rate_limit_decorator
 from app.core.sanitization import InputSanitizer
+from app.core.logging import get_logger
 
+logger = get_logger(__name__)
 public_router = APIRouter()
 
 
@@ -55,8 +58,6 @@ async def get_public_widget_config(
 ):
     sanitized_public_key = InputSanitizer.sanitize_widget_key(public_key)
     if not sanitized_public_key:
-        from fastapi import HTTPException
-
         raise HTTPException(status_code=400, detail='Invalid widget key')
 
     return await service.get_public_widget_config(db, public_key=sanitized_public_key)
@@ -67,18 +68,15 @@ async def get_public_widget_config(
     response_model=FeedbackResponsePayload,
     status_code=status.HTTP_201_CREATED,
 )
-# @create_rate_limit_decorator('feedback_submission', is_anonymous=True)
+@create_rate_limit_decorator('feedback_submission', is_anonymous=True)
 async def submit_public_feedback(
     request: Request,
     payload: PublicFeedbackPayload,
     db: AsyncSession = Depends(get_db),
     widget_service: WidgetService = Depends(lambda: widget_service),
 ):
-    # Sanitize widget key
     sanitized_widget_key = InputSanitizer.sanitize_widget_key(payload.widgetKey)
     if not sanitized_widget_key:
-        from fastapi import HTTPException
-
         raise HTTPException(status_code=400, detail='Invalid widget key')
 
     widget = await widget_service.get_public_widget_by_key(db, sanitized_widget_key)
@@ -179,32 +177,57 @@ async def submit_public_feedback(
         f'DEBUG: After sanitization, sanitized_feedback_data = {sanitized_feedback_data}'
     )
 
+    # Convert WidgetType to FeedbackType for database queries
+    from app.models.feedback_model import FeedbackType
+
+    feedback_type_mapping = {
+        'FEEDBACK': FeedbackType.GENERAL,
+        'SURVEY': FeedbackType.SURVEY,
+        'REVIEW': FeedbackType.REVIEW,
+        'BUG_REPORT': FeedbackType.BUG_REPORT,
+        'FEATURE_REQUEST': FeedbackType.FEATURE_REQUEST,
+        'NPS': FeedbackType.NPS,
+        'CSAT': FeedbackType.CSAT,
+        'CES': FeedbackType.CES,
+    }
+    feedback_type = feedback_type_mapping.get(widget_type.value, FeedbackType.GENERAL)
+
     # Check for existing feedback from the same user context to prevent duplicates
     existing_feedback = await feedback_repository.get_existing_feedback_by_context(
         db,
         widget_id=widget.id,
         context=sanitized_context,
-        feedback_type=widget_type,
+        feedback_type=feedback_type,
         within_hours=24,  # Check for duplicates within 24 hours
     )
 
-    if existing_feedback:
-        # Update existing feedback instead of creating new one
-        return await feedback_service.update_feedback_from_widget(
+    try:
+        if existing_feedback:
+            # Update existing feedback instead of creating new one
+            logger.info(f'Updating existing feedback with ID: {existing_feedback.id}')
+            return await feedback_service.update_feedback_from_widget(
+                db=db,
+                feedback_id=existing_feedback.id,
+                data=sanitized_feedback_data,
+                context=sanitized_context,
+            )
+
+        logger.info(f'Creating new feedback for widget: {widget.id}')
+        return await feedback_service.create_feedback_from_widget(
             db=db,
-            feedback_id=existing_feedback.id,
+            widget_id=widget.id,
+            project_id=widget.project_id,
+            widget_type=widget_type,
             data=sanitized_feedback_data,
             context=sanitized_context,
         )
-
-    return await feedback_service.create_feedback_from_widget(
-        db=db,
-        widget_id=widget.id,
-        project_id=widget.project_id,
-        widget_type=widget_type,
-        data=sanitized_feedback_data,
-        context=sanitized_context,
-    )
+    except ValueError as e:
+        # Handle database errors and other validation errors
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        # Handle unexpected errors
+        logger.error(f'Unexpected error in submit_public_feedback: {str(e)}')
+        raise HTTPException(status_code=500, detail='Internal server error')
 
 
 class FeatureRequestPublic(BaseModel):
@@ -236,8 +259,6 @@ async def get_widget_feature_requests(
 
     sanitized_public_key = InputSanitizer.sanitize_widget_key(public_key)
     if not sanitized_public_key:
-        from fastapi import HTTPException
-
         raise HTTPException(status_code=400, detail='Invalid widget key')
 
     widget = await widget_service.get_public_widget_by_key(db, sanitized_public_key)
@@ -294,8 +315,6 @@ async def upvote_feature_request(
 
     sanitized_widget_key = InputSanitizer.sanitize_widget_key(payload.widgetKey)
     if not sanitized_widget_key:
-        from fastapi import HTTPException
-
         raise HTTPException(status_code=400, detail='Invalid widget key')
 
     try:
@@ -303,16 +322,12 @@ async def upvote_feature_request(
 
         feature_id = UUID(payload.featureId)
     except ValueError:
-        from fastapi import HTTPException
-
         raise HTTPException(status_code=400, detail='Invalid feature ID format')
 
     widget = await widget_service.get_public_widget_by_key(db, sanitized_widget_key)
     feature = await feedback_repository.get(db, feature_id)
 
     if not feature or feature.widget_id != widget.id:
-        from fastapi import HTTPException
-
         raise HTTPException(status_code=404, detail='Feature request not found')
 
     voter_ip = request.client.host if request.client else '127.0.0.1'

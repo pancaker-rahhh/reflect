@@ -34,3 +34,10 @@ class ConflictError(HTTPException):
 class ValidationError(HTTPException):
     def __init__(self, detail: str = 'Validation error'):
         super().__init__(status_code=422, detail=detail)
+
+
+class RateLimitExceededError(HTTPException):
+    def __init__(self, detail: str = 'Rate limit exceeded', retry_after: int = 60):
+        super().__init__(
+            status_code=429, detail=detail, headers={'Retry-After': str(retry_after)}
+        )

@@ -13,13 +13,20 @@ class BaseRepository(Generic[ModelType]):
         self.model = model
 
     async def get(self, db: AsyncSession, id: UUID) -> Optional[ModelType]:
+        from app.core.logging import get_logger
+
+        logger = get_logger(__name__)
+
+        logger.info(f'BaseRepository.get called with id: {id}')
         stmt = select(self.model).where(self.model.id == id)
 
         # Automatically filter out soft-deleted records
         if hasattr(self.model, 'deleted_at'):
             stmt = stmt.where(self.model.deleted_at.is_(None))
 
+        logger.info(f'Executing query for {self.model.__name__}')
         result = await db.execute(stmt)
+        logger.info(f'Query executed, getting result')
         return result.scalar_one_or_none()
 
     async def get_multi(

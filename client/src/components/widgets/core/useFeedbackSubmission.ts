@@ -14,6 +14,13 @@ interface UseFeedbackSubmissionProps {
   getAvailableFeedbackTypes: () => FeedbackType[]
 }
 
+interface ErrorInfo {
+  message: string
+  type: 'rate_limit' | 'validation' | 'network' | 'server' | 'unknown'
+  retryAfter?: number // seconds
+  retryAt?: Date
+}
+
 export function useFeedbackSubmission({
   mode,
   onSubmit,
@@ -22,6 +29,58 @@ export function useFeedbackSubmission({
 }: UseFeedbackSubmissionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [errorInfo, setErrorInfo] = useState<ErrorInfo | null>(null)
+
+  // Parse error message to detect rate limiting and extract retry information
+  const parseError = useCallback((errorMessage: string): ErrorInfo => {
+    // Check for rate limiting patterns
+    if (errorMessage.includes('Too many requests') || errorMessage.includes('rate limit')) {
+      // Extract retry time from message like "Please try again in 5 minutes"
+      const retryMatch = errorMessage.match(/try again in (\d+) minute/i)
+      const retrySeconds = retryMatch ? parseInt(retryMatch[1]) * 60 : 60 // default 1 minute
+
+      return {
+        message: errorMessage,
+        type: 'rate_limit',
+        retryAfter: retrySeconds,
+        retryAt: new Date(Date.now() + retrySeconds * 1000),
+      }
+    }
+
+    // Check for network errors
+    if (errorMessage.includes('Network error') || errorMessage.includes('fetch')) {
+      return {
+        message: errorMessage,
+        type: 'network',
+      }
+    }
+
+    // Check for server errors
+    if (errorMessage.includes('Server') || errorMessage.includes('500')) {
+      return {
+        message: errorMessage,
+        type: 'server',
+      }
+    }
+
+    // Check for validation errors
+    if (
+      errorMessage.includes('required') ||
+      errorMessage.includes('invalid') ||
+      errorMessage.includes('must be')
+    ) {
+      return {
+        message: errorMessage,
+        type: 'validation',
+      }
+    }
+
+    // Default to unknown
+    return {
+      message: errorMessage,
+      type: 'unknown',
+    }
+  }, [])
 
   const validateFeedbackData = useCallback((data: FeedbackData): string | null => {
     // Basic validation
@@ -83,7 +142,11 @@ export function useFeedbackSubmission({
       // Client-side validation
       const validationError = validateFeedbackData(data)
       if (validationError) {
+        const errorInfo = parseError(validationError)
         setError(validationError)
+        setErrorInfo(errorInfo)
+        // Transition to error state to show the error UI
+        onStateChange?.({ type: 'error' })
         return
       }
 
@@ -110,7 +173,12 @@ export function useFeedbackSubmission({
               onStateChange?.({ type: 'success' })
             }
           } catch (err) {
-            setError(err instanceof Error ? err.message : 'Submission failed')
+            const errorMessage = err instanceof Error ? err.message : 'Submission failed'
+            const errorInfo = parseError(errorMessage)
+            setError(errorMessage)
+            setErrorInfo(errorInfo)
+            // Transition to error state to show the error UI
+            onStateChange?.({ type: 'error' })
           } finally {
             setIsSubmitting(false)
           }
@@ -186,11 +254,15 @@ export function useFeedbackSubmission({
 
   const clearError = useCallback(() => {
     setError(null)
-  }, [])
+    setErrorInfo(null)
+    // Transition back to active state to show the form again
+    onStateChange?.({ type: 'active' })
+  }, [onStateChange])
 
   return {
     isSubmitting,
     error,
+    errorInfo,
     handleSubmit,
     handleScoreSubmission,
     clearError,

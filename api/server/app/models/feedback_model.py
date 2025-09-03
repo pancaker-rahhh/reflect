@@ -1,5 +1,4 @@
 from typing import TYPE_CHECKING, Optional
-from sqlalchemy import event
 from sqlalchemy import (
     Column,
     String,
@@ -10,7 +9,7 @@ from sqlalchemy import (
     Enum as SQLEnum,
     DateTime as DateTimeColumn,
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB, INET
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 import enum
 import uuid

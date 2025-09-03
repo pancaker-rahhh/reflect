@@ -2,13 +2,14 @@ from typing import Dict, Any, Callable
 import time
 import functools
 from collections import defaultdict
-from fastapi import Request, HTTPException, status
+from fastapi import Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from app.core.settings import get_settings
 from app.core.logging import get_logger
+from app.core.exceptions import RateLimitExceededError
 
 settings = get_settings()
 logger = get_logger(__name__)
@@ -95,15 +96,14 @@ def create_rate_limit_decorator(endpoint_type: str, is_anonymous: bool = False):
                     else get_rate_limit_config(endpoint_type)
                 )
 
-                raise HTTPException(
-                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                raise RateLimitExceededError(
                     detail={
                         'error': 'Rate limit exceeded',
                         'type': endpoint_type,
                         'message': f'Too many requests. Limited to {config["calls"]} calls per {config["period"]} seconds.',
                         'retry_after': config['period'],
                     },
-                    headers={'Retry-After': str(config['period'])},
+                    retry_after=config['period'],
                 )
 
             return await func(request, *args, **kwargs)
@@ -124,24 +124,12 @@ async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
         'message': 'Too many requests. Please try again later.',
     }
 
-    headers = {
-        'X-RateLimit-Limit': str(exc.limit),
-        'X-RateLimit-Remaining': str(exc.remaining),
-        'X-RateLimit-Reset': str(exc.reset),
-        'Retry-After': str(retry_after),
-    }
-
     logger.warning(f'Rate limit exceeded for {request.client.host}: {limit_type}')
 
-    raise HTTPException(
-        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-        detail=error_detail,
-        headers=headers,
-    )
+    raise RateLimitExceededError(detail=error_detail, retry_after=retry_after)
 
 
 def setup_rate_limiting(app):
-    # Still add slowapi middleware in case we need it later
     app.add_middleware(SlowAPIMiddleware)
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)

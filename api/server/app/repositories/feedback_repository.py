@@ -163,15 +163,20 @@ class FeedbackRepository(BaseRepository[Feedback]):
         if user_agent:
             filters.append(Feedback.context['user_agent'].astext == user_agent)
 
-        # Use SQLAlchemy 2.x async syntax
+        # Use SQLAlchemy 2.x async syntax - select only the ID to avoid lazy loading issues
         stmt = (
-            select(Feedback)
+            select(Feedback.id)
             .where(and_(*filters))
             .order_by(Feedback.created_at.desc())
             .limit(1)
         )
         result = await db.execute(stmt)
-        return result.scalar_one_or_none()
+        feedback_id = result.scalar_one_or_none()
+
+        if feedback_id:
+            # Return the full object if we found an ID
+            return await self.get(db, feedback_id)
+        return None
 
     async def update_votes(
         self, db: AsyncSession, feedback_id: UUID, new_vote_count: int
