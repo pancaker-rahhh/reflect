@@ -42,6 +42,7 @@ interface WidgetConfig {
 declare global {
   interface Window {
     reflectConfig: ReflectConfig
+    __REFLECT_WIDGET_CONFIG__?: WidgetConfig
   }
 }
 
@@ -76,7 +77,7 @@ declare global {
         0%, 100% { transform: scale(1); }
         50% { transform: scale(1.05); }
       }
-      
+
       @keyframes reflect-slideUp {
         from {
           opacity: 0;
@@ -87,7 +88,7 @@ declare global {
           transform: translateY(0) scale(1);
         }
       }
-      
+
       @keyframes reflect-slideDown {
         from {
           opacity: 1;
@@ -118,6 +119,20 @@ declare global {
 
       .reflect-widget-container.closing {
         animation: reflect-slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* Special handling for center positioned widgets */
+      .reflect-widget-container[style*="transform: translate(-50%, -50%)"] {
+        animation: reflect-fadeInScale 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      .reflect-widget-container[style*="transform: translate(-50%, -50%)"].closing {
+        animation: reflect-fadeInScale 0.3s cubic-bezier(0.4, 0, 0.2, 1) reverse;
+      }
+
+      /* Ensure center positioned widgets maintain their transform during animations */
+      .reflect-widget-container[style*="transform: translate(-50%, -50%)"] {
+        transform-origin: center center;
       }
 
       .reflect-widget-launcher {
@@ -175,13 +190,26 @@ declare global {
   const configTheme = window.reflectConfig.theme || 'light'
   const configPosition = window.reflectConfig.position || 'bottom-right'
 
+  // Helper function to normalize position format (convert underscores to hyphens)
+  function normalizePosition(position: string): string {
+    return position.replace(/_/g, '-')
+  }
+
   // Use environment-based URLs
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
   const apiUrl = `${apiBaseUrl}/public/widgets/${publicKey}`
 
   injectWidgetStyles()
 
-  // Add retry logic with exponential backoff
+  // Check for embedded config first (injected by CDN deployment)
+  function getEmbeddedConfig(): WidgetConfig | null {
+    if (window.__REFLECT_WIDGET_CONFIG__) {
+      return window.__REFLECT_WIDGET_CONFIG__ as WidgetConfig
+    }
+    return null
+  }
+
+  // Add retry logic with exponential backoff for API fallback
   function fetchConfigWithRetry(retries = 3, delay = 1000): Promise<WidgetConfig> {
     return fetch(apiUrl)
       .then((response) => {
@@ -201,15 +229,22 @@ declare global {
       })
   }
 
-  fetchConfigWithRetry()
-    .then((config: WidgetConfig) => {
-      renderLauncher(config)
-    })
-    .catch((error) => {
-      console.error('Reflect Widget: Failed to load configuration after retries.', error)
-      // Show minimal fallback widget
-      renderFallbackLauncher()
-    })
+  // Try embedded config first, then fall back to API
+  const embeddedConfig = getEmbeddedConfig()
+  if (embeddedConfig) {
+    renderLauncher(embeddedConfig)
+  } else {
+    console.log('Reflect Widget: No embedded config found, fetching from API...')
+    fetchConfigWithRetry()
+      .then((config: WidgetConfig) => {
+        renderLauncher(config)
+      })
+      .catch((error) => {
+        console.error('Reflect Widget: Failed to load configuration after retries.', error)
+        // Show minimal fallback widget
+        renderFallbackLauncher()
+      })
+  }
 
   // Convert backend config to WidgetConfiguration format
   function transformWidgetConfig(backendConfig: WidgetConfig): WidgetConfiguration {
@@ -248,8 +283,9 @@ declare global {
         theme: (configTheme === 'dark'
           ? 'minimal-dark'
           : 'default') as WidgetConfiguration['appearance']['theme'],
-        position: (backendConfig.position ||
-          configPosition) as WidgetConfiguration['appearance']['position'],
+        position: normalizePosition(
+          backendConfig.position || configPosition
+        ) as WidgetConfiguration['appearance']['position'],
         colors: {
           primary: theme.primary || '#3b82f6',
           background: theme.background || (configTheme === 'dark' ? '#1f2937' : '#ffffff'),
@@ -309,37 +345,31 @@ declare global {
   function toggleWidget() {
     isWidgetOpen = !isWidgetOpen
     if (isWidgetOpen) {
-      // Always fetch fresh config to ensure consistent state
-      fetch(apiUrl)
-        .then((response) => response.json())
-        .then((config: WidgetConfig) => {
-          // Remove existing widget if it exists
-          if (widgetContainer) {
-            widgetContainer.remove()
-            widgetContainer = null
-          }
-          // Create fresh widget container
-          widgetContainer = createWidgetContainer(config)
-          document.body.appendChild(widgetContainer)
-          showWidget()
-        })
-        .catch((error) => {
-          console.error('Failed to load widget config:', error)
-          // If config fails, try to show existing widget
-          if (widgetContainer) {
-            showWidget()
-          }
-        })
+      // Try to use embedded config first, then fall back to API fetch
+      let config: WidgetConfig | null = null
 
-      if (launcherContainer) {
-        launcherContainer.style.transform = 'rotate(90deg)'
-        setTimeout(() => {
-          if (launcherContainer) {
-            launcherContainer.innerHTML = closeIcon
-            launcherContainer.style.transform = 'rotate(0deg)'
-          }
-        }, 150)
+      if (window.__REFLECT_WIDGET_CONFIG__) {
+        config = window.__REFLECT_WIDGET_CONFIG__ as WidgetConfig
+      } else {
+        // Fall back to API fetch if no embedded config
+        fetch(apiUrl)
+          .then((response) => response.json())
+          .then((apiConfig: WidgetConfig) => {
+            config = apiConfig
+            createAndShowWidget(config)
+          })
+          .catch((error) => {
+            console.error('Failed to load widget config:', error)
+            // If config fails, try to show existing widget
+            if (widgetContainer) {
+              showWidget()
+            }
+          })
+        return
       }
+
+      // Use embedded config directly
+      createAndShowWidget(config)
     } else {
       hideWidget()
 
@@ -353,6 +383,18 @@ declare global {
         }, 150)
       }
     }
+  }
+
+  function createAndShowWidget(config: WidgetConfig) {
+    // Remove existing widget if it exists
+    if (widgetContainer) {
+      widgetContainer.remove()
+      widgetContainer = null
+    }
+    // Create fresh widget container
+    widgetContainer = createWidgetContainer(config)
+    document.body.appendChild(widgetContainer)
+    showWidget()
   }
 
   function showWidget() {
@@ -385,8 +427,6 @@ declare global {
 
     Object.assign(container.style, {
       position: 'fixed',
-      bottom: '100px',
-      right: '20px',
       width: '380px',
       maxWidth: 'calc(100vw - 40px)',
       height: '520px',
@@ -409,12 +449,22 @@ declare global {
       WebkitBackdropFilter: 'blur(20px)',
     })
 
-    // Apply positioning
-    const position = backendConfig.position || configPosition
+    // Apply positioning - clear all position properties first, then set the correct ones
+    const position = normalizePosition(backendConfig.position || configPosition)
+    container.style.top = ''
+    container.style.bottom = ''
+    container.style.left = ''
+    container.style.right = ''
+
     if (position.includes('bottom')) container.style.bottom = '100px'
     if (position.includes('top')) container.style.top = '100px'
     if (position.includes('right')) container.style.right = '20px'
     if (position.includes('left')) container.style.left = '20px'
+    if (position === 'center') {
+      container.style.top = '50%'
+      container.style.left = '50%'
+      container.style.transform = 'translate(-50%, -50%)'
+    }
 
     // Create React render target
     const widgetConfig = {
@@ -616,9 +666,19 @@ declare global {
       animation: 'reflect-pulse 3s infinite',
     })
 
+    // Apply position from config first
+    const position = normalizePosition(config.position || configPosition)
+
+    // Store the base transform for center positioning
+    const baseTransform = position === 'center' ? 'translate(-50%, -50%)' : ''
+
     launcherContainer.onmouseover = () => {
       if (launcherContainer) {
-        launcherContainer.style.transform = 'scale(1.1) translateY(-2px)'
+        const hoverTransform =
+          position === 'center'
+            ? 'translate(-50%, -50%) scale(1.1) translateY(-2px)'
+            : 'scale(1.1) translateY(-2px)'
+        launcherContainer.style.transform = hoverTransform
         launcherContainer.style.boxShadow =
           '0 12px 35px rgba(0,0,0,0.25), 0 6px 15px rgba(0,0,0,0.15)'
         launcherContainer.style.animation = 'none'
@@ -626,7 +686,7 @@ declare global {
     }
     launcherContainer.onmouseout = () => {
       if (launcherContainer) {
-        launcherContainer.style.transform = 'scale(1) translateY(0)'
+        launcherContainer.style.transform = baseTransform
         launcherContainer.style.boxShadow = '0 8px 25px rgba(0,0,0,0.2), 0 4px 10px rgba(0,0,0,0.1)'
         launcherContainer.style.animation = 'reflect-pulse 2s infinite'
       }
@@ -634,21 +694,36 @@ declare global {
 
     launcherContainer.onmousedown = () => {
       if (launcherContainer) {
-        launcherContainer.style.transform = 'scale(0.95) translateY(0)'
+        const downTransform =
+          position === 'center' ? 'translate(-50%, -50%) scale(0.95)' : 'scale(0.95)'
+        launcherContainer.style.transform = downTransform
       }
     }
     launcherContainer.onmouseup = () => {
       if (launcherContainer) {
-        launcherContainer.style.transform = 'scale(1.1) translateY(-2px)'
+        const upTransform =
+          position === 'center'
+            ? 'translate(-50%, -50%) scale(1.1) translateY(-2px)'
+            : 'scale(1.1) translateY(-2px)'
+        launcherContainer.style.transform = upTransform
       }
     }
 
-    // Apply position from config
-    const position = config.position || configPosition
+    // Clear all position properties first, then set the correct ones
+    launcherContainer.style.top = ''
+    launcherContainer.style.bottom = ''
+    launcherContainer.style.left = ''
+    launcherContainer.style.right = ''
+
     if (position.includes('bottom')) launcherContainer.style.bottom = '20px'
     if (position.includes('top')) launcherContainer.style.top = '20px'
     if (position.includes('right')) launcherContainer.style.right = '20px'
     if (position.includes('left')) launcherContainer.style.left = '20px'
+    if (position === 'center') {
+      launcherContainer.style.top = '50%'
+      launcherContainer.style.left = '50%'
+      launcherContainer.style.transform = 'translate(-50%, -50%)'
+    }
 
     launcherContainer.innerHTML = launcherIcon
 
@@ -680,9 +755,19 @@ declare global {
       border: '2px solid rgba(255,255,255,0.2)',
       color: '#FFFFFF',
       fontSize: '24px',
-      bottom: '20px',
-      right: '20px',
     })
+
+    // Apply position from config for fallback launcher
+    const position = normalizePosition(configPosition || 'bottom-right')
+    if (position.includes('bottom')) launcherContainer.style.bottom = '20px'
+    if (position.includes('top')) launcherContainer.style.top = '20px'
+    if (position.includes('right')) launcherContainer.style.right = '20px'
+    if (position.includes('left')) launcherContainer.style.left = '20px'
+    if (position === 'center') {
+      launcherContainer.style.top = '50%'
+      launcherContainer.style.left = '50%'
+      launcherContainer.style.transform = 'translate(-50%, -50%)'
+    }
 
     launcherContainer.innerHTML = '⚠️'
     launcherContainer.title = 'Widget Error - Click for details'
