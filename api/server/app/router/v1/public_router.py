@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, Request
+from fastapi import APIRouter, Depends, status, Request, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from app.schemas.widget_schema import WidgetReadPublic
@@ -62,23 +62,93 @@ async def get_public_widget_config(
     return await service.get_public_widget_config(db, public_key=sanitized_public_key)
 
 
+@public_router.get(
+    '/widgets/{public_key}/feedback', response_model=List[Dict[str, Any]]
+)
+@create_rate_limit_decorator('widget_access', is_anonymous=True)
+async def get_public_widget_feedback(
+    request: Request,
+    public_key: str,
+    feedback_type: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+    db: AsyncSession = Depends(get_db),
+    service: WidgetService = Depends(lambda: widget_service),
+):
+    sanitized_public_key = InputSanitizer.sanitize_widget_key(public_key)
+    if not sanitized_public_key:
+        raise HTTPException(status_code=400, detail='Invalid widget key')
+
+    widget = await service.get_public_widget_by_key(db, public_key=sanitized_public_key)
+
+    feedback_data = await feedback_repository.get_public_feedback_for_widget(
+        db, widget_id=widget.id, feedback_type=feedback_type, limit=limit, offset=offset
+    )
+
+    return feedback_data
+
+
+@public_router.get('/widgets/{public_key}/reviews', response_model=List[Dict[str, Any]])
+@create_rate_limit_decorator('widget_access', is_anonymous=True)
+async def get_public_widget_reviews(
+    request: Request,
+    public_key: str,
+    limit: int = 50,
+    offset: int = 0,
+    db: AsyncSession = Depends(get_db),
+    service: WidgetService = Depends(lambda: widget_service),
+):
+    sanitized_public_key = InputSanitizer.sanitize_widget_key(public_key)
+    if not sanitized_public_key:
+        raise HTTPException(status_code=400, detail='Invalid widget key')
+
+    widget = await service.get_public_widget_by_key(db, public_key=sanitized_public_key)
+
+    review_data = await feedback_repository.get_public_reviews_for_widget(
+        db, widget_id=widget.id, limit=limit, offset=offset
+    )
+
+    return review_data
+
+
+@public_router.get(
+    '/widgets/{public_key}/bug-reports', response_model=List[Dict[str, Any]]
+)
+@create_rate_limit_decorator('widget_access', is_anonymous=True)
+async def get_public_widget_bug_reports(
+    request: Request,
+    public_key: str,
+    limit: int = 50,
+    offset: int = 0,
+    db: AsyncSession = Depends(get_db),
+    service: WidgetService = Depends(lambda: widget_service),
+):
+    sanitized_public_key = InputSanitizer.sanitize_widget_key(public_key)
+    if not sanitized_public_key:
+        raise HTTPException(status_code=400, detail='Invalid widget key')
+
+    widget = await service.get_public_widget_by_key(db, public_key=sanitized_public_key)
+
+    bug_data = await feedback_repository.get_public_bug_reports_for_widget(
+        db, widget_id=widget.id, limit=limit, offset=offset
+    )
+
+    return bug_data
+
+
 @public_router.post(
     '/feedback',
     response_model=FeedbackResponsePayload,
     status_code=status.HTTP_201_CREATED,
 )
-# @create_rate_limit_decorator('feedback_submission', is_anonymous=True)
 async def submit_public_feedback(
     request: Request,
     payload: PublicFeedbackPayload,
     db: AsyncSession = Depends(get_db),
     widget_service: WidgetService = Depends(lambda: widget_service),
 ):
-    # Sanitize widget key
     sanitized_widget_key = InputSanitizer.sanitize_widget_key(payload.widgetKey)
     if not sanitized_widget_key:
-        from fastapi import HTTPException
-
         raise HTTPException(status_code=400, detail='Invalid widget key')
 
     widget = await widget_service.get_public_widget_by_key(db, sanitized_widget_key)
@@ -95,7 +165,6 @@ async def submit_public_feedback(
     context = payload.context or {}
     sanitized_context = InputSanitizer.sanitize_feedback_data(context)
 
-    # Capture user context for deduplication and analytics
     client_ip = request.client.host if request.client else None
     user_agent = request.headers.get('user-agent')
     referer = request.headers.get('referer')
@@ -113,11 +182,6 @@ async def submit_public_feedback(
             },
         }
     )
-
-    # Debug logging
-    print(f'DEBUG: Received payload.rating = {payload.rating}')
-    print(f'DEBUG: Received payload.response = {payload.response}')
-    print(f'DEBUG: Widget type = {widget_type}')
 
     feedback_data = {
         'title': payload.title,

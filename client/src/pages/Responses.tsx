@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Search, Calendar, Filter, RotateCcw, MessageCircle } from 'lucide-react'
-import { api } from '@/services(mock)/api'
+import { api } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -27,9 +27,8 @@ export function Responses() {
 
   const { data: feedback = [], isLoading } = useQuery({
     queryKey: ['feedback', { type: submissionType === 'all' ? undefined : submissionType }],
-    queryFn: () => api.getFeedback({
-      type: submissionType === 'all' ? undefined : submissionType
-    })
+    queryFn: () => api.getFeedbackData(submissionType === 'all' ? undefined : submissionType),
+    refetchInterval: 30000,
   })
 
   const resetFilters = () => {
@@ -40,10 +39,10 @@ export function Responses() {
     setSearchQuery('')
   }
 
-  const filteredResponses = feedback.filter(item => {
-    if (startDate && new Date(item.createdAt) < startDate) return false
-    if (endDate && new Date(item.createdAt) > endDate) return false
-    
+  const filteredResponses = feedback.filter((item) => {
+    if (startDate && new Date(item.created_at) < startDate) return false
+    if (endDate && new Date(item.created_at) > endDate) return false
+
     if (scoreFilter !== 'all' && item.type === 'survey') {
       const survey = item as SurveyResponse
       const score = survey.score
@@ -51,25 +50,28 @@ export function Responses() {
       if (scoreFilter === 'passives' && (score < 7 || score > 8)) return false
       if (scoreFilter === 'detractors' && score > 6) return false
     }
-    
+
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
       const searchableText = [
-        item.userName,
-        item.userEmail,
+        item.submitter_name,
+        item.submitter_email,
         item.type === 'survey' ? (item as SurveyResponse).comment : '',
         'title' in item ? item.title : '',
-        'content' in item ? item.content : '',
-        'description' in item ? item.description : ''
-      ].filter(Boolean).join(' ').toLowerCase()
-      
+        'message' in item ? item.message : '',
+        'description' in item ? item.description : '',
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+
       if (!searchableText.includes(query)) return false
     }
-    
+
     return true
   })
 
-  const surveyResponses = filteredResponses.filter(f => f.type === 'survey') as SurveyResponse[]
+  const surveyResponses = filteredResponses.filter((f) => f.type === 'survey') as SurveyResponse[]
 
   return (
     <div className="space-y-6">
@@ -89,18 +91,10 @@ export function Responses() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-            <DatePicker
-              date={startDate}
-              onDateChange={setStartDate}
-              placeholder="Start date"
-            />
-            
-            <DatePicker
-              date={endDate}
-              onDateChange={setEndDate}
-              placeholder="End date"
-            />
-            
+            <DatePicker date={startDate} onDateChange={setStartDate} placeholder="Start date" />
+
+            <DatePicker date={endDate} onDateChange={setEndDate} placeholder="End date" />
+
             <Select value={submissionType} onValueChange={setSubmissionType}>
               <SelectTrigger>
                 <SelectValue placeholder="Survey type" />
@@ -111,7 +105,7 @@ export function Responses() {
                 <SelectItem value="csat">CSAT</SelectItem>
               </SelectContent>
             </Select>
-            
+
             <Select value={scoreFilter} onValueChange={setScoreFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Score/Rating" />
@@ -123,7 +117,7 @@ export function Responses() {
                 <SelectItem value="detractors">Detractors (0-6)</SelectItem>
               </SelectContent>
             </Select>
-            
+
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
@@ -133,12 +127,8 @@ export function Responses() {
                 className="pl-10"
               />
             </div>
-            
-            <Button 
-              variant="outline" 
-              onClick={resetFilters}
-              className="w-full"
-            >
+
+            <Button variant="outline" onClick={resetFilters} className="w-full">
               <RotateCcw className="mr-2 h-4 w-4" />
               Reset filters
             </Button>
@@ -168,11 +158,7 @@ export function Responses() {
             <p className="text-muted-foreground text-center max-w-sm">
               Responses will appear here once users complete your surveys
             </p>
-            <Button 
-              variant="outline" 
-              onClick={resetFilters}
-              className="mt-4"
-            >
+            <Button variant="outline" onClick={resetFilters} className="mt-4">
               <RotateCcw className="mr-2 h-4 w-4" />
               Reset Filters
             </Button>
@@ -188,7 +174,9 @@ export function Responses() {
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">{response.userName || 'Anonymous'}</span>
                       {response.userEmail && (
-                        <span className="text-sm text-muted-foreground">({response.userEmail})</span>
+                        <span className="text-sm text-muted-foreground">
+                          ({response.userEmail})
+                        </span>
                       )}
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -197,19 +185,21 @@ export function Responses() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-bold">
-                      {response.score}/10
-                    </div>
-                    <Badge 
+                    <div className="text-2xl font-bold">{response.score}/10</div>
+                    <Badge
                       variant={
-                        response.score >= 9 ? 'default' : 
-                        response.score >= 7 ? 'secondary' : 
-                        'destructive'
+                        response.score >= 9
+                          ? 'default'
+                          : response.score >= 7
+                            ? 'secondary'
+                            : 'destructive'
                       }
                     >
-                      {response.score >= 9 ? 'Promoter' : 
-                       response.score >= 7 ? 'Passive' : 
-                       'Detractor'}
+                      {response.score >= 9
+                        ? 'Promoter'
+                        : response.score >= 7
+                          ? 'Passive'
+                          : 'Detractor'}
                     </Badge>
                   </div>
                 </div>

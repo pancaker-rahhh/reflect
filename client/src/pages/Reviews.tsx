@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Search, RotateCcw, ExternalLink, TrendingUp, Star } from 'lucide-react'
-import { api } from '@/services(mock)/api'
+import { api } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -24,17 +24,18 @@ export function Reviews() {
 
   const { data: feedback = [], isLoading } = useQuery({
     queryKey: ['reviews'],
-    queryFn: () => api.getReviews()
+    queryFn: () => api.getFeedbackData('review'),
+    refetchInterval: 30000,
   })
 
-  const reviews = feedback.filter(f => f.type === 'review') as Review[]
+  const reviews = feedback.filter((f) => f.feedback_type === 'review').map((item) => item as any) // Cast to any to access dynamic properties
 
   const resetFilters = () => {
     setSearchQuery('')
     setTimeframe('all')
   }
 
-  const filterReviewsByTimeframe = (reviews: Review[]) => {
+  const filterReviewsByTimeframe = (reviews: any[]) => {
     if (timeframe === 'all') return reviews
 
     const now = new Date()
@@ -42,37 +43,41 @@ export function Reviews() {
       week: 7,
       month: 30,
       quarter: 90,
-      year: 365
+      year: 365,
     }
 
     const days = timeframes[timeframe as keyof typeof timeframes]
     if (!days) return reviews
 
     const cutoffDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000)
-    return reviews.filter(review => new Date(review.createdAt) >= cutoffDate)
+    return reviews.filter((review) => new Date(review.created_at) >= cutoffDate)
   }
 
-  const filteredReviews = filterReviewsByTimeframe(reviews).filter(review => {
+  const filteredReviews = filterReviewsByTimeframe(reviews).filter((review) => {
     if (!searchQuery) return true
-    
+
     const query = searchQuery.toLowerCase()
     const searchableText = [
-      review.userName,
-      review.userEmail,
+      review.submitter_name,
+      review.submitter_email,
       review.title,
-      review.content
-    ].filter(Boolean).join(' ').toLowerCase()
-    
+      review.message,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+
     return searchableText.includes(query)
   })
 
-  const averageRating = reviews.length > 0
-    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
-    : 0
+  const averageRating =
+    reviews.length > 0
+      ? reviews.reduce((sum, review) => sum + (review.rating || 0), 0) / reviews.length
+      : 0
 
   const ratingDistribution = Array.from({ length: 5 }, (_, i) => {
     const rating = 5 - i
-    const count = reviews.filter(r => r.rating === rating).length
+    const count = reviews.filter((r) => (r.rating || 0) === rating).length
     const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0
     return { rating, count, percentage }
   })
@@ -100,9 +105,7 @@ export function Reviews() {
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center gap-4">
-                <div className="text-4xl font-bold">
-                  {averageRating.toFixed(1)}
-                </div>
+                <div className="text-4xl font-bold">{averageRating.toFixed(1)}</div>
                 <div>
                   <StarRating rating={averageRating} size="lg" />
                   <p className="text-sm text-muted-foreground mt-1">
@@ -128,15 +131,13 @@ export function Reviews() {
                   </div>
                   <div className="flex-1">
                     <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className="h-full bg-yellow-500 transition-all duration-500"
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
                   </div>
-                  <span className="text-sm text-muted-foreground w-12 text-right">
-                    {count}
-                  </span>
+                  <span className="text-sm text-muted-foreground w-12 text-right">{count}</span>
                 </div>
               ))}
             </div>
@@ -171,7 +172,7 @@ export function Reviews() {
                 className="pl-10"
               />
             </div>
-            
+
             <Select value={timeframe} onValueChange={setTimeframe}>
               <SelectTrigger className="w-full sm:w-[200px]">
                 <SelectValue placeholder="Timeframe" />
@@ -184,11 +185,8 @@ export function Reviews() {
                 <SelectItem value="year">Last Year</SelectItem>
               </SelectContent>
             </Select>
-            
-            <Button 
-              variant="outline" 
-              onClick={resetFilters}
-            >
+
+            <Button variant="outline" onClick={resetFilters}>
               <RotateCcw className="mr-2 h-4 w-4" />
               Reset
             </Button>
@@ -216,16 +214,12 @@ export function Reviews() {
             <Star className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No reviews found</h3>
             <p className="text-muted-foreground text-center max-w-sm">
-              {searchQuery || timeframe !== 'all' 
+              {searchQuery || timeframe !== 'all'
                 ? 'Try adjusting your filters to see more results'
                 : 'Reviews will appear here once users submit them'}
             </p>
             {(searchQuery || timeframe !== 'all') && (
-              <Button 
-                variant="outline" 
-                onClick={resetFilters}
-                className="mt-4"
-              >
+              <Button variant="outline" onClick={resetFilters} className="mt-4">
                 <RotateCcw className="mr-2 h-4 w-4" />
                 Reset Filters
               </Button>
@@ -242,23 +236,23 @@ export function Reviews() {
                     <div>
                       <h4 className="font-semibold text-lg">{review.title}</h4>
                       <div className="flex items-center gap-4 mt-1">
-                        <StarRating rating={review.rating} size="sm" />
+                        <StarRating rating={review.rating || 0} size="sm" />
                         <span className="text-sm text-muted-foreground">
-                          by {review.userName || 'Anonymous'}
-                          {review.userEmail && ` (${review.userEmail})`}
+                          by {review.submitter_name || 'Anonymous'}
+                          {review.submitter_email && ` (${review.submitter_email})`}
                         </span>
                       </div>
                     </div>
                     <div className="text-right">
-                      <Badge variant={review.isPublished ? 'default' : 'secondary'}>
-                        {review.isPublished ? 'Published' : 'Unpublished'}
+                      <Badge variant={review.is_published ? 'default' : 'secondary'}>
+                        {review.is_published ? 'Published' : 'Unpublished'}
                       </Badge>
                       <p className="text-sm text-muted-foreground mt-1">
-                        {format(new Date(review.createdAt), 'PPP')}
+                        {format(new Date(review.created_at), 'PPP')}
                       </p>
                     </div>
                   </div>
-                  <p className="text-sm leading-relaxed">{review.content}</p>
+                  <p className="text-sm leading-relaxed">{review.message}</p>
                 </div>
               </CardContent>
             </Card>

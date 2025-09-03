@@ -3,7 +3,7 @@ import { MessageSquare, Bug, Lightbulb, Star } from 'lucide-react'
 import type { Feedback } from '@/types'
 
 interface FeedbackDistributionChartProps {
-  feedback: Feedback[]
+  feedback: any[]
 }
 
 interface TooltipProps {
@@ -26,30 +26,48 @@ interface LabelProps {
 export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChartProps) {
   const distribution = [
     {
-      name: 'Surveys',
-      value: feedback.filter(f => f.type === 'survey').length,
+      name: 'General Feedback',
+      value: feedback.filter((f) => f.type === 'general').length,
       color: '#3b82f6',
-      icon: MessageSquare
+      icon: MessageSquare,
     },
     {
       name: 'Bug Reports',
-      value: feedback.filter(f => f.type === 'bug').length,
+      value: feedback.filter((f) => f.type === 'bug_report').length,
       color: '#dc2626',
-      icon: Bug
+      icon: Bug,
     },
     {
       name: 'Feature Requests',
-      value: feedback.filter(f => f.type === 'feature').length,
+      value: feedback.filter((f) => f.type === 'feature_request').length,
       color: '#8b5cf6',
-      icon: Lightbulb
+      icon: Lightbulb,
     },
     {
       name: 'Reviews',
-      value: feedback.filter(f => f.type === 'review').length,
+      value: feedback.filter((f) => f.type === 'review').length,
       color: '#10b981',
-      icon: Star
-    }
-  ].filter(item => item.value > 0)
+      icon: Star,
+    },
+    {
+      name: 'NPS',
+      value: feedback.filter((f) => f.type === 'NPS').length,
+      color: '#f59e0b',
+      icon: MessageSquare,
+    },
+    {
+      name: 'CSAT',
+      value: feedback.filter((f) => f.type === 'CSAT').length,
+      color: '#06b6d4',
+      icon: MessageSquare,
+    },
+    {
+      name: 'CES',
+      value: feedback.filter((f) => f.type === 'CES').length,
+      color: '#84cc16',
+      icon: MessageSquare,
+    },
+  ].filter((item) => item.value > 0)
 
   if (distribution.length === 0) {
     return (
@@ -86,10 +104,10 @@ export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChar
     midAngle,
     innerRadius,
     outerRadius,
-    percent
+    percent,
   }: LabelProps) => {
-    if (percent < 0.05) return null // Don't show label if less than 5%
-    
+    if (percent < 0.05) return null
+
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5
     const x = cx + radius * Math.cos(-midAngle * RADIAN)
     const y = cy + radius * Math.sin(-midAngle * RADIAN)
@@ -101,8 +119,7 @@ export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChar
         fill="white"
         textAnchor={x > cx ? 'start' : 'end'}
         dominantBaseline="central"
-        className="text-sm font-semibold"
-        style={{ userSelect: 'none' }}
+        className="text-xs font-medium"
       >
         {`${(percent * 100).toFixed(0)}%`}
       </text>
@@ -134,11 +151,14 @@ export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChar
           </PieChart>
         </ResponsiveContainer>
       </div>
-      
+
       <div className="grid grid-cols-2 gap-6">
         {distribution.map((item) => (
           <div key={item.name} className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg" style={{ backgroundColor: `${item.color}15` }}>
+            <div
+              className="flex items-center justify-center w-10 h-10 rounded-lg"
+              style={{ backgroundColor: `${item.color}15` }}
+            >
               <item.icon className="w-5 h-5" style={{ color: item.color }} />
             </div>
             <div className="flex-1">

@@ -79,13 +79,11 @@ import type { RoadmapColumnCreateRequest } from './roadmap'
 
 // Convenience API object for backward compatibility
 export const api = {
-  // User APIs
   getCurrentUser: () => userApi.getCurrentUser(),
   syncUser: () => userApi.syncUser(),
   updateUserProfile: (data: UserProfileUpdateRequest) => userApi.updateProfile(data),
   deleteAccount: () => userApi.deleteAccount(),
 
-  // Project APIs
   getProjectsByOrganization: (organizationId: string) =>
     projectApi.getByOrganization(organizationId),
   getProject: (id: string) => projectApi.getProject(id),
@@ -93,55 +91,23 @@ export const api = {
   updateProject: (id: string, data: any) => projectApi.updateProject(id, data),
   deleteProject: (id: string) => projectApi.deleteProject(id),
 
-  // Widget APIs
   getWidgetsByProject: (projectId: string) => widgetApi.getByProject(projectId),
   getWidget: (id: string) => widgetApi.getWidget(id),
   createWidget: (data: WidgetCreateRequest) => widgetApi.createWidget(data),
   updateWidget: (id: string, data: any) => widgetApi.updateWidget(id, data),
   deleteWidget: (id: string) => widgetApi.deleteWidget(id),
-  activateWidget: (id: string) => widgetApi.activate(id),
-  deactivateWidget: (id: string) => widgetApi.deactivate(id),
 
-  // Roadmap APIs
-  getRoadmap: (projectId: string) => roadmapApi.getByProject(projectId),
+  getRoadmapsByProject: (projectId: string) => roadmapApi.getByProject(projectId),
   createRoadmap: (data: RoadmapCreateRequest) => roadmapApi.createRoadmap(data),
-  updateRoadmap: (roadmapId: string, data: any) => roadmapApi.updateRoadmap(roadmapId, data),
-  getPublicRoadmap: (publicSlug: string) => roadmapApi.getPublicRoadmap(publicSlug),
-  getPublicRoadmapBySubdomain: (subdomain: string) =>
-    roadmapApi.getPublicRoadmapBySubdomain(subdomain),
+  updateRoadmap: (id: string, data: any) => roadmapApi.updateRoadmap(id, data),
 
-  // Column APIs
-  createRoadmapColumn: (data: RoadmapColumnCreateRequest) => roadmapApi.createColumn(data),
-  updateRoadmapColumn: (columnId: string, data: any) => roadmapApi.updateColumn(columnId, data),
-  deleteRoadmapColumn: (columnId: string) => roadmapApi.deleteColumn(columnId),
-
-  // Feature APIs
-  createRoadmapActionItem: (data: any) => roadmapApi.createFeature(data),
-  updateRoadmapActionItem: (featureId: string, data: any) =>
-    roadmapApi.updateFeature(featureId, data),
-  deleteRoadmapActionItem: (featureId: string) => roadmapApi.deleteFeature(featureId),
-  updateFeaturesOrder: (updates: any[]) => roadmapApi.updateFeaturesOrder(updates),
-  upvoteFeature: (featureId: string) => roadmapApi.upvoteFeature(featureId),
-
-  // Tag APIs
-  createRoadmapTag: (data: any) => roadmapApi.createTag(data),
-  getRoadmapTags: (roadmapId: string) => roadmapApi.getRoadmapTags(roadmapId),
-  getPublicRoadmapTags: (roadmapId: string) => roadmapApi.getPublicRoadmapTags(roadmapId),
-  updateRoadmapTag: (tagId: string, data: any) => roadmapApi.updateTag(tagId, data),
-  deleteRoadmapTag: (tagId: string) => roadmapApi.deleteTag(tagId),
-
-  // Feedback APIs
-  getActionableFeedback: () => feedbackApi.getActionableFeedback(),
-  getConversionPreview: (feedbackId: string) => feedbackApi.getConversionPreview(feedbackId),
-  convertToRoadmap: (feedbackId: string, conversionData: any) =>
-    feedbackApi.convertToRoadmap(feedbackId, conversionData),
-
-  // Dashboard APIs
   getDashboardMetrics: (timeRange?: string) => dashboardApi.getDashboardMetrics(timeRange),
   getRecentActivity: (projectId?: string) => dashboardApi.getRecentActivity(projectId),
-  getFeedbackData: (projectId?: string, timeRange?: string) =>
-    dashboardApi.getFeedbackData(projectId, timeRange),
+  getFeedbackData: (feedbackType?: string, projectId?: string) =>
+    dashboardApi.getFeedbackData(feedbackType, projectId),
 
-  // Integration APIs
-  getIntegrations: (projectId?: string) => integrationsApi.getIntegrations(projectId),
+  getIntegrationsByProject: (projectId: string) => integrationsApi.getIntegrations(projectId),
+  createIntegration: (data: any) => integrationsApi.createJiraIntegration(data),
+  updateIntegration: (id: string, data: any) => integrationsApi.updateJiraIntegration(id, data),
+  deleteIntegration: (id: string) => integrationsApi.deleteJiraIntegration(id),
 }
