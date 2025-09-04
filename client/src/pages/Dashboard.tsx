@@ -75,12 +75,16 @@ export function Dashboard() {
   )
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-base text-muted-foreground">
-          Summary for {currentProject?.name || 'All Projects'} for{' '}
-          {timeRange === 'all' ? 'all time' : timeRange}
-        </p>
+    <div className="max-w-7xl mx-auto space-y-12">
+      {/* Header Section */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-1">
+            Summary for {currentProject?.name || 'All Projects'} for{' '}
+            {timeRange === 'all' ? 'all time' : timeRange}
+          </p>
+        </div>
         <TimeRangeFilter value={timeRange} onChange={setTimeRange} />
       </div>
 
@@ -90,45 +94,58 @@ export function Dashboard() {
       {metricsLoading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-36" />
+            <Skeleton key={i} className="h-32" />
           ))}
         </div>
       ) : (
         metrics && <MetricsCards metrics={metrics} />
       )}
 
-      <div className="grid gap-8 lg:grid-cols-2 mt-10">
-        {/* Recent Activity Section */}
-        <div>
-          <h2 className="text-xl font-semibold mb-6">Recent Activity</h2>
-          {activityError && renderErrorState(activityError, refetchActivity, 'recent activity')}
+      {/* Main Content Grid */}
+      <div className="grid gap-12 xl:grid-cols-3">
+        {/* Recent Activity Section - Takes 2 columns */}
+        <div className="xl:col-span-2">
+          <div className="bg-white rounded-xl border border-gray-200 p-8">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
+              <div className="text-sm text-gray-500">{recentActivity?.length || 0} items</div>
+            </div>
 
-          {activityLoading ? (
-            <Skeleton className="h-96" />
-          ) : (
-            recentActivity && (
-              <RecentActivityTable activities={recentActivity} projectId={currentProject?.id} />
-            )
-          )}
+            {activityError && renderErrorState(activityError, refetchActivity, 'recent activity')}
+
+            {activityLoading ? (
+              <div className="space-y-4">
+                {[...Array(4)].map((_, i) => (
+                  <Skeleton key={i} className="h-16" />
+                ))}
+              </div>
+            ) : (
+              recentActivity && (
+                <RecentActivityTable activities={recentActivity} projectId={currentProject?.id} />
+              )
+            )}
+          </div>
         </div>
 
-        {/* Charts Section */}
+        {/* Charts Section - Takes 1 column */}
         <div className="space-y-8">
-          <div>
-            <h2 className="text-xl font-semibold mb-6">NPS Distribution</h2>
+          {/* NPS Distribution */}
+          <div className="bg-white rounded-xl border border-gray-200 p-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-8">NPS Distribution</h2>
             {feedbackError && renderErrorState(feedbackError, refetchFeedback, 'feedback data')}
 
             {feedbackLoading ? (
-              <Skeleton className="h-80" />
+              <Skeleton className="h-64" />
             ) : (
               feedback && <NPSDistributionChart feedback={feedback} />
             )}
           </div>
 
-          <div>
-            <h2 className="text-xl font-semibold mb-6">Feedback Distribution</h2>
+          {/* Feedback Distribution */}
+          <div className="bg-white rounded-xl border border-gray-200 p-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-8">Feedback Distribution</h2>
             {feedbackLoading ? (
-              <Skeleton className="h-96" />
+              <Skeleton className="h-64" />
             ) : (
               feedback && <FeedbackDistributionChart feedback={feedback} />
             )}
