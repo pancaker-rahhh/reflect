@@ -55,7 +55,9 @@ export const FeedbackConversionModal: React.FC<FeedbackConversionModalProps> = (
     if (isOpen && feedback) {
       loadConversionPreview()
       // Set default priority based on feedback type
-      setPriority(getDefaultPriority(feedback.feedback_type) as 'low' | 'medium' | 'high' | 'critical')
+      setPriority(
+        getDefaultPriority(feedback.feedback_type) as 'low' | 'medium' | 'high' | 'critical'
+      )
     }
   }, [isOpen, feedback])
 
@@ -64,10 +66,9 @@ export const FeedbackConversionModal: React.FC<FeedbackConversionModalProps> = (
 
     try {
       setIsLoading(true)
-      // Use the API function instead of direct fetch
-      // commented out because we don't have the getConversionPreview function in the api.ts file
-      // const previewData = await api.getConversionPreview(feedback.id)
-      // setPreview(previewData)
+      const { api } = await import('@/lib/api')
+      const previewData = await api.getConversionPreview(feedback.id)
+      setPreview(previewData)
     } catch (error) {
       console.error('Failed to load conversion preview:', error)
     } finally {
@@ -159,7 +160,12 @@ export const FeedbackConversionModal: React.FC<FeedbackConversionModalProps> = (
                 {/* Priority Selection */}
                 <div className="space-y-2">
                   <Label htmlFor="priority">Priority</Label>
-                  <Select value={priority} onValueChange={(value) => setPriority(value as 'low' | 'medium' | 'high' | 'critical')}>
+                  <Select
+                    value={priority}
+                    onValueChange={(value) =>
+                      setPriority(value as 'low' | 'medium' | 'high' | 'critical')
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select priority" />
                     </SelectTrigger>

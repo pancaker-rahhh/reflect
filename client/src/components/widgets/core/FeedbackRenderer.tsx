@@ -10,7 +10,6 @@ import { LoadingSpinner } from './LoadingSpinner'
 import type {
   FeedbackType,
   FeedbackData,
-
   BugReportFeedbackData,
   FeatureRequestFeedbackData,
   ReviewFeedbackData,
@@ -196,7 +195,7 @@ export function FeedbackRenderer({
 
           <div className="border-t pt-6">
             <h4 className="text-lg font-semibold mb-4 text-center" style={{ color: colors.text }}>
-              Report a New Bug
+              Report a Bug
             </h4>
             <BugReportForm
               onSubmit={handleBugReportSubmit}

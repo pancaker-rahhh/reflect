@@ -315,13 +315,14 @@ class FeedbackRepository(BaseRepository[Feedback]):
 
         activities = []
         for item in feedback_items:
-            summary = f"New {item.feedback_type.replace('_', ' ').title()}"
             if item.title:
-                summary = f'{summary}: {item.title}'
+                summary = item.title
             elif item.message and len(item.message) > 50:
-                summary = f'{summary}: {item.message[:50]}...'
+                summary = f'{item.message[:50]}...'
             elif item.message:
-                summary = f'{summary}: {item.message}'
+                summary = item.message
+            else:
+                summary = f'Feedback: {item.feedback_type.replace("_", " ").title()}'
 
             activities.append(
                 {
