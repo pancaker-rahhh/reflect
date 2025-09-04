@@ -1,19 +1,28 @@
-FROM python:3.12.10-slim-bookworm
+FROM python:3.12.10-slim-bookworm AS builder
 
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-RUN pip install poetry
-ENV POETRY_NO_INTERACTION=1 \
-    POETRY_VENV_IN_PROJECT=1 \
-    POETRY_CACHE_DIR=/tmp/poetry_cache
+RUN pip install --no-cache-dir poetry==1.8.3
+ENV POETRY_NO_INTERACTION=1 POETRY_VENV_IN_PROJECT=1
 
 WORKDIR /app
 COPY pyproject.toml poetry.lock ./
-RUN poetry install --only=main && rm -rf $POETRY_CACHE_DIR
+RUN poetry install --only=main --no-root
 
+FROM python:3.12.10-slim-bookworm AS runtime
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd -r appuser && useradd -r -g appuser appuser
+
+WORKDIR /app
+COPY --from=builder /app/.venv /app/.venv
 COPY server/ ./server/
+RUN chown -R appuser:appuser /app
+
+USER appuser
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/api/v1/health || exit 1
 
-CMD ["poetry", "run", "python", "server/run.py"]
+CMD ["/app/.venv/bin/python", "server/run.py"]
