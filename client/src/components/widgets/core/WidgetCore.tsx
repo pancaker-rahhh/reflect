@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { LoadingSpinner } from './LoadingSpinner'
 import { SkeletonPulse } from './SkeletonPulse'
@@ -24,7 +24,7 @@ export function WidgetCore({
   })
 
   // Use custom hook for feedback submission
-  const { isSubmitting, error, handleSubmit, handleScoreSubmission, clearError } =
+  const { isSubmitting, error, errorInfo, handleSubmit, handleScoreSubmission, clearError } =
     useFeedbackSubmission({
       mode,
       onSubmit,
@@ -65,36 +65,127 @@ export function WidgetCore({
     </div>
   )
 
+  // Render rate limiting error with countdown
+  const renderRateLimitError = () => {
+    const [timeLeft, setTimeLeft] = useState(errorInfo?.retryAfter || 0)
+
+    React.useEffect(() => {
+      if (timeLeft <= 0) return
+
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+
+      return () => clearInterval(timer)
+    }, [timeLeft])
+
+    const minutes = Math.floor(timeLeft / 60)
+    const seconds = timeLeft % 60
+
+    return (
+      <div className="flex flex-col items-center justify-center h-full space-y-4 p-6 text-center">
+        <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center">
+          <svg
+            className="w-8 h-8 text-orange-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold" style={{ color: textColor }}>
+            Too Many Requests
+          </h3>
+          <p className="text-sm opacity-70 mt-1" style={{ color: textColor }}>
+            {errorInfo?.message || 'Please wait before submitting again'}
+          </p>
+          {timeLeft > 0 && (
+            <div className="mt-3 p-3 rounded-lg bg-orange-50 border border-orange-200">
+              <p className="text-sm font-medium text-orange-800">
+                Try again in: {minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`}
+              </p>
+            </div>
+          )}
+        </div>
+        <button
+          onClick={clearError}
+          disabled={timeLeft > 0}
+          className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+            timeLeft > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'hover:shadow-lg'
+          }`}
+          style={{
+            backgroundColor: timeLeft > 0 ? undefined : buttonColor,
+            color: timeLeft > 0 ? undefined : buttonTextColor,
+          }}
+        >
+          {timeLeft > 0 ? 'Please Wait' : 'Try Again'}
+        </button>
+      </div>
+    )
+  }
+
   // Render error state
-  const renderError = () => (
-    <div className="flex flex-col items-center justify-center h-full space-y-4 p-6 text-center">
-      <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
-        <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-          />
-        </svg>
+  const renderError = () => {
+    // Show special rate limiting UI if it's a rate limit error
+    if (errorInfo?.type === 'rate_limit') {
+      return renderRateLimitError()
+    }
+
+    // Default error UI for other errors
+    return (
+      <div className="flex flex-col items-center justify-center h-full space-y-4 p-6 text-center">
+        <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+          <svg
+            className="w-8 h-8 text-red-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+            />
+          </svg>
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold" style={{ color: textColor }}>
+            {errorInfo?.type === 'network'
+              ? 'Connection Error'
+              : errorInfo?.type === 'server'
+                ? 'Server Error'
+                : errorInfo?.type === 'validation'
+                  ? 'Invalid Input'
+                  : 'Something went wrong'}
+          </h3>
+          <p className="text-sm opacity-70 mt-1" style={{ color: textColor }}>
+            {error || 'Please try again later'}
+          </p>
+        </div>
+        <button
+          onClick={clearError}
+          className="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg"
+          style={{ backgroundColor: buttonColor, color: buttonTextColor }}
+        >
+          Try Again
+        </button>
       </div>
-      <div>
-        <h3 className="text-lg font-semibold" style={{ color: textColor }}>
-          Something went wrong
-        </h3>
-        <p className="text-sm opacity-70 mt-1" style={{ color: textColor }}>
-          {error || 'Please try again later'}
-        </p>
-      </div>
-      <button
-        onClick={clearError}
-        className="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg"
-        style={{ backgroundColor: buttonColor, color: buttonTextColor }}
-      >
-        Try Again
-      </button>
-    </div>
-  )
+    )
+  }
 
   // Render success state
   const renderSuccess = () => (
@@ -332,7 +423,9 @@ export function WidgetCore({
       </div>
 
       {/* Main content */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden">{renderContent()}</div>
+      <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400">
+        {renderContent()}
+      </div>
 
       {/* Branding */}
       {theme.showBranding && (

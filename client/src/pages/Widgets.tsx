@@ -2,12 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Search, Grid3X3, List, BarChart3, AlertTriangle } from 'lucide-react'
-// CORRECTED: Import the real widgetApi
 import { widgetApi } from '@/lib/api/widget'
 import { useAppContext } from '@/context/AppContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-
 import { WidgetCard } from '@/components/widgets/WidgetCard'
 import { LanguageSupportBanner } from '@/components/widgets/LanguageSupportBanner'
 import { FreeTierAlert } from '@/components/widgets/FreeTierAlert'

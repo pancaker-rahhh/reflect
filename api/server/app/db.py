@@ -13,6 +13,7 @@ engine = create_async_engine(
     max_overflow=settings.DATABASE_MAX_OVERFLOW,
     pool_pre_ping=True,
     pool_recycle=3600,
+    future=True,
 )
 
 AsyncSessionLocal = async_sessionmaker(
@@ -21,6 +22,7 @@ AsyncSessionLocal = async_sessionmaker(
     expire_on_commit=False,
     autocommit=False,
     autoflush=False,
+    future=True,
 )
 
 Base = declarative_base()
@@ -41,6 +43,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 async def init_db() -> None:
     async with engine.begin() as conn:
         from app.models import base_model  # noqa
+
         # Import all models to ensure they are registered
         import app.models  # noqa
 

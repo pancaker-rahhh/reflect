@@ -6,6 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories.feedback_repository import feedback_repository
 from app.repositories.feedback_comment_repository import feedback_comment_repository
 from app.services.action_item_service import action_item_service
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 from app.schemas.feedback_schema import (
     FeedbackUpdate,
@@ -417,20 +420,49 @@ class FeedbackService:
         context = context or {}
 
         # Get existing feedback
+        logger.info(f'Getting feedback with ID: {feedback_id}')
         existing_feedback = await feedback_repository.get(db, feedback_id)
         if not existing_feedback:
             raise ValueError(f'Feedback with ID {feedback_id} not found')
 
-        # Update the feedback data
-        for key, value in data.items():
-            if hasattr(existing_feedback, key) and value is not None:
-                setattr(existing_feedback, key, value)
+        logger.info(f'Found existing feedback, updating data')
 
-        # Update context
+        # Update the feedback data - only update safe, non-relationship fields
+        logger.info(f'Updating feedback data with keys: {list(data.keys())}')
+
+        # Define safe fields that can be updated directly
+        safe_fields = {
+            'title',
+            'message',
+            'rating',
+            'severity',
+            'steps_to_reproduce',
+            'expected_result',
+            'actual_result',
+            'visual_proof',
+            'priority',
+            'status',
+            'feedback_metadata',
+        }
+
+        for key, value in data.items():
+            if key in safe_fields and value is not None:
+                logger.info(f'Setting {key} = {value}')
+                try:
+                    setattr(existing_feedback, key, value)
+                except Exception as e:
+                    logger.error(f'Error setting {key}: {str(e)}')
+                    raise
+            else:
+                logger.info(f'Skipping {key} (not in safe fields or None)')
+
+        # Update context - handle this carefully to avoid lazy loading issues
         if context:
-            existing_context = existing_feedback.context or {}
-            existing_context.update(context)
-            existing_feedback.context = existing_context
+            # Get the current context safely
+            current_context = getattr(existing_feedback, 'context', None) or {}
+            # Update with new context
+            updated_context = {**current_context, **context}
+            existing_feedback.context = updated_context
 
         # Update timestamp
         from datetime import datetime, timezone
@@ -438,10 +470,19 @@ class FeedbackService:
         existing_feedback.updated_at = datetime.now(timezone.utc)
 
         # Save changes
-        db.add(existing_feedback)
-        await db.commit()
-        await db.refresh(existing_feedback)
+        try:
+            logger.info(f'Saving changes to database for feedback {feedback_id}')
+            db.add(existing_feedback)
+            await db.commit()
+            logger.info(f'Committed changes for feedback {feedback_id}')
+            await db.refresh(existing_feedback)
+            logger.info(f'Refreshed feedback object {feedback_id}')
+        except Exception as e:
+            await db.rollback()
+            logger.error(f'Database error updating feedback {feedback_id}: {str(e)}')
+            raise ValueError(f'Failed to update feedback: {str(e)}')
 
+        logger.info(f'Converting feedback {feedback_id} to response')
         return self._convert_to_response(existing_feedback)
 
     def _convert_to_response(self, obj: Feedback) -> FeedbackResponsePayload:

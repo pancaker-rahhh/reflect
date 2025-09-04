@@ -37,7 +37,31 @@ async function submit(payload: FeedbackPayload): Promise<void> {
   })
 
   if (!response.ok) {
-    // Try to get a meaningful error message from the backend
+    // Handle rate limiting with detailed error information
+    if (response.status === 429) {
+      try {
+        const errorData = await response.json()
+        const retryAfter = response.headers.get('Retry-After')
+        const retrySeconds = retryAfter ? parseInt(retryAfter) : 60
+        const retryMinutes = Math.ceil(retrySeconds / 60)
+
+        // Use the detailed message from the backend if available
+        const message = errorData?.detail?.message || errorData?.message || 'Too many requests'
+        throw new Error(
+          `${message}. Please try again in ${retryMinutes} minute${retryMinutes !== 1 ? 's' : ''}.`
+        )
+      } catch (parseError) {
+        // Fallback if JSON parsing fails
+        const retryAfter = response.headers.get('Retry-After')
+        const retrySeconds = retryAfter ? parseInt(retryAfter) : 60
+        const retryMinutes = Math.ceil(retrySeconds / 60)
+        throw new Error(
+          `Too many requests. Please try again in ${retryMinutes} minute${retryMinutes !== 1 ? 's' : ''}.`
+        )
+      }
+    }
+
+    // Try to get a meaningful error message from the backend for other errors
     const errorData = await response
       .json()
       .catch(() => ({ message: 'Submission failed with an unknown error.' }))

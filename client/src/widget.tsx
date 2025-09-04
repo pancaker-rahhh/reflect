@@ -464,7 +464,8 @@ declare global {
         '0 24px 48px rgba(0,0,0,0.1), 0 12px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(255,255,255,0.05)',
       display: 'none',
       zIndex: '9998',
-      overflow: 'auto',
+      overflow: 'visible',
+      scrollBehavior: 'smooth',
       fontFamily:
         '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
       fontSize: '13px',
@@ -520,6 +521,31 @@ declare global {
           clearTimeout(timeoutId)
 
           if (!response.ok) {
+            // Handle rate limiting with detailed error information
+            if (response.status === 429) {
+              try {
+                const errorData = await response.json()
+                const retryAfter = response.headers.get('Retry-After')
+                const retrySeconds = retryAfter ? parseInt(retryAfter) : 60
+                const retryMinutes = Math.ceil(retrySeconds / 60)
+
+                // Use the detailed message from the backend if available
+                const message =
+                  errorData?.detail?.message || errorData?.message || 'Too many requests'
+                throw new Error(
+                  `${message}. Please try again in ${retryMinutes} minute${retryMinutes !== 1 ? 's' : ''}.`
+                )
+              } catch (parseError) {
+                // Fallback if JSON parsing fails
+                const retryAfter = response.headers.get('Retry-After')
+                const retrySeconds = retryAfter ? parseInt(retryAfter) : 60
+                const retryMinutes = Math.ceil(retrySeconds / 60)
+                throw new Error(
+                  `Too many requests. Please try again in ${retryMinutes} minute${retryMinutes !== 1 ? 's' : ''}.`
+                )
+              }
+            }
+
             const errorText = await response.text().catch(() => 'Unknown error')
             throw new Error(`HTTP ${response.status}: ${errorText}`)
           }
@@ -540,8 +566,6 @@ declare global {
                 throw new Error('Invalid feedback data. Please check your input and try again.')
               } else if (status === 404) {
                 throw new Error('Widget configuration not found. Please contact support.')
-              } else if (status === 429) {
-                throw new Error('Too many requests. Please wait a moment and try again.')
               } else if (status >= 500) {
                 // Server errors should be retried
                 if (retries > 0) {
