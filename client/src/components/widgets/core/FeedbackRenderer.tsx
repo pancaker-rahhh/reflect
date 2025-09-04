@@ -51,6 +51,24 @@ export function FeedbackRenderer({
   mode,
   widgetKey,
 }: FeedbackRendererProps) {
+  const [additionalFeedback, setAdditionalFeedback] = React.useState('')
+
+  const handleSubmit = async () => {
+    if (selectedScore === undefined) return
+
+    const response = `Rating: ${selectedScore}${additionalFeedback.trim() ? ` - ${additionalFeedback.trim()}` : ''}`
+
+    await onSubmit({
+      response,
+      rating: selectedScore,
+      feedbackType,
+      typeSpecificData: {
+        title: `${feedbackType} Feedback`,
+        message: additionalFeedback.trim() || '',
+      } as GeneralFeedbackData,
+    })
+  }
+
   const handleReviewSubmit = async (data: { rating: number; review?: string }) => {
     await onSubmit({
       response: `Rating: ${data.rating}/5${data.review ? ` - ${data.review}` : ''}`,
@@ -135,13 +153,127 @@ export function FeedbackRenderer({
 
   switch (feedbackType) {
     case 'NPS':
-      return <NPSRating value={selectedScore} onChange={onScoreChange} disabled={isSubmitting} />
+      return (
+        <div className="space-y-6">
+          <NPSRating value={selectedScore} onChange={onScoreChange} disabled={isSubmitting} />
+          {selectedScore !== undefined && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
+                  Share more details (optional)
+                </label>
+                <textarea
+                  value={additionalFeedback}
+                  onChange={(e) => setAdditionalFeedback(e.target.value)}
+                  placeholder="What specifically made you give this score? Your feedback helps us improve..."
+                  className="w-full h-28 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all text-sm"
+                  style={{
+                    borderColor: additionalFeedback.trim() ? colors.primary : '#E5E7EB',
+                    backgroundColor: colors.background,
+                    color: colors.text,
+                    boxShadow: additionalFeedback.trim() ? `0 0 0 3px ${colors.primary}20` : 'none',
+                  }}
+                  disabled={isSubmitting}
+                  maxLength={500}
+                />
+                <div className="text-right text-xs mt-1 opacity-60" style={{ color: colors.text }}>
+                  {additionalFeedback.length}/500
+                </div>
+              </div>
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ backgroundColor: colors.buttonColor, color: colors.buttonTextColor }}
+              >
+                {isSubmitting ? 'Submitting...' : content.submitButtonText}
+              </button>
+            </div>
+          )}
+        </div>
+      )
 
     case 'CSAT':
-      return <CSATRating value={selectedScore} onChange={onScoreChange} disabled={isSubmitting} />
+      return (
+        <div className="space-y-6">
+          <CSATRating value={selectedScore} onChange={onScoreChange} disabled={isSubmitting} />
+          {selectedScore !== undefined && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
+                  Share more details (optional)
+                </label>
+                <textarea
+                  value={additionalFeedback}
+                  onChange={(e) => setAdditionalFeedback(e.target.value)}
+                  placeholder="What specifically made you give this score? Your feedback helps us improve..."
+                  className="w-full h-28 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all text-sm"
+                  style={{
+                    borderColor: additionalFeedback.trim() ? colors.primary : '#E5E7EB',
+                    backgroundColor: colors.background,
+                    color: colors.text,
+                    boxShadow: additionalFeedback.trim() ? `0 0 0 3px ${colors.primary}20` : 'none',
+                  }}
+                  disabled={isSubmitting}
+                  maxLength={500}
+                />
+                <div className="text-right text-xs mt-1 opacity-60" style={{ color: colors.text }}>
+                  {additionalFeedback.length}/500
+                </div>
+              </div>
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ backgroundColor: colors.buttonColor, color: colors.buttonTextColor }}
+              >
+                {isSubmitting ? 'Submitting...' : content.submitButtonText}
+              </button>
+            </div>
+          )}
+        </div>
+      )
 
     case 'CES':
-      return <CESRating value={selectedScore} onChange={onScoreChange} disabled={isSubmitting} />
+      return (
+        <div className="space-y-6">
+          <CESRating value={selectedScore} onChange={onScoreChange} disabled={isSubmitting} />
+          {selectedScore !== undefined && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
+                  Share more details (optional)
+                </label>
+                <textarea
+                  value={additionalFeedback}
+                  onChange={(e) => setAdditionalFeedback(e.target.value)}
+                  placeholder="What specifically made you give this score? Your feedback helps us improve..."
+                  className="w-full h-28 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all text-sm"
+                  style={{
+                    borderColor: additionalFeedback.trim() ? colors.primary : '#E5E7EB',
+                    backgroundColor: colors.background,
+                    color: colors.text,
+                    boxShadow: additionalFeedback.trim() ? `0 0 0 3px ${colors.primary}20` : 'none',
+                  }}
+                  disabled={isSubmitting}
+                  maxLength={500}
+                />
+                <div className="text-right text-xs mt-1 opacity-60" style={{ color: colors.text }}>
+                  {additionalFeedback.length}/500
+                </div>
+              </div>
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ backgroundColor: colors.buttonColor, color: colors.buttonTextColor }}
+              >
+                {isSubmitting ? 'Submitting...' : content.submitButtonText}
+              </button>
+            </div>
+          )}
+        </div>
+      )
 
     case 'REVIEW':
       return (
@@ -224,23 +356,12 @@ export function FeedbackRenderer({
     case 'FEEDBACK':
     case 'SURVEY':
       return (
-        <div className="space-y-6">
-          <div className="text-center">
-            <h3 className="text-xl font-bold mb-2" style={{ color: colors.text }}>
-              {feedbackType === 'SURVEY' ? 'Survey' : 'Feedback'}
-            </h3>
-            <p className="text-sm opacity-70" style={{ color: colors.text }}>
-              {content.mainQuestion}
-            </p>
-          </div>
-
-          <GeneralFeedbackForm
-            onSubmit={handleGeneralFeedbackSubmit}
-            isSubmitting={isSubmitting}
-            submitButtonText={content.submitButtonText}
-            colors={colors}
-          />
-        </div>
+        <GeneralFeedbackForm
+          onSubmit={handleGeneralFeedbackSubmit}
+          isSubmitting={isSubmitting}
+          submitButtonText={content.submitButtonText}
+          colors={colors}
+        />
       )
 
     default:

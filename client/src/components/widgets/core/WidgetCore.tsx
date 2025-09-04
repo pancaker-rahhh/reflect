@@ -47,6 +47,14 @@ export function WidgetCore({
     setSelectedScore(score)
     const currentFeedbackType =
       currentState.type === 'active' ? currentState.feedbackType : config.primaryType
+
+    // For NPS, CSAT, and CES, just set the score and show textbox
+    // For other types, submit immediately
+    if (['NPS', 'CSAT', 'CES'].includes(currentFeedbackType)) {
+      // Don't submit immediately, let the user add additional feedback
+      return
+    }
+
     await handleScoreSubmission(score, currentFeedbackType)
   }
 
