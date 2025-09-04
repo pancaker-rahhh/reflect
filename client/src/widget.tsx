@@ -142,6 +142,31 @@ declare global {
       .reflect-widget-launcher:hover {
         animation: none !important;
       }
+
+      /* Custom scrollbar styling for widget */
+      .reflect-widget-container::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .reflect-widget-container::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 3px;
+      }
+
+      .reflect-widget-container::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 3px;
+      }
+
+      .reflect-widget-container::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.5);
+      }
+
+      /* For Firefox */
+      .reflect-widget-container {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1);
+      }
     `
     document.head.appendChild(style)
   }
@@ -486,7 +511,7 @@ declare global {
               widgetKey: publicKey,
               response: data.response,
               rating: data.rating,
-              feedbackType: data.feedbackType,
+              feedbackType: data.feedbackType.toLowerCase(), // Convert to lowercase for backend
               // Include type-specific data
               ...(data.typeSpecificData || {}),
             }),

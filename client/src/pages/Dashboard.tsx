@@ -9,7 +9,9 @@ import { NPSDistributionChart } from '@/components/dashboard/NPSDistributionChar
 import { FeedbackDistributionChart } from '@/components/dashboard/FeedbackDistributionChart'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAppContext } from '@/context/AppContext'
-import { FolderOpen, Plus } from 'lucide-react'
+import { FolderOpen, Plus, AlertCircle, RefreshCw } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export type TimeRange = 'all' | 'week' | 'month' | 'year'
 
@@ -18,28 +20,73 @@ export function Dashboard() {
   const navigate = useNavigate()
   const { projects, currentProject, isLoading: appLoading } = useAppContext()
 
-  const { data: metrics, isLoading: metricsLoading } = useQuery({
-    queryKey: ['dashboard-metrics', timeRange],
-    queryFn: () => api.getDashboardMetrics(),
+  const {
+    data: metrics,
+    isLoading: metricsLoading,
+    error: metricsError,
+    refetch: refetchMetrics,
+  } = useQuery({
+    queryKey: ['dashboard-metrics', timeRange, currentProject?.id],
+    queryFn: () => api.getDashboardMetrics(timeRange, currentProject?.id),
+    refetchInterval: 30000,
+    enabled: !!currentProject?.id,
+    retry: 3,
+    retryDelay: 1000,
   })
 
-  const { data: recentActivity, isLoading: activityLoading } = useQuery({
+  const {
+    data: recentActivity,
+    isLoading: activityLoading,
+    error: activityError,
+    refetch: refetchActivity,
+  } = useQuery({
     queryKey: ['recent-activity', currentProject?.id],
     queryFn: () => api.getRecentActivity(currentProject?.id),
+    refetchInterval: 30000,
     enabled: !!currentProject?.id,
+    retry: 3,
+    retryDelay: 1000,
   })
 
-  const { data: feedback, isLoading: feedbackLoading } = useQuery({
-    queryKey: ['feedback'],
-    queryFn: () => api.getFeedbackData(),
+  const {
+    data: feedback,
+    isLoading: feedbackLoading,
+    error: feedbackError,
+    refetch: refetchFeedback,
+  } = useQuery({
+    queryKey: ['feedback-data', currentProject?.id],
+    queryFn: () => api.getFeedbackData(undefined, currentProject?.id),
+    refetchInterval: 30000,
+    enabled: !!currentProject?.id,
+    retry: 3,
+    retryDelay: 1000,
   })
+
+  const renderErrorState = (error: any, refetch: () => void, title: string) => (
+    <Alert variant="destructive" className="mb-4">
+      <AlertCircle className="h-4 w-4" />
+      <AlertDescription className="flex items-center justify-between">
+        <span>Failed to load {title}. Please try again.</span>
+        <Button variant="outline" size="sm" onClick={refetch} className="ml-2">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Retry
+        </Button>
+      </AlertDescription>
+    </Alert>
+  )
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-base text-muted-foreground">Summary for webapp for all time</p>
+        <p className="text-base text-muted-foreground">
+          Summary for {currentProject?.name || 'All Projects'} for{' '}
+          {timeRange === 'all' ? 'all time' : timeRange}
+        </p>
         <TimeRangeFilter value={timeRange} onChange={setTimeRange} />
       </div>
+
+      {/* Metrics Section */}
+      {metricsError && renderErrorState(metricsError, refetchMetrics, 'dashboard metrics')}
 
       {metricsLoading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -52,8 +99,11 @@ export function Dashboard() {
       )}
 
       <div className="grid gap-8 lg:grid-cols-2 mt-10">
+        {/* Recent Activity Section */}
         <div>
           <h2 className="text-xl font-semibold mb-6">Recent Activity</h2>
+          {activityError && renderErrorState(activityError, refetchActivity, 'recent activity')}
+
           {activityLoading ? (
             <Skeleton className="h-96" />
           ) : (
@@ -63,9 +113,12 @@ export function Dashboard() {
           )}
         </div>
 
+        {/* Charts Section */}
         <div className="space-y-8">
           <div>
             <h2 className="text-xl font-semibold mb-6">NPS Distribution</h2>
+            {feedbackError && renderErrorState(feedbackError, refetchFeedback, 'feedback data')}
+
             {feedbackLoading ? (
               <Skeleton className="h-80" />
             ) : (
