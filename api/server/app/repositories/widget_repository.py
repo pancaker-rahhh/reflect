@@ -27,17 +27,7 @@ class WidgetRepository(BaseRepository[Widget]):
         self, db: AsyncSession, project_id: UUID
     ) -> List[Widget]:
         return await self.get_multi(
-            db, project_id=project_id, status=WidgetStatus.ACTIVE, is_active=True
-        )
-
-    async def activate(self, db: AsyncSession, widget_id: UUID) -> Optional[Widget]:
-        return await self.update(
-            db, widget_id, status=WidgetStatus.ACTIVE, is_active=True
-        )
-
-    async def deactivate(self, db: AsyncSession, widget_id: UUID) -> Optional[Widget]:
-        return await self.update(
-            db, widget_id, status=WidgetStatus.INACTIVE, is_active=False
+            db, project_id=project_id, status=WidgetStatus.ACTIVE
         )
 
 

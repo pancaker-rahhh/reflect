@@ -8,11 +8,11 @@ import {
   Calendar,
   TrendingUp,
   Users,
+  Code,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,16 +26,16 @@ interface WidgetCardProps {
   widget: Widget
   viewMode?: 'grid' | 'list'
   onDelete: () => void
-  onStatusChange: (isActive: boolean) => void
   onEdit: () => void
+  onGetCode: () => void
 }
 
 export function WidgetCard({
   widget,
   viewMode = 'grid',
   onDelete,
-  onStatusChange,
   onEdit,
+  onGetCode,
 }: WidgetCardProps) {
   const [copied, setCopied] = useState(false)
 
@@ -52,26 +52,15 @@ export function WidgetCard({
   if (viewMode === 'list') {
     return (
       <Card className="group relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg border-l-4 border-l-transparent hover:border-l-blue-500">
-        <div
-          className={`absolute top-0 left-0 h-full w-1 bg-gradient-to-b ${
-            widget.is_active ? 'from-green-400 to-teal-500' : 'from-gray-300 to-gray-400'
-          }`}
-        />
+        <div className="absolute top-0 left-0 h-full w-1 bg-gradient-to-b from-green-400 to-teal-500" />
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6 flex-1">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="font-bold text-lg text-gray-900 truncate">{widget.name}</h3>
-                  <Badge
-                    variant={widget.is_active ? 'default' : 'secondary'}
-                    className={`${
-                      widget.is_active
-                        ? 'bg-green-100 text-green-800 border-green-200'
-                        : 'bg-gray-100 text-gray-600 border-gray-200'
-                    }`}
-                  >
-                    {widget.is_active ? 'Active' : 'Inactive'}
+                  <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
+                    Active
                   </Badge>
                   <Badge variant="outline" className="text-xs">
                     {(widget.widget_type || '').replace('_', ' ').toUpperCase()}
@@ -110,11 +99,6 @@ export function WidgetCard({
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Switch
-                    checked={widget.is_active}
-                    onCheckedChange={onStatusChange}
-                    aria-label={widget.is_active ? 'Deactivate widget' : 'Activate widget'}
-                  />
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -129,6 +113,10 @@ export function WidgetCard({
                       <DropdownMenuItem onClick={onEdit} className="gap-2 cursor-pointer">
                         <Eye className="h-4 w-4" />
                         <span>Edit Widget</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={onGetCode} className="gap-2 cursor-pointer">
+                        <Code className="h-4 w-4" />
+                        <span>Get Code</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleCopyKey} className="gap-2 cursor-pointer">
                         <Copy className="h-4 w-4" />
@@ -155,27 +143,13 @@ export function WidgetCard({
   // Grid view (default)
   return (
     <Card className="group relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 border-0 shadow-md">
-      <div
-        className={`absolute top-0 left-0 h-1 w-full bg-gradient-to-r ${
-          widget.is_active ? 'from-green-400 to-teal-500' : 'from-gray-300 to-gray-400'
-        }`}
-      />
+      <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-green-400 to-teal-500" />
 
       {/* Status indicator badge */}
-      <div
-        className={`absolute top-4 left-4 px-2 py-1 rounded-full text-xs font-medium ${
-          widget.is_active
-            ? 'bg-green-100 text-green-800 border border-green-200'
-            : 'bg-gray-100 text-gray-600 border border-gray-200'
-        }`}
-      >
+      <div className="absolute top-4 left-4 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
         <div className="flex items-center gap-1">
-          <div
-            className={`h-1.5 w-1.5 rounded-full ${
-              widget.is_active ? 'bg-green-500' : 'bg-gray-400'
-            }`}
-          ></div>
-          {widget.is_active ? 'Active' : 'Inactive'}
+          <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
+          Active
         </div>
       </div>
 
@@ -196,11 +170,6 @@ export function WidgetCard({
           </div>
 
           <div className="flex items-center gap-2 ml-2">
-            <Switch
-              checked={widget.is_active}
-              onCheckedChange={onStatusChange}
-              aria-label={widget.is_active ? 'Deactivate widget' : 'Activate widget'}
-            />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -215,6 +184,10 @@ export function WidgetCard({
                 <DropdownMenuItem onClick={onEdit} className="gap-2 cursor-pointer">
                   <Eye className="h-4 w-4" />
                   <span>Edit Widget</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onGetCode} className="gap-2 cursor-pointer">
+                  <Code className="h-4 w-4" />
+                  <span>Get Code</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleCopyKey} className="gap-2 cursor-pointer">
                   <Copy className="h-4 w-4" />

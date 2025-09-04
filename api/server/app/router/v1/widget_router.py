@@ -74,27 +74,3 @@ async def delete_widget(
 ):
     await service.delete_widget(db, user_id=current_user.id, widget_id=widget_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-@widgets_router.post('/{widget_id}/activate', response_model=WidgetRead)
-async def activate_widget(
-    widget_id: UUID,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-    service: WidgetService = Depends(lambda: widget_service),
-) -> Any:
-    return await service.set_widget_activation(
-        db, user_id=current_user.id, widget_id=widget_id, is_active=True
-    )
-
-
-@widgets_router.post('/{widget_id}/deactivate', response_model=WidgetRead)
-async def deactivate_widget(
-    widget_id: UUID,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-    service: WidgetService = Depends(lambda: widget_service),
-) -> Any:
-    return await service.set_widget_activation(
-        db, user_id=current_user.id, widget_id=widget_id, is_active=False
-    )

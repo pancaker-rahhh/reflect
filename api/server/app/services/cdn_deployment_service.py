@@ -151,7 +151,6 @@ class CDNDeploymentService:
             'configuration': widget.configuration or {},
             'theme_configuration': widget.theme_configuration or {},
             'targeting_rules': widget.targeting_rules or [],
-            'is_active': widget.is_active,
             'cdn_url': widget.cdn_url,
             'created_at': widget.created_at.isoformat() if widget.created_at else None,
             'updated_at': widget.updated_at.isoformat() if widget.updated_at else None,

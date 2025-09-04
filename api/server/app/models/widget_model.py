@@ -1,9 +1,16 @@
-from sqlalchemy import Column, String, Boolean, Text, Integer, ForeignKey, Enum as SQLEnum, DateTime as DateTimeColumn
+from sqlalchemy import (
+    Column,
+    String,
+    Text,
+    Integer,
+    ForeignKey,
+    Enum as SQLEnum,
+    DateTime as DateTimeColumn,
+)
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from uuid import uuid4
 import enum
-
 from app.models.base_model import BaseModel
 
 
@@ -29,7 +36,6 @@ class WidgetPosition(str, enum.Enum):
 class WidgetStatus(str, enum.Enum):
     DRAFT = 'draft'
     ACTIVE = 'active'
-    INACTIVE = 'inactive'
     ARCHIVED = 'archived'
 
 
@@ -51,8 +57,7 @@ class Widget(BaseModel):
     public_key = Column(String(255), unique=True, index=True)
 
     position = Column(SQLEnum(WidgetPosition), default=WidgetPosition.BOTTOM_RIGHT)
-    is_active = Column(Boolean, default=False)
-    
+
     # Versioning fields
     version = Column(Integer, default=1, nullable=False)
     published_at = Column(DateTimeColumn, nullable=True)
