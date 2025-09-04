@@ -5,15 +5,15 @@ import { CESRating } from '@/components/widgets/scoring/CESRating'
 import { ReviewForm } from '@/components/widgets/forms/ReviewForm'
 import { BugReportForm } from '@/components/widgets/forms/BugReportForm'
 import { FeatureRequestForm } from '@/components/widgets/forms/FeatureRequestForm'
+import { PublicFeedbackDisplay } from './PublicFeedbackDisplay'
 import { LoadingSpinner } from './LoadingSpinner'
 import type {
   FeedbackType,
   FeedbackData,
-  NPSFeedbackData,
-  CSATFeedbackData,
-  CESFeedbackData,
   BugReportFeedbackData,
   FeatureRequestFeedbackData,
+  ReviewFeedbackData,
+  GeneralFeedbackData,
 } from './types'
 
 interface FeedbackRendererProps {
@@ -60,7 +60,7 @@ export function FeedbackRenderer({
         overall_rating: data.rating,
         pros: data.review || '',
         cons: '',
-      } as any, // TODO: Fix this type
+      } as ReviewFeedbackData,
     })
   }
 
@@ -129,7 +129,7 @@ export function FeedbackRenderer({
       typeSpecificData: {
         title: `${feedbackType} Feedback`,
         message: feedback,
-      } as any, // TODO: Fix this type
+      } as GeneralFeedbackData,
     })
   }
 
@@ -145,22 +145,66 @@ export function FeedbackRenderer({
 
     case 'REVIEW':
       return (
-        <ReviewForm
-          onSubmit={handleReviewSubmit}
-          isSubmitting={isSubmitting}
-          colors={colors}
-          content={content}
-        />
+        <div className="space-y-6">
+          <div className="text-center">
+            <h3 className="text-xl font-bold mb-2" style={{ color: colors.text }}>
+              Customer Reviews
+            </h3>
+            <p className="text-sm opacity-70" style={{ color: colors.text }}>
+              See what others are saying about us
+            </p>
+          </div>
+
+          <PublicFeedbackDisplay
+            feedbackType="REVIEW"
+            widgetKey={widgetKey || ''}
+            colors={colors}
+          />
+
+          <div className="border-t pt-6">
+            <h4 className="text-lg font-semibold mb-4 text-center" style={{ color: colors.text }}>
+              Add Your Review
+            </h4>
+            <ReviewForm
+              onSubmit={handleReviewSubmit}
+              isSubmitting={isSubmitting}
+              colors={colors}
+              content={content}
+            />
+          </div>
+        </div>
       )
 
     case 'BUG_REPORT':
       return (
-        <BugReportForm
-          onSubmit={handleBugReportSubmit}
-          isSubmitting={isSubmitting}
-          colors={colors}
-          content={content}
-        />
+        <div className="space-y-6">
+          <div className="text-center">
+            <h3 className="text-xl font-bold mb-2" style={{ color: colors.text }}>
+              Bug Reports
+            </h3>
+            <p className="text-sm opacity-70" style={{ color: colors.text }}>
+              Track known issues and report new ones
+            </p>
+          </div>
+
+          <PublicFeedbackDisplay
+            feedbackType="BUG_REPORT"
+            widgetKey={widgetKey || ''}
+            colors={colors}
+          />
+
+          <div className="border-t pt-6">
+            <h4 className="text-lg font-semibold mb-4 text-center" style={{ color: colors.text }}>
+              Report a Bug
+            </h4>
+            <BugReportForm
+              onSubmit={handleBugReportSubmit}
+              isSubmitting={isSubmitting}
+              colors={colors}
+              content={content}
+            />
+          </div>
+        </div>
       )
 
     case 'FEATURE_REQUEST':
@@ -180,12 +224,34 @@ export function FeedbackRenderer({
     case 'FEEDBACK':
     case 'SURVEY':
       return (
-        <GeneralFeedbackForm
-          onSubmit={handleGeneralFeedbackSubmit}
-          isSubmitting={isSubmitting}
-          submitButtonText={content.submitButtonText}
-          colors={colors}
-        />
+        <div className="space-y-6">
+          <div className="text-center">
+            <h3 className="text-xl font-bold mb-2" style={{ color: colors.text }}>
+              Community Feedback
+            </h3>
+            <p className="text-sm opacity-70" style={{ color: colors.text }}>
+              See what others are saying and share your thoughts
+            </p>
+          </div>
+
+          <PublicFeedbackDisplay
+            feedbackType="FEEDBACK"
+            widgetKey={widgetKey || ''}
+            colors={colors}
+          />
+
+          <div className="border-t pt-6">
+            <h4 className="text-lg font-semibold mb-4 text-center" style={{ color: colors.text }}>
+              Share Your Feedback
+            </h4>
+            <GeneralFeedbackForm
+              onSubmit={handleGeneralFeedbackSubmit}
+              isSubmitting={isSubmitting}
+              submitButtonText={content.submitButtonText}
+              colors={colors}
+            />
+          </div>
+        </div>
       )
 
     default:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import List, Optional, Dict, Any
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy import select
@@ -18,7 +18,11 @@ from app.models.feedback_model import (
     CSATFeedback,
     CESFeedback,
 )
-from app.models.roadmap_model import RoadmapActionItem, RoadmapColumn
+from app.models.roadmap_model import (
+    RoadmapActionItem,
+    RoadmapColumn,
+    RoadmapActionItemTag,
+)
 from app.repositories.roadmap_repository import (
     roadmap_feature_repository,
     roadmap_column_repository,
@@ -75,6 +79,7 @@ class ActionItemService:
         custom_tags: Optional[List[str]] = None,
     ) -> RoadmapActionItem:
         feedback = await self._get_and_validate_feedback(db, feedback_id)
+        typed_feedback = await self._get_typed_feedback(db, feedback)
 
         from app.repositories.user_repository import user_repository
 
@@ -88,24 +93,30 @@ class ActionItemService:
 
         auto_tags = self._generate_tags_from_feedback_type(feedback.feedback_type)
         all_tags = auto_tags + (custom_tags or [])
-        final_priority = self._determine_priority(priority, feedback)
+
+        if priority:
+            try:
+                final_priority = FeedbackPriority(priority.lower())
+            except ValueError:
+                final_priority = self._suggest_priority(typed_feedback)
+        else:
+            final_priority = self._suggest_priority(typed_feedback)
 
         feature_data = {
             'column_id': backlog_column.id,
             'title': feedback.title or f'Feedback: {feedback.feedback_type.value}',
             'description': self._generate_description_from_feedback(
-                feedback, feedback.submitter_name
+                typed_feedback, feedback.submitter_name
             ),
             'order': 0,
             'vote_count': feedback.feedback_votes or 0,
             'submitter_name': current_user.name or current_user.email,
             'submitter_email': current_user.email,
-            'priority': final_priority.value,
         }
 
         feature = await roadmap_feature_repository.create(db, **feature_data)
 
-        await self._create_and_assign_tags(db, feature.id, all_tags)
+        await self._create_and_assign_tags(db, feature.id, all_tags, final_priority)
 
         await self._update_feedback_conversion_status(
             db, feedback.id, feature.id, conversion_notes
@@ -182,10 +193,8 @@ class ActionItemService:
         )
 
         if feedback.feedback_type == FeedbackType.BUG_REPORT:
-            if (
-                hasattr(feedback, 'severity_level')
-                and feedback.severity_level == FeedbackPriority.CRITICAL
-            ):
+            severity_level = getattr(feedback, 'severity_level', None)
+            if severity_level == FeedbackPriority.CRITICAL:
                 return FeedbackPriority.CRITICAL
 
         if feedback.feedback_type in [
@@ -194,10 +203,11 @@ class ActionItemService:
             FeedbackType.CSAT,
             FeedbackType.CES,
         ]:
-            if hasattr(feedback, 'rating') and feedback.rating:
-                if feedback.rating <= 2:
+            rating = getattr(feedback, 'rating', None)
+            if rating:
+                if rating <= 2:
                     return FeedbackPriority.HIGH
-                elif feedback.rating >= 4:
+                elif rating >= 4:
                     return FeedbackPriority.LOW
 
         return base_priority
@@ -207,50 +217,94 @@ class ActionItemService:
     ) -> str:
         description_parts = []
 
-        if feedback.message:
-            description_parts.append(feedback.message)
-
         if feedback.feedback_type == FeedbackType.BUG_REPORT:
-            if hasattr(feedback, 'steps_to_reproduce'):
+            actual_behavior = getattr(feedback, 'actual_behavior', None)
+            if actual_behavior:
+                description_parts.append(f'**Issue:** {actual_behavior}')
+
+            expected_behavior = getattr(feedback, 'expected_behavior', None)
+            if expected_behavior:
+                description_parts.append(f'**Expected:** {expected_behavior}')
+
+            steps_to_reproduce = getattr(feedback, 'steps_to_reproduce', None)
+            if steps_to_reproduce:
                 description_parts.append(
-                    f'Steps to reproduce: {feedback.steps_to_reproduce}'
+                    f'**Steps to reproduce:**\n{steps_to_reproduce}'
                 )
-            if hasattr(feedback, 'expected_behavior'):
-                description_parts.append(
-                    f'Expected behavior: {feedback.expected_behavior}'
-                )
-            if hasattr(feedback, 'actual_behavior'):
-                description_parts.append(f'Actual behavior: {feedback.actual_behavior}')
+
+            if feedback.message and feedback.message not in [
+                actual_behavior,
+                expected_behavior,
+                steps_to_reproduce,
+            ]:
+                description_parts.append(f'**Additional notes:** {feedback.message}')
 
         elif feedback.feedback_type == FeedbackType.FEATURE_REQUEST:
-            if hasattr(feedback, 'use_case'):
-                description_parts.append(f'Use case: {feedback.use_case}')
-            if hasattr(feedback, 'suggested_solution'):
+            use_case = getattr(feedback, 'use_case', None)
+            if use_case:
+                description_parts.append(f'**Use case:** {use_case}')
+
+            suggested_solution = getattr(feedback, 'suggested_solution', None)
+            if suggested_solution:
                 description_parts.append(
-                    f'Suggested solution: {feedback.suggested_solution}'
+                    f'**Suggested solution:** {suggested_solution}'
                 )
-            if hasattr(feedback, 'benefits'):
-                description_parts.append(f'Benefits: {feedback.benefits}')
+
+            benefits = getattr(feedback, 'benefits', None)
+            if benefits:
+                description_parts.append(f'**Benefits:** {benefits}')
+
+            if feedback.message and feedback.message not in [
+                use_case,
+                suggested_solution,
+                benefits,
+            ]:
+                description_parts.append(f'**Additional details:** {feedback.message}')
 
         elif feedback.feedback_type == FeedbackType.REVIEW:
-            if hasattr(feedback, 'pros'):
-                description_parts.append(f'Pros: {feedback.pros}')
-            if hasattr(feedback, 'cons'):
-                description_parts.append(f'Cons: {feedback.cons}')
+            overall_rating = getattr(feedback, 'overall_rating', None)
+            if overall_rating:
+                stars = '★' * overall_rating + '☆' * (5 - overall_rating)
+                description_parts.append(f'**Rating:** {overall_rating}/5 {stars}')
+
+            pros = getattr(feedback, 'pros', None)
+            if pros:
+                description_parts.append(f'**What works well:** {pros}')
+
+            cons = getattr(feedback, 'cons', None)
+            if cons:
+                description_parts.append(f'**Areas for improvement:** {cons}')
+
+            if feedback.message and feedback.message not in [pros, cons]:
+                description_parts.append(f'**Additional feedback:** {feedback.message}')
 
         elif feedback.feedback_type in [
             FeedbackType.NPS,
             FeedbackType.CSAT,
             FeedbackType.CES,
         ]:
-            if hasattr(feedback, 'follow_up_comment'):
-                description_parts.append(f'Follow-up: {feedback.follow_up_comment}')
+            rating = getattr(feedback, 'rating', None)
+            if rating:
+                if feedback.feedback_type == FeedbackType.NPS:
+                    description_parts.append(f'**NPS Score:** {rating}/10')
+                elif feedback.feedback_type == FeedbackType.CSAT:
+                    description_parts.append(f'**Satisfaction:** {rating}/5')
+                elif feedback.feedback_type == FeedbackType.CES:
+                    description_parts.append(f'**Effort Score:** {rating}/5')
 
-        if feedback.feedback_metadata:
-            description_parts.append(f'Metadata: {feedback.feedback_metadata}')
+            follow_up_comment = getattr(feedback, 'follow_up_comment', None)
+            if follow_up_comment:
+                description_parts.append(f'**Comment:** {follow_up_comment}')
+
+            if feedback.message and feedback.message != follow_up_comment:
+                description_parts.append(f'**Additional feedback:** {feedback.message}')
+
+        else:
+            if feedback.message:
+                description_parts.append(feedback.message)
 
         if original_submitter_name:
-            description_parts.append(f'Original submitter: {original_submitter_name}')
+            description_parts.append(f'*Submitted by: {original_submitter_name}*')
 
         return (
             '\n\n'.join(description_parts)
@@ -259,7 +313,11 @@ class ActionItemService:
         )
 
     async def _create_and_assign_tags(
-        self, db: AsyncSession, feature_id: UUID, tag_names: List[str]
+        self,
+        db: AsyncSession,
+        feature_id: UUID,
+        tag_names: List[str],
+        priority: FeedbackPriority,
     ) -> None:
         feature = await roadmap_feature_repository.get(db, id=feature_id)
         if not feature:
@@ -281,8 +339,19 @@ class ActionItemService:
                 }
                 tag = await roadmap_tag_repository.create(db, **tag_data)
 
-            feature_tag_data = {'feature_id': feature_id, 'tag_id': tag.id}
-            await roadmap_feature_tag_repository.create(db, **feature_tag_data)
+            existing_association = await db.execute(
+                select(RoadmapActionItemTag).where(
+                    RoadmapActionItemTag.action_item_id == feature_id,
+                    RoadmapActionItemTag.tag_id == tag.id,
+                )
+            )
+            if not existing_association.scalar_one_or_none():
+                feature_tag_data = {
+                    'action_item_id': feature_id,
+                    'tag_id': tag.id,
+                    'priority': priority.value,
+                }
+                await roadmap_feature_tag_repository.create(db, **feature_tag_data)
 
     def _get_tag_color(self, tag_name: str) -> str:
         colors = [
@@ -307,7 +376,7 @@ class ActionItemService:
     ) -> None:
         update_data = {
             'converted_to_action_item_id': roadmap_item_id,
-            'conversion_date': datetime.now(datetime.UTC),
+            'conversion_date': datetime.now(timezone.utc).replace(tzinfo=None),
             'conversion_notes': conversion_notes,
             'status': FeedbackStatus.IN_PROGRESS,
         }
@@ -344,7 +413,9 @@ class ActionItemService:
         specific_model = self.FEEDBACK_TYPE_MODELS.get(feedback.feedback_type)
 
         if specific_model:
-            specific_feedback = await db.get(specific_model, feedback.id)
+            query = select(specific_model).where(specific_model.id == feedback.id)
+            result = await db.execute(query)
+            specific_feedback = result.scalar_one_or_none()
             return specific_feedback if specific_feedback else feedback
 
         return feedback
@@ -353,6 +424,7 @@ class ActionItemService:
         self, db: AsyncSession, feedback_id: UUID
     ) -> Dict[str, Any]:
         feedback = await self._get_and_validate_feedback(db, feedback_id)
+        typed_feedback = await self._get_typed_feedback(db, feedback)
 
         tag_names = self._generate_tags_from_feedback_type(feedback.feedback_type)
         suggested_tags = [
@@ -363,10 +435,10 @@ class ActionItemService:
             'suggested_title': feedback.title
             or f'Feedback: {feedback.feedback_type.value}',
             'suggested_description': self._generate_description_from_feedback(
-                feedback, feedback.submitter_name
+                typed_feedback, feedback.submitter_name
             ),
             'suggested_tags': suggested_tags,
-            'suggested_priority': self._suggest_priority(feedback).value,
+            'suggested_priority': self._suggest_priority(typed_feedback).value,
         }
 
         return preview

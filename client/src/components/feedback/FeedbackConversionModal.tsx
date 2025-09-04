@@ -14,19 +14,19 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, Tag, ArrowRight, CheckCircle } from 'lucide-react'
-import { api, type ConversionPreview } from '@/lib/api'
+import { type ConversionPreview } from '@/lib/api'
+import type { ConversionData } from '@/lib/api/feedback'
 
 interface FeedbackConversionModalProps {
   isOpen: boolean
   onClose: () => void
-  feedback: any
+  feedback: {
+    id: string
+    feedback_type: string
+    title?: string
+    message?: string
+  }
   onConvert: (data: ConversionData) => Promise<void>
-}
-
-interface ConversionData {
-  priority: string
-  conversion_notes?: string
-  custom_tags?: string[]
 }
 
 const PRIORITY_OPTIONS = [
@@ -42,7 +42,7 @@ export const FeedbackConversionModal: React.FC<FeedbackConversionModalProps> = (
   feedback,
   onConvert,
 }) => {
-  const [priority, setPriority] = useState<string>('')
+  const [priority, setPriority] = useState<'low' | 'medium' | 'high' | 'critical'>('medium')
   const [conversionNotes, setConversionNotes] = useState<string>('')
   const [customTags, setCustomTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState<string>('')
@@ -55,7 +55,9 @@ export const FeedbackConversionModal: React.FC<FeedbackConversionModalProps> = (
     if (isOpen && feedback) {
       loadConversionPreview()
       // Set default priority based on feedback type
-      setPriority(getDefaultPriority(feedback.feedback_type))
+      setPriority(
+        getDefaultPriority(feedback.feedback_type) as 'low' | 'medium' | 'high' | 'critical'
+      )
     }
   }, [isOpen, feedback])
 
@@ -64,7 +66,7 @@ export const FeedbackConversionModal: React.FC<FeedbackConversionModalProps> = (
 
     try {
       setIsLoading(true)
-      // Use the API function instead of direct fetch
+      const { api } = await import('@/lib/api')
       const previewData = await api.getConversionPreview(feedback.id)
       setPreview(previewData)
     } catch (error) {
@@ -125,7 +127,7 @@ export const FeedbackConversionModal: React.FC<FeedbackConversionModalProps> = (
 
   const handleClose = () => {
     if (!isConverting) {
-      setPriority('')
+      setPriority('medium')
       setConversionNotes('')
       setCustomTags([])
       setNewTag('')
@@ -158,7 +160,12 @@ export const FeedbackConversionModal: React.FC<FeedbackConversionModalProps> = (
                 {/* Priority Selection */}
                 <div className="space-y-2">
                   <Label htmlFor="priority">Priority</Label>
-                  <Select value={priority} onValueChange={setPriority}>
+                  <Select
+                    value={priority}
+                    onValueChange={(value) =>
+                      setPriority(value as 'low' | 'medium' | 'high' | 'critical')
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select priority" />
                     </SelectTrigger>

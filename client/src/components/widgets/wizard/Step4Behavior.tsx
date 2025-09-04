@@ -146,11 +146,11 @@ export function Step4Behavior({ form }: Step4BehaviorProps) {
               <FormField
                 key={device}
                 control={form.control}
-                name={`behavior.deviceTypes.${device}`}
+                name={`behavior.deviceTypes.${device}` as any}
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                     <FormControl>
-                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      <Checkbox checked={field.value as boolean} onCheckedChange={field.onChange} />
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel className="font-normal capitalize">{device}</FormLabel>

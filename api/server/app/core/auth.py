@@ -7,6 +7,8 @@ from app.core.exceptions import AuthenticationError
 from app.core.settings import get_settings
 from app.schemas.auth_schema import TokenData
 from app.db import get_db
+from app.models.user_model import User
+from sqlalchemy import select
 
 
 class Auth:
@@ -71,9 +73,6 @@ class Auth:
             raise AuthenticationError('Token validation failed')
 
     async def sync_user_to_db(self, token_data: TokenData, db: AsyncSession):
-        from app.models.user_model import User
-        from sqlalchemy import select
-
         stmt = select(User).where(User.id == token_data.sub)
         result = await db.execute(stmt)
         user = result.scalar_one_or_none()

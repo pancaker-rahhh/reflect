@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { type UseFormReturn } from 'react-hook-form'
 import { type WidgetFormData } from '@/pages/WidgetCreate'
 import {

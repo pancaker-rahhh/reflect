@@ -66,6 +66,10 @@ async def list_feedback(
 
 
 def _convert_feedback_to_dict(item) -> Dict[str, Any]:
+    title = item.title or item.message or f'Feedback: {item.feedback_type.value}'
+    if title.startswith('New '):
+        title = title[4:]
+
     return {
         'id': str(item.id),
         'type': item.feedback_type.value
@@ -74,9 +78,7 @@ def _convert_feedback_to_dict(item) -> Dict[str, Any]:
         'status': item.status.value
         if hasattr(item.status, 'value')
         else str(item.status),
-        'summary': item.title
-        or item.message
-        or f'Feedback: {item.feedback_type.value}',
+        'summary': title,
         'submittedBy': item.submitter_name or 'Anonymous',
         'timestamp': item.created_at.isoformat() if item.created_at else None,
         'feedback_votes': item.feedback_votes,

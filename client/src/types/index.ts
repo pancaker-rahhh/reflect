@@ -18,6 +18,7 @@ export interface Organization {
   updated_at?: string
   members_count?: number
   projects_count?: number
+  subscription?: Subscription
 }
 
 export interface OrganizationMember {
@@ -69,6 +70,12 @@ export interface Widget {
     | 'CSAT'
     | 'CES'
   status: 'draft' | 'active' | 'inactive' | 'archived'
+  modules?: {
+    feedback?: boolean
+    reviews?: boolean
+    bugReporting?: boolean
+    featureRequests?: boolean
+  }
   configuration: {
     modules?: {
       feedback?: boolean
@@ -158,6 +165,12 @@ export interface BugReport extends BaseFeedback {
   expectedBehavior?: string
   actualBehavior?: string
   attachments?: string[]
+  title?: string
+  description?: string
+  status?: 'new' | 'investigating' | 'confirmed' | 'resolved' | 'wont-fix'
+  browser?: string
+  os?: string
+  url?: string
 }
 
 export interface FeatureRequest extends BaseFeedback {
@@ -166,6 +179,10 @@ export interface FeatureRequest extends BaseFeedback {
   suggestedSolution?: string
   benefits?: string
   implementationStatus?: 'backlog' | 'planned' | 'in-progress' | 'completed'
+  title?: string
+  description?: string
+  status?: 'new' | 'under-review' | 'planned' | 'in-progress' | 'completed'
+  upvotes?: number
 }
 
 export type Feedback = SurveyResponse | Review | BugReport | FeatureRequest
@@ -188,6 +205,18 @@ export interface RoadmapActionItemTag {
   updated_at: Date | string
 }
 
+export interface RoadmapActionItemIntegration {
+  id: string
+  action_item_id: string
+  integration_id: string
+  external_id: string
+  external_url?: string
+  external_status?: string
+  integration_metadata: Record<string, any>
+  last_synced_at?: Date | string
+  sync_status: string
+}
+
 export interface RoadmapActionItem {
   id: string
   column_id: string
@@ -200,6 +229,7 @@ export interface RoadmapActionItem {
   submitter_email?: string
   tags: RoadmapTag[]
   feature_tags?: RoadmapActionItemTag[]
+  jira_integration?: RoadmapActionItemIntegration
   created_at: Date | string
   updated_at: Date | string
 }
@@ -211,12 +241,13 @@ export interface RoadmapColumn {
   status: 'new' | 'in-progress' | 'planned' | 'under-review'
   color: string
   order: number
-  features: RoadmapActionItem[]
+  action_items: RoadmapActionItem[]
 }
 
 export interface Roadmap {
   id: string
   project_id: string
+  projectId?: string
   name: string
   is_public: boolean
   subdomain: string
@@ -265,4 +296,29 @@ export interface NotificationSettings {
   newReviews: boolean
   newBugReports: boolean
   newFeatureRequests: boolean
+}
+
+export interface Integration {
+  id: string
+  project_id: string
+  name: string
+  integration_type: 'jira' | 'github' | 'slack' | 'discord'
+  type?: 'JIRA' | 'GITHUB' | 'SLACK' | 'DISCORD' // Legacy field
+  config: {
+    jira_url?: string
+    project_key?: string
+    default_project_key?: string
+    default_issue_type?: string
+    default_priority?: string
+    auto_create_issues?: boolean
+    include_metadata?: boolean
+    default_assignee?: string
+    default_reporter?: string
+    components?: string[]
+    labels?: string[]
+    status_mapping?: Record<string, string>
+  }
+  auth_data: Record<string, unknown>
+  created_at: string
+  updated_at: string
 }

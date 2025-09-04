@@ -41,10 +41,7 @@ export const ProjectStep: React.FC = () => {
         project = await projectApi.createProject({
           name: formData.name,
           description: formData.description,
-          organization_id: organizationId,
-          settings: {
-            onboarding_project: true,
-          },
+          organization_id: organizationId!,
         });
         setProjectId(project.id);
       }

@@ -39,7 +39,7 @@ export const handlers = [
 
   // Roadmap endpoints
   http.get(`${API_BASE_URL}/roadmaps/:projectId`, ({ params }) => {
-    const roadmap = mockData.roadmaps.find((r) => r.projectId === params.projectId)
+    const roadmap = mockData.roadmaps.find((r) => r.project_id === params.projectId)
     return roadmap ? HttpResponse.json(roadmap) : new HttpResponse(null, { status: 404 })
   }),
 

@@ -18,13 +18,7 @@ export const StepNavigation: React.FC = () => {
     enabled: !isLoading
   });
 
-  const getSteps = () => {
-    const baseSteps = ['user-type', 'profile', 'organization', 'project'];
-    if (userType === 'team') {
-      baseSteps.push('team-setup');
-    }
-    return baseSteps;
-  };
+
 
 
   if (currentStep === 'completion') {

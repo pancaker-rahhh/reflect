@@ -57,6 +57,12 @@ export const organizationApi = {
   },
 
   /**
+   * Send bulk invitations
+   */
+  sendBulk: (request: BulkInvitationRequest): Promise<any> =>
+    apiClient.post('/organizations/bulk-invite', request),
+
+  /**
    * Get current user's organization (newer method)
    */
   async getMyOrganization(): Promise<Organization | null> {

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../contexts/AuthContext';
@@ -44,15 +44,7 @@ const OnboardingContext = createContext<OnboardingContextType | undefined>(undef
 
 const ONBOARDING_STORAGE_KEY = 'reflect_onboarding_state';
 
-const STEP_ORDER: OnboardingStep[] = [
-  'welcome',
-  'user-type',
-  'profile',
-  'organization',
-  'project',
-  'team-setup',
-  'completion',
-];
+
 
 const getSteps = (userType: UserType | null, skipUserTypeSelection: boolean): OnboardingStep[] => {
   if (skipUserTypeSelection) {
@@ -95,7 +87,7 @@ interface OnboardingProviderProps {
 export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const skipUserTypeSelection = isFeatureEnabled('SKIP_USER_TYPE_SELECTION');
   
   const [state, setState] = useState<OnboardingState>(() => {

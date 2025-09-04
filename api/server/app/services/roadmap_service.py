@@ -398,7 +398,7 @@ class RoadmapService(BaseRoadmapService):
         _, _ = await self._validate_column_access(db, user_id, feature_in.column_id)
 
         tag_ids = feature_in.tag_ids or []
-        feature_data = feature_in.model_dump(exclude={'tag_ids'})
+        feature_data = feature_in.model_dump(exclude={'tag_ids', 'feedback_id'})
 
         if feature_data.get('order') is None:
             next_order = await self.feature_repo.get_next_order(

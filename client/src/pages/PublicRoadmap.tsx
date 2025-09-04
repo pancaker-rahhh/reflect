@@ -1,14 +1,13 @@
 import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { roadmapApi } from '@/lib/api'
+import type { RoadmapActionItem, RoadmapActionItemTag } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader'
-import { MapPin, Calendar, Tag, ExternalLink, ArrowLeft } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { MapPin, ArrowLeft, Calendar } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import type { RoadmapActionItem } from '@/types'
 
 export function PublicRoadmap() {
   const { publicSlug, subdomain } = useParams<{ publicSlug?: string; subdomain?: string }>()
@@ -138,12 +137,12 @@ export function PublicRoadmap() {
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span className="capitalize">{column.status}</span>
                   <span>•</span>
-                  <span>{column.features?.length || 0} features</span>
+                  <span>{column.action_items?.length || 0} features</span>
                 </div>
               </CardHeader>
 
               <CardContent className="space-y-3">
-                {column.features?.map((feature) => (
+                {column.action_items?.map((feature: RoadmapActionItem) => (
                   <div
                     key={feature.id}
                     className="p-4 border rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer group"
@@ -161,7 +160,7 @@ export function PublicRoadmap() {
 
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          {feature.feature_tags?.map((featureTag) => (
+                          {feature.feature_tags?.map((featureTag: RoadmapActionItemTag) => (
                             <Badge
                               key={featureTag.tag.id}
                               variant="outline"
@@ -183,7 +182,7 @@ export function PublicRoadmap() {
                   </div>
                 ))}
 
-                {(!column.features || column.features.length === 0) && (
+                {(!column.action_items || column.action_items.length === 0) && (
                   <div className="text-center py-8 text-muted-foreground">
                     <div className="w-12 h-12 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-3">
                       <MapPin className="h-6 w-6 opacity-50" />
