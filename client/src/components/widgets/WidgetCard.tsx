@@ -8,6 +8,7 @@ import {
   Calendar,
   TrendingUp,
   Users,
+  Code,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -26,9 +27,16 @@ interface WidgetCardProps {
   viewMode?: 'grid' | 'list'
   onDelete: () => void
   onEdit: () => void
+  onGetCode: () => void
 }
 
-export function WidgetCard({ widget, viewMode = 'grid', onDelete, onEdit }: WidgetCardProps) {
+export function WidgetCard({
+  widget,
+  viewMode = 'grid',
+  onDelete,
+  onEdit,
+  onGetCode,
+}: WidgetCardProps) {
   const [copied, setCopied] = useState(false)
 
   const handleCopyKey = async () => {
@@ -106,6 +114,10 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onEdit }: Widg
                         <Eye className="h-4 w-4" />
                         <span>Edit Widget</span>
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={onGetCode} className="gap-2 cursor-pointer">
+                        <Code className="h-4 w-4" />
+                        <span>Get Code</span>
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleCopyKey} className="gap-2 cursor-pointer">
                         <Copy className="h-4 w-4" />
                         <span>{copied ? 'Copied!' : 'Copy Public Key'}</span>
@@ -172,6 +184,10 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onEdit }: Widg
                 <DropdownMenuItem onClick={onEdit} className="gap-2 cursor-pointer">
                   <Eye className="h-4 w-4" />
                   <span>Edit Widget</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onGetCode} className="gap-2 cursor-pointer">
+                  <Code className="h-4 w-4" />
+                  <span>Get Code</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleCopyKey} className="gap-2 cursor-pointer">
                   <Copy className="h-4 w-4" />

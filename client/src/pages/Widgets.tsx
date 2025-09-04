@@ -66,6 +66,10 @@ export function Widgets() {
     navigate(`/widgets/${widgetId}/edit`)
   }
 
+  const handleGetCode = (widgetId: string) => {
+    navigate(`/widgets/${widgetId}/get-code`)
+  }
+
   const confirmDelete = () => {
     if (deleteModal.widgetId) {
       deleteMutation.mutate(deleteModal.widgetId)
@@ -179,6 +183,7 @@ export function Widgets() {
                     viewMode={viewMode}
                     onDelete={() => handleDeleteWidget(widget.id, widget.name)}
                     onEdit={() => handleEditWidget(widget.id)}
+                    onGetCode={() => handleGetCode(widget.id)}
                   />
                 ))}
               </div>

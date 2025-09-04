@@ -29,7 +29,7 @@ export function WidgetGetCode() {
       <div className="text-center p-8">
         <h2 className="text-xl font-semibold text-destructive mb-4">Error loading widget</h2>
         <p className="text-muted-foreground mb-6">
-          Could not find the widget you're looking for. It might have been deleted.
+          Could not find the widget you&apos;re looking for. It might have been deleted.
         </p>
         <Button asChild>
           <Link to="/widgets">
@@ -65,7 +65,7 @@ export function WidgetGetCode() {
           </h2>
 
           <ol className="list-decimal list-inside text-sm text-muted-foreground space-y-1 mt-2">
-            <li>Copy the code below using the "Copy Code" button.</li>
+            <li>Copy the code below using the &quot;Copy Code&quot; button.</li>
             <li>
               Paste it just before the closing <strong>&lt;/body&gt;</strong> tag of your website.
             </li>
@@ -89,7 +89,7 @@ export function WidgetGetCode() {
       </div>
 
       <div className="mt-12">
-        <h3 className="text-xl font-semibold mb-4">What's Next?</h3>
+        <h3 className="text-xl font-semibold mb-4">What&apos;s Next?</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="border rounded-lg p-4">
             <h4 className="text-lg font-semibold mb-1">Step 1: Add to Website</h4>
