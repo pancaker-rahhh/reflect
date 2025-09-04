@@ -12,6 +12,7 @@ import { FreeTierAlert } from '@/components/widgets/FreeTierAlert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageLoading } from '@/components/common/LoadingSpinner'
 import { DeleteConfirmationModal } from '@/components/common/ConfirmationModal'
+import type { Widget } from '@/types'
 
 export function Widgets() {
   const navigate = useNavigate()
@@ -31,21 +32,38 @@ export function Widgets() {
 
   const { data: widgets, isLoading: isLoadingWidgets } = useQuery({
     queryKey: ['widgets', currentProject?.id],
-    // This now calls the real API
+
     queryFn: () => widgetApi.getByProject(currentProject!.id),
     enabled: !!currentProject,
   })
 
   const deleteMutation = useMutation({
-    // This now calls the real API
     mutationFn: (widgetId: string) => widgetApi.delete(widgetId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['widgets', currentProject?.id] })
+
+    onMutate: async (widgetId) => {
+      await queryClient.cancelQueries({ queryKey: ['widgets', currentProject?.id] })
+
+      const previousWidgets = queryClient.getQueryData(['widgets', currentProject?.id])
+
+      queryClient.setQueryData(
+        ['widgets', currentProject?.id],
+        (old: Widget[] | undefined) => old?.filter((widget: Widget) => widget.id !== widgetId) || []
+      )
+
+      return { previousWidgets }
     },
-    onError: (error: unknown) => {
-      console.error('Failed to delete widget:', error)
-      const message = (error as { message?: string })?.message || 'Failed to delete widget'
+
+    onError: (err, _widgetId, context) => {
+      if (context?.previousWidgets) {
+        queryClient.setQueryData(['widgets', currentProject?.id], context.previousWidgets)
+      }
+      console.error('Failed to delete widget:', err)
+      const message = (err as { message?: string })?.message || 'Failed to delete widget'
       alert(`Error: ${message}`)
+    },
+
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['widgets', currentProject?.id] })
     },
   })
 
