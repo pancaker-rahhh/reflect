@@ -68,7 +68,6 @@ class WidgetService:
         widget_data['public_key'] = public_key
         widget_data['embed_code'] = self._generate_embed_code(public_key)
         widget_data['status'] = WidgetStatus.ACTIVE
-        widget_data['is_active'] = True
         widget_data['cdn_url'] = self._get_cdn_url(public_key)
 
         widget = await self.repository.create(db, **widget_data)
@@ -108,12 +107,6 @@ class WidgetService:
     ) -> Widget:
         widget = await self.get_widget_and_check_access(db, user_id, widget_id)
 
-        if bool(widget.is_active) and widget.status == WidgetStatus.ACTIVE:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail='Cannot delete an active widget. Please deactivate the widget first before deleting.',
-            )
-
         # Delete widget files from CDN before soft deleting from database
         try:
             success = await cdn_deployment_service.delete_widget(widget.public_key)
@@ -129,19 +122,6 @@ class WidgetService:
 
         return await self.repository.soft_delete(db, id=widget_id)
 
-    async def set_widget_activation(
-        self, db: AsyncSession, user_id: UUID, widget_id: UUID, is_active: bool
-    ) -> Widget:
-        await self.get_widget_and_check_access(db, user_id, widget_id)
-        if is_active:
-            return await self.repository.update(
-                db, id=widget_id, status=WidgetStatus.ACTIVE, is_active=True
-            )
-        else:
-            return await self.repository.update(
-                db, id=widget_id, status=WidgetStatus.INACTIVE, is_active=False
-            )
-
     async def get_public_widget_by_key(
         self, db: AsyncSession, public_key: str
     ) -> Widget:
@@ -153,10 +133,7 @@ class WidgetService:
                 detail='Active widget not found for this key.',
             )
 
-        if (
-            not bool(widget.is_active)
-            or cast(WidgetStatus, widget.status) != WidgetStatus.ACTIVE
-        ):
+        if cast(WidgetStatus, widget.status) != WidgetStatus.ACTIVE:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail='Active widget not found for this key.',

@@ -16,7 +16,7 @@ function transformDataToPayload(data: WidgetFormData) {
         requireReviewText: data.content?.requireReviewText,
         requireStepsToReproduce: data.content?.requireStepsToReproduce,
         requireUseCase: data.content?.requireUseCase,
-      }
+      },
     },
     theme_configuration: {
       ...data.appearance.colors,
@@ -51,7 +51,6 @@ export interface WidgetUpdateRequest {
   configuration?: Record<string, any>
   theme_configuration?: Record<string, any>
   targeting_rules?: Array<Record<string, any>>
-  is_active?: boolean
 }
 
 export const widgetApi = {
@@ -65,9 +64,9 @@ export const widgetApi = {
 
   create(projectId: string, formData: WidgetFormData): Promise<Widget> {
     const payload = transformDataToPayload(formData)
-    return apiClient.post<Widget>(`/projects/${projectId}/widgets`, { 
-      ...payload, 
-      project_id: projectId 
+    return apiClient.post<Widget>(`/projects/${projectId}/widgets`, {
+      ...payload,
+      project_id: projectId,
     })
   },
 
@@ -91,15 +90,7 @@ export const widgetApi = {
     return apiClient.delete<void>(`/widgets/${id}`)
   },
 
-  activate(widgetId: string): Promise<Widget> {
-    return apiClient.post<Widget>(`/widgets/${widgetId}/activate`)
-  },
-
-  deactivate(widgetId: string): Promise<Widget> {
-    return apiClient.post<Widget>(`/widgets/${widgetId}/deactivate`)
-  },
-
   getPublicWidget(publicKey: string): Promise<Widget> {
     return apiClient.get<Widget>(`/public/widgets/${publicKey}`)
-  }
+  },
 }

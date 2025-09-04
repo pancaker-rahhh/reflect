@@ -69,7 +69,7 @@ export interface Widget {
     | 'NPS'
     | 'CSAT'
     | 'CES'
-  status: 'draft' | 'active' | 'inactive' | 'archived'
+  status: 'draft' | 'active' | 'archived'
   modules?: {
     feedback?: boolean
     reviews?: boolean
@@ -115,7 +115,6 @@ export interface Widget {
   embed_code?: string
   public_key: string
   position: 'bottom_right' | 'bottom_left' | 'top_right' | 'top_left' | 'center'
-  is_active: boolean
   created_at: string
   updated_at: string
 }

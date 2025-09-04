@@ -75,7 +75,6 @@ const widgets: Widget[] = [
     id: 'widget-1',
     project_id: 'project-1',
     name: 'webapp feedback widget',
-    is_active: true,
     modules: {
       feedback: true,
       reviews: true,
@@ -110,7 +109,8 @@ const widgets: Widget[] = [
     },
     position: 'bottom_right',
     targeting_rules: [],
-    embed_code: '<script src="https://webapp.reflect.app/widget.js" data-widget-id="widget-1"></script>',
+    embed_code:
+      '<script src="https://webapp.reflect.app/widget.js" data-widget-id="widget-1"></script>',
     public_key: 'pk_test_123456789',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z',
@@ -175,15 +175,15 @@ const generateFeedback = (): Feedback[] => {
       projectId: 'project-1',
       widgetId: 'widget-1',
       type: 'bug_report',
-      ...(({
+      ...({
         title: bugTitles[i % bugTitles.length],
         description:
           'When I try to click the button, nothing happens. This started happening after the last update.',
         status: (['new', 'investigating', 'confirmed'] as const)[Math.floor(Math.random() * 3)],
         browser: 'Chrome 120',
         os: 'Windows 11',
-        url: 'https://example.com/page'
-      }) as any),
+        url: 'https://example.com/page',
+      } as any),
       severity: (['low', 'medium', 'high', 'critical'] as const)[Math.floor(Math.random() * 4)],
       browser: 'Chrome 120',
       os: 'Windows 11',
@@ -208,7 +208,7 @@ const generateFeedback = (): Feedback[] => {
       projectId: 'project-1',
       widgetId: 'widget-1',
       type: 'feature_request',
-      ...(({
+      ...({
         title: featureTitles[i % featureTitles.length],
         description:
           'It would be great if we could have this feature. It would really help our team be more productive.',
@@ -216,7 +216,7 @@ const generateFeedback = (): Feedback[] => {
           Math.floor(Math.random() * 4)
         ],
         upvotes: Math.floor(Math.random() * 50) + 1,
-      }) as any),
+      } as any),
       userEmail: `requester${i}@example.com`,
       userName: `Requester ${i}`,
       createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
