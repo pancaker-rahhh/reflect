@@ -47,7 +47,6 @@ def get_anonymous_ip_limit_config(endpoint_type: str) -> Dict[str, Any]:
 def check_rate_limit(
     client_ip: str, endpoint_type: str, is_anonymous: bool = False
 ) -> bool:
-    """Custom rate limiting implementation"""
     current_time = time.time()
 
     if is_anonymous:

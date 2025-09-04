@@ -154,24 +154,14 @@ export function useFeedbackSubmission({
         setIsSubmitting(true)
         setTimeout(() => {
           setIsSubmitting(false)
-          const availableTypes = getAvailableFeedbackTypes()
-          if (availableTypes.length > 1) {
-            onStateChange?.({ type: 'menu', availableTypes })
-          } else {
-            onStateChange?.({ type: 'success' })
-          }
+          onStateChange?.({ type: 'success' })
         }, 1000)
       } else {
         if (onSubmit) {
           try {
             setIsSubmitting(true)
             await onSubmit(data)
-            const availableTypes = getAvailableFeedbackTypes()
-            if (availableTypes.length > 1) {
-              onStateChange?.({ type: 'menu', availableTypes })
-            } else {
-              onStateChange?.({ type: 'success' })
-            }
+            onStateChange?.({ type: 'success' })
           } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Submission failed'
             const errorInfo = parseError(errorMessage)
@@ -190,8 +180,6 @@ export function useFeedbackSubmission({
 
   const handleScoreSubmission = useCallback(
     async (score: number, feedbackType: FeedbackType) => {
-
-
       // Prepare type-specific data based on feedback type
       let typeSpecificData: NPSFeedbackData | CSATFeedbackData | CESFeedbackData
 

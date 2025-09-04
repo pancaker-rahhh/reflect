@@ -47,6 +47,14 @@ export function WidgetCore({
     setSelectedScore(score)
     const currentFeedbackType =
       currentState.type === 'active' ? currentState.feedbackType : config.primaryType
+
+    // For NPS, CSAT, and CES, just set the score and show textbox
+    // For other types, submit immediately
+    if (['NPS', 'CSAT', 'CES'].includes(currentFeedbackType)) {
+      // Don't submit immediately, let the user add additional feedback
+      return
+    }
+
     await handleScoreSubmission(score, currentFeedbackType)
   }
 
@@ -214,7 +222,13 @@ export function WidgetCore({
         </p>
       </div>
       <button
-        onClick={() => updateState({ type: 'closed' })}
+        onClick={() => {
+          if (onClose) {
+            onClose()
+          } else {
+            updateState({ type: 'closed' })
+          }
+        }}
         className="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg"
         style={{ backgroundColor: buttonColor, color: buttonTextColor }}
       >
@@ -373,6 +387,8 @@ export function WidgetCore({
         )
       case 'success':
         return renderSuccess()
+      case 'closed':
+        return null
       default:
         return renderError()
     }
@@ -408,8 +424,16 @@ export function WidgetCore({
 
         {/* Close button */}
         <button
-          onClick={onClose || (() => updateState({ type: 'closed' }))}
-          className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/20 hover:bg-white/30 transition-colors duration-200 flex items-center justify-center"
+          onClick={() => {
+            if (onClose) {
+              onClose()
+            } else {
+              updateState({ type: 'closed' })
+            }
+          }}
+          className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/20 hover:bg-white/30 transition-colors duration-200 flex items-center justify-center z-50 cursor-pointer"
+          style={{ zIndex: 9999 }}
+          title="Close widget"
         >
           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path

@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 
 interface PublicFeedbackData {
   id: string
-  feedback_type: string
+  feedback_type?: string
   rating?: number
   message?: string
   created_at?: string
-  feedback_votes: number
+  feedback_votes?: number
   overall_rating?: number
   pros?: string
   cons?: string
@@ -16,10 +16,16 @@ interface PublicFeedbackData {
   steps_to_reproduce?: string
   expected_result?: string
   actual_result?: string
+  // Feature request specific fields (from FeatureRequestPublic)
+  description?: string
+  category?: string
+  priority?: string
+  upvotes?: number
+  hasUserUpvoted?: boolean
 }
 
 interface PublicFeedbackDisplayProps {
-  feedbackType: 'REVIEW' | 'BUG_REPORT' | 'FEEDBACK'
+  feedbackType: 'REVIEW' | 'BUG_REPORT' | 'FEEDBACK' | 'FEATURE_REQUEST'
   widgetKey: string
   colors: {
     primary: string
@@ -57,6 +63,9 @@ export function PublicFeedbackDisplay({
           break
         case 'BUG_REPORT':
           endpoint = `${apiBaseUrl}/public/widgets/${widgetKey}/bug-reports`
+          break
+        case 'FEATURE_REQUEST':
+          endpoint = `${apiBaseUrl}/public/widgets/${widgetKey}/features`
           break
         case 'FEEDBACK':
         default:
@@ -155,7 +164,9 @@ export function PublicFeedbackDisplay({
             ? 'Reviews'
             : feedbackType === 'BUG_REPORT'
               ? 'Bug Reports'
-              : 'Feedback'}
+              : feedbackType === 'FEATURE_REQUEST'
+                ? 'Feature Requests'
+                : 'Feedback'}
         </h3>
         <p className="text-sm text-gray-600">
           Showing {data.length} {feedbackType.toLowerCase()}
@@ -238,6 +249,37 @@ export function PublicFeedbackDisplay({
               </div>
             )}
 
+            {feedbackType === 'FEATURE_REQUEST' && (
+              <div className="space-y-2">
+                {item.priority && (
+                  <div className="text-sm">
+                    <span className="font-medium">Priority:</span>{' '}
+                    <span
+                      className={`px-2 py-1 rounded text-xs ${
+                        item.priority === 'high'
+                          ? 'bg-red-100 text-red-800'
+                          : item.priority === 'medium'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-blue-100 text-blue-800'
+                      }`}
+                    >
+                      {item.priority}
+                    </span>
+                  </div>
+                )}
+                {item.category && (
+                  <div className="text-sm">
+                    <span className="font-medium">Category:</span> {item.category}
+                  </div>
+                )}
+                {item.description && (
+                  <div className="text-sm">
+                    <span className="font-medium">Description:</span> {item.description}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Footer with votes */}
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
               <div className="flex items-center space-x-1 text-gray-500">
@@ -249,7 +291,12 @@ export function PublicFeedbackDisplay({
                     d="M5 15l7-7 7 7"
                   />
                 </svg>
-                <span className="text-sm">{item.feedback_votes} votes</span>
+                <span className="text-sm">
+                  {feedbackType === 'FEATURE_REQUEST'
+                    ? item.upvotes || 0
+                    : item.feedback_votes || 0}{' '}
+                  votes
+                </span>
               </div>
             </div>
           </div>

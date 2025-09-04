@@ -90,7 +90,6 @@ class Feedback(BaseModel):
     widget = relationship('Widget', back_populates='feedback')
     project = relationship('Project')
     form = relationship('FeedbackForm', back_populates='feedback_items')
-    # Removed relationships: assigned_to, resolved_by (columns were removed)
     converted_to_action_item: Mapped[Optional['RoadmapActionItem']] = relationship(
         foreign_keys=[converted_to_action_item_id], back_populates='converted_feedback'
     )
