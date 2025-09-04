@@ -148,30 +148,19 @@ export function FeedbackRenderer({
         <div className="space-y-6">
           <div className="text-center">
             <h3 className="text-xl font-bold mb-2" style={{ color: colors.text }}>
-              Customer Reviews
+              Customer Review
             </h3>
             <p className="text-sm opacity-70" style={{ color: colors.text }}>
-              See what others are saying about us
+              {content.mainQuestion}
             </p>
           </div>
 
-          <PublicFeedbackDisplay
-            feedbackType="REVIEW"
-            widgetKey={widgetKey || ''}
+          <ReviewForm
+            onSubmit={handleReviewSubmit}
+            isSubmitting={isSubmitting}
             colors={colors}
+            content={content}
           />
-
-          <div className="border-t pt-6">
-            <h4 className="text-lg font-semibold mb-4 text-center" style={{ color: colors.text }}>
-              Add Your Review
-            </h4>
-            <ReviewForm
-              onSubmit={handleReviewSubmit}
-              isSubmitting={isSubmitting}
-              colors={colors}
-              content={content}
-            />
-          </div>
         </div>
       )
 
@@ -209,16 +198,38 @@ export function FeedbackRenderer({
 
     case 'FEATURE_REQUEST':
       return (
-        <FeatureRequestForm
-          onSubmit={handleFeatureRequestSubmit}
-          onUpvote={async (_featureId) => {
-            // Feature upvote functionality
-          }}
-          widgetKey={mode === 'production' ? widgetKey : undefined}
-          isSubmitting={isSubmitting}
-          colors={colors}
-          content={content}
-        />
+        <div className="space-y-6">
+          <div className="text-center">
+            <h3 className="text-xl font-bold mb-2" style={{ color: colors.text }}>
+              Feature Requests
+            </h3>
+            <p className="text-sm opacity-70" style={{ color: colors.text }}>
+              See what features others are requesting and add your own
+            </p>
+          </div>
+
+          <PublicFeedbackDisplay
+            feedbackType="FEATURE_REQUEST"
+            widgetKey={widgetKey || ''}
+            colors={colors}
+          />
+
+          <div className="border-t pt-6">
+            <h4 className="text-lg font-semibold mb-4 text-center" style={{ color: colors.text }}>
+              Request a Feature
+            </h4>
+            <FeatureRequestForm
+              onSubmit={handleFeatureRequestSubmit}
+              onUpvote={async (_featureId) => {
+                // Feature upvote functionality
+              }}
+              widgetKey={mode === 'production' ? widgetKey : undefined}
+              isSubmitting={isSubmitting}
+              colors={colors}
+              content={content}
+            />
+          </div>
+        </div>
       )
 
     case 'FEEDBACK':
@@ -227,30 +238,19 @@ export function FeedbackRenderer({
         <div className="space-y-6">
           <div className="text-center">
             <h3 className="text-xl font-bold mb-2" style={{ color: colors.text }}>
-              Community Feedback
+              {feedbackType === 'SURVEY' ? 'Survey' : 'Feedback'}
             </h3>
             <p className="text-sm opacity-70" style={{ color: colors.text }}>
-              See what others are saying and share your thoughts
+              {content.mainQuestion}
             </p>
           </div>
 
-          <PublicFeedbackDisplay
-            feedbackType="FEEDBACK"
-            widgetKey={widgetKey || ''}
+          <GeneralFeedbackForm
+            onSubmit={handleGeneralFeedbackSubmit}
+            isSubmitting={isSubmitting}
+            submitButtonText={content.submitButtonText}
             colors={colors}
           />
-
-          <div className="border-t pt-6">
-            <h4 className="text-lg font-semibold mb-4 text-center" style={{ color: colors.text }}>
-              Share Your Feedback
-            </h4>
-            <GeneralFeedbackForm
-              onSubmit={handleGeneralFeedbackSubmit}
-              isSubmitting={isSubmitting}
-              submitButtonText={content.submitButtonText}
-              colors={colors}
-            />
-          </div>
         </div>
       )
 
