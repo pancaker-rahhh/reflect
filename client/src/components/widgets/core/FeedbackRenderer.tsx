@@ -145,23 +145,12 @@ export function FeedbackRenderer({
 
     case 'REVIEW':
       return (
-        <div className="space-y-6">
-          <div className="text-center">
-            <h3 className="text-xl font-bold mb-2" style={{ color: colors.text }}>
-              Customer Review
-            </h3>
-            <p className="text-sm opacity-70" style={{ color: colors.text }}>
-              {content.mainQuestion}
-            </p>
-          </div>
-
-          <ReviewForm
-            onSubmit={handleReviewSubmit}
-            isSubmitting={isSubmitting}
-            colors={colors}
-            content={content}
-          />
-        </div>
+        <ReviewForm
+          onSubmit={handleReviewSubmit}
+          isSubmitting={isSubmitting}
+          colors={colors}
+          content={content}
+        />
       )
 
     case 'BUG_REPORT':
@@ -255,7 +244,27 @@ export function FeedbackRenderer({
       )
 
     default:
-      return <div className="text-center text-gray-500">Unknown feedback type: {feedbackType}</div>
+      console.warn('Unknown feedback type:', feedbackType)
+      // Fallback to general feedback form for unknown types
+      return (
+        <div className="space-y-6">
+          <div className="text-center">
+            <h3 className="text-xl font-bold mb-2" style={{ color: colors.text }}>
+              {feedbackType === 'SURVEY' ? 'Survey' : 'Feedback'}
+            </h3>
+            <p className="text-sm opacity-70" style={{ color: colors.text }}>
+              {content.mainQuestion}
+            </p>
+          </div>
+
+          <GeneralFeedbackForm
+            onSubmit={handleGeneralFeedbackSubmit}
+            isSubmitting={isSubmitting}
+            submitButtonText={content.submitButtonText}
+            colors={colors}
+          />
+        </div>
+      )
   }
 }
 

@@ -75,9 +75,6 @@ export function ReviewForm({ onSubmit, isSubmitting, colors, content }: ReviewFo
     <div className="space-y-6">
       <div className="text-center">
         <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-3" style={{ color: colors.text }}>
-            {content.mainQuestion}
-          </h3>
           <p className="text-sm opacity-70" style={{ color: colors.text }}>
             Click on the stars to rate your experience
           </p>
