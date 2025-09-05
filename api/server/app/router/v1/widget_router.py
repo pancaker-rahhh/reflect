@@ -1,6 +1,6 @@
-from typing import Any, List
+from typing import Any, List, Dict, Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, status, Response, HTTPException
+from fastapi import APIRouter, Depends, status, Response, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from app.core.auth import get_current_user
@@ -74,3 +74,25 @@ async def delete_widget(
 ):
     await service.delete_widget(db, user_id=current_user.id, widget_id=widget_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@widgets_router.get('/{widget_id}/metrics', response_model=Dict[str, Any])
+async def get_widget_metrics(
+    widget_id: UUID,
+    time_range: Optional[str] = Query(
+        default='all', description='Time range for metrics'
+    ),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    service: WidgetService = Depends(lambda: widget_service),
+) -> Any:
+    await service.get_widget_and_check_access(
+        db, user_id=current_user.id, widget_id=widget_id
+    )
+
+    from app.repositories.feedback_repository import FeedbackRepository
+
+    feedback_repo = FeedbackRepository()
+
+    metrics = await feedback_repo.get_widget_metrics(db, widget_id, time_range)
+    return metrics

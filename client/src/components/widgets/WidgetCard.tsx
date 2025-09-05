@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { Widget } from '@/types'
 import { useState } from 'react'
+import { useWidgetMetrics } from '@/hooks/useWidgetMetrics'
 
 interface WidgetCardProps {
   widget: Widget
@@ -38,6 +39,7 @@ export function WidgetCard({
   onGetCode,
 }: WidgetCardProps) {
   const [copied, setCopied] = useState(false)
+  const { data: metrics, isLoading: metricsLoading } = useWidgetMetrics(widget.id)
 
   const handleCopyKey = async () => {
     if (widget.public_key) {
@@ -88,13 +90,10 @@ export function WidgetCard({
                 <div className="flex items-center gap-4 text-sm">
                   <div className="flex items-center gap-1 text-blue-600">
                     <TrendingUp className="h-4 w-4" />
-                    <span className="font-medium">145</span>
+                    <span className="font-medium">
+                      {metricsLoading ? '...' : metrics?.total_responses || 0}
+                    </span>
                     <span className="text-gray-500">responses</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-purple-600">
-                    <Users className="h-4 w-4" />
-                    <span className="font-medium">89</span>
-                    <span className="text-gray-500">users</span>
                   </div>
                 </div>
 
@@ -208,20 +207,15 @@ export function WidgetCard({
 
       <CardContent className="space-y-4">
         {/* Quick stats */}
-        <div className="grid grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg">
+        <div className="flex justify-center p-3 bg-gray-50 rounded-lg">
           <div className="text-center">
             <div className="flex items-center justify-center gap-1 text-blue-600 mb-1">
               <TrendingUp className="h-4 w-4" />
-              <span className="font-bold text-lg">145</span>
+              <span className="font-bold text-lg">
+                {metricsLoading ? '...' : metrics?.total_responses || 0}
+              </span>
             </div>
             <p className="text-xs text-gray-600">Responses</p>
-          </div>
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-1 text-purple-600 mb-1">
-              <Users className="h-4 w-4" />
-              <span className="font-bold text-lg">89</span>
-            </div>
-            <p className="text-xs text-gray-600">Users</p>
           </div>
         </div>
 

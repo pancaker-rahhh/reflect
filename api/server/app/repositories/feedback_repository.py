@@ -339,7 +339,9 @@ class FeedbackRepository(BaseRepository[Feedback]):
                     'converted_to_action_item_id': str(item.converted_to_action_item_id)
                     if item.converted_to_action_item_id
                     else None,
-                    'is_actionable': item.is_actionable,
+                    'is_actionable': item.is_actionable
+                    if item.is_actionable is not None
+                    else True,
                 }
             )
 
@@ -365,8 +367,8 @@ class FeedbackRepository(BaseRepository[Feedback]):
             f.submitter_name,
             f.submitter_email,
             f.feedback_votes,
-            f.is_anonymous,
-            f.is_actionable,
+            COALESCE(f.is_anonymous, true) as is_anonymous,
+            COALESCE(f.is_actionable, true) as is_actionable,
             f.feedback_metadata,
             -- Review specific fields
             rf.overall_rating,
@@ -457,6 +459,55 @@ class FeedbackRepository(BaseRepository[Feedback]):
             feedback_data.append(feedback_item)
 
         return feedback_data
+
+    async def get_widget_metrics(
+        self, db: AsyncSession, widget_id: UUID, time_range: str = 'all'
+    ) -> Dict[str, Any]:
+        time_filter = ''
+        params = {'widget_id': str(widget_id)}
+
+        if time_range != 'all':
+            if time_range == '7d':
+                time_filter = "AND f.created_at >= NOW() - INTERVAL '7 days'"
+            elif time_range == '30d':
+                time_filter = "AND f.created_at >= NOW() - INTERVAL '30 days'"
+            elif time_range == '90d':
+                time_filter = "AND f.created_at >= NOW() - INTERVAL '90 days'"
+
+        responses_query = f"""
+        SELECT COUNT(*) as total_responses
+        FROM feedback f
+        WHERE f.widget_id = :widget_id {time_filter}
+        """
+
+        responses_result = await db.execute(text(responses_query), params)
+        total_responses = responses_result.scalar() or 0
+
+        users_query = f"""
+        SELECT COUNT(DISTINCT f.submitter_email) as unique_users
+        FROM feedback f
+        WHERE f.widget_id = :widget_id 
+        AND f.submitter_email IS NOT NULL {time_filter}
+        """
+
+        users_result = await db.execute(text(users_query), params)
+        unique_users = users_result.scalar() or 0
+
+        last_activity_query = f"""
+        SELECT MAX(f.created_at) as last_activity
+        FROM feedback f
+        WHERE f.widget_id = :widget_id {time_filter}
+        """
+
+        last_activity_result = await db.execute(text(last_activity_query), params)
+        last_activity = last_activity_result.scalar()
+
+        return {
+            'total_responses': total_responses,
+            'unique_users': unique_users,
+            'last_activity': last_activity.isoformat() if last_activity else None,
+            'time_range': time_range,
+        }
 
 
 feedback_repository = FeedbackRepository()
