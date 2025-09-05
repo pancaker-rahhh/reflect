@@ -10,7 +10,7 @@ import type {
 interface ReflectConfig {
   key: string
   theme?: 'light' | 'dark'
-  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left' | 'center'
+  position?: 'bottom-right' | 'bottom-left' | 'mid-right' | 'mid-left'
 }
 
 interface WidgetConfig {
@@ -22,6 +22,7 @@ interface WidgetConfig {
   }
   position?: string
   widget_type?: string
+  primaryType?: string
   configuration?: {
     content?: {
       headerTitle?: string
@@ -171,12 +172,84 @@ declare global {
     document.head.appendChild(style)
   }
 
-  const launcherIcon = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h8.5"/>
-      <path d="M18 13a3 3 0 1 0-3.5-3.5"/>
-    </svg>
-  `
+  function generateLauncherIcon(config: WidgetConfig): string {
+    const modules = config.configuration?.modules
+    const primaryType = config.primaryType
+
+    // Determine icon based on modules and primary type
+    let iconSvg = ''
+
+    if (modules?.reviews) {
+      // Star icon for reviews
+      iconSvg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+        </svg>
+      `
+    } else if (modules?.bugReporting) {
+      // Bug icon for bug reporting
+      iconSvg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 2v3"/>
+          <path d="M16 2v3"/>
+          <path d="M12 2v3"/>
+          <path d="M12 5a3 3 0 0 1 3 3v1a6 6 0 0 1-6 0V8a3 3 0 0 1 3-3Z"/>
+          <path d="M12 11v9"/>
+          <path d="M8 12l-4 8"/>
+          <path d="M16 12l4 8"/>
+          <path d="M2 12h4"/>
+          <path d="M18 12h4"/>
+          <path d="M20 12v2a2 2 0 0 1-2 2h-1"/>
+          <path d="M4 12v2a2 2 0 0 0 2 2h1"/>
+        </svg>
+      `
+    } else if (modules?.featureRequests) {
+      // Lightbulb icon for feature requests
+      iconSvg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1z"/>
+          <path d="M12 2C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/>
+        </svg>
+      `
+    } else if (primaryType === 'NPS') {
+      // Thumbs up icon for NPS
+      iconSvg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 10v12"/>
+          <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"/>
+        </svg>
+      `
+    } else if (primaryType === 'CSAT') {
+      // Smile icon for CSAT
+      iconSvg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+          <line x1="9" y1="9" x2="9.01" y2="9"/>
+          <line x1="15" y1="9" x2="15.01" y2="9"/>
+        </svg>
+      `
+    } else if (primaryType === 'CES') {
+      // Help circle icon for CES
+      iconSvg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      `
+    } else {
+      // Default message circle icon for general feedback
+      iconSvg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h8.5"/>
+          <path d="M18 13a3 3 0 1 0-3.5-3.5"/>
+        </svg>
+      `
+    }
+
+    return iconSvg
+  }
   //uncomment when actually using the close icon:)
   // const _closeIcon = `
   //   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -402,7 +475,13 @@ declare global {
         launcherContainer.style.transform = 'rotate(90deg)'
         setTimeout(() => {
           if (launcherContainer) {
-            launcherContainer.innerHTML = launcherIcon
+            // Use a simple fallback icon when config is not available
+            launcherContainer.innerHTML = `
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h8.5"/>
+                <path d="M18 13a3 3 0 1 0-3.5-3.5"/>
+              </svg>
+            `
             launcherContainer.style.transform = 'rotate(0deg)'
           }
         }, 150)
@@ -475,20 +554,39 @@ declare global {
     })
 
     // Apply positioning - clear all position properties first, then set the correct ones
-    const position = normalizePosition(backendConfig.position || configPosition)
+    const position = normalizePosition(
+      window.reflectConfig?.position || backendConfig.position || configPosition
+    )
+    console.log(
+      'Widget position:',
+      position,
+      'window.reflectConfig.position:',
+      window.reflectConfig?.position,
+      'backendConfig.position:',
+      backendConfig.position,
+      'configPosition:',
+      configPosition
+    )
     container.style.top = ''
     container.style.bottom = ''
     container.style.left = ''
     container.style.right = ''
+    container.style.transform = ''
 
-    if (position.includes('bottom')) container.style.bottom = '100px'
-    if (position.includes('top')) container.style.top = '100px'
-    if (position.includes('right')) container.style.right = '20px'
-    if (position.includes('left')) container.style.left = '20px'
-    if (position === 'center') {
+    if (position === 'bottom-right') {
+      container.style.bottom = '20px'
+      container.style.right = '20px'
+    } else if (position === 'bottom-left') {
+      container.style.bottom = '20px'
+      container.style.left = '20px'
+    } else if (position === 'mid-right') {
       container.style.top = '50%'
-      container.style.left = '50%'
-      container.style.transform = 'translate(-50%, -50%)'
+      container.style.right = '0px'
+      container.style.transform = 'translateY(-50%)'
+    } else if (position === 'mid-left') {
+      container.style.top = '50%'
+      container.style.left = '0px'
+      container.style.transform = 'translateY(-50%)'
     }
 
     // Create React render target
@@ -610,7 +708,7 @@ declare global {
         launcherContainer.style.transform = 'rotate(90deg)'
         setTimeout(() => {
           if (launcherContainer) {
-            launcherContainer.innerHTML = launcherIcon
+            launcherContainer.innerHTML = backendConfig ? generateLauncherIcon(backendConfig) : ''
             launcherContainer.style.transform = 'rotate(0deg)'
           }
         }, 150)
@@ -691,8 +789,20 @@ declare global {
       animation: 'reflect-pulse 3s infinite',
     })
 
-    // Apply position from config first
-    const position = normalizePosition(config.position || configPosition)
+    // Apply position from config first, with window.reflectConfig.position as override
+    const position = normalizePosition(
+      window.reflectConfig?.position || config.position || configPosition
+    )
+    console.log(
+      'Launcher position:',
+      position,
+      'window.reflectConfig.position:',
+      window.reflectConfig?.position,
+      'config.position:',
+      config.position,
+      'configPosition:',
+      configPosition
+    )
 
     // Store the base transform for center positioning
     const baseTransform = position === 'center' ? 'translate(-50%, -50%)' : ''
@@ -739,18 +849,25 @@ declare global {
     launcherContainer.style.bottom = ''
     launcherContainer.style.left = ''
     launcherContainer.style.right = ''
+    launcherContainer.style.transform = ''
 
-    if (position.includes('bottom')) launcherContainer.style.bottom = '20px'
-    if (position.includes('top')) launcherContainer.style.top = '20px'
-    if (position.includes('right')) launcherContainer.style.right = '20px'
-    if (position.includes('left')) launcherContainer.style.left = '20px'
-    if (position === 'center') {
+    if (position === 'bottom-right') {
+      launcherContainer.style.bottom = '20px'
+      launcherContainer.style.right = '20px'
+    } else if (position === 'bottom-left') {
+      launcherContainer.style.bottom = '20px'
+      launcherContainer.style.left = '20px'
+    } else if (position === 'mid-right') {
       launcherContainer.style.top = '50%'
-      launcherContainer.style.left = '50%'
-      launcherContainer.style.transform = 'translate(-50%, -50%)'
+      launcherContainer.style.right = '0px'
+      launcherContainer.style.transform = 'translateY(-50%)'
+    } else if (position === 'mid-left') {
+      launcherContainer.style.top = '50%'
+      launcherContainer.style.left = '0px'
+      launcherContainer.style.transform = 'translateY(-50%)'
     }
 
-    launcherContainer.innerHTML = launcherIcon
+    launcherContainer.innerHTML = config ? generateLauncherIcon(config) : ''
 
     document.body.appendChild(launcherContainer)
   }

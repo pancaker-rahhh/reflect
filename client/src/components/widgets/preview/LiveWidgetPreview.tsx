@@ -20,11 +20,11 @@ export type DeviceType = 'desktop' | 'tablet' | 'mobile'
 // Transform WidgetFormData to WidgetConfiguration for WidgetCore
 function transformFormDataToConfig(formData: WidgetFormData): WidgetConfiguration {
   return {
-    modules: formData.modules || { 
-      feedback: true, 
-      reviews: false, 
-      bugReporting: false, 
-      featureRequests: false 
+    modules: formData.modules || {
+      feedback: true,
+      reviews: false,
+      bugReporting: false,
+      featureRequests: false,
     },
     primaryType: (formData.primaryType as FeedbackType) || 'FEEDBACK',
     content: formData.content || {
@@ -55,21 +55,29 @@ function transformFormDataToConfig(formData: WidgetFormData): WidgetConfiguratio
 }
 
 // Map preview state to widget state
-function mapPreviewStateToWidgetState(previewState: PreviewState, config: WidgetConfiguration): WidgetState {
+function mapPreviewStateToWidgetState(
+  previewState: PreviewState,
+  config: WidgetConfiguration
+): WidgetState {
   switch (previewState) {
     case 'closed':
       return { type: 'closed' }
-    case 'open':
+    case 'open': {
       // Check if multiple modules are enabled for initial menu display
       const enabledModules = Object.entries(config.modules || {}).filter(([, enabled]) => enabled)
       if (enabledModules.length > 1) {
         const availableTypes = enabledModules.map(([key]) => {
           switch (key) {
-            case 'feedback': return config.primaryType || 'FEEDBACK' as FeedbackType // Use actual primary type
-            case 'reviews': return 'REVIEW' as FeedbackType
-            case 'bugReporting': return 'BUG_REPORT' as FeedbackType
-            case 'featureRequests': return 'FEATURE_REQUEST' as FeedbackType
-            default: return 'FEEDBACK' as FeedbackType
+            case 'feedback':
+              return config.primaryType || ('FEEDBACK' as FeedbackType) // Use actual primary type
+            case 'reviews':
+              return 'REVIEW' as FeedbackType
+            case 'bugReporting':
+              return 'BUG_REPORT' as FeedbackType
+            case 'featureRequests':
+              return 'FEATURE_REQUEST' as FeedbackType
+            default:
+              return 'FEEDBACK' as FeedbackType
           }
         })
         return { type: 'menu', availableTypes }
@@ -77,6 +85,7 @@ function mapPreviewStateToWidgetState(previewState: PreviewState, config: Widget
         // For single module, directly show the primary type
         return { type: 'active', feedbackType: config.primaryType }
       }
+    }
     case 'interactive':
       return { type: 'active', feedbackType: config.primaryType }
     case 'thankyou':
@@ -98,7 +107,7 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
 
   // Watch specific form fields to minimize re-renders
   const formData = form.watch(['appearance', 'content', 'primaryType', 'modules', 'behavior'])
-  
+
   // Convert watched array to object structure
   const structuredFormData = useMemo(() => {
     if (!Array.isArray(formData) || formData.length < 5) return null
@@ -110,21 +119,20 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
       behavior: formData[4],
     } as Pick<WidgetFormData, 'appearance' | 'content' | 'primaryType' | 'modules' | 'behavior'>
   }, [formData])
-  
+
   // Debounce form changes to prevent excessive re-renders
   const debouncedFormData = useDebounce(structuredFormData, 300)
-  
+
   // Memoize widget configuration to prevent recreation on every render
   const widgetConfig = useMemo(() => {
     if (!debouncedFormData || typeof debouncedFormData !== 'object') return null
     // Ensure all required properties exist before transformation
-    if (!Array.isArray(debouncedFormData) && 
-        typeof debouncedFormData === 'object') {
+    if (!Array.isArray(debouncedFormData) && typeof debouncedFormData === 'object') {
       return transformFormDataToConfig(debouncedFormData as WidgetFormData)
     }
     return null
   }, [debouncedFormData])
-  
+
   // Memoize widget state mapping
   const mappedWidgetState = useMemo(() => {
     if (!widgetConfig) return { type: 'closed' as const }
@@ -133,23 +141,30 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
 
   // Use useCallback to memoize event handlers and prevent child re-renders
   const handleTriggerClick = useCallback(() => {
-    setPreviewState(current => current === 'closed' ? 'open' : 'closed')
+    setPreviewState((current) => (current === 'closed' ? 'open' : 'closed'))
   }, [])
 
-  const handleWidgetSubmit = useCallback(async (_data: FeedbackData) => {
-    // Mock submission delay for preview
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        // Check if widget has multiple modules to show menu or go to success
-        if (widgetConfig && widgetConfig.modules && Object.values(widgetConfig.modules).filter(Boolean).length > 1) {
-          setPreviewState('interactive')
-        } else {
-          setPreviewState('thankyou')
-        }
-        resolve()
-      }, 1000)
-    })
-  }, [widgetConfig])
+  const handleWidgetSubmit = useCallback(
+    async (_data: FeedbackData) => {
+      // Mock submission delay for preview
+      return new Promise<void>((resolve) => {
+        setTimeout(() => {
+          // Check if widget has multiple modules to show menu or go to success
+          if (
+            widgetConfig &&
+            widgetConfig.modules &&
+            Object.values(widgetConfig.modules).filter(Boolean).length > 1
+          ) {
+            setPreviewState('interactive')
+          } else {
+            setPreviewState('thankyou')
+          }
+          resolve()
+        }, 1000)
+      })
+    },
+    [widgetConfig]
+  )
 
   const handleWidgetClose = useCallback(() => {
     setPreviewState('closed')
@@ -178,10 +193,12 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
   }, [])
 
   return (
-    <div className={cn(
-      'h-full flex flex-col bg-gray-50',
-      isFullscreen && 'fixed inset-0 z-50 bg-white'
-    )}>
+    <div
+      className={cn(
+        'h-full flex flex-col bg-gray-50',
+        isFullscreen && 'fixed inset-0 z-50 bg-white'
+      )}
+    >
       {/* Preview Controls */}
       <PreviewControls
         previewState={previewState}
@@ -209,7 +226,7 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
                 <div className="ml-4 text-sm text-gray-600">example.com</div>
               </div>
             </div>
-            
+
             {/* Page Content Simulation */}
             <div className="absolute top-20 left-4 right-4 bottom-20 bg-white rounded-lg shadow-sm p-6">
               <div className="space-y-4">

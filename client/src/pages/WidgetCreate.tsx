@@ -68,7 +68,7 @@ const widgetSchema = z
 
     appearance: z.object({
       theme: z.enum(['default', 'midnight', 'minimal-light', 'minimal-dark']),
-      position: z.enum(['bottom_right', 'bottom_left', 'top_right', 'top_left', 'center']),
+      position: z.enum(['bottom_right', 'bottom_left', 'mid_right', 'mid_left']),
       colors: z.object({
         primary: z.string(),
         headerGradientEnd: z.string().optional(),
@@ -282,7 +282,20 @@ export function WidgetCreate() {
             },
             appearance: {
               theme: widget.theme_configuration?.theme_name || 'default',
-              position: widget.position,
+              position: (() => {
+                // Map old position values to new ones
+                const positionMapping: Record<
+                  string,
+                  'bottom_right' | 'bottom_left' | 'mid_right' | 'mid_left'
+                > = {
+                  bottom_right: 'bottom_right',
+                  bottom_left: 'bottom_left',
+                  top_right: 'mid_right', // Map old top_right to new mid_right
+                  top_left: 'mid_left', // Map old top_left to new mid_left
+                  center: 'bottom_right', // Map old center to bottom_right as fallback
+                }
+                return positionMapping[widget.position] || 'bottom_right'
+              })(),
               colors: {
                 primary: widget.theme_configuration?.primary || '#6B46C1',
                 background: widget.theme_configuration?.background || '#FFFFFF',

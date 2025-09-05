@@ -6,11 +6,10 @@ interface PositionSelectorProps {
 }
 
 const positions = [
-  { value: 'top_left', label: 'Top Left', className: 'top-2 left-2' },
-  { value: 'top_right', label: 'Top Right', className: 'top-2 right-2' },
-  { value: 'center', label: 'Center', className: 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' },
-  { value: 'bottom_left', label: 'Bottom Left', className: 'bottom-2 left-2' },
-  { value: 'bottom_right', label: 'Bottom Right', className: 'bottom-2 right-2' },
+  { value: 'bottom_left', label: 'Bottom Left', className: 'bottom-4 left-4' },
+  { value: 'bottom_right', label: 'Bottom Right', className: 'bottom-4 right-4' },
+  { value: 'mid_left', label: 'Middle Left', className: 'top-1/2 left-0 -translate-y-1/2' },
+  { value: 'mid_right', label: 'Middle Right', className: 'top-1/2 right-0 -translate-y-1/2' },
 ]
 
 export function PositionSelector({ value, onChange }: PositionSelectorProps) {

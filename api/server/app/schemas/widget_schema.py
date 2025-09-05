@@ -83,9 +83,8 @@ class WidgetReadPublic(BaseModel):
         position_map = {
             'BOTTOM_RIGHT': 'bottom_right',
             'BOTTOM_LEFT': 'bottom_left',
-            'TOP_RIGHT': 'top_right',
-            'TOP_LEFT': 'top_left',
-            'CENTER': 'center',
+            'MID_RIGHT': 'mid_right',
+            'MID_LEFT': 'mid_left',
         }
         position_str = position_map.get(str(widget.position), 'bottom_right')
 
