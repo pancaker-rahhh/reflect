@@ -403,9 +403,9 @@ export function WidgetCreate() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="flex flex-col lg:flex-row h-screen">
-        <div className="w-full lg:w-3/5 flex flex-col bg-white lg:border-r">
-          <div className="p-4 lg:p-6 border-b">
+      <div className="flex flex-col lg:flex-row max-h-[90vh]">
+        <div className="w-full lg:w-3/5 flex flex-col bg-white lg:border-r max-h-[90vh]">
+          <div className="p-4 lg:p-6 border-b flex-shrink-0">
             <h1 className="text-2xl lg:text-3xl font-bold tracking-tight mb-2">
               {isEditMode ? 'Edit Widget' : 'Create New Widget'}
             </h1>
@@ -427,7 +427,7 @@ export function WidgetCreate() {
             </div>
           </div>
 
-          <div className="p-4 lg:p-6 border-t bg-gray-50">
+          <div className="p-4 lg:p-6 border-t bg-gray-50 flex-shrink-0">
             <WizardNavigation
               currentStep={currentStep}
               totalSteps={steps.length}
@@ -439,7 +439,7 @@ export function WidgetCreate() {
         </div>
 
         <div className="hidden lg:flex lg:w-2/5 flex-col">
-          <div className="flex-1 sticky top-0 h-screen">
+          <div className="flex-1 sticky top-0 max-h-[90vh]">
             <LiveWidgetPreview form={form} />
           </div>
         </div>
