@@ -145,7 +145,10 @@ class ActionItemService:
         return feedback
 
     def _validate_actionable_feedback(self, feedback: Feedback) -> bool:
-        return feedback.is_actionable and feedback.status != FeedbackStatus.ARCHIVED
+        is_actionable = (
+            feedback.is_actionable if feedback.is_actionable is not None else True
+        )
+        return is_actionable and feedback.status != FeedbackStatus.ARCHIVED
 
     async def _ensure_backlog_column_exists(
         self, db: AsyncSession, project_id: UUID, user_id: UUID
@@ -212,8 +215,11 @@ class ActionItemService:
 
         return base_priority
 
-    def _generate_description_from_feedback(
-        self, feedback: Feedback, original_submitter_name: Optional[str] = None
+    async def _generate_description_from_feedback(
+        self,
+        db: AsyncSession,
+        feedback: Feedback,
+        original_submitter_name: Optional[str] = None,
     ) -> str:
         description_parts = []
 
@@ -262,21 +268,40 @@ class ActionItemService:
                 description_parts.append(f'**Additional details:** {feedback.message}')
 
         elif feedback.feedback_type == FeedbackType.REVIEW:
-            overall_rating = getattr(feedback, 'overall_rating', None)
-            if overall_rating:
-                stars = '★' * overall_rating + '☆' * (5 - overall_rating)
-                description_parts.append(f'**Rating:** {overall_rating}/5 {stars}')
+            try:
+                overall_rating = getattr(feedback, 'overall_rating', None)
+                if overall_rating:
+                    stars = '★' * overall_rating + '☆' * (5 - overall_rating)
+                    description_parts.append(f'**Rating:** {overall_rating}/5 {stars}')
+            except Exception:
+                pass
 
-            pros = getattr(feedback, 'pros', None)
-            if pros:
-                description_parts.append(f'**What works well:** {pros}')
+            try:
+                pros = getattr(feedback, 'pros', None)
+                if pros:
+                    description_parts.append(f'**What works well:** {pros}')
+            except Exception:
+                pass
 
-            cons = getattr(feedback, 'cons', None)
-            if cons:
-                description_parts.append(f'**Areas for improvement:** {cons}')
+            try:
+                cons = getattr(feedback, 'cons', None)
+                if cons:
+                    description_parts.append(f'**Areas for improvement:** {cons}')
+            except Exception:
+                pass
 
-            if feedback.message and feedback.message not in [pros, cons]:
-                description_parts.append(f'**Additional feedback:** {feedback.message}')
+            try:
+                pros = getattr(feedback, 'pros', None)
+                cons = getattr(feedback, 'cons', None)
+                if feedback.message and feedback.message not in [pros, cons]:
+                    description_parts.append(
+                        f'**Additional feedback:** {feedback.message}'
+                    )
+            except Exception:
+                if feedback.message:
+                    description_parts.append(
+                        f'**Additional feedback:** {feedback.message}'
+                    )
 
         elif feedback.feedback_type in [
             FeedbackType.NPS,
@@ -434,8 +459,8 @@ class ActionItemService:
         preview = {
             'suggested_title': feedback.title
             or f'Feedback: {feedback.feedback_type.value}',
-            'suggested_description': self._generate_description_from_feedback(
-                typed_feedback, feedback.submitter_name
+            'suggested_description': await self._generate_description_from_feedback(
+                db, typed_feedback, feedback.submitter_name
             ),
             'suggested_tags': suggested_tags,
             'suggested_priority': self._suggest_priority(typed_feedback).value,

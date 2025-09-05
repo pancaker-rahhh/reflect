@@ -339,7 +339,9 @@ class FeedbackRepository(BaseRepository[Feedback]):
                     'converted_to_action_item_id': str(item.converted_to_action_item_id)
                     if item.converted_to_action_item_id
                     else None,
-                    'is_actionable': item.is_actionable,
+                    'is_actionable': item.is_actionable
+                    if item.is_actionable is not None
+                    else True,
                 }
             )
 
@@ -365,8 +367,8 @@ class FeedbackRepository(BaseRepository[Feedback]):
             f.submitter_name,
             f.submitter_email,
             f.feedback_votes,
-            f.is_anonymous,
-            f.is_actionable,
+            COALESCE(f.is_anonymous, true) as is_anonymous,
+            COALESCE(f.is_actionable, true) as is_actionable,
             f.feedback_metadata,
             -- Review specific fields
             rf.overall_rating,
