@@ -36,6 +36,7 @@ class WidgetPosition(str, enum.Enum):
 class WidgetStatus(str, enum.Enum):
     DRAFT = 'draft'
     ACTIVE = 'active'
+    INACTIVE = 'inactive'
     ARCHIVED = 'archived'
 
 
