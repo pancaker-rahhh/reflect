@@ -9,15 +9,17 @@ import { NPSDistributionChart } from '@/components/dashboard/NPSDistributionChar
 import { FeedbackDistributionChart } from '@/components/dashboard/FeedbackDistributionChart'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAppContext } from '@/context/AppContext'
-import { AlertCircle, RefreshCw } from 'lucide-react'
+import { AlertCircle, RefreshCw, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useSubscription } from '@/hooks/useSubscription'
 
 export type TimeRange = 'all' | 'week' | 'month' | 'year'
 
 export function Dashboard() {
   const [timeRange, setTimeRange] = useState<TimeRange>('all')
   const { currentProject } = useAppContext()
+  const { getUsageInfo } = useSubscription()
 
   const {
     data: metrics,
@@ -87,6 +89,26 @@ export function Dashboard() {
         </div>
         <TimeRangeFilter value={timeRange} onChange={setTimeRange} />
       </div>
+
+      {/* Response Limit Warning */}
+      {(() => {
+        const responseUsage = getUsageInfo('responses')
+        if (responseUsage.percentage >= 80) {
+          return (
+            <Alert
+              className={`border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/30`}
+            >
+              <AlertTriangle className="h-4 w-4 text-orange-600" />
+              <AlertDescription className="text-orange-800 dark:text-orange-200">
+                {responseUsage.percentage >= 100
+                  ? `You've reached your response limit (${responseUsage.current}/${responseUsage.limit}). Upgrade to Pro for unlimited responses.`
+                  : `You're approaching your response limit (${responseUsage.current}/${responseUsage.limit}). Consider upgrading to Pro for unlimited responses.`}
+              </AlertDescription>
+            </Alert>
+          )
+        }
+        return null
+      })()}
 
       {/* Metrics Section */}
       {metricsError && renderErrorState(metricsError, refetchMetrics, 'dashboard metrics')}
