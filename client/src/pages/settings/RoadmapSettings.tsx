@@ -215,7 +215,9 @@ export function RoadmapSettings() {
         const columnsToDelete = existingColumns.filter((ec: any) =>
           columns.some((c) => c.id === ec.id && c._markedForDeletion)
         )
-        columnPromises.push(...columnsToDelete.map((c: any) => deleteColumnMutation.mutateAsync(c.id)))
+        columnPromises.push(
+          ...columnsToDelete.map((c: any) => deleteColumnMutation.mutateAsync(c.id))
+        )
 
         // Handle remaining columns (create new, update existing)
         for (const column of columns.filter((col) => !col._markedForDeletion)) {
@@ -492,7 +494,7 @@ export function RoadmapSettings() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6">
                   <div className="space-y-3">
                     <Label htmlFor="name" className="text-sm font-medium">
                       Roadmap Name
@@ -504,24 +506,6 @@ export function RoadmapSettings() {
                       placeholder="Product Roadmap"
                       className="focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                     />
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label htmlFor="subdomain" className="text-sm font-medium">
-                      Custom Subdomain
-                    </Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        id="subdomain"
-                        value={formData.subdomain || ''}
-                        onChange={(e) => handleInputChange('subdomain', e.target.value)}
-                        placeholder="your-product"
-                        className="focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                      />
-                      <span className="text-sm text-muted-foreground whitespace-nowrap font-mono">
-                        .reflect.com
-                      </span>
-                    </div>
                   </div>
                 </div>
 
@@ -889,7 +873,7 @@ export function RoadmapSettings() {
                                         : 'text-muted-foreground'
                                     )}
                                   >
-                                                                         {column.action_items?.length || 0}
+                                    {column.action_items?.length || 0}
                                   </span>
                                 </div>
                                 <span className="text-xs text-muted-foreground">features</span>

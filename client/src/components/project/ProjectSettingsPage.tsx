@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 // import { useNavigate } from 'react-router-dom'; // Currently unused
 
 import {
   FolderOpen,
   Users,
-  Key,
-  Webhook,
   Shield,
   Puzzle,
   Save,
@@ -350,8 +348,6 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
   const tabs = [
     { id: 'general', label: 'General', icon: FolderOpen },
     { id: 'team', label: 'Team', icon: Users },
-    { id: 'api', label: 'API Keys', icon: Key, wip: true },
-    { id: 'webhooks', label: 'Webhooks', icon: Webhook, wip: true },
     { id: 'integrations', label: 'Integrations', icon: Puzzle },
     { id: 'danger', label: 'Danger Zone', icon: Shield },
   ]

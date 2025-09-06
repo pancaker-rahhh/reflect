@@ -77,20 +77,6 @@ export function NPSDistributionChart({ feedback }: NPSDistributionChartProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-6 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-red-600" />
-            <span className="text-muted-foreground">Detractors (0-6)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-amber-500" />
-            <span className="text-muted-foreground">Passives (7-8)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-green-600" />
-            <span className="text-muted-foreground">Promoters (9-10)</span>
-          </div>
-        </div>
         <div className="text-right">
           <p className="text-sm text-muted-foreground">NPS Score</p>
           <p className="text-2xl font-bold">{npsScore}</p>

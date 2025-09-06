@@ -83,10 +83,6 @@ const widgetSchema = z
     behavior: z.object({
       triggerType: z.enum(['immediate', 'delay', 'exit-intent', 'scroll']),
       triggerDelay: z.number().optional(),
-      urlTargeting: z.object({
-        includeUrls: z.array(z.string()),
-        excludeUrls: z.array(z.string()),
-      }),
       deviceTypes: z.object({
         desktop: z.boolean(),
         mobile: z.boolean(),
@@ -127,11 +123,6 @@ export type WidgetFormData = z.infer<typeof widgetSchema>
 interface TriggerDetails {
   type: string
   delay?: number
-}
-
-interface UrlTargetingDetails {
-  includeUrls: string[]
-  excludeUrls: string[]
 }
 
 interface DeviceTargetingDetails {
@@ -192,7 +183,6 @@ export function WidgetCreate() {
           },
           behavior: {
             triggerType: 'immediate',
-            urlTargeting: { includeUrls: [], excludeUrls: [] },
             deviceTypes: { desktop: true, mobile: true, tablet: true },
           },
         },
@@ -312,13 +302,7 @@ export function WidgetCreate() {
                 ? (widget.targeting_rules?.[0]?.details as TriggerDetails)?.type
                 : 'immediate') as 'immediate' | 'delay' | 'exit-intent' | 'scroll',
               triggerDelay: (widget.targeting_rules?.[0]?.details as TriggerDetails)?.delay,
-              urlTargeting: {
-                includeUrls:
-                  (widget.targeting_rules?.[1]?.details as UrlTargetingDetails)?.includeUrls || [],
-                excludeUrls:
-                  (widget.targeting_rules?.[1]?.details as UrlTargetingDetails)?.excludeUrls || [],
-              },
-              deviceTypes: (widget.targeting_rules?.[2]?.details as DeviceTargetingDetails) || {
+              deviceTypes: (widget.targeting_rules?.[1]?.details as DeviceTargetingDetails) || {
                 desktop: true,
                 mobile: true,
                 tablet: true,
