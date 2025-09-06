@@ -1,7 +1,6 @@
 import {
   MoreVertical,
   Eye,
-  Copy,
   Trash2,
   Palette,
   Puzzle,
@@ -20,7 +19,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { Widget } from '@/types'
-import { useState } from 'react'
 
 interface WidgetCardProps {
   widget: Widget
@@ -37,16 +35,6 @@ export function WidgetCard({
   onEdit,
   onGetCode,
 }: WidgetCardProps) {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopyKey = async () => {
-    if (widget.public_key) {
-      await navigator.clipboard.writeText(widget.public_key)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }
-
   const moduleCount = Object.values(widget.configuration?.modules || {}).filter(Boolean).length
 
   if (viewMode === 'list') {
@@ -118,10 +106,6 @@ export function WidgetCard({
                         <Code className="h-4 w-4" />
                         <span>Get Code</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleCopyKey} className="gap-2 cursor-pointer">
-                        <Copy className="h-4 w-4" />
-                        <span>{copied ? 'Copied!' : 'Copy Public Key'}</span>
-                      </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={onDelete}
                         className="gap-2 text-destructive focus:text-destructive cursor-pointer"
@@ -188,10 +172,6 @@ export function WidgetCard({
                 <DropdownMenuItem onClick={onGetCode} className="gap-2 cursor-pointer">
                   <Code className="h-4 w-4" />
                   <span>Get Code</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleCopyKey} className="gap-2 cursor-pointer">
-                  <Copy className="h-4 w-4" />
-                  <span>{copied ? 'Copied!' : 'Copy Public Key'}</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={onDelete}
