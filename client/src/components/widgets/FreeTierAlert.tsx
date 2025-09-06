@@ -3,22 +3,31 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
 import { organizationApi } from '@/lib/api/organization'
+import { useSubscription } from '@/hooks/useSubscription'
+import { UsageBar } from '@/components/common/UsageBar'
+import { useNavigate } from 'react-router-dom'
 
 export function FreeTierAlert() {
+  const navigate = useNavigate()
   const { data: organizations } = useQuery({
     queryKey: ['organizations', 'my'],
     queryFn: () => organizationApi.getMy(),
   })
 
   const currentOrganization = organizations?.[0]
+  const { getUsageInfo } = useSubscription()
+
+  const handleUpgrade = () => {
+    navigate('/settings/billing')
+  }
 
   const isFreeTier =
     currentOrganization?.subscription_tier === 'free' || !currentOrganization?.subscription_tier
 
   if (!isFreeTier) return null
 
-  const widgetLimit = 1 // Free tier default
-  const responseLimit = 100 // Free tier default
+  const widgetUsage = getUsageInfo('widgets')
+  const responseUsage = getUsageInfo('responses')
 
   return (
     <Alert className="border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/30">
@@ -26,13 +35,19 @@ export function FreeTierAlert() {
       <AlertTitle className="text-orange-900 dark:text-orange-100">
         Free Tier Limitations
       </AlertTitle>
-      <AlertDescription className="mt-2 space-y-3">
+      <AlertDescription className="mt-2 space-y-4">
         <p className="text-orange-800 dark:text-orange-200">
-          Your current plan allows for {widgetLimit} active widget and up to {responseLimit}{' '}
-          responses per month.
+          Your current plan allows for {widgetUsage.limit} active widget and up to{' '}
+          {responseUsage.limit} responses per month.
         </p>
+
+        <div className="space-y-3">
+          <UsageBar resourceType="widgets" label="Widgets" />
+          <UsageBar resourceType="responses" label="Responses" />
+        </div>
+
         <div className="flex items-center gap-3">
-          <Button size="sm" className="gap-2">
+          <Button size="sm" className="gap-2" onClick={handleUpgrade}>
             <Zap className="h-4 w-4" />
             Upgrade to Pro
           </Button>

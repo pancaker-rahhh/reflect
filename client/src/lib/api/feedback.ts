@@ -35,6 +35,24 @@ async function submit(payload: FeedbackPayload): Promise<void> {
   })
 
   if (!response.ok) {
+    // Handle subscription limit errors (403)
+    if (response.status === 403) {
+      try {
+        const errorData = await response.json()
+        if (errorData?.detail?.error === 'Response limit exceeded') {
+          // Show a user-friendly message for subscription limits
+          throw new Error(
+            "Thank you for your feedback! We've received your message and will review it soon."
+          )
+        }
+      } catch (parseError) {
+        // Fallback if JSON parsing fails
+        throw new Error(
+          "Thank you for your feedback! We've received your message and will review it soon."
+        )
+      }
+    }
+
     // Handle rate limiting with detailed error information
     if (response.status === 429) {
       try {
@@ -54,7 +72,9 @@ async function submit(payload: FeedbackPayload): Promise<void> {
         const retrySeconds = retryAfter ? parseInt(retryAfter) : 60
         const retryMinutes = Math.ceil(retrySeconds / 60)
         throw new Error(
-          `Too many requests. Please try again in ${retryMinutes} minute${retryMinutes !== 1 ? 's' : ''}.`
+          `Too many requests. Please try again in ${retryMinutes} minute${
+            retryMinutes !== 1 ? 's' : ''
+          }.`
         )
       }
     }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { api } from '@/services(mock)/api'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { organizationApi } from '@/lib/api/organization'
+import { upgradeApi } from '@/lib/api/upgrade'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,13 +12,24 @@ import { cn } from '@/lib/utils'
 
 export function BillingSettings() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly')
+  const queryClient = useQueryClient()
 
-  const { data: organization, isLoading } = useQuery({
-    queryKey: ['organization'],
-    queryFn: () => api.getOrganizations().then((organizations) => organizations[0]),
+  const { data: organizations, isLoading } = useQuery({
+    queryKey: ['organizations', 'my'],
+    queryFn: () => organizationApi.getMy(),
   })
 
-  const currentPlan = organization?.subscription?.plan || 'free'
+  const organization = organizations?.[0]
+
+  const upgradeMutation = useMutation({
+    mutationFn: upgradeApi.upgradeToPro,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['organizations'] })
+      queryClient.invalidateQueries({ queryKey: ['subscription'] })
+    },
+  })
+
+  const currentPlan = organization?.subscription_tier || 'free'
 
   const plans = {
     free: {
@@ -42,14 +54,14 @@ export function BillingSettings() {
         'Priority email support',
         'Branding removal',
         'Advanced targeting',
+        'JIRA integration',
         '+$15/month per additional project',
       ],
     },
   }
 
   const handleUpgrade = () => {
-    // This would typically open a payment modal or redirect to checkout
-    console.log('Upgrade to Pro')
+    upgradeMutation.mutate()
   }
 
   if (isLoading) {
@@ -181,9 +193,14 @@ export function BillingSettings() {
                       </ul>
 
                       {!isCurrentPlan && isPro && (
-                        <Button onClick={handleUpgrade} className="w-full" size="lg">
+                        <Button
+                          onClick={handleUpgrade}
+                          className="w-full"
+                          size="lg"
+                          disabled={upgradeMutation.isPending}
+                        >
                           <Zap className="mr-2 h-4 w-4" />
-                          Upgrade Now
+                          {upgradeMutation.isPending ? 'Upgrading...' : 'Upgrade Now'}
                         </Button>
                       )}
 

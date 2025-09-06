@@ -9,6 +9,9 @@ import { JiraIntegrationModal } from '@/components/integrations/JiraIntegrationM
 import { JiraConfigureModal } from '@/components/integrations/JiraConfigureModal'
 import { useDeleteJiraIntegration } from '@/hooks/useJiraIntegration'
 import { useAppContext } from '@/context/AppContext'
+import { useSubscription } from '@/hooks/useSubscription'
+import { FeatureGateWithDisabledState } from '@/components/common/FeatureGateWithDisabledState'
+import { ProFeatureBadge } from '@/components/common/ProFeatureBadge'
 import type { Integration } from '@/types'
 
 export function IntegrationsPage() {
@@ -16,6 +19,7 @@ export function IntegrationsPage() {
   const [isConfigureModalOpen, setIsConfigureModalOpen] = useState(false)
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null)
   const { currentProject } = useAppContext()
+  const { isFeatureEnabled } = useSubscription()
 
   const { data: integrations = [], isLoading } = useQuery({
     queryKey: ['integrations', currentProject?.id],
@@ -67,23 +71,15 @@ export function IntegrationsPage() {
                 <ExternalLink className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <h4 className="text-lg font-semibold text-gray-900">JIRA Integration</h4>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-lg font-semibold text-gray-900">JIRA Integration</h4>
+                  <ProFeatureBadge feature="jira_integration" />
+                </div>
                 <p className="text-gray-600">
                   Convert action items to JIRA issues in your existing workflow
                 </p>
               </div>
             </div>
-            {jiraIntegrations.length === 0 && (
-              <Button
-                onClick={() => setIsJiraModalOpen(true)}
-                disabled={!currentProject?.id}
-                size="sm"
-                className="h-10 px-4"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Connect JIRA
-              </Button>
-            )}
           </div>
 
           {isLoading ? (
@@ -101,15 +97,19 @@ export function IntegrationsPage() {
               <p className="text-gray-600 mb-6 max-w-md mx-auto">
                 Connect to JIRA to convert action items to issues in your existing workflow
               </p>
-              <Button
-                onClick={() => setIsJiraModalOpen(true)}
-                disabled={!currentProject?.id}
-                size="sm"
-                className="h-10 px-6"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Connect JIRA
-              </Button>
+              <div className="flex justify-center">
+                <FeatureGateWithDisabledState feature="jira_integration">
+                  <Button
+                    onClick={() => setIsJiraModalOpen(true)}
+                    disabled={!currentProject?.id}
+                    size="sm"
+                    className="h-10 px-6"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Connect JIRA
+                  </Button>
+                </FeatureGateWithDisabledState>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">

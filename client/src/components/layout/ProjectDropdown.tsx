@@ -90,8 +90,24 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ onProjectChang
       if (onProjectChange) {
         onProjectChange(newProject)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create project:', error)
+
+      // Check if it's a subscription limit error
+      if (
+        error?.response?.status === 403 &&
+        error?.response?.data?.error === 'Project limit exceeded'
+      ) {
+        const errorData = error.response.data
+        alert(
+          `Project limit exceeded!\n\nYou have ${errorData.current_usage} projects (limit: ${errorData.limit})\n\n${errorData.message}`
+        )
+      } else {
+        // Generic error message
+        const message =
+          error?.response?.data?.detail || error?.message || 'Failed to create project'
+        alert(`Error: ${message}`)
+      }
     }
   }
 

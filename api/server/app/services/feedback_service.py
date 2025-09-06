@@ -3,12 +3,19 @@ from typing import List, Optional, Dict, Any
 from uuid import UUID
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException, status
+
 from app.repositories.feedback_repository import feedback_repository
 from app.repositories.feedback_comment_repository import feedback_comment_repository
 from app.services.action_item_service import action_item_service
+from app.services.subscription_service import subscription_service
+from app.services.project_service import project_service
 from app.core.logging import get_logger
-
-logger = get_logger(__name__)
+from app.core.exceptions import (
+    NotFoundError,
+    ValidationError,
+    SubscriptionLimitExceededError,
+)
 
 from app.schemas.feedback_schema import (
     FeedbackUpdate,
@@ -43,11 +50,9 @@ from app.models.feedback_model import (
     FeedbackStatus,
     FeedbackType,
     FeedbackPriority,
+    FeedbackComment,
 )
-from app.models.feedback_model import FeedbackComment
 from app.models.widget_model import WidgetType
-from app.core.exceptions import NotFoundError, ValidationError
-from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -85,6 +90,31 @@ class FeedbackService:
         """
         context = context or {}
 
+        project = await project_service.get_project_by_id(db, project_id)
+        if not project:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail='Project not found'
+            )
+
+        resource_type = self._get_resource_type_from_widget_type(widget_type)
+        can_create = await subscription_service.check_usage_limit(
+            db, project.organization_id, resource_type
+        )
+
+        if not can_create:
+            limits = await subscription_service.get_plan_limits(
+                db, project.organization_id
+            )
+            current_usage = await subscription_service.get_current_usage(
+                db, project.organization_id, resource_type
+            )
+            raise SubscriptionLimitExceededError(
+                resource_type='responses',
+                current_usage=current_usage,
+                limit=limits.get(resource_type, 0),
+                message='Upgrade to Pro plan for unlimited responses',
+            )
+
         # Base feedback data
         base_data = {
             'widget_id': widget_id,
@@ -114,7 +144,18 @@ class FeedbackService:
             # Default to general feedback
             payload = self._create_general_feedback(base_data, data)
 
-        return await self.create_feedback(db, payload)
+        result = await self.create_feedback(db, payload)
+
+        await subscription_service.increment_usage(
+            db, project.organization_id, resource_type
+        )
+
+        return result
+
+    def _get_resource_type_from_widget_type(self, widget_type: WidgetType) -> str:
+        """Map widget type to subscription resource type"""
+        # All feedback types now count towards the unified 'responses' limit
+        return 'responses'
 
     def _create_review_feedback(
         self, base_data: Dict[str, Any], data: Dict[str, Any]
@@ -431,7 +472,7 @@ class FeedbackService:
         if not existing_feedback:
             raise ValueError(f'Feedback with ID {feedback_id} not found')
 
-        logger.info(f'Found existing feedback, updating data')
+        logger.info('Found existing feedback, updating data')
 
         # Update the feedback data - only update safe, non-relationship fields
         logger.info(f'Updating feedback data with keys: {list(data.keys())}')

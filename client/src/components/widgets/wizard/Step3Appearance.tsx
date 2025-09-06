@@ -13,6 +13,8 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { PositionSelector } from '../PositionSelector'
+import { FeatureGateWithDisabledState } from '@/components/common/FeatureGateWithDisabledState'
+import { ProFeatureBadge } from '@/components/common/ProFeatureBadge'
 
 interface Step3AppearanceProps {
   form: UseFormReturn<WidgetFormData>
@@ -26,39 +28,73 @@ const themes = [
 ]
 
 export function Step3Appearance({ form }: Step3AppearanceProps) {
-
   return (
     <Form {...form}>
       <div className="space-y-6">
+        <FormField
+          control={form.control}
+          name="appearance.theme"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Theme</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  className="grid grid-cols-2 gap-4"
+                >
+                  {themes.map((theme) => (
+                    <div key={theme.value}>
+                      <RadioGroupItem
+                        value={theme.value}
+                        id={theme.value}
+                        className="peer sr-only"
+                      />
+                      <label
+                        htmlFor={theme.value}
+                        className="flex cursor-pointer flex-col rounded-lg border-2 border-muted p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                      >
+                        <span className="font-semibold">{theme.label}</span>
+                        <span className="text-sm text-muted-foreground">{theme.description}</span>
+                      </label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="appearance.position"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-lg font-semibold mb-4">Widget Position</FormLabel>
+              <FormDescription>Choose where the widget appears on your page</FormDescription>
+              <FormControl>
+                <PositionSelector value={field.value} onChange={field.onChange} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="space-y-4">
+          <h3 className="font-medium">Colors</h3>
+
           <FormField
             control={form.control}
-            name="appearance.theme"
+            name="appearance.colors.primary"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Theme</FormLabel>
+                <FormLabel>Primary Color</FormLabel>
                 <FormControl>
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    className="grid grid-cols-2 gap-4"
-                  >
-                    {themes.map((theme) => (
-                      <div key={theme.value}>
-                        <RadioGroupItem
-                          value={theme.value}
-                          id={theme.value}
-                          className="peer sr-only"
-                        />
-                        <label
-                          htmlFor={theme.value}
-                          className="flex cursor-pointer flex-col rounded-lg border-2 border-muted p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                        >
-                          <span className="font-semibold">{theme.label}</span>
-                          <span className="text-sm text-muted-foreground">{theme.description}</span>
-                        </label>
-                      </div>
-                    ))}
-                  </RadioGroup>
+                  <div className="flex gap-2">
+                    <Input type="color" className="w-16 p-1 h-10" {...field} />
+                    <Input placeholder="#6B46C1" {...field} />
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -67,72 +103,47 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
 
           <FormField
             control={form.control}
-            name="appearance.position"
+            name="appearance.colors.buttonColor"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-lg font-semibold mb-4">Widget Position</FormLabel>
-                <FormDescription>Choose where the widget appears on your page</FormDescription>
+                <FormLabel>Button Color</FormLabel>
                 <FormControl>
-                  <PositionSelector value={field.value} onChange={field.onChange} />
+                  <div className="flex gap-2">
+                    <Input type="color" className="w-16 p-1 h-10" {...field} />
+                    <Input placeholder="#6B46C1" {...field} />
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+        </div>
 
-          <div className="space-y-4">
-            <h3 className="font-medium">Colors</h3>
-
-            <FormField
-              control={form.control}
-              name="appearance.colors.primary"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Primary Color</FormLabel>
-                  <FormControl>
-                    <div className="flex gap-2">
-                      <Input type="color" className="w-16 p-1 h-10" {...field} />
-                      <Input placeholder="#6B46C1" {...field} />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="appearance.colors.buttonColor"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Button Color</FormLabel>
-                  <FormControl>
-                    <div className="flex gap-2">
-                      <Input type="color" className="w-16 p-1 h-10" {...field} />
-                      <Input placeholder="#6B46C1" {...field} />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
+        <FeatureGateWithDisabledState feature="branding_removal">
           <FormField
             control={form.control}
             name="appearance.showBranding"
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-base">Show &quot;Powered by&quot; branding</FormLabel>
-                  <FormDescription>Pro plan required to remove branding</FormDescription>
+                  <div className="flex items-center gap-2">
+                    <FormLabel className="text-base">
+                      Show &quot;Powered by&quot; branding
+                    </FormLabel>
+                    <ProFeatureBadge feature="branding_removal" />
+                  </div>
+                  <FormDescription>
+                    Remove the "Powered by Reflect" branding from your widget. Perfect for
+                    maintaining a clean, professional look on your website.
+                  </FormDescription>
                 </div>
                 <FormControl>
-                  <Switch checked={field.value} onCheckedChange={field.onChange} disabled />
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
               </FormItem>
             )}
           />
+        </FeatureGateWithDisabledState>
       </div>
     </Form>
   )
