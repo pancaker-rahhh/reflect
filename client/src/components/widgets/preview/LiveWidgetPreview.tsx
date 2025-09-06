@@ -123,6 +123,7 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
   const [deviceType, setDeviceType] = useState<DeviceType>('desktop')
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [_widgetState, setWidgetState] = useState<WidgetState>({ type: 'closed' })
+  const [selectedFeedbackType, setSelectedFeedbackType] = useState<FeedbackType | null>(null)
 
   // Watch specific form fields to minimize re-renders
   const formData = form.watch(['appearance', 'content', 'primaryType', 'modules', 'behavior'])
@@ -191,6 +192,12 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
 
   const handleWidgetStateChange = useCallback((newState: WidgetState) => {
     setWidgetState(newState)
+
+    // Track the selected feedback type when going to active state
+    if (newState.type === 'active' && newState.feedbackType) {
+      setSelectedFeedbackType(newState.feedbackType)
+    }
+
     // Map widget state back to preview state for controls synchronization
     switch (newState.type) {
       case 'closed':
@@ -208,9 +215,22 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
     }
   }, [])
 
+  // For preview mode, let WidgetCore manage its own state when in interactive mode
+  const effectiveWidgetState = useMemo(() => {
+    if (previewState === 'interactive') {
+      // If we have a selected feedback type, pass it to the widget
+      if (selectedFeedbackType) {
+        return { type: 'active' as const, feedbackType: selectedFeedbackType }
+      }
+      return undefined // Let WidgetCore manage its own state
+    }
+    return mappedWidgetState // Use mapped state for other cases
+  }, [previewState, mappedWidgetState, selectedFeedbackType])
+
   const handleStateReset = useCallback(() => {
     setPreviewState('closed')
     setWidgetState({ type: 'closed' })
+    setSelectedFeedbackType(null)
   }, [])
 
   return (
@@ -275,7 +295,7 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
                   <WidgetCore
                     config={widgetConfig}
                     mode="preview"
-                    state={mappedWidgetState}
+                    state={effectiveWidgetState}
                     onSubmit={handleWidgetSubmit}
                     onClose={handleWidgetClose}
                     onStateChange={handleWidgetStateChange}

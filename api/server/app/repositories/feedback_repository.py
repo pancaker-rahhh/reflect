@@ -3,6 +3,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text, and_
 from datetime import datetime, timedelta, timezone
+from app.core.logging import get_logger
 from app.models.feedback_model import (
     Feedback,
     FeedbackStatus,
@@ -17,6 +18,7 @@ from app.models.feedback_model import (
 )
 from app.repositories.base_repository import BaseRepository
 
+logger = get_logger(__name__)
 
 class FeedbackRepository(BaseRepository[Feedback]):
     def __init__(self):
@@ -185,6 +187,11 @@ class FeedbackRepository(BaseRepository[Feedback]):
         if user_agent:
             filters.append(Feedback.context['user_agent'].astext == user_agent)
 
+        logger.info(
+            f'🔍 Deduplication query filters: widget_id={widget_id}, feedback_type={feedback_type_enum}, ip_address={ip_address}, user_agent={user_agent}'
+        )
+        logger.info(f'🔍 Cutoff time: {cutoff_time}')
+
         # Use SQLAlchemy 2.x async syntax - select only the ID to avoid lazy loading issues
         stmt = (
             select(Feedback.id)
@@ -194,6 +201,8 @@ class FeedbackRepository(BaseRepository[Feedback]):
         )
         result = await db.execute(stmt)
         feedback_id = result.scalar_one_or_none()
+
+        logger.info(f'🔍 Query result - feedback_id found: {feedback_id}')
 
         if feedback_id:
             # Return the full object if we found an ID

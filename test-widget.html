@@ -10,7 +10,17 @@
     <p>This is a test widget</p>
     <button id="test-button">Test Button</button>
     <script>
-      window.reflectConfig = { key: "widget_5152c21846e24cc1", position: "mid_right" };
+      window.reflectConfig = { 
+        key: "widget_f103921bbe034212", 
+        position: "bottom_right",
+        // Force REVIEW feedback type for testing
+        modules: {
+          feedback: false,
+          reviews: true,
+          bugReporting: false,
+          featureRequests: false
+        }
+      };
     </script>
-    <script async src="file:///Users/keshavrathinavel/Developer/reflect/client/dist-widget/widget.js"></script>
+    <script src="file:///Users/keshavrathinavel/Developer/reflect/client/dist-widget/widget.js"></script>
 </html>

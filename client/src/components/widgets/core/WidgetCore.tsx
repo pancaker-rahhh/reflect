@@ -43,6 +43,12 @@ export function WidgetCore({
   const buttonColor = theme.colors.buttonColor
   const buttonTextColor = theme.colors.buttonTextColor
 
+  // Clear selected score when feedback type changes
+  const activeFeedbackType = currentState.type === 'active' ? currentState.feedbackType : null
+  React.useEffect(() => {
+    setSelectedScore(undefined)
+  }, [activeFeedbackType])
+
   const handleScoreChange = async (score: number) => {
     setSelectedScore(score)
     const currentFeedbackType =
@@ -399,6 +405,7 @@ export function WidgetCore({
             </div>
 
             <FeedbackRenderer
+              key={currentState.feedbackType}
               feedbackType={currentState.feedbackType}
               selectedScore={selectedScore}
               isSubmitting={isSubmitting}

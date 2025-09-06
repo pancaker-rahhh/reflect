@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Review Widget</title>
+  </head>
+  <body>
+    <h1>Test Review Widget</h1>
+    <p>This is a test widget for REVIEW feedback</p>
+    <button id="test-button">Test Button</button>
+    <script>
+      window.reflectConfig = {
+        key: "widget_f103921bbe034212",
+        position: "bottom_right",
+        // Override widget config for testing
+        modules: {
+          feedback: false,
+          reviews: true,
+          bugReporting: false,
+          featureRequests: false,
+        },
+        content: {
+          headerTitle: "Rate Your Experience",
+          mainQuestion: "How was your experience with our service?",
+          submitButtonText: "Submit Review",
+          thankYouTitle: "Thank you!",
+          thankYouMessage: "Your review helps us improve.",
+        },
+      };
+    </script>
+    <script src="file:///Users/keshavrathinavel/Developer/reflect/client/dist-widget/widget.js"></script>
+  </body>
+</html>

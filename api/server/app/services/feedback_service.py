@@ -120,10 +120,16 @@ class FeedbackService:
         self, base_data: Dict[str, Any], data: Dict[str, Any]
     ) -> ReviewFeedbackCreate:
         """Create review feedback with 5-star rating system"""
+        logger.info(f'🔍 _create_review_feedback - data: {data}')
+        logger.info(
+            f'🔍 _create_review_feedback - rating from data: {data.get("rating")}'
+        )
+        rating_value = data.get('rating')
         return ReviewFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.REVIEW,
-            overall_rating=data.get('rating', 0),  # 1-5 star rating
+            rating=rating_value,  # Set base rating field
+            overall_rating=rating_value,  # Set overall_rating field for review-specific data
             title=data.get('title', 'Product Review'),
             message=data.get('message', ''),
             pros=data.get('pros', ''),

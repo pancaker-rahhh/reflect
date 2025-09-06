@@ -1,13 +1,11 @@
-/**
- * API service for handling public feedback submissions.
- */
-
 import { apiClient } from '../client'
 
 // Define the shape of the data we'll send to the backend
 interface FeedbackPayload {
   widgetKey: string
   response: string // The actual feedback text
+  rating?: number // Rating for feedback types that support it
+  feedbackType?: string // Type of feedback (review, bug_report, etc.)
   // You could add more data here later, like user agent, current URL, etc.
 }
 

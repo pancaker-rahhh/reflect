@@ -371,7 +371,7 @@ declare global {
       modules: finalModules,
       primaryType: (widgetType || 'FEEDBACK') as FeedbackType,
       content: {
-        headerTitle: 'Feedback',
+        headerTitle: content.headerTitle || 'Feedback',
         mainQuestion: content.mainQuestion || getDefaultQuestionForType(backendConfig.widget_type),
         submitButtonText: content.submitButtonText || 'Submit Feedback',
         thankYouTitle: content.thankYouTitle || 'Thank you!',
@@ -602,17 +602,27 @@ declare global {
           const controller = new AbortController()
           const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
 
+          const payload = {
+            widgetKey: publicKey,
+            response: data.response,
+            rating: data.rating,
+            feedbackType: data.feedbackType.toLowerCase(), // Convert to lowercase for backend
+            // Include type-specific data
+            ...(data.typeSpecificData || {}),
+            // For REVIEW feedback, ensure overall_rating is set
+            ...(data.feedbackType === 'REVIEW' && data.rating
+              ? { overall_rating: data.rating }
+              : {}),
+          }
+
+          console.log('🔍 Widget submission payload:', payload)
+          console.log('🔍 Original data:', data)
+          console.log('🔍 Type specific data:', data.typeSpecificData)
+
           const response = await fetch(`${apiBaseUrl}/public/feedback`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              widgetKey: publicKey,
-              response: data.response,
-              rating: data.rating,
-              feedbackType: data.feedbackType.toLowerCase(), // Convert to lowercase for backend
-              // Include type-specific data
-              ...(data.typeSpecificData || {}),
-            }),
+            body: JSON.stringify(payload),
             signal: controller.signal,
           })
 
