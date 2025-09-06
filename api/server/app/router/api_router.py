@@ -15,6 +15,7 @@ from app.router.v1 import (
     dashboard_router,
     integrations_router,
     roadmap_integrations_router,
+    subscription_router,
 )
 
 api_router = APIRouter(prefix='/api/v1')
@@ -28,6 +29,11 @@ api_router.include_router(onboarding_router.router)
 api_router.include_router(invitation_router.router)
 api_router.include_router(dashboard_router.dashboard_router)
 api_router.include_router(integrations_router.router)
+api_router.include_router(
+    subscription_router.router,
+    prefix='/organizations/{organization_id}',
+    tags=['Subscription'],
+)
 api_router.include_router(
     roadmap_integrations_router.router,
     prefix='/roadmap-integrations',
