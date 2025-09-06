@@ -20,7 +20,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Card } from '@/components/ui/card'
 import { Code, Info } from 'lucide-react'
-import { FeatureGate } from '@/components/common/FeatureGate'
+import { FeatureGateWithDisabledState } from '@/components/common/FeatureGateWithDisabledState'
 
 import type { WidgetFormData } from '@/pages/WidgetCreate'
 
@@ -80,20 +80,29 @@ export function Step4Behavior({ form }: Step4BehaviorProps) {
           />
         )}
 
-        <div className="space-y-4">
-          <h3 className="font-medium">URL Targeting</h3>
+        <FeatureGateWithDisabledState feature="advanced_targeting">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <h3 className="font-medium">URL Targeting</h3>
+              <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                Pro Feature
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Target specific pages or exclude certain URLs from showing your widget. Perfect for
+              showing feedback forms only on relevant pages.
+            </p>
 
-          <FormField
-            control={form.control}
-            name="behavior.urlTargeting.includeUrls"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Show on specific URLs</FormLabel>
-                <FormDescription>
-                  Enter URL patterns separated by commas (e.g., /dashboard/*, /products/*)
-                </FormDescription>
-                <FormControl>
-                  <FeatureGate feature="advanced_targeting" showUpgradePrompt={false}>
+            <FormField
+              control={form.control}
+              name="behavior.urlTargeting.includeUrls"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Show on specific URLs</FormLabel>
+                  <FormDescription>
+                    Enter URL patterns separated by commas (e.g., /dashboard/*, /products/*)
+                  </FormDescription>
+                  <FormControl>
                     <Textarea
                       placeholder="/dashboard/*, /products/*"
                       {...field}
@@ -107,22 +116,22 @@ export function Step4Behavior({ form }: Step4BehaviorProps) {
                       }
                       value={field.value?.join(', ') || ''}
                     />
-                  </FeatureGate>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="behavior.urlTargeting.excludeUrls"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Exclude on specific URLs</FormLabel>
-                <FormDescription>Enter URL patterns to exclude separated by commas</FormDescription>
-                <FormControl>
-                  <FeatureGate feature="advanced_targeting" showUpgradePrompt={false}>
+            <FormField
+              control={form.control}
+              name="behavior.urlTargeting.excludeUrls"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Exclude on specific URLs</FormLabel>
+                  <FormDescription>
+                    Enter URL patterns to exclude separated by commas
+                  </FormDescription>
+                  <FormControl>
                     <Textarea
                       placeholder="/admin/*, /checkout/*"
                       {...field}
@@ -136,13 +145,13 @@ export function Step4Behavior({ form }: Step4BehaviorProps) {
                       }
                       value={field.value?.join(', ') || ''}
                     />
-                  </FeatureGate>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </FeatureGateWithDisabledState>
 
         <div className="space-y-4">
           <h3 className="font-medium">Device Types</h3>

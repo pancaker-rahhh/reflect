@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { PositionSelector } from '../PositionSelector'
-import { FeatureGate } from '@/components/common/FeatureGate'
+import { FeatureGateWithDisabledState } from '@/components/common/FeatureGateWithDisabledState'
 
 interface Step3AppearanceProps {
   form: UseFormReturn<WidgetFormData>
@@ -118,23 +118,33 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
           />
         </div>
 
-        <FormField
-          control={form.control}
-          name="appearance.showBranding"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">Show &quot;Powered by&quot; branding</FormLabel>
-                <FormDescription>Remove branding with Pro plan</FormDescription>
-              </div>
-              <FormControl>
-                <FeatureGate feature="branding_removal" showUpgradePrompt={false}>
+        <FeatureGateWithDisabledState feature="branding_removal">
+          <FormField
+            control={form.control}
+            name="appearance.showBranding"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <FormLabel className="text-base">
+                      Show &quot;Powered by&quot; branding
+                    </FormLabel>
+                    <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                      Pro Feature
+                    </span>
+                  </div>
+                  <FormDescription>
+                    Remove the "Powered by Reflect" branding from your widget. Perfect for
+                    maintaining a clean, professional look on your website.
+                  </FormDescription>
+                </div>
+                <FormControl>
                   <Switch checked={field.value} onCheckedChange={field.onChange} />
-                </FeatureGate>
-              </FormControl>
-            </FormItem>
-          )}
-        />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </FeatureGateWithDisabledState>
       </div>
     </Form>
   )
