@@ -1,5 +1,6 @@
 from typing import List, Optional, TYPE_CHECKING
-from sqlalchemy import String, ForeignKey, UniqueConstraint
+from datetime import datetime
+from sqlalchemy import String, ForeignKey, UniqueConstraint, DateTime as DateTimeColumn
 from sqlalchemy.dialects.postgresql import UUID, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 import re
@@ -12,6 +13,7 @@ if TYPE_CHECKING:
     from app.models.user_model import User
     from app.models.project_model import Project
     from app.models.invitation import Invitation, PendingMember, InvitationTask
+    from app.models.usage_tracking_model import UsageTracking
 
 
 class OrganizationRole(str, enum.Enum):
@@ -35,6 +37,11 @@ class Organization(BaseModel):
     )
     description: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     subscription_tier: Mapped[str] = mapped_column(String(50), default='free')
+    subscription_plan: Mapped[str] = mapped_column(String(20), default='free')
+    subscription_status: Mapped[str] = mapped_column(String(20), default='active')
+    subscription_ends_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTimeColumn(timezone=True), nullable=True
+    )
     settings: Mapped[dict] = mapped_column(JSON, default=dict)
     created_by: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
@@ -64,6 +71,9 @@ class Organization(BaseModel):
     )
     invitation_tasks: Mapped[List['InvitationTask']] = relationship(
         'InvitationTask', back_populates='organization', cascade='all, delete-orphan'
+    )
+    usage_tracking: Mapped[List['UsageTracking']] = relationship(
+        'UsageTracking', back_populates='organization', cascade='all, delete-orphan'
     )
 
     def generate_slug(self, name: str) -> str:
