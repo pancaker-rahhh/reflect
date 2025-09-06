@@ -5,8 +5,10 @@ import { useQuery } from '@tanstack/react-query'
 import { organizationApi } from '@/lib/api/organization'
 import { useSubscription } from '@/hooks/useSubscription'
 import { UsageBar } from '@/components/common/UsageBar'
+import { useNavigate } from 'react-router-dom'
 
 export function FreeTierAlert() {
+  const navigate = useNavigate()
   const { data: organizations } = useQuery({
     queryKey: ['organizations', 'my'],
     queryFn: () => organizationApi.getMy(),
@@ -14,6 +16,10 @@ export function FreeTierAlert() {
 
   const currentOrganization = organizations?.[0]
   const { getUsageInfo } = useSubscription()
+
+  const handleUpgrade = () => {
+    navigate('/settings/billing')
+  }
 
   const isFreeTier =
     currentOrganization?.subscription_tier === 'free' || !currentOrganization?.subscription_tier
@@ -41,7 +47,7 @@ export function FreeTierAlert() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button size="sm" className="gap-2">
+          <Button size="sm" className="gap-2" onClick={handleUpgrade}>
             <Zap className="h-4 w-4" />
             Upgrade to Pro
           </Button>

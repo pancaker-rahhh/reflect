@@ -14,13 +14,19 @@ import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useSubscription } from '@/hooks/useSubscription'
 import { organizationApi } from '@/lib/api/organization'
+import { useNavigate } from 'react-router-dom'
 
 export type TimeRange = 'all' | 'week' | 'month' | 'year'
 
 export function Dashboard() {
   const [timeRange, setTimeRange] = useState<TimeRange>('all')
+  const navigate = useNavigate()
   const { currentProject } = useAppContext()
   const { getUsageInfo } = useSubscription()
+
+  const handleUpgrade = () => {
+    navigate('/settings/billing')
+  }
 
   const { data: organizations } = useQuery({
     queryKey: ['organizations', 'my'],
@@ -110,10 +116,15 @@ export function Dashboard() {
               className={`border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/30`}
             >
               <AlertTriangle className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="text-orange-800 dark:text-orange-200">
-                {responseUsage.percentage >= 100
-                  ? `You've reached your response limit (${responseUsage.current}/${responseUsage.limit}). Upgrade to Pro for unlimited responses.`
-                  : `You're approaching your response limit (${responseUsage.current}/${responseUsage.limit}). Consider upgrading to Pro for unlimited responses.`}
+              <AlertDescription className="text-orange-800 dark:text-orange-200 flex items-center justify-between">
+                <span>
+                  {responseUsage.percentage >= 100
+                    ? `You've reached your response limit (${responseUsage.current}/${responseUsage.limit}). Upgrade to Pro for unlimited responses.`
+                    : `You're approaching your response limit (${responseUsage.current}/${responseUsage.limit}). Consider upgrading to Pro for unlimited responses.`}
+                </span>
+                <Button size="sm" variant="outline" onClick={handleUpgrade} className="ml-4">
+                  Upgrade to Pro
+                </Button>
               </AlertDescription>
             </Alert>
           )

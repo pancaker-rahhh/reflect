@@ -2,6 +2,7 @@ import React from 'react'
 import { AlertCircle, Zap } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { useNavigate } from 'react-router-dom'
 
 interface UpgradePromptProps {
   message: string
@@ -9,11 +10,13 @@ interface UpgradePromptProps {
 }
 
 export function UpgradePrompt({ message, onUpgrade }: UpgradePromptProps) {
+  const navigate = useNavigate()
+
   const handleUpgrade = () => {
     if (onUpgrade) {
       onUpgrade()
     } else {
-      window.location.href = '/settings/billing'
+      navigate('/settings/billing')
     }
   }
 

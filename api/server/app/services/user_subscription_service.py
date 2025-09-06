@@ -2,7 +2,7 @@ from typing import Dict, Any
 from uuid import UUID
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select, update, text
 from app.models.user_model import User
 from app.models.organization_model import Organization
 from app.core.logging import get_logger
@@ -18,9 +18,9 @@ class UserSubscriptionService:
             'responses': 20,
         },
         'pro': {
-            'projects': 999,
-            'widgets': 999,
-            'responses': 999,
+            'projects': 999999,
+            'widgets': 999999,
+            'responses': 999999,
         },
     }
 
@@ -122,12 +122,10 @@ class UserSubscriptionService:
         }
 
     async def invalidate_user_cache(self, db: AsyncSession, user_id: UUID):
-        stmt = (
-            update(User)
-            .where(User.id == user_id)
-            .values(user_metadata=User.user_metadata.op('-')('subscription_cache'))
+        stmt = text(
+            "UPDATE users SET user_metadata = (user_metadata::jsonb - 'subscription_cache')::json WHERE id = :user_id"
         )
-        await db.execute(stmt)
+        await db.execute(stmt, {'user_id': user_id})
         await db.commit()
 
     async def invalidate_organization_cache(

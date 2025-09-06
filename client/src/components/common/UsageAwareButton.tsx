@@ -1,6 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { useSubscription } from '@/hooks/useSubscription'
+import { useNavigate } from 'react-router-dom'
 
 interface UsageAwareButtonProps {
   resourceType: string
@@ -21,6 +22,7 @@ export function UsageAwareButton({
   size = 'default',
   className,
 }: UsageAwareButtonProps) {
+  const navigate = useNavigate()
   const { canCreateResource, getUsageInfo } = useSubscription()
 
   const canCreate = canCreateResource(resourceType)
@@ -28,7 +30,7 @@ export function UsageAwareButton({
 
   const handleClick = () => {
     if (!canCreate) {
-      window.location.href = '/settings/billing'
+      navigate('/settings/billing')
       return
     }
     action()
