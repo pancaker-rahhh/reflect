@@ -17,15 +17,11 @@ class SubscriptionService:
             'projects': 1,
             'widgets': 1,
             'responses': 20,
-            'bug_reports': 20,
-            'feature_requests': 20,
         },
         'pro': {
             'projects': 999,
             'widgets': 999,
             'responses': 999,
-            'bug_reports': 999,
-            'feature_requests': 999,
         },
     }
 

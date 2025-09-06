@@ -107,7 +107,7 @@ class FeedbackService:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail={
-                    'error': f'{resource_type.replace("_", " ").title()} limit exceeded',
+                    'error': 'Response limit exceeded',
                     'current_usage': current_usage,
                     'limit': limits.get(resource_type, 0),
                     'message': 'Upgrade to Pro plan for unlimited responses',
@@ -153,12 +153,8 @@ class FeedbackService:
 
     def _get_resource_type_from_widget_type(self, widget_type: WidgetType) -> str:
         """Map widget type to subscription resource type"""
-        if widget_type == WidgetType.BUG_REPORT:
-            return 'bug_reports'
-        elif widget_type == WidgetType.FEATURE_REQUEST:
-            return 'feature_requests'
-        else:
-            return 'responses'
+        # All feedback types now count towards the unified 'responses' limit
+        return 'responses'
 
     def _create_review_feedback(
         self, base_data: Dict[str, Any], data: Dict[str, Any]
