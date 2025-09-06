@@ -3,12 +3,12 @@ from datetime import datetime
 import uuid
 from sqlalchemy import String, DateTime as DateTimeColumn, Integer, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship, Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base_model import BaseModelWithoutSoftDelete
 
 if TYPE_CHECKING:
-    from app.models.organization_model import Organization
+    pass
 
 
 class UsageTracking(BaseModelWithoutSoftDelete):
@@ -25,5 +25,3 @@ class UsageTracking(BaseModelWithoutSoftDelete):
     period_start: Mapped[datetime] = mapped_column(
         DateTimeColumn(timezone=True), nullable=False, index=True
     )
-
-    organization: Mapped['Organization'] = relationship('Organization')

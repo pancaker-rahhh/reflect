@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     from app.models.user_model import User
     from app.models.project_model import Project
     from app.models.invitation import Invitation, PendingMember, InvitationTask
-    from app.models.usage_tracking_model import UsageTracking
 
 
 class OrganizationRole(str, enum.Enum):
@@ -71,9 +70,6 @@ class Organization(BaseModel):
     )
     invitation_tasks: Mapped[List['InvitationTask']] = relationship(
         'InvitationTask', back_populates='organization', cascade='all, delete-orphan'
-    )
-    usage_tracking: Mapped[List['UsageTracking']] = relationship(
-        'UsageTracking', back_populates='organization', cascade='all, delete-orphan'
     )
 
     def generate_slug(self, name: str) -> str:
