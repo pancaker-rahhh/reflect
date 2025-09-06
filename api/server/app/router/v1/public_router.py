@@ -142,7 +142,7 @@ async def get_public_widget_bug_reports(
     response_model=FeedbackResponsePayload,
     status_code=status.HTTP_201_CREATED,
 )
-# @create_rate_limit_decorator('feedback_submission', is_anonymous=True)
+@create_rate_limit_decorator('feedback_submission', is_anonymous=True)
 async def submit_public_feedback(
     request: Request,
     payload: PublicFeedbackPayload,
