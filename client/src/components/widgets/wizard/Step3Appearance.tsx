@@ -14,6 +14,7 @@ import { Switch } from '@/components/ui/switch'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { PositionSelector } from '../PositionSelector'
 import { FeatureGateWithDisabledState } from '@/components/common/FeatureGateWithDisabledState'
+import { ProFeatureBadge } from '@/components/common/ProFeatureBadge'
 
 interface Step3AppearanceProps {
   form: UseFormReturn<WidgetFormData>
@@ -129,9 +130,7 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
                     <FormLabel className="text-base">
                       Show &quot;Powered by&quot; branding
                     </FormLabel>
-                    <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
-                      Pro Feature
-                    </span>
+                    <ProFeatureBadge feature="branding_removal" />
                   </div>
                   <FormDescription>
                     Remove the "Powered by Reflect" branding from your widget. Perfect for

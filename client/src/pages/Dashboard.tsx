@@ -13,6 +13,7 @@ import { AlertCircle, RefreshCw, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useSubscription } from '@/hooks/useSubscription'
+import { organizationApi } from '@/lib/api/organization'
 
 export type TimeRange = 'all' | 'week' | 'month' | 'year'
 
@@ -20,6 +21,13 @@ export function Dashboard() {
   const [timeRange, setTimeRange] = useState<TimeRange>('all')
   const { currentProject } = useAppContext()
   const { getUsageInfo } = useSubscription()
+
+  const { data: organizations } = useQuery({
+    queryKey: ['organizations', 'my'],
+    queryFn: () => organizationApi.getMy(),
+  })
+
+  const currentOrganization = organizations?.[0]
 
   const {
     data: metrics,
@@ -90,10 +98,13 @@ export function Dashboard() {
         <TimeRangeFilter value={timeRange} onChange={setTimeRange} />
       </div>
 
-      {/* Response Limit Warning */}
+      {/* Response Limit Warning - Only for Free Users */}
       {(() => {
         const responseUsage = getUsageInfo('responses')
-        if (responseUsage.percentage >= 80) {
+        const isFreeTier =
+          currentOrganization?.subscription_tier === 'free' ||
+          !currentOrganization?.subscription_tier
+        if (isFreeTier && responseUsage.percentage >= 80) {
           return (
             <Alert
               className={`border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/30`}

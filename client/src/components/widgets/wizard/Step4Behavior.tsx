@@ -21,6 +21,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card } from '@/components/ui/card'
 import { Code, Info } from 'lucide-react'
 import { FeatureGateWithDisabledState } from '@/components/common/FeatureGateWithDisabledState'
+import { ProFeatureBadge } from '@/components/common/ProFeatureBadge'
 
 import type { WidgetFormData } from '@/pages/WidgetCreate'
 
@@ -84,9 +85,7 @@ export function Step4Behavior({ form }: Step4BehaviorProps) {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <h3 className="font-medium">URL Targeting</h3>
-              <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
-                Pro Feature
-              </span>
+              <ProFeatureBadge feature="advanced_targeting" />
             </div>
             <p className="text-sm text-muted-foreground">
               Target specific pages or exclude certain URLs from showing your widget. Perfect for
