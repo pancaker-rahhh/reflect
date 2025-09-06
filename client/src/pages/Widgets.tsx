@@ -12,6 +12,7 @@ import { FreeTierAlert } from '@/components/widgets/FreeTierAlert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageLoading } from '@/components/common/LoadingSpinner'
 import { DeleteConfirmationModal } from '@/components/common/ConfirmationModal'
+import { UsageAwareButton } from '@/components/common/UsageAwareButton'
 import type { Widget } from '@/types'
 
 export function Widgets() {
@@ -119,10 +120,15 @@ export function Widgets() {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <Button onClick={handleCreateWidget} size="lg" className="gap-2">
+        <UsageAwareButton
+          resourceType="widgets"
+          action={handleCreateWidget}
+          size="lg"
+          className="gap-2"
+        >
           <Plus className="h-5 w-5" />
           Create Widget
-        </Button>
+        </UsageAwareButton>
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -243,10 +249,10 @@ function EmptyState({
           : 'Get started by creating your first widget to collect feedback from your users.'}
       </p>
       {!searchQuery && (
-        <Button onClick={onCreateWidget} className="gap-2">
+        <UsageAwareButton resourceType="widgets" action={onCreateWidget} className="gap-2">
           <Plus className="h-4 w-4" />
           Create Your First Widget
-        </Button>
+        </UsageAwareButton>
       )}
     </div>
   )
