@@ -200,21 +200,6 @@ export function Responses() {
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold">{response.score}/10</div>
-                    <Badge
-                      variant={
-                        response.score >= 9
-                          ? 'default'
-                          : response.score >= 7
-                            ? 'secondary'
-                            : 'destructive'
-                      }
-                    >
-                      {response.score >= 9
-                        ? 'Promoter'
-                        : response.score >= 7
-                          ? 'Passive'
-                          : 'Detractor'}
-                    </Badge>
                   </div>
                 </div>
                 {response.comment && (

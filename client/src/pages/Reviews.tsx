@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Search, RotateCcw, ExternalLink, TrendingUp, Star } from 'lucide-react'
+import { Search, RotateCcw, TrendingUp, Star } from 'lucide-react'
 import { api } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -17,7 +17,6 @@ import { Badge } from '@/components/ui/badge'
 import { StarRating } from '@/components/ui/star-rating'
 import { format } from 'date-fns'
 import { useAppContext } from '@/context/AppContext'
-
 
 export function Reviews() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -101,10 +100,6 @@ export function Reviews() {
             Manage user reviews and testimonials for your project
           </p>
         </div>
-        <Button>
-          <ExternalLink className="mr-2 h-4 w-4" />
-          Enable Public Page
-        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

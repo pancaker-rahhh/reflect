@@ -56,10 +56,6 @@ export interface AppearanceConfig {
 export interface BehaviorConfig {
   triggerType: 'immediate' | 'delay' | 'exit-intent' | 'scroll'
   triggerDelay?: number
-  urlTargeting: {
-    includeUrls: string[]
-    excludeUrls: string[]
-  }
   deviceTypes: {
     desktop: boolean
     mobile: boolean

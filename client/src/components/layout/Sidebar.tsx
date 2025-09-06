@@ -17,7 +17,6 @@ import {
 import { cn } from '@/lib/utils'
 import { OrganizationDropdown } from './OrganizationDropdown'
 import { isFeatureEnabled } from '@/lib/featureFlags'
-import { useAppContext } from '@/context/AppContext'
 
 interface NavItem {
   label: string
@@ -69,14 +68,6 @@ export function Sidebar() {
   const [expandedItems, setExpandedItems] = useState<string[]>(['Feedback & Roadmap', 'Settings'])
   const [isExpanded, setIsExpanded] = useState(false)
   const collapseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-
-  const { projects, currentProject, setCurrentProject, isLoading } = useAppContext()
-
-  const handleProjectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedProjectId = event.target.value
-    const project = projects.find((p) => p.id === selectedProjectId) || null
-    setCurrentProject(project)
-  }
 
   const toggleExpanded = (label: string) => {
     setExpandedItems((prev) =>
@@ -182,26 +173,6 @@ export function Sidebar() {
       {isExpanded && (
         <div className="px-3 mb-4">
           <OrganizationDropdown />
-          <div className="bg-secondary/50 rounded-md px-3 py-2 mt-2">
-            <select
-              className="w-full bg-transparent text-sm font-medium outline-none"
-              value={currentProject?.id || ''}
-              onChange={handleProjectChange}
-              disabled={isLoading || projects.length === 0}
-            >
-              {isLoading ? (
-                <option>Loading...</option>
-              ) : projects.length > 0 ? (
-                projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.name}
-                  </option>
-                ))
-              ) : (
-                <option>No projects found</option>
-              )}
-            </select>
-          </div>
         </div>
       )}
 

@@ -26,12 +26,6 @@ export function NPSRating({ value, onChange, disabled = false }: NPSRatingProps)
     setHoveredValue(null)
   }
 
-  const getScoreLabel = (score: number) => {
-    if (score <= 6) return 'Detractor'
-    if (score <= 8) return 'Passive'
-    return 'Promoter'
-  }
-
   const displayValue = hoveredValue ?? value
 
   return (
@@ -85,16 +79,6 @@ export function NPSRating({ value, onChange, disabled = false }: NPSRatingProps)
       {displayValue !== undefined && (
         <div className="text-center">
           <div className="text-lg font-medium text-gray-800">Score: {displayValue}</div>
-          <div
-            className={cn(
-              'text-sm font-medium',
-              displayValue <= 6 && 'text-red-600',
-              displayValue > 6 && displayValue <= 8 && 'text-yellow-600',
-              displayValue > 8 && 'text-green-600'
-            )}
-          >
-            {getScoreLabel(displayValue)}
-          </div>
         </div>
       )}
     </div>
