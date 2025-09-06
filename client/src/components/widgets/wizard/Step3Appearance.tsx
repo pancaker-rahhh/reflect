@@ -118,23 +118,23 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
           />
         </div>
 
-        <FeatureGate feature="branding_removal">
-          <FormField
-            control={form.control}
-            name="appearance.showBranding"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                <div className="space-y-0.5">
-                  <FormLabel className="text-base">Show &quot;Powered by&quot; branding</FormLabel>
-                  <FormDescription>Remove branding with Pro plan</FormDescription>
-                </div>
-                <FormControl>
+        <FormField
+          control={form.control}
+          name="appearance.showBranding"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Show &quot;Powered by&quot; branding</FormLabel>
+                <FormDescription>Remove branding with Pro plan</FormDescription>
+              </div>
+              <FormControl>
+                <FeatureGate feature="branding_removal" showUpgradePrompt={false}>
                   <Switch checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </FeatureGate>
+                </FeatureGate>
+              </FormControl>
+            </FormItem>
+          )}
+        />
       </div>
     </Form>
   )
