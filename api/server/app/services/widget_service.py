@@ -145,7 +145,19 @@ class WidgetService:
             )
             # Continue with database deletion even if CDN cleanup fails
 
-        return await self.repository.soft_delete(db, id=widget_id)
+        # Soft delete the widget
+        deleted_widget = await self.repository.soft_delete(db, id=widget_id)
+
+        # Decrement usage count for subscription tracking
+        if deleted_widget:
+            await subscription_service.decrement_usage(
+                db, widget.project.organization_id, 'widgets'
+            )
+            logger.info(
+                f'Decremented widget usage for organization {widget.project.organization_id}'
+            )
+
+        return deleted_widget
 
     async def get_public_widget_by_key(
         self, db: AsyncSession, public_key: str
