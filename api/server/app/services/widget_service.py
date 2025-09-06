@@ -6,6 +6,7 @@ from app.models.widget_model import Widget, WidgetStatus
 from app.repositories.widget_repository import widget_repository, WidgetRepository
 from app.schemas.widget_schema import WidgetCreate, WidgetUpdate
 from app.services.project_service import project_service, ProjectService
+from app.services.subscription_service import subscription_service
 from app.services.cdn_deployment_service import cdn_deployment_service
 from app.core.settings import get_settings
 from app.core.logging import get_logger
@@ -56,9 +57,30 @@ class WidgetService:
     async def create_widget(
         self, db: AsyncSession, user_id: UUID, widget_in: WidgetCreate
     ) -> Widget:
-        await self.project_service.get_project_and_check_access(
+        project = await self.project_service.get_project_and_check_access(
             db, user_id, widget_in.project_id
         )
+
+        can_create = await subscription_service.check_usage_limit(
+            db, project.organization_id, 'widgets'
+        )
+
+        if not can_create:
+            limits = await subscription_service.get_plan_limits(
+                db, project.organization_id
+            )
+            current_usage = await subscription_service.get_current_usage(
+                db, project.organization_id, 'widgets'
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    'error': 'Widget limit exceeded',
+                    'current_usage': current_usage,
+                    'limit': limits.get('widgets', 0),
+                    'message': 'Upgrade to Pro plan for unlimited widgets',
+                },
+            )
 
         widget_data = widget_in.model_dump()
 
@@ -72,6 +94,9 @@ class WidgetService:
 
         widget = await self.repository.create(db, **widget_data)
 
+        await subscription_service.increment_usage(
+            db, project.organization_id, 'widgets'
+        )
         await self._deploy_to_cdn(widget)
 
         return widget
