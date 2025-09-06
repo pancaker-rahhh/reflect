@@ -6,10 +6,11 @@ from app.models.widget_model import Widget, WidgetStatus
 from app.repositories.widget_repository import widget_repository, WidgetRepository
 from app.schemas.widget_schema import WidgetCreate, WidgetUpdate
 from app.services.project_service import project_service, ProjectService
-from app.services.subscription_service import subscription_service
 from app.services.cdn_deployment_service import cdn_deployment_service
 from app.core.settings import get_settings
 from app.core.logging import get_logger
+from app.core.exceptions import SubscriptionLimitExceededError
+from app.services.subscription_service import subscription_service
 
 logger = get_logger(__name__)
 settings = get_settings()
@@ -72,14 +73,11 @@ class WidgetService:
             current_usage = await subscription_service.get_current_usage(
                 db, project.organization_id, 'widgets'
             )
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail={
-                    'error': 'Widget limit exceeded',
-                    'current_usage': current_usage,
-                    'limit': limits.get('widgets', 0),
-                    'message': 'Upgrade to Pro plan for unlimited widgets',
-                },
+            raise SubscriptionLimitExceededError(
+                resource_type='widgets',
+                current_usage=current_usage,
+                limit=limits.get('widgets', 0),
+                message='Upgrade to Pro plan for unlimited widgets',
             )
 
         widget_data = widget_in.model_dump()
@@ -145,18 +143,8 @@ class WidgetService:
             )
             # Continue with database deletion even if CDN cleanup fails
 
-        # Soft delete the widget
+        # Soft delete the widget (usage tracking handled by database trigger)
         deleted_widget = await self.repository.soft_delete(db, id=widget_id)
-
-        # Decrement usage count for subscription tracking
-        if deleted_widget:
-            await subscription_service.decrement_usage(
-                db, widget.project.organization_id, 'widgets'
-            )
-            logger.info(
-                f'Decremented widget usage for organization {widget.project.organization_id}'
-            )
-
         return deleted_widget
 
     async def get_public_widget_by_key(

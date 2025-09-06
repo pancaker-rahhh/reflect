@@ -16,6 +16,7 @@ from app.router.v1 import (
     integrations_router,
     roadmap_integrations_router,
     subscription_router,
+    upgrade_router,
 )
 
 api_router = APIRouter(prefix='/api/v1')
@@ -55,3 +56,4 @@ api_router.include_router(roadmap_router.router, prefix='/roadmap', tags=['Roadm
 api_router.include_router(
     roadmap_router.public_router, prefix='/public', tags=['Public']
 )
+api_router.include_router(upgrade_router.router)

@@ -20,10 +20,14 @@ from app.schemas.project_schema import (
     ProjectMemberInviteRequest,
     ProjectMemberUpdate,
 )
-from app.core.exceptions import NotFoundError, ForbiddenError, ConflictError
+from app.core.exceptions import (
+    NotFoundError,
+    ForbiddenError,
+    ConflictError,
+    SubscriptionLimitExceededError,
+)
 from app.core.logging import get_logger
 from app.services.subscription_service import subscription_service
-from fastapi import HTTPException, status
 
 logger = get_logger(__name__)
 
@@ -89,14 +93,11 @@ class ProjectService:
             current_usage = await subscription_service.get_current_usage(
                 db, project_in.organization_id, 'projects'
             )
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail={
-                    'error': 'Project limit exceeded',
-                    'current_usage': current_usage,
-                    'limit': limits.get('projects', 0),
-                    'message': 'Upgrade to Pro plan for unlimited projects',
-                },
+            raise SubscriptionLimitExceededError(
+                resource_type='projects',
+                current_usage=current_usage,
+                limit=limits.get('projects', 0),
+                message='Upgrade to Pro plan for unlimited projects',
             )
 
         base_slug = Project().generate_slug(project_in.name)
@@ -189,18 +190,8 @@ class ProjectService:
         if not member or member.role not in ['owner', 'admin']:
             raise ForbiddenError('Only owners and admins can delete projects')
 
-        # Soft delete the project
+        # Soft delete the project (usage tracking handled by database trigger)
         deleted_project = await self.repository.soft_delete(db, project_id)
-
-        # Decrement usage count for subscription tracking
-        if deleted_project:
-            await subscription_service.decrement_usage(
-                db, project.organization_id, 'projects'
-            )
-            logger.info(
-                f'Decremented project usage for organization {project.organization_id}'
-            )
-
         return deleted_project
 
     async def get_project_members(

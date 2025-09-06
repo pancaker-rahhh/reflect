@@ -11,7 +11,11 @@ from app.services.action_item_service import action_item_service
 from app.services.subscription_service import subscription_service
 from app.services.project_service import project_service
 from app.core.logging import get_logger
-from app.core.exceptions import NotFoundError, ValidationError
+from app.core.exceptions import (
+    NotFoundError,
+    ValidationError,
+    SubscriptionLimitExceededError,
+)
 
 from app.schemas.feedback_schema import (
     FeedbackUpdate,
@@ -104,14 +108,11 @@ class FeedbackService:
             current_usage = await subscription_service.get_current_usage(
                 db, project.organization_id, resource_type
             )
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail={
-                    'error': 'Response limit exceeded',
-                    'current_usage': current_usage,
-                    'limit': limits.get(resource_type, 0),
-                    'message': 'Upgrade to Pro plan for unlimited responses',
-                },
+            raise SubscriptionLimitExceededError(
+                resource_type='responses',
+                current_usage=current_usage,
+                limit=limits.get(resource_type, 0),
+                message='Upgrade to Pro plan for unlimited responses',
             )
 
         # Base feedback data
