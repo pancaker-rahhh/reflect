@@ -192,6 +192,9 @@ async def submit_public_feedback(
     }
 
     if widget_type == WidgetType.REVIEW:
+        logger.debug(
+            f'🔍 REVIEW feedback - payload.rating: {payload.rating}, payload.overall_rating: {payload.overall_rating}'
+        )
         feedback_data.update(
             {
                 'rating': payload.overall_rating or payload.rating,
@@ -199,6 +202,7 @@ async def submit_public_feedback(
                 'cons': payload.cons,
             }
         )
+        logger.debug(f'🔍 REVIEW feedback_data after update: {feedback_data}')
     elif widget_type == WidgetType.BUG_REPORT:
         feedback_data.update(
             {
@@ -252,18 +256,44 @@ async def submit_public_feedback(
     feedback_type = feedback_type_mapping.get(widget_type.value, FeedbackType.GENERAL)
 
     # Check for existing feedback from the same user context to prevent duplicates
-    existing_feedback = await feedback_repository.get_existing_feedback_by_context(
-        db,
-        widget_id=widget.id,
-        context=sanitized_context,
-        feedback_type=feedback_type,
-        within_hours=24,  # Check for duplicates within 24 hours
-    )
+    # Only apply deduplication for rating-based feedback types (REVIEW, CSAT, CES, NPS)
+    rating_based_types = [
+        WidgetType.REVIEW,
+        WidgetType.CSAT,
+        WidgetType.CES,
+        WidgetType.NPS,
+    ]
+    existing_feedback = None
+
+    if widget_type in rating_based_types:
+        logger.debug(
+            f'🔍 Checking for existing {widget_type.value} feedback - IP: {client_ip}, User-Agent: {user_agent}'
+        )
+        logger.debug(
+            f'🔍 Widget ID: {widget.id}, Widget Type: {widget_type}, Feedback Type: {feedback_type}'
+        )
+        logger.debug(f'🔍 Sanitized context: {sanitized_context}')
+        existing_feedback = await feedback_repository.get_existing_feedback_by_context(
+            db,
+            widget_id=widget.id,
+            context=sanitized_context,
+            feedback_type=widget_type,  # Pass widget_type instead of feedback_type
+            within_hours=24,  # Check for duplicates within 24 hours
+        )
+        logger.debug(
+            f'🔍 Existing {widget_type.value} feedback found: {existing_feedback is not None}'
+        )
+        if existing_feedback:
+            logger.debug(
+                f'🔍 Existing feedback ID: {existing_feedback.id}, Created: {existing_feedback.created_at}'
+            )
 
     try:
         if existing_feedback:
-            # Update existing feedback instead of creating new one
-            logger.info(f'Updating existing feedback with ID: {existing_feedback.id}')
+            # Update existing feedback instead of creating new one (only for rating-based types)
+            logger.debug(
+                f'Updating existing {widget_type.value} feedback with ID: {existing_feedback.id}'
+            )
             return await feedback_service.update_feedback_from_widget(
                 db=db,
                 feedback_id=existing_feedback.id,
@@ -271,7 +301,9 @@ async def submit_public_feedback(
                 context=sanitized_context,
             )
 
-        logger.info(f'Creating new feedback for widget: {widget.id}')
+        logger.debug(
+            f'Creating new {widget_type.value} feedback for widget: {widget.id}'
+        )
         return await feedback_service.create_feedback_from_widget(
             db=db,
             widget_id=widget.id,

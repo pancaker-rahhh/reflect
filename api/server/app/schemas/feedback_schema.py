@@ -28,9 +28,6 @@ class FeedbackBase(BaseModel):
     submitter_email: Optional[EmailStr] = None
     submitter_id: Optional[str] = None
 
-    # Removed redundant fields: ip_address, user_agent, browser_info
-    # This data is already stored in the context JSONB field
-
     is_anonymous: bool = True
     is_internal: bool = False
 
@@ -50,7 +47,6 @@ class FeedbackUpdate(BaseModel):
     is_internal: Optional[bool] = None
     is_spam: Optional[bool] = None
     is_flagged: Optional[bool] = None
-    # Removed fields: assigned_to_user_id, resolution_notes
 
     # SurveyFeedback fields
     survey_type: Optional[str] = None

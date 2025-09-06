@@ -48,7 +48,7 @@ export interface AppearanceColors {
 
 export interface AppearanceConfig {
   theme: 'default' | 'midnight' | 'minimal-light' | 'minimal-dark'
-  position: 'bottom_right' | 'bottom_left' | 'top_right' | 'top_left' | 'center'
+  position: 'bottom_right' | 'bottom_left' | 'mid_right' | 'mid_left'
   colors: AppearanceColors
   showBranding: boolean
 }

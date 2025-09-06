@@ -74,12 +74,6 @@ export function ReviewForm({ onSubmit, isSubmitting, colors, content }: ReviewFo
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <div className="mb-6">
-          <p className="text-sm opacity-70" style={{ color: colors.text }}>
-            Click on the stars to rate your experience
-          </p>
-        </div>
-
         {renderStars()}
 
         {(hoveredRating || rating) > 0 && (

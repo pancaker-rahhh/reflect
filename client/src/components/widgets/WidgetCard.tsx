@@ -1,7 +1,6 @@
 import {
   MoreVertical,
   Eye,
-  Copy,
   Trash2,
   Palette,
   Puzzle,
@@ -117,10 +116,6 @@ export function WidgetCard({
                         <Code className="h-4 w-4" />
                         <span>Get Code</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleCopyKey} className="gap-2 cursor-pointer">
-                        <Copy className="h-4 w-4" />
-                        <span>{copied ? 'Copied!' : 'Copy Public Key'}</span>
-                      </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={onDelete}
                         className="gap-2 text-destructive focus:text-destructive cursor-pointer"
@@ -187,10 +182,6 @@ export function WidgetCard({
                 <DropdownMenuItem onClick={onGetCode} className="gap-2 cursor-pointer">
                   <Code className="h-4 w-4" />
                   <span>Get Code</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleCopyKey} className="gap-2 cursor-pointer">
-                  <Copy className="h-4 w-4" />
-                  <span>{copied ? 'Copied!' : 'Copy Public Key'}</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={onDelete}

@@ -26,12 +26,25 @@ class WidgetService:
         self.repository = repository
         self.project_service = project_service
 
-    def _generate_embed_code(self, public_key: str) -> str:
+    def _generate_embed_code(self, public_key: str, position: str = None) -> str:
         widget_cdn_url = self._get_cdn_url(public_key)
+
+        # Convert position from enum format to frontend format
+        position_map = {
+            'BOTTOM_RIGHT': 'bottom_right',
+            'BOTTOM_LEFT': 'bottom_left',
+            'MID_RIGHT': 'mid_right',
+            'MID_LEFT': 'mid_left',
+            'WidgetPosition.MID_RIGHT': 'mid_right',
+            'WidgetPosition.MID_LEFT': 'mid_left',
+            'WidgetPosition.BOTTOM_RIGHT': 'bottom_right',
+            'WidgetPosition.BOTTOM_LEFT': 'bottom_left',
+        }
+        position_str = position_map.get(position, 'bottom_right')
 
         embed_code = (
             f'<script>\n'
-            f'  window.reflectConfig = {{ key: "{public_key}" }};\n'
+            f'  window.reflectConfig = {{ key: "{public_key}", position: "{position_str}" }};\n'
             f'</script>\n'
             f'<script async src="{widget_cdn_url}"></script>'
         )
@@ -86,7 +99,9 @@ class WidgetService:
         public_key = temp_widget.public_key
 
         widget_data['public_key'] = public_key
-        widget_data['embed_code'] = self._generate_embed_code(public_key)
+        widget_data['embed_code'] = self._generate_embed_code(
+            public_key, widget_data.get('position')
+        )
         widget_data['status'] = WidgetStatus.ACTIVE
         widget_data['cdn_url'] = self._get_cdn_url(public_key)
 
@@ -118,6 +133,14 @@ class WidgetService:
         updated_widget = await self.repository.update(db, id=widget_id, **update_data)
 
         if configuration_changed:
+            # Regenerate embed code with updated position
+            updated_widget.embed_code = self._generate_embed_code(
+                updated_widget.public_key, str(updated_widget.position)
+            )
+            await self.repository.update(
+                db, id=widget_id, embed_code=updated_widget.embed_code
+            )
+
             await self._deploy_to_cdn(updated_widget)
             logger.info(
                 f'Widget {updated_widget.public_key} updated and redeployed to R2 + CDN'

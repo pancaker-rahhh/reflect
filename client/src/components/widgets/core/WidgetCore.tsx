@@ -43,6 +43,12 @@ export function WidgetCore({
   const buttonColor = theme.colors.buttonColor
   const buttonTextColor = theme.colors.buttonTextColor
 
+  // Clear selected score when feedback type changes
+  const activeFeedbackType = currentState.type === 'active' ? currentState.feedbackType : null
+  React.useEffect(() => {
+    setSelectedScore(undefined)
+  }, [activeFeedbackType])
+
   const handleScoreChange = async (score: number) => {
     setSelectedScore(score)
     const currentFeedbackType =
@@ -73,26 +79,27 @@ export function WidgetCore({
     </div>
   )
 
+  // Rate limiting countdown state
+  const [timeLeft, setTimeLeft] = useState(errorInfo?.retryAfter || 0)
+
+  React.useEffect(() => {
+    if (timeLeft <= 0) return
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [timeLeft])
+
   // Render rate limiting error with countdown
   const renderRateLimitError = () => {
-    const [timeLeft, setTimeLeft] = useState(errorInfo?.retryAfter || 0)
-
-    React.useEffect(() => {
-      if (timeLeft <= 0) return
-
-      const timer = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer)
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
-
-      return () => clearInterval(timer)
-    }, [timeLeft])
-
     const minutes = Math.floor(timeLeft / 60)
     const seconds = timeLeft % 60
 
@@ -221,19 +228,36 @@ export function WidgetCore({
           {content.thankYouMessage}
         </p>
       </div>
-      <button
-        onClick={() => {
-          if (onClose) {
-            onClose()
-          } else {
-            updateState({ type: 'closed' })
-          }
-        }}
-        className="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg"
-        style={{ backgroundColor: buttonColor, color: buttonTextColor }}
-      >
-        Close
-      </button>
+      <div className="flex flex-col sm:flex-row gap-2">
+        {shouldShowBackToMenu() && (
+          <button
+            onClick={() =>
+              updateState({ type: 'menu', availableTypes: getAvailableFeedbackTypes() })
+            }
+            className="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg border-2"
+            style={{
+              backgroundColor: 'transparent',
+              color: buttonColor,
+              borderColor: buttonColor,
+            }}
+          >
+            Provide More Feedback
+          </button>
+        )}
+        <button
+          onClick={() => {
+            if (onClose) {
+              onClose()
+            } else {
+              updateState({ type: 'closed' })
+            }
+          }}
+          className="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg"
+          style={{ backgroundColor: buttonColor, color: buttonTextColor }}
+        >
+          Close
+        </button>
+      </div>
     </div>
   )
 
@@ -327,6 +351,12 @@ export function WidgetCore({
     )
   }
 
+  // Check if we should show the back to menu button
+  const shouldShowBackToMenu = () => {
+    const availableTypes = getAvailableFeedbackTypes()
+    return availableTypes.length > 1
+  }
+
   // Render content based on state
   const renderContent = () => {
     switch (currentState.type) {
@@ -339,29 +369,31 @@ export function WidgetCore({
       case 'active':
         return (
           <div className="p-6 space-y-6">
-            {/* Back button */}
-            <div className="flex items-center mb-4">
-              <button
-                onClick={() =>
-                  updateState({ type: 'menu', availableTypes: getAvailableFeedbackTypes() })
-                }
-                className="flex items-center text-sm opacity-70 hover:opacity-100 transition-opacity duration-200"
-                style={{ color: textColor }}
-              >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="mr-2"
+            {/* Back button - only show if multiple modules are enabled */}
+            {shouldShowBackToMenu() && (
+              <div className="flex items-center mb-4">
+                <button
+                  onClick={() =>
+                    updateState({ type: 'menu', availableTypes: getAvailableFeedbackTypes() })
+                  }
+                  className="flex items-center text-sm opacity-70 hover:opacity-100 transition-opacity duration-200"
+                  style={{ color: textColor }}
                 >
-                  <polyline points="15,18 9,12 15,6"></polyline>
-                </svg>
-                Back to menu
-              </button>
-            </div>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className="mr-2"
+                  >
+                    <polyline points="15,18 9,12 15,6"></polyline>
+                  </svg>
+                  Back to menu
+                </button>
+              </div>
+            )}
 
             <div className="text-center">
               <h3 className="text-xl font-bold mb-2" style={{ color: textColor }}>
@@ -373,6 +405,7 @@ export function WidgetCore({
             </div>
 
             <FeedbackRenderer
+              key={currentState.feedbackType}
               feedbackType={currentState.feedbackType}
               selectedScore={selectedScore}
               isSubmitting={isSubmitting}

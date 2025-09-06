@@ -28,9 +28,8 @@ class WidgetType(str, enum.Enum):
 class WidgetPosition(str, enum.Enum):
     BOTTOM_RIGHT = 'bottom_right'
     BOTTOM_LEFT = 'bottom_left'
-    TOP_RIGHT = 'top_right'
-    TOP_LEFT = 'top_left'
-    CENTER = 'center'
+    MID_RIGHT = 'mid_right'
+    MID_LEFT = 'mid_left'
 
 
 class WidgetStatus(str, enum.Enum):

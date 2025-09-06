@@ -19,19 +19,20 @@ export function PreviewControls({
   onStateChange,
   onDeviceChange,
   onFullscreenToggle,
-  onReset
+  onReset,
 }: PreviewControlsProps) {
   const stateButtons = [
     { state: 'closed' as PreviewState, label: 'Closed', description: 'Trigger icon only' },
     { state: 'open' as PreviewState, label: 'Open', description: 'Widget opened' },
+    { state: 'menu' as PreviewState, label: 'Menu', description: 'Module selection menu' },
     { state: 'interactive' as PreviewState, label: 'Interactive', description: 'User interacting' },
-    { state: 'thankyou' as PreviewState, label: 'Thank You', description: 'After submission' }
+    { state: 'thankyou' as PreviewState, label: 'Thank You', description: 'After submission' },
   ]
 
   const deviceButtons = [
     { device: 'desktop' as DeviceType, icon: Monitor, label: 'Desktop' },
     { device: 'tablet' as DeviceType, icon: Tablet, label: 'Tablet' },
-    { device: 'mobile' as DeviceType, icon: Smartphone, label: 'Mobile' }
+    { device: 'mobile' as DeviceType, icon: Smartphone, label: 'Mobile' },
   ]
 
   return (
@@ -88,7 +89,7 @@ export function PreviewControls({
             Reset
           </Button>
         </div>
-        
+
         <Button
           variant="outline"
           size="sm"
@@ -96,11 +97,7 @@ export function PreviewControls({
           className="h-8 px-3"
           title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
         >
-          {isFullscreen ? (
-            <Minimize2 className="w-4 h-4" />
-          ) : (
-            <Maximize2 className="w-4 h-4" />
-          )}
+          {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
         </Button>
       </div>
     </div>
