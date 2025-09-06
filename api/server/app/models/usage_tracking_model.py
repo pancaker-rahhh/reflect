@@ -5,13 +5,13 @@ from sqlalchemy import String, DateTime as DateTimeColumn, Integer, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from app.models.base_model import BaseModel
+from app.models.base_model import BaseModelWithoutSoftDelete
 
 if TYPE_CHECKING:
     from app.models.organization_model import Organization
 
 
-class UsageTracking(BaseModel):
+class UsageTracking(BaseModelWithoutSoftDelete):
     __tablename__ = 'usage_tracking'
 
     organization_id: Mapped[uuid.UUID] = mapped_column(

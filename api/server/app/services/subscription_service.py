@@ -111,22 +111,14 @@ class SubscriptionService:
     async def get_all_usage(
         self, db: AsyncSession, organization_id: UUID
     ) -> Dict[str, int]:
-        current_month = datetime.now(timezone.utc).replace(
-            day=1, hour=0, minute=0, second=0, microsecond=0
-        )
-
-        stmt = select(UsageTracking).where(
-            and_(
-                UsageTracking.organization_id == organization_id,
-                UsageTracking.period_start == current_month,
-            )
-        )
-        result = await db.execute(stmt)
-        usage_records = result.scalars().all()
-
+        limits = await self.get_plan_limits(db, organization_id)
         usage_dict = {}
-        for record in usage_records:
-            usage_dict[record.resource_type] = record.usage_count
+
+        # Initialize all resources with 0 usage
+        for resource_type in limits.keys():
+            usage_dict[resource_type] = await self.get_current_usage(
+                db, organization_id, resource_type
+            )
 
         return usage_dict
 
