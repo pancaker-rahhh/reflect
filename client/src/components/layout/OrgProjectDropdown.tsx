@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronDown, Building2, FolderOpen, Plus, Search, Clock, Info } from 'lucide-react';
-import { useAppContext } from '../../context/AppContext';
-import { projectApi } from '@/lib/api';
-import { Alert, AlertDescription } from '../ui/alert';
-import type { Project, Organization } from '@/types';
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { ChevronDown, Building2, FolderOpen, Plus, Search, Clock, Info } from 'lucide-react'
+import { useAppContext } from '../../context/AppContext'
+import { projectApi } from '@/lib/api'
+import { Alert, AlertDescription } from '../ui/alert'
+import type { Project, Organization } from '@/types'
 
 interface OrgProjectDropdownProps {
-  onOrgChange?: (org: Organization) => void;
-  onProjectChange?: (project: Project) => void;
+  onOrgChange?: (org: Organization) => void
+  onProjectChange?: (project: Project) => void
 }
 
 export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
@@ -20,119 +20,138 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
     projects,
     setCurrentProject,
     refreshProjects,
-    isLoading: loading
-  } = useAppContext();
-  
+    isLoading: loading,
+  } = useAppContext()
+
   // For now, we'll work with single organization from AppContext
-  const organizations = currentOrganization ? [currentOrganization] : [];
-  const setCurrentOrganization = () => {}; // No-op since AppContext manages single org
-  
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [recentProjects, setRecentProjects] = useState<string[]>([]);
-  const [showOrgLimitMessage, setShowOrgLimitMessage] = useState(false);
-  const [isCreatingProject, setIsCreatingProject] = useState(false);
-  const [newProjectName, setNewProjectName] = useState('');
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const organizations = currentOrganization ? [currentOrganization] : []
+  const setCurrentOrganization = () => {} // No-op since AppContext manages single org
+
+  const [isOpen, setIsOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [recentProjects, setRecentProjects] = useState<string[]>([])
+  const [showOrgLimitMessage, setShowOrgLimitMessage] = useState(false)
+  const [isCreatingProject, setIsCreatingProject] = useState(false)
+  const [newProjectName, setNewProjectName] = useState('')
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
+        setIsOpen(false)
       }
-    };
+    }
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const loadRecentProjects = () => {
-    const stored = localStorage.getItem('recentProjects');
+    const stored = localStorage.getItem('recentProjects')
     if (stored) {
-      setRecentProjects(JSON.parse(stored));
+      setRecentProjects(JSON.parse(stored))
     }
-  };
+  }
 
-  const addToRecentProjects = useCallback((projectId: string) => {
-    const updated = [projectId, ...recentProjects.filter(id => id !== projectId)].slice(0, 5);
-    setRecentProjects(updated);
-    localStorage.setItem('recentProjects', JSON.stringify(updated));
-  }, [recentProjects]);
+  const addToRecentProjects = useCallback(
+    (projectId: string) => {
+      const updated = [projectId, ...recentProjects.filter((id) => id !== projectId)].slice(0, 5)
+      setRecentProjects(updated)
+      localStorage.setItem('recentProjects', JSON.stringify(updated))
+    },
+    [recentProjects]
+  )
 
   useEffect(() => {
-    loadRecentProjects();
-  }, []);
+    loadRecentProjects()
+  }, [])
 
   useEffect(() => {
     if (currentProject) {
-      addToRecentProjects(currentProject.id);
+      addToRecentProjects(currentProject.id)
     }
-  }, [currentProject, addToRecentProjects]);
+  }, [currentProject, addToRecentProjects])
 
   const handleOrgSelect = (org: Organization) => {
-    setCurrentOrganization();
-    onOrgChange?.(org);
-  };
+    setCurrentOrganization()
+    onOrgChange?.(org)
+  }
 
   const handleProjectSelect = (project: Project) => {
-    setCurrentProject(project);
-    addToRecentProjects(project.id);
-    onProjectChange?.(project);
-    setIsOpen(false);
-  };
+    setCurrentProject(project)
+    addToRecentProjects(project.id)
+    onProjectChange?.(project)
+    setIsOpen(false)
+  }
 
   const handleCreateOrganization = () => {
-    setShowOrgLimitMessage(true);
-    setTimeout(() => setShowOrgLimitMessage(false), 4000); // Hide after 4 seconds
-  };
+    setShowOrgLimitMessage(true)
+    setTimeout(() => setShowOrgLimitMessage(false), 4000) // Hide after 4 seconds
+  }
 
   const handleCreateProject = async () => {
-    if (!newProjectName.trim() || !currentOrganization) return;
-    
+    if (!newProjectName.trim() || !currentOrganization) return
+
     try {
       const newProject = await projectApi.createProject({
         name: newProjectName.trim(),
         organization_id: currentOrganization.id,
-      });
-      
-      setCurrentProject(newProject);
-      addToRecentProjects(newProject.id);
-      setNewProjectName('');
-      setIsCreatingProject(false);
-      setIsOpen(false);
-      
+      })
+
+      setCurrentProject(newProject)
+      addToRecentProjects(newProject.id)
+      setNewProjectName('')
+      setIsCreatingProject(false)
+      setIsOpen(false)
+
       // Refresh projects list to show the new project
-      refreshProjects();
-      
+      refreshProjects()
+
       if (onProjectChange) {
-        onProjectChange(newProject);
+        onProjectChange(newProject)
       }
-    } catch (error) {
-      console.error('Failed to create project:', error);
+    } catch (error: any) {
+      console.error('Failed to create project:', error)
+
+      // Check if it's a subscription limit error
+      if (
+        error?.response?.status === 403 &&
+        error?.response?.data?.error === 'Project limit exceeded'
+      ) {
+        const errorData = error.response.data
+        alert(
+          `Project limit exceeded!\n\nYou have ${errorData.current_usage} projects (limit: ${errorData.limit})\n\n${errorData.message}`
+        )
+      } else {
+        // Generic error message
+        const message =
+          error?.response?.data?.detail || error?.message || 'Failed to create project'
+        alert(`Error: ${message}`)
+      }
     }
-  };
+  }
 
   const handleStartCreatingProject = () => {
-    setIsCreatingProject(true);
-    setSearchQuery('');
-  };
+    setIsCreatingProject(true)
+    setSearchQuery('')
+  }
 
   const handleCancelCreateProject = () => {
-    setIsCreatingProject(false);
-    setNewProjectName('');
-  };
+    setIsCreatingProject(false)
+    setNewProjectName('')
+  }
 
-  const filteredOrgs = organizations.filter(org =>
+  const filteredOrgs = organizations.filter((org) =>
     org.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  )
 
-  const filteredProjects = projects.filter(project =>
+  const filteredProjects = projects.filter((project) =>
     project.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  )
 
   const recentProjectObjects = recentProjects
-    .map(id => projects.find(p => p.id === id))
-    .filter(Boolean) as Project[];
+    .map((id) => projects.find((p) => p.id === id))
+    .filter(Boolean) as Project[]
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -165,12 +184,13 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
               <Alert>
                 <Info className="h-4 w-4" />
                 <AlertDescription>
-                  We have limited users to only one organization as we are in beta. Thank you for your understanding!
+                  We have limited users to only one organization as we are in beta. Thank you for
+                  your understanding!
                 </AlertDescription>
               </Alert>
             </div>
           )}
-          
+
           <div className="p-3 border-b border-gray-200">
             {isCreatingProject ? (
               <div className="space-y-2">
@@ -183,9 +203,9 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      handleCreateProject();
+                      handleCreateProject()
                     } else if (e.key === 'Escape') {
-                      handleCancelCreateProject();
+                      handleCancelCreateProject()
                     }
                   }}
                 />
@@ -230,7 +250,7 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
                     <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
                       Recent Projects
                     </div>
-                    {recentProjectObjects.map(project => (
+                    {recentProjectObjects.map((project) => (
                       <button
                         key={project.id}
                         onClick={() => handleProjectSelect(project)}
@@ -247,7 +267,7 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
                   <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
                     Organizations
                   </div>
-                  {filteredOrgs.map(org => (
+                  {filteredOrgs.map((org) => (
                     <div key={org.id}>
                       <button
                         onClick={() => handleOrgSelect(org)}
@@ -259,28 +279,28 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
                           <Building2 className="w-4 h-4" />
                           <span>{org.name}</span>
                         </div>
-                        {currentOrganization?.id === org.id && (
-                          <ChevronDown className="w-4 h-4" />
-                        )}
+                        {currentOrganization?.id === org.id && <ChevronDown className="w-4 h-4" />}
                       </button>
 
                       {currentOrganization?.id === org.id && (
                         <div className="ml-4 mt-1">
-                          {filteredProjects.map(project => (
+                          {filteredProjects.map((project) => (
                             <button
                               key={project.id}
                               onClick={() => handleProjectSelect(project)}
                               className={`w-full flex items-center gap-2 px-2 py-2 text-sm text-left hover:bg-gray-100 rounded ${
-                                currentProject?.id === project.id ? 'bg-indigo-50 text-indigo-600' : ''
+                                currentProject?.id === project.id
+                                  ? 'bg-indigo-50 text-indigo-600'
+                                  : ''
                               }`}
                             >
                               <FolderOpen className="w-4 h-4" />
                               <span>{project.name}</span>
                             </button>
                           ))}
-                          
+
                           {!isCreatingProject && (
-                            <button 
+                            <button
                               onClick={handleStartCreatingProject}
                               className="w-full flex items-center gap-2 px-2 py-2 mt-1 text-sm text-left text-indigo-600 hover:bg-indigo-50 rounded"
                             >
@@ -293,7 +313,7 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
                     </div>
                   ))}
 
-                  <button 
+                  <button
                     onClick={handleCreateOrganization}
                     className="w-full flex items-center gap-2 px-2 py-2 mt-2 text-sm text-left text-indigo-600 hover:bg-indigo-50 rounded"
                   >
@@ -307,5 +327,5 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}
