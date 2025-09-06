@@ -15,6 +15,9 @@ class WidgetRepository(BaseRepository[Widget]):
         self, db: AsyncSession, public_key: str
     ) -> Optional[Widget]:
         stmt = select(Widget).where(Widget.public_key == public_key)
+        # Filter out soft-deleted records
+        if hasattr(Widget, 'deleted_at'):
+            stmt = stmt.where(Widget.deleted_at.is_(None))
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
 

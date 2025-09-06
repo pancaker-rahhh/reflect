@@ -41,3 +41,26 @@ class RateLimitExceededError(HTTPException):
         super().__init__(
             status_code=429, detail=detail, headers={'Retry-After': str(retry_after)}
         )
+
+
+class SubscriptionLimitExceededError(HTTPException):
+    def __init__(
+        self, resource_type: str, current_usage: int, limit: int, message: str = None
+    ):
+        detail = {
+            'error': f'{resource_type.title()} limit exceeded',
+            'current_usage': current_usage,
+            'limit': limit,
+            'message': message or f'Upgrade to Pro plan for unlimited {resource_type}',
+        }
+        super().__init__(status_code=403, detail=detail)
+
+
+class FeatureNotAvailableError(HTTPException):
+    def __init__(self, feature: str, message: str = None):
+        detail = {
+            'error': 'Feature not available',
+            'feature': feature,
+            'message': message or f'Upgrade to Pro plan to access {feature}',
+        }
+        super().__init__(status_code=403, detail=detail)

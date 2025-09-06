@@ -20,8 +20,14 @@ from app.schemas.project_schema import (
     ProjectMemberInviteRequest,
     ProjectMemberUpdate,
 )
-from app.core.exceptions import NotFoundError, ForbiddenError, ConflictError
+from app.core.exceptions import (
+    NotFoundError,
+    ForbiddenError,
+    ConflictError,
+    SubscriptionLimitExceededError,
+)
 from app.core.logging import get_logger
+from app.services.subscription_service import subscription_service
 
 logger = get_logger(__name__)
 
@@ -75,6 +81,25 @@ class ProjectService:
         if not member or member.role not in ['owner', 'admin']:
             raise ForbiddenError('Only owners and admins can create projects')
 
+        # Check subscription limits for project creation
+        can_create = await subscription_service.check_usage_limit(
+            db, project_in.organization_id, 'projects'
+        )
+
+        if not can_create:
+            limits = await subscription_service.get_plan_limits(
+                db, project_in.organization_id
+            )
+            current_usage = await subscription_service.get_current_usage(
+                db, project_in.organization_id, 'projects'
+            )
+            raise SubscriptionLimitExceededError(
+                resource_type='projects',
+                current_usage=current_usage,
+                limit=limits.get('projects', 0),
+                message='Upgrade to Pro plan for unlimited projects',
+            )
+
         base_slug = Project().generate_slug(project_in.name)
         unique_slug = base_slug
         suffix = 1
@@ -89,6 +114,11 @@ class ProjectService:
         project_data = project_in.model_dump()
         project_data['slug'] = unique_slug
         new_project = await self.repository.create(db, **project_data)
+
+        # Increment usage count for subscription tracking
+        await subscription_service.increment_usage(
+            db, project_in.organization_id, 'projects'
+        )
 
         # Automatically add the creator as an admin to the project
         await project_member_repository.add_member(
@@ -160,7 +190,9 @@ class ProjectService:
         if not member or member.role not in ['owner', 'admin']:
             raise ForbiddenError('Only owners and admins can delete projects')
 
-        return await self.repository.soft_delete(db, project_id)
+        # Soft delete the project (usage tracking handled by database trigger)
+        deleted_project = await self.repository.soft_delete(db, project_id)
+        return deleted_project
 
     async def get_project_members(
         self,

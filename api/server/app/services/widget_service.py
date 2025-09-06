@@ -9,6 +9,8 @@ from app.services.project_service import project_service, ProjectService
 from app.services.cdn_deployment_service import cdn_deployment_service
 from app.core.settings import get_settings
 from app.core.logging import get_logger
+from app.core.exceptions import SubscriptionLimitExceededError
+from app.services.subscription_service import subscription_service
 
 logger = get_logger(__name__)
 settings = get_settings()
@@ -56,9 +58,27 @@ class WidgetService:
     async def create_widget(
         self, db: AsyncSession, user_id: UUID, widget_in: WidgetCreate
     ) -> Widget:
-        await self.project_service.get_project_and_check_access(
+        project = await self.project_service.get_project_and_check_access(
             db, user_id, widget_in.project_id
         )
+
+        can_create = await subscription_service.check_usage_limit(
+            db, project.organization_id, 'widgets'
+        )
+
+        if not can_create:
+            limits = await subscription_service.get_plan_limits(
+                db, project.organization_id
+            )
+            current_usage = await subscription_service.get_current_usage(
+                db, project.organization_id, 'widgets'
+            )
+            raise SubscriptionLimitExceededError(
+                resource_type='widgets',
+                current_usage=current_usage,
+                limit=limits.get('widgets', 0),
+                message='Upgrade to Pro plan for unlimited widgets',
+            )
 
         widget_data = widget_in.model_dump()
 
@@ -72,6 +92,9 @@ class WidgetService:
 
         widget = await self.repository.create(db, **widget_data)
 
+        await subscription_service.increment_usage(
+            db, project.organization_id, 'widgets'
+        )
         await self._deploy_to_cdn(widget)
 
         return widget
@@ -120,7 +143,9 @@ class WidgetService:
             )
             # Continue with database deletion even if CDN cleanup fails
 
-        return await self.repository.soft_delete(db, id=widget_id)
+        # Soft delete the widget (usage tracking handled by database trigger)
+        deleted_widget = await self.repository.soft_delete(db, id=widget_id)
+        return deleted_widget
 
     async def get_public_widget_by_key(
         self, db: AsyncSession, public_key: str
