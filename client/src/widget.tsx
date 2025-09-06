@@ -332,7 +332,6 @@ declare global {
   if (embeddedConfig) {
     renderLauncher(embeddedConfig)
   } else {
-    console.log('Reflect Widget: No embedded config found, fetching from API...')
     fetchConfigWithRetry()
       .then((config: WidgetConfig) => {
         renderLauncher(config)
@@ -557,16 +556,7 @@ declare global {
     const position = normalizePosition(
       window.reflectConfig?.position || backendConfig.position || configPosition
     )
-    console.log(
-      'Widget position:',
-      position,
-      'window.reflectConfig.position:',
-      window.reflectConfig?.position,
-      'backendConfig.position:',
-      backendConfig.position,
-      'configPosition:',
-      configPosition
-    )
+
     container.style.top = ''
     container.style.bottom = ''
     container.style.left = ''
@@ -614,10 +604,6 @@ declare global {
               ? { overall_rating: data.rating }
               : {}),
           }
-
-          console.log('🔍 Widget submission payload:', payload)
-          console.log('🔍 Original data:', data)
-          console.log('🔍 Type specific data:', data.typeSpecificData)
 
           const response = await fetch(`${apiBaseUrl}/public/feedback`, {
             method: 'POST',
@@ -802,16 +788,6 @@ declare global {
     // Apply position from config first, with window.reflectConfig.position as override
     const position = normalizePosition(
       window.reflectConfig?.position || config.position || configPosition
-    )
-    console.log(
-      'Launcher position:',
-      position,
-      'window.reflectConfig.position:',
-      window.reflectConfig?.position,
-      'config.position:',
-      config.position,
-      'configPosition:',
-      configPosition
     )
 
     // Store the base transform for center positioning
