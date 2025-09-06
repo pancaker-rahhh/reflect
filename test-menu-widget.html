@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Widget Menu Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .description {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        border-left: 4px solid #007bff;
+      }
+      .test-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-bottom: 30px;
+      }
+      .test-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        background: #007bff;
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s;
+      }
+      .test-btn:hover {
+        background: #0056b3;
+      }
+      .content {
+        line-height: 1.6;
+        color: #666;
+      }
+      .highlight {
+        background: #fff3cd;
+        padding: 15px;
+        border-radius: 6px;
+        border: 1px solid #ffeaa7;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Widget Menu System Test</h1>
+
+      <div class="description">
+        <h3>Test the Menu Functionality</h3>
+        <p>
+          This page tests the widget's menu system. When you have multiple
+          modules enabled (like feedback + reviews + bug reporting), the widget
+          should show a menu to let users choose which type of feedback they
+          want to provide.
+        </p>
+      </div>
+
+      <div class="test-buttons">
+        <button class="test-btn" onclick="testSingleModule()">
+          Test Single Module (Feedback only)
+        </button>
+        <button class="test-btn" onclick="testMultipleModules()">
+          Test Multiple Modules (Menu)
+        </button>
+        <button class="test-btn" onclick="testAllModules()">
+          Test All Modules (Full Menu)
+        </button>
+        <button class="test-btn" onclick="clearWidget()">Clear Widget</button>
+      </div>
+
+      <div class="highlight">
+        <strong>Instructions:</strong>
+        <ol>
+          <li>
+            Click "Test Multiple Modules" to see the menu system in action
+          </li>
+          <li>Select a feedback type from the menu</li>
+          <li>Fill out the feedback form</li>
+          <li>
+            After submission, you should see a "Provide More Feedback" button
+          </li>
+          <li>Click it to return to the menu and try another feedback type</li>
+        </ol>
+      </div>
+
+      <div class="content">
+        <h2>Sample Content</h2>
+        <p>
+          This is some sample content to make the page look realistic. The
+          widget should appear in the position you configured (bottom-right,
+          bottom-left, mid-right, or mid-left).
+        </p>
+
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+          aliquip ex ea commodo consequat.
+        </p>
+
+        <p>
+          Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+          dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+          proident, sunt in culpa qui officia deserunt mollit anim id est
+          laborum.
+        </p>
+      </div>
+    </div>
+
+    <script>
+      let currentConfig = null;
+
+      function clearWidget() {
+        // Remove existing widget
+        const existingWidget = document.getElementById(
+          "reflect-widget-container"
+        );
+        if (existingWidget) {
+          existingWidget.remove();
+        }
+
+        // Clear any existing scripts
+        const existingScripts = document.querySelectorAll(
+          'script[src*="widget.js"]'
+        );
+        existingScripts.forEach((script) => script.remove());
+
+        currentConfig = null;
+        console.log("Widget cleared");
+      }
+
+      function loadWidget(config) {
+        clearWidget();
+        currentConfig = config;
+
+        // Set the configuration
+        window.reflectConfig = config;
+
+        // Load the widget script
+        const script = document.createElement("script");
+        script.src =
+          "file:///Users/keshavrathinavel/Developer/reflect/client/dist-widget/widget.js";
+        script.async = true;
+        document.head.appendChild(script);
+
+        console.log("Widget loaded with config:", config);
+      }
+
+      function testSingleModule() {
+        // Set embedded config for single module (feedback only)
+        window.__REFLECT_WIDGET_CONFIG__ = {
+          widget_type: "FEEDBACK",
+          position: "bottom_right",
+          theme_configuration: {
+            primary: "#3b82f6",
+            background: "#ffffff",
+            text: "#1f2937",
+            show_branding: true,
+          },
+          configuration: {
+            modules: {
+              feedback: true,
+              reviews: false,
+              bugReporting: false,
+              featureRequests: false,
+            },
+            content: {
+              headerTitle: "We value your feedback",
+              mainQuestion: "How can we improve?",
+              submitButtonText: "Submit Feedback",
+              thankYouTitle: "Thank you!",
+              thankYouMessage: "Your feedback helps us improve.",
+            },
+          },
+        };
+        loadWidget({
+          key: "test_single_module",
+          position: "bottom_right",
+          theme: "default",
+        });
+      }
+
+      function testMultipleModules() {
+        // Set embedded config for multiple modules (feedback + reviews + bug reporting)
+        window.__REFLECT_WIDGET_CONFIG__ = {
+          widget_type: "FEEDBACK",
+          position: "mid_right",
+          theme_configuration: {
+            primary: "#8b5cf6",
+            background: "#ffffff",
+            text: "#1f2937",
+            show_branding: true,
+          },
+          configuration: {
+            modules: {
+              feedback: true,
+              reviews: true,
+              bugReporting: true,
+              featureRequests: false,
+            },
+            content: {
+              headerTitle: "We value your feedback",
+              mainQuestion: "How can we improve?",
+              submitButtonText: "Submit Feedback",
+              thankYouTitle: "Thank you!",
+              thankYouMessage: "Your feedback helps us improve.",
+            },
+          },
+        };
+        loadWidget({
+          key: "test_multiple_modules",
+          position: "mid_right",
+          theme: "default",
+        });
+      }
+
+      function testAllModules() {
+        // Set embedded config for all modules
+        window.__REFLECT_WIDGET_CONFIG__ = {
+          widget_type: "FEEDBACK",
+          position: "bottom_left",
+          theme_configuration: {
+            primary: "#10b981",
+            background: "#ffffff",
+            text: "#1f2937",
+            show_branding: true,
+          },
+          configuration: {
+            modules: {
+              feedback: true,
+              reviews: true,
+              bugReporting: true,
+              featureRequests: true,
+            },
+            content: {
+              headerTitle: "We value your feedback",
+              mainQuestion: "How can we improve?",
+              submitButtonText: "Submit Feedback",
+              thankYouTitle: "Thank you!",
+              thankYouMessage: "Your feedback helps us improve.",
+            },
+          },
+        };
+        loadWidget({
+          key: "test_all_modules",
+          position: "bottom_left",
+          theme: "minimal-light",
+        });
+      }
+
+      // Load a default widget on page load
+      window.addEventListener("load", () => {
+        testMultipleModules();
+      });
+    </script>
+  </body>
+</html>

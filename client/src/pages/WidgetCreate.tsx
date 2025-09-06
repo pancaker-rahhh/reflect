@@ -420,7 +420,7 @@ export function WidgetCreate() {
         <div className="w-full lg:w-3/5 flex flex-col bg-white lg:border-r max-h-[90vh]">
           <div className="p-4 lg:p-6 border-b flex-shrink-0">
             <h1 className="text-2xl lg:text-3xl font-bold tracking-tight mb-2">
-              {isEditMode ? 'Edit Widget' : 'Create New Widget'}
+              {isEditMode ? 'Edit Your Widget' : 'Create Your Widget'}
             </h1>
             <p className="text-muted-foreground text-sm lg:text-base">
               {isEditMode

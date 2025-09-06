@@ -14,7 +14,7 @@ import type {
   FeedbackType,
 } from '@/components/widgets/core/types'
 
-export type PreviewState = 'closed' | 'open' | 'interactive' | 'thankyou'
+export type PreviewState = 'closed' | 'open' | 'menu' | 'interactive' | 'thankyou'
 export type DeviceType = 'desktop' | 'tablet' | 'mobile'
 
 // Transform WidgetFormData to WidgetConfiguration for WidgetCore
@@ -86,6 +86,25 @@ function mapPreviewStateToWidgetState(
         return { type: 'active', feedbackType: config.primaryType }
       }
     }
+    case 'menu': {
+      // Show menu state - get available types
+      const enabledModules = Object.entries(config.modules || {}).filter(([, enabled]) => enabled)
+      const availableTypes = enabledModules.map(([key]) => {
+        switch (key) {
+          case 'feedback':
+            return config.primaryType || ('FEEDBACK' as FeedbackType)
+          case 'reviews':
+            return 'REVIEW' as FeedbackType
+          case 'bugReporting':
+            return 'BUG_REPORT' as FeedbackType
+          case 'featureRequests':
+            return 'FEATURE_REQUEST' as FeedbackType
+          default:
+            return 'FEEDBACK' as FeedbackType
+        }
+      })
+      return { type: 'menu', availableTypes }
+    }
     case 'interactive':
       return { type: 'active', feedbackType: config.primaryType }
     case 'thankyou':
@@ -155,7 +174,7 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
             widgetConfig.modules &&
             Object.values(widgetConfig.modules).filter(Boolean).length > 1
           ) {
-            setPreviewState('interactive')
+            setPreviewState('menu')
           } else {
             setPreviewState('thankyou')
           }
@@ -178,6 +197,8 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
         setPreviewState('closed')
         break
       case 'menu':
+        setPreviewState('menu')
+        break
       case 'active':
         setPreviewState('interactive')
         break
