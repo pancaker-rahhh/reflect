@@ -92,4 +92,8 @@ export const widgetApi = {
   getPublicWidget(publicKey: string): Promise<Widget> {
     return apiClient.get<Widget>(`/public/widgets/${publicKey}`)
   },
+
+  getMetrics(widgetId: string, timeRange: string = 'all'): Promise<any> {
+    return apiClient.get<any>(`/widgets/${widgetId}/metrics?timeRange=${timeRange}`)
+  },
 }

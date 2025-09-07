@@ -8,6 +8,7 @@ import {
   TrendingUp,
   Code,
 } from 'lucide-react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -18,7 +19,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { Widget } from '@/types'
-import { useState } from 'react'
 import { useWidgetMetrics } from '@/hooks/useWidgetMetrics'
 
 interface WidgetCardProps {
