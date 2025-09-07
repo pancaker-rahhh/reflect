@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import { Button } from '@/components/ui/button'
-
+import { useSubscription } from '@/hooks/useSubscription'
 import { Badge } from '@/components/ui/badge'
 import { ExternalLink, Plus, Settings, Trash2, TestTube, CheckCircle, Loader2 } from 'lucide-react'
 import { JiraIntegrationModal } from '@/components/integrations/JiraIntegrationModal'
