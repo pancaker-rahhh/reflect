@@ -12,6 +12,7 @@ import { OnboardingGuard } from '@/components/onboarding/OnboardingGuard'
 // Eagerly load core components
 import { AppLayout } from '@/components/layout/AppLayout'
 import { AccountSettingsLayout } from '@/components/layout/SettingsLayout'
+import { LandingPage } from '@/pages/LandingPage'
 import { Dashboard } from '@/pages/Dashboard'
 import { Login } from '@/pages/auth/Login'
 import { AuthCallback } from '@/pages/auth/AuthCallback'
@@ -70,6 +71,7 @@ function App() {
               <Suspense fallback={<PageLoading />}>
                 <Routes>
                   {/* Public routes */}
+                  <Route path="/" element={<LandingPage />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/auth/verify-otp" element={<VerifyOtp />} />
                   <Route path="/auth/callback" element={<AuthCallback />} />
@@ -91,7 +93,7 @@ function App() {
 
                   {/* Protected routes with onboarding guard */}
                   <Route
-                    path="/"
+                    path="/app"
                     element={
                       <ProtectedRoute>
                         <OnboardingGuard>
@@ -103,13 +105,13 @@ function App() {
                       </ProtectedRoute>
                     }
                   >
-                    <Route index element={<Navigate to="/dashboard" replace />} />
+                    <Route index element={<Navigate to="/app/dashboard" replace />} />
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="widgets" element={<Widgets />} />
                     <Route path="widgets/new" element={<WidgetCreate />} />
                     <Route path="widgets/:widgetId/edit" element={<WidgetCreate />} />
                     <Route path="widgets/:widgetId/get-code" element={<WidgetGetCode />} />
-                    <Route path="/widgets/create" element={<WidgetCreate />} />
+                    <Route path="widgets/create" element={<WidgetCreate />} />
                     <Route path="feedback/responses" element={<Responses />} />
                     <Route path="feedback/reviews" element={<Reviews />} />
                     <Route path="feedback/bugs" element={<BugReports />} />

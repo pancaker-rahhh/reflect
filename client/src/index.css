@@ -437,4 +437,23 @@
       linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   }
+
+  /* Landing Page Specific Styles */
+  .hover-glow:hover {
+    box-shadow: 0 0 20px rgba(147, 51, 234, 0.4);
+    transition: box-shadow 0.3s ease;
+  }
+
+  /* Grid Background Pattern for Landing Page */
+  .bg-grid-white\/\[0\.02\] {
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  }
+
+  .bg-grid-white\/\[0\.05\] {
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  }
+
+  .bg-grid-white\/\[0\.1\] {
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  }
 }
