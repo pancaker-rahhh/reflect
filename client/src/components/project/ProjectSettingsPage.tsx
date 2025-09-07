@@ -16,6 +16,8 @@ import {
   Lock,
   AlertTriangle,
   Plus,
+  Key,
+  Webhook,
 } from 'lucide-react'
 import { projectApi, type ProjectMember } from '../../lib/api/project'
 import { organizationApi, type OrganizationMember } from '../../lib/api/organization'
@@ -727,14 +729,6 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
                 >
                   <Icon className="w-5 h-5" />
                   <span className="hidden lg:inline">{tab.label}</span>
-                  {tab.wip && (
-                    <span className="hidden lg:inline-block ml-2 px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full font-medium">
-                      WIP
-                    </span>
-                  )}
-                  {tab.wip && (
-                    <div className="lg:hidden absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full"></div>
-                  )}
                 </button>
               )
             })}

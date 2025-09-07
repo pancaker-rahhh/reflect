@@ -19,7 +19,7 @@ export function IntegrationsPage() {
   const [isConfigureModalOpen, setIsConfigureModalOpen] = useState(false)
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null)
   const { currentProject } = useAppContext()
-  const { isFeatureEnabled } = useSubscription()
+  const { isFeatureEnabled: _isFeatureEnabled } = useSubscription()
 
   const { data: integrations = [], isLoading } = useQuery({
     queryKey: ['integrations', currentProject?.id],
