@@ -6,7 +6,6 @@ import {
   Puzzle,
   Calendar,
   TrendingUp,
-  Users,
   Code,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -19,7 +18,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { Widget } from '@/types'
-import { useState } from 'react'
 import { useWidgetMetrics } from '@/hooks/useWidgetMetrics'
 
 interface WidgetCardProps {
@@ -37,16 +35,7 @@ export function WidgetCard({
   onEdit,
   onGetCode,
 }: WidgetCardProps) {
-  const [copied, setCopied] = useState(false)
   const { data: metrics, isLoading: metricsLoading } = useWidgetMetrics(widget.id)
-
-  const handleCopyKey = async () => {
-    if (widget.public_key) {
-      await navigator.clipboard.writeText(widget.public_key)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }
 
   const moduleCount = Object.values(widget.configuration?.modules || {}).filter(Boolean).length
 

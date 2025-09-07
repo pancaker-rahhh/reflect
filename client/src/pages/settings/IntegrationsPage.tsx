@@ -9,7 +9,6 @@ import { JiraIntegrationModal } from '@/components/integrations/JiraIntegrationM
 import { JiraConfigureModal } from '@/components/integrations/JiraConfigureModal'
 import { useDeleteJiraIntegration } from '@/hooks/useJiraIntegration'
 import { useAppContext } from '@/context/AppContext'
-import { useSubscription } from '@/hooks/useSubscription'
 import { FeatureGateWithDisabledState } from '@/components/common/FeatureGateWithDisabledState'
 import { ProFeatureBadge } from '@/components/common/ProFeatureBadge'
 import type { Integration } from '@/types'
@@ -19,7 +18,6 @@ export function IntegrationsPage() {
   const [isConfigureModalOpen, setIsConfigureModalOpen] = useState(false)
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null)
   const { currentProject } = useAppContext()
-  const { isFeatureEnabled } = useSubscription()
 
   const { data: integrations = [], isLoading } = useQuery({
     queryKey: ['integrations', currentProject?.id],

@@ -61,6 +61,10 @@ export interface BehaviorConfig {
     mobile: boolean
     tablet: boolean
   }
+  urlTargeting?: {
+    includeUrls: string[]
+    excludeUrls: string[]
+  }
 }
 
 export interface WidgetConfiguration {

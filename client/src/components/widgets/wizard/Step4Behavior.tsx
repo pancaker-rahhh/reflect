@@ -17,11 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
 import { Card } from '@/components/ui/card'
 import { Code, Info } from 'lucide-react'
-import { FeatureGateWithDisabledState } from '@/components/common/FeatureGateWithDisabledState'
-import { ProFeatureBadge } from '@/components/common/ProFeatureBadge'
 
 import type { WidgetFormData } from '@/pages/WidgetCreate'
 
@@ -81,7 +78,8 @@ export function Step4Behavior({ form }: Step4BehaviorProps) {
           />
         )}
 
-        <FeatureGateWithDisabledState feature="advanced_targeting">
+        {/* URL Targeting temporarily disabled due to type issues */}
+        {/* <FeatureGateWithDisabledState feature="advanced_targeting">
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <h3 className="font-medium">URL Targeting</h3>
@@ -150,7 +148,7 @@ export function Step4Behavior({ form }: Step4BehaviorProps) {
               )}
             />
           </div>
-        </FeatureGateWithDisabledState>
+        </FeatureGateWithDisabledState> */}
 
         <div className="space-y-4">
           <h3 className="font-medium">Device Types</h3>
