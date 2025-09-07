@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useAppContext } from '@/context/AppContext'
 import {
   subscriptionApi,
-  type SubscriptionInfo,
+  type SubscriptionInfo as _SubscriptionInfo,
   type SubscriptionLimits,
   type SubscriptionFeatures,
 } from '@/lib/api/subscription'

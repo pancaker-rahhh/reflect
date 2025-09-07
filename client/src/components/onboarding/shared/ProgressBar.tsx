@@ -1,6 +1,6 @@
 import React from 'react'
 import { useOnboarding } from '../../../context/OnboardingContext'
-import { Check, Sparkles } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import { ProgressWizard } from '@/components/ui/progress'
 import type { OnboardingStep } from '../../../context/OnboardingContext'
 
@@ -32,7 +32,7 @@ export const ProgressBar: React.FC = () => {
   ).length
   const progressPercentage = (completedStepsCount / totalSteps) * 100
 
-  const progressSteps = steps.map((step, index) => ({
+  const progressSteps = steps.map((step, _index) => ({
     key: step.key,
     label: step.label,
     completed: completedSteps.has(step.key as OnboardingStep),

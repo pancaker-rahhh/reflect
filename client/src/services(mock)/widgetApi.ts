@@ -21,7 +21,6 @@ function transformDataToPayload(data: WidgetFormData) {
         type: 'trigger',
         details: { type: data.behavior.triggerType, delay: data.behavior.triggerDelay },
       },
-      { type: 'url', details: data.behavior.urlTargeting },
       { type: 'device', details: data.behavior.deviceTypes },
     ],
   }

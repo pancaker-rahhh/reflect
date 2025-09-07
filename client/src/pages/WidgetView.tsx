@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { feedbackApi } from '@/lib/api/feedback'
 import { WidgetCore } from '@/components/widgets/core/WidgetCore'
-import type { 
-  WidgetConfiguration, 
-  WidgetState, 
-  FeedbackData, 
-  FeedbackType 
+import type {
+  WidgetConfiguration,
+  WidgetState,
+  FeedbackData,
+  FeedbackType,
 } from '@/components/widgets/core/types'
 
 // API function to get widget data
@@ -21,7 +21,7 @@ function transformWidgetConfig(backendConfig: Record<string, any>): WidgetConfig
   const theme = backendConfig.theme_configuration || {}
   const content = backendConfig.configuration?.content || {}
   const modules = backendConfig.configuration?.modules || {}
-  
+
   return {
     modules: {
       feedback: modules.feedback ?? true,
@@ -52,7 +52,6 @@ function transformWidgetConfig(backendConfig: Record<string, any>): WidgetConfig
     },
     behavior: {
       triggerType: 'immediate',
-      urlTargeting: { includeUrls: [], excludeUrls: [] },
       deviceTypes: { desktop: true, mobile: true, tablet: true },
     },
     publicKey: backendConfig.public_key,
@@ -117,14 +116,6 @@ export function WidgetView() {
     window.parent?.postMessage({ type: 'WIDGET_CLOSE' }, '*')
   }
 
-
-
-
-
-
-
-
-
   if (!widgetConfig) {
     return null // Loading and error states are handled by WidgetCore
   }
@@ -140,4 +131,3 @@ export function WidgetView() {
     />
   )
 }
-
