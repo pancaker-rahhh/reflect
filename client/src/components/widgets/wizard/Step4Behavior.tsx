@@ -89,64 +89,6 @@ export function Step4Behavior({ form }: Step4BehaviorProps) {
               Target specific pages or exclude certain URLs from showing your widget. Perfect for
               showing feedback forms only on relevant pages.
             </p>
-
-            <FormField
-              control={form.control}
-              name="behavior.urlTargeting.includeUrls"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Show on specific URLs</FormLabel>
-                  <FormDescription>
-                    Enter URL patterns separated by commas (e.g., /dashboard/*, /products/*)
-                  </FormDescription>
-                  <FormControl>
-                    <Textarea
-                      placeholder="/dashboard/*, /products/*"
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value
-                            .split(',')
-                            .map((s) => s.trim())
-                            .filter(Boolean)
-                        )
-                      }
-                      value={field.value?.join(', ') || ''}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="behavior.urlTargeting.excludeUrls"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Exclude on specific URLs</FormLabel>
-                  <FormDescription>
-                    Enter URL patterns to exclude separated by commas
-                  </FormDescription>
-                  <FormControl>
-                    <Textarea
-                      placeholder="/admin/*, /checkout/*"
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value
-                            .split(',')
-                            .map((s) => s.trim())
-                            .filter(Boolean)
-                        )
-                      }
-                      value={field.value?.join(', ') || ''}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </div>
         </FeatureGateWithDisabledState> */}
 

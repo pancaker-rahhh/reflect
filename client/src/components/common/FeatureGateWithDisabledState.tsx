@@ -14,6 +14,7 @@ interface FeatureGateWithDisabledStateProps {
 export function FeatureGateWithDisabledState({
   feature,
   children,
+  fallback: _fallback,
   showUpgradePrompt = true,
   className,
 }: FeatureGateWithDisabledStateProps) {

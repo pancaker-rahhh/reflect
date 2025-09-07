@@ -8,6 +8,7 @@ import {
   TrendingUp,
   Code,
 } from 'lucide-react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -35,6 +36,7 @@ export function WidgetCard({
   onEdit,
   onGetCode,
 }: WidgetCardProps) {
+  const [_copied, _setCopied] = useState(false)
   const { data: metrics, isLoading: metricsLoading } = useWidgetMetrics(widget.id)
 
   const moduleCount = Object.values(widget.configuration?.modules || {}).filter(Boolean).length

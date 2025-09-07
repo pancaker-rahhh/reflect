@@ -13,8 +13,13 @@ import {
   Loader2,
   Settings,
   CheckSquare,
+  LayoutGrid,
+  List,
+  Calendar,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Progress } from '@/components/ui/progress'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { RoadmapCard } from '@/components/roadmap/RoadmapCard'
 import { AddFeatureModal } from '@/components/roadmap/AddFeatureModal'
 import { BulkJiraModal } from '@/components/roadmap/BulkJiraModal'
@@ -48,6 +53,7 @@ export function RoadmapPage() {
     name: string
     status: string
   } | null>(null)
+  const [activeView, setActiveView] = useState<'board' | 'list' | 'timeline'>('board')
   const [draggedItem, setDraggedItem] = useState<DragItem | null>(null)
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -108,8 +114,6 @@ export function RoadmapPage() {
     },
     enabled: !!project,
   })
-
-
 
   const {
     data: integrations = [],
@@ -262,8 +266,6 @@ export function RoadmapPage() {
     })
   }
 
-
-
   const handleOpenAddFeatureModal = (column: RoadmapColumn) => {
     setSelectedColumn({
       id: column.id,
@@ -341,8 +343,6 @@ export function RoadmapPage() {
     const features = column.action_items || []
     return [...features].sort((a, b) => a.order - b.order)
   }
-
-
 
   const isLoading = isLoadingOrgs || isLoadingProjects || isLoadingRoadmap || isLoadingUser
 
@@ -459,6 +459,28 @@ export function RoadmapPage() {
             <p className="text-muted-foreground mt-2 text-lg">
               Plan and track your product development progress
             </p>
+            {roadmap.columns && roadmap.columns.length > 0 && (
+              <div className="mt-4 max-w-md">
+                <Progress
+                  value={(() => {
+                    const totalFeatures = roadmap.columns.reduce(
+                      (sum, col) => sum + (col.action_items?.length || 0),
+                      0
+                    )
+                    if (totalFeatures === 0) return 0
+                    const completedFeatures = roadmap.columns.reduce((sum, col) => {
+                      if (col.status === 'under-review') {
+                        return sum + (col.action_items?.length || 0)
+                      }
+                      return sum
+                    }, 0)
+                    return Math.round((completedFeatures / totalFeatures) * 100)
+                  })()}
+                  showPercentage={true}
+                  label="Roadmap Progress"
+                />
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2">
             {isSelectionMode && (
@@ -526,6 +548,39 @@ export function RoadmapPage() {
         </div>
       </div>
 
+      {/* View Tabs */}
+      <div className="flex items-center justify-center mb-6">
+        <Tabs
+          value={activeView}
+          onValueChange={(value) => setActiveView(value as any)}
+          className="w-full max-w-md"
+        >
+          <TabsList className="grid w-full grid-cols-3 bg-muted/30 p-1 rounded-lg border border-border/50">
+            <TabsTrigger
+              value="board"
+              className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
+            >
+              <LayoutGrid className="h-4 w-4" />
+              Board
+            </TabsTrigger>
+            <TabsTrigger
+              value="list"
+              className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
+            >
+              <List className="h-4 w-4" />
+              List
+            </TabsTrigger>
+            <TabsTrigger
+              value="timeline"
+              className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
+            >
+              <Calendar className="h-4 w-4" />
+              Timeline
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
       {/* Add Feature Modal */}
       <AddFeatureModal
         isOpen={addFeatureModalOpen}
@@ -558,172 +613,223 @@ export function RoadmapPage() {
         />
       )}
 
-      <div className="relative">
-        {/* Enhanced navigation buttons with better positioning and animations */}
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute -left-12 top-1/2 -translate-y-1/2 z-20 shadow-lg bg-background/95 backdrop-blur-sm border-2 hover:bg-background hover:scale-110 transition-all duration-300 btn-interactive group"
-          onClick={() => scrollToColumn('left')}
-        >
-          <ChevronLeft className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
-        </Button>
-
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute -right-12 top-1/2 -translate-y-1/2 z-20 shadow-lg bg-background/95 backdrop-blur-sm border-2 hover:bg-background hover:scale-110 transition-all duration-300 btn-interactive group"
-          onClick={() => scrollToColumn('right')}
-        >
-          <ChevronRight className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
-        </Button>
-
-        {/* Kanban Board with enhanced container and smooth scrolling */}
+      <TabsContent value="board" className="mt-0">
         <div className="relative">
-          <div
-            ref={scrollContainerRef}
-            className="overflow-x-auto pb-6 px-32 -mx-32 scrollbar-hide smooth-scroll-x"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          {/* Enhanced navigation buttons with better positioning and animations */}
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute -left-12 top-1/2 -translate-y-1/2 z-20 shadow-lg bg-background/95 backdrop-blur-sm border-2 hover:bg-background hover:scale-110 transition-all duration-300 btn-interactive group"
+            onClick={() => scrollToColumn('left')}
           >
-            <div className="flex gap-6 min-w-max px-32">
-              {roadmap.columns.map((column: any, columnIndex: any) => {
-                const columnFeatures = getFeaturesByColumn(column.id)
+            <ChevronLeft className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+          </Button>
 
-                return (
-                  <div
-                    key={column.id}
-                    className={cn(
-                      'flex-shrink-0 w-80 bg-gradient-to-b from-background via-card/50 to-muted/20 rounded-xl border border-border/50 shadow-sm transition-all duration-500 ease-out hover:shadow-md hover:border-border/70 scroll-snap-start',
-                      dragOverColumn === column.id &&
-                        'ring-2 ring-primary/60 ring-offset-2 shadow-lg scale-[1.02] bg-gradient-to-b from-primary/5 via-primary/10 to-primary/5',
-                      'animate-in slide-in-from-left-2 duration-700 hover-lift',
-                      columnIndex > 0 && 'delay-[calc(var(--index)*150ms)]'
-                    )}
-                    style={
-                      {
-                        '--index': columnIndex,
-                        animationDelay: `${columnIndex * 150}ms`,
-                      } as React.CSSProperties
-                    }
-                    onDragOver={handleDragOver}
-                    onDragEnter={(e) => handleDragEnter(e, column.id)}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => handleDrop(e, column.id)}
-                  >
-                    {/* Enhanced Column Header with better animations */}
-                    <div className="flex items-center justify-between mb-6 p-4 pb-3 border-b border-border/30">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-3 h-3 rounded-full shadow-sm animate-pulse"
-                            style={{ backgroundColor: column.color }}
-                          />
-                          <h3 className="font-semibold text-base text-foreground text-transition">
-                            {column.name}
-                          </h3>
-                        </div>
-                        <Badge
-                          variant="secondary"
-                          className="text-xs font-medium px-2 py-1 bg-primary/10 text-primary border-primary/20 animate-in zoom-in-50 duration-300 hover:scale-105 transition-transform duration-200"
-                          style={{ animationDelay: `${columnIndex * 150 + 200}ms` }}
-                        >
-                          {columnFeatures.length}
-                        </Badge>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 hover:scale-110 btn-interactive"
-                        onClick={() => handleOpenAddFeatureModal(column)}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute -right-12 top-1/2 -translate-y-1/2 z-20 shadow-lg bg-background/95 backdrop-blur-sm border-2 hover:bg-background hover:scale-110 transition-all duration-300 btn-interactive group"
+            onClick={() => scrollToColumn('right')}
+          >
+            <ChevronRight className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+          </Button>
 
-                    {/* Feature Cards */}
-                    <div className="space-y-4 px-4 pb-4">
-                      {/* Loading indicator when moving features */}
-                      {isMovingFeature && (
-                        <div className="flex items-center justify-center py-4 text-muted-foreground animate-in fade-in-50 duration-200">
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                          <span className="text-xs">Moving feature...</span>
-                        </div>
+          {/* Kanban Board with enhanced container and smooth scrolling */}
+          <div className="relative">
+            <div
+              ref={scrollContainerRef}
+              className="overflow-x-auto pb-6 px-32 -mx-32 scrollbar-hide smooth-scroll-x"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <div className="flex gap-6 min-w-max px-32">
+                {roadmap.columns.map((column: any, columnIndex: any) => {
+                  const columnFeatures = getFeaturesByColumn(column.id)
+
+                  return (
+                    <div
+                      key={column.id}
+                      className={cn(
+                        'flex-shrink-0 w-80 bg-gradient-to-b from-background via-card/50 to-muted/20 rounded-xl border border-border/50 shadow-sm transition-all duration-500 ease-out hover:shadow-md hover:border-border/70 scroll-snap-start',
+                        dragOverColumn === column.id &&
+                          'ring-2 ring-primary/60 ring-offset-2 shadow-lg scale-[1.02] bg-gradient-to-b from-primary/5 via-primary/10 to-primary/5',
+                        'animate-in slide-in-from-left-2 duration-700 hover-lift',
+                        columnIndex > 0 && 'delay-[calc(var(--index)*150ms)]'
                       )}
-
-                      {/* Feature Cards with enhanced staggered loading */}
-                      {columnFeatures.map((feature, featureIndex) => (
-                        <div
-                          key={feature.id}
-                          className="animate-in slide-in-from-top-2 duration-500 ease-out"
-                          style={{
-                            animationDelay: `${columnIndex * 150 + featureIndex * 100 + 300}ms`,
-                          }}
-                        >
-                          <RoadmapCard
-                            feature={feature}
-                            columnId={column.id}
-                            roadmapId={roadmap.id}
-                            columns={roadmap.columns}
-                            onDragStart={handleDragStart}
-                            onDragEnd={handleDragEnd}
-                            isDragged={draggedItem?.featureId === feature.id}
-                            isSelectionMode={isSelectionMode}
-                            isSelected={selectedItems.some((item) => item.id === feature.id)}
-                            onToggleSelection={handleToggleSelection}
-                            jiraIntegrations={jiraIntegrations}
-                            onConvertToJira={handleConvertToJira}
-                          />
-                        </div>
-                      ))}
-
-                      {/* Enhanced Empty State with better animations */}
-                      {columnFeatures.length === 0 && (
-                        <div
-                          className="text-center py-12 text-muted-foreground border-2 border-dashed border-border/50 rounded-lg bg-gradient-to-br from-muted/20 via-muted/10 to-muted/30 animate-in fade-in-50 duration-700"
-                          style={{ animationDelay: `${columnIndex * 150 + 500}ms` }}
-                        >
-                          {/* Floating icon with subtle animation */}
-                          <div className="p-4 bg-muted/40 rounded-full w-fit mx-auto mb-4 animate-in zoom-in-50 duration-500 animate-float">
-                            <Plus className="h-6 w-6 text-muted-foreground" />
+                      style={
+                        {
+                          '--index': columnIndex,
+                          animationDelay: `${columnIndex * 150}ms`,
+                        } as React.CSSProperties
+                      }
+                      onDragOver={handleDragOver}
+                      onDragEnter={(e) => handleDragEnter(e, column.id)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => handleDrop(e, column.id)}
+                    >
+                      {/* Enhanced Column Header with better animations */}
+                      <div className="flex items-center justify-between mb-6 p-4 pb-3 border-b border-border/30">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-3 h-3 rounded-full shadow-sm animate-pulse"
+                              style={{ backgroundColor: column.color }}
+                            />
+                            <h3 className="font-semibold text-base text-foreground text-transition">
+                              {column.name}
+                            </h3>
                           </div>
-
-                          {/* Staggered text animations */}
-                          <div className="space-y-2 mb-4">
-                            <p
-                              className="text-sm font-medium animate-in slide-in-from-top-2 duration-300"
-                              style={{ animationDelay: `${columnIndex * 150 + 700}ms` }}
-                            >
-                              No features yet
-                            </p>
-                            <p
-                              className="text-xs text-muted-foreground animate-in slide-in-from-top-2 duration-300"
-                              style={{ animationDelay: `${columnIndex * 150 + 800}ms` }}
-                            >
-                              Get started by adding your first feature
-                            </p>
-                          </div>
-
-                          {/* Enhanced button with hover effects */}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleOpenAddFeatureModal(column)}
-                            className="text-xs hover:bg-primary/5 hover:border-primary/30 transition-all duration-300 hover:scale-105 hover:shadow-md animate-in slide-in-from-top-2 duration-300 btn-interactive"
-                            style={{ animationDelay: `${columnIndex * 150 + 900}ms` }}
+                          <Badge
+                            variant="secondary"
+                            className="text-xs font-medium px-2 py-1 bg-primary/10 text-primary border-primary/20 animate-in zoom-in-50 duration-300 hover:scale-105 transition-transform duration-200"
+                            style={{ animationDelay: `${columnIndex * 150 + 200}ms` }}
                           >
-                            <Plus className="h-3 w-3 mr-1" />
-                            Add first feature
-                          </Button>
+                            {columnFeatures.length}
+                          </Badge>
                         </div>
-                      )}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 hover:scale-110 btn-interactive"
+                          onClick={() => handleOpenAddFeatureModal(column)}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      {/* Feature Cards */}
+                      <div className="space-y-4 px-4 pb-4">
+                        {/* Loading indicator when moving features */}
+                        {isMovingFeature && (
+                          <div className="flex items-center justify-center py-4 text-muted-foreground animate-in fade-in-50 duration-200">
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            <span className="text-xs">Moving feature...</span>
+                          </div>
+                        )}
+
+                        {/* Feature Cards with enhanced staggered loading */}
+                        {columnFeatures.map((feature, featureIndex) => (
+                          <div
+                            key={feature.id}
+                            className="animate-in slide-in-from-top-2 duration-500 ease-out"
+                            style={{
+                              animationDelay: `${columnIndex * 150 + featureIndex * 100 + 300}ms`,
+                            }}
+                          >
+                            <RoadmapCard
+                              feature={feature}
+                              columnId={column.id}
+                              roadmapId={roadmap.id}
+                              columns={roadmap.columns}
+                              onDragStart={handleDragStart}
+                              onDragEnd={handleDragEnd}
+                              isDragged={draggedItem?.featureId === feature.id}
+                              isSelectionMode={isSelectionMode}
+                              isSelected={selectedItems.some((item) => item.id === feature.id)}
+                              onToggleSelection={handleToggleSelection}
+                              jiraIntegrations={jiraIntegrations}
+                              onConvertToJira={handleConvertToJira}
+                            />
+                          </div>
+                        ))}
+
+                        {/* Enhanced Empty State with better animations */}
+                        {columnFeatures.length === 0 && (
+                          <div
+                            className="text-center py-12 text-muted-foreground border-2 border-dashed border-border/50 rounded-lg bg-gradient-to-br from-muted/20 via-muted/10 to-muted/30 animate-in fade-in-50 duration-700"
+                            style={{ animationDelay: `${columnIndex * 150 + 500}ms` }}
+                          >
+                            {/* Floating icon with subtle animation */}
+                            <div className="p-4 bg-muted/40 rounded-full w-fit mx-auto mb-4 animate-in zoom-in-50 duration-500 animate-float">
+                              <Plus className="h-6 w-6 text-muted-foreground" />
+                            </div>
+
+                            {/* Staggered text animations */}
+                            <div className="space-y-2 mb-4">
+                              <p
+                                className="text-sm font-medium animate-in slide-in-from-top-2 duration-300"
+                                style={{ animationDelay: `${columnIndex * 150 + 700}ms` }}
+                              >
+                                No features yet
+                              </p>
+                              <p
+                                className="text-xs text-muted-foreground animate-in slide-in-from-top-2 duration-300"
+                                style={{ animationDelay: `${columnIndex * 150 + 800}ms` }}
+                              >
+                                Get started by adding your first feature
+                              </p>
+                            </div>
+
+                            {/* Enhanced button with hover effects */}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleOpenAddFeatureModal(column)}
+                              className="text-xs hover:bg-primary/5 hover:border-primary/30 transition-all duration-300 hover:scale-105 hover:shadow-md animate-in slide-in-from-top-2 duration-300 btn-interactive"
+                              style={{ animationDelay: `${columnIndex * 150 + 900}ms` }}
+                            >
+                              <Plus className="h-3 w-3 mr-1" />
+                              Add first feature
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </TabsContent>
+
+      <TabsContent value="list" className="mt-0">
+        <div className="space-y-4">
+          {roadmap.columns?.map((column) => (
+            <div key={column.id} className="bg-card rounded-lg border p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">{column.name}</h3>
+                <Badge variant="outline">{column.action_items?.length || 0} features</Badge>
+              </div>
+              <div className="space-y-2">
+                {column.action_items?.map((feature) => (
+                  <div
+                    key={feature.id}
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded-md"
+                  >
+                    <div>
+                      <h4 className="font-medium">{feature.title}</h4>
+                      {feature.description && (
+                        <p className="text-sm text-muted-foreground mt-1">{feature.description}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {feature.tags?.map((tag) => (
+                        <Badge key={tag.id} variant="secondary" className="text-xs">
+                          {tag.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )) || (
+                  <p className="text-muted-foreground text-center py-4">
+                    No features in this column
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </TabsContent>
+
+      <TabsContent value="timeline" className="mt-0">
+        <div className="space-y-6">
+          <div className="text-center py-12">
+            <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Timeline View</h3>
+            <p className="text-muted-foreground">Timeline view coming soon</p>
+          </div>
+        </div>
+      </TabsContent>
     </div>
   )
 }

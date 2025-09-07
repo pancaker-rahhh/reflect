@@ -26,22 +26,30 @@ export function UsageBar({ resourceType, label, className }: UsageBarProps) {
   }
 
   return (
-    <div className={`space-y-2 ${className}`}>
-      <div className="flex justify-between text-sm">
-        <span className="font-medium">{displayLabel}</span>
-        <span className="text-muted-foreground">
-          {usageInfo.current} / {usageInfo.limit}
-        </span>
+    <div className={`space-y-3 ${className}`}>
+      <div className="flex justify-between items-center">
+        <span className="font-medium text-sm">{displayLabel}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">
+            {usageInfo.current} / {usageInfo.limit}
+          </span>
+          <span className="text-xs font-medium text-primary">
+            {Math.round(usageInfo.percentage)}%
+          </span>
+        </div>
       </div>
-      <Progress
-        value={usageInfo.percentage}
-        className="h-2"
-        aria-label={`${displayLabel} usage: ${usageInfo.percentage}%`}
-      />
+      <Progress value={usageInfo.percentage} showPercentage={false} className="h-2" />
       {usageInfo.percentage > 80 && (
-        <p className="text-xs text-orange-600">
-          {usageInfo.percentage > 95 ? 'Limit almost reached' : 'Approaching limit'}
-        </p>
+        <div className="flex items-center gap-1">
+          <div
+            className={`w-2 h-2 rounded-full ${
+              usageInfo.percentage > 95 ? 'bg-red-500' : 'bg-orange-500'
+            }`}
+          />
+          <p className="text-xs text-muted-foreground">
+            {usageInfo.percentage > 95 ? 'Limit almost reached' : 'Approaching limit'}
+          </p>
+        </div>
       )}
     </div>
   )
