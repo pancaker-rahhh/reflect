@@ -42,7 +42,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     staleTime: 1000 * 60 * 5,
   })
 
-  // Backward compatibility - provide organization as alias
   const organization = currentOrganization
 
   const refreshProjects = useCallback(() => {
@@ -64,15 +63,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const hasProjects = projects.length > 0
 
   useEffect(() => {
-    if (hasProjects && currentProject === null) {
+    if (hasProjects && !currentProject) {
+      const onboardingProjectId = localStorage.getItem('onboarding_project_id')
+      if (onboardingProjectId) {
+        const onboardingProject = projects.find((p) => p.id === onboardingProjectId)
+        if (onboardingProject) {
+          setCurrentProject(onboardingProject)
+          localStorage.removeItem('onboarding_project_id')
+          return
+        }
+      }
       setCurrentProject(projects[0])
     }
   }, [hasProjects, projects, currentProject])
 
+  useEffect(() => {
+    setCurrentProject(null)
+  }, [currentOrganization?.id])
+
   const value = useMemo(
     () => ({
       currentOrganization: currentOrganization || null,
-      organization: organization || null, // Backward compatibility
+      organization: organization || null,
       projects,
       currentProject,
       setCurrentProject: handleSetCurrentProject,

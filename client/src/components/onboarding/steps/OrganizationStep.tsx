@@ -1,124 +1,144 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useOnboarding } from '../../../context/OnboardingContext';
-import { useAuth } from '../../../contexts/AuthContext';
-import { Building, Sparkles } from 'lucide-react';
-import { organizationApi, onboardingApi } from '../../../lib/api';
-import { onboardingDataService } from '../../../services/onboardingDataService';
-import { isFeatureEnabled } from '../../../lib/featureFlags';
+import React, { useState, useEffect, useCallback } from 'react'
+import { useOnboarding } from '../../../context/OnboardingContext'
+import { useAuth } from '../../../contexts/AuthContext'
+import { Building, Sparkles } from 'lucide-react'
+import { organizationApi, onboardingApi } from '../../../lib/api'
+import { onboardingDataService } from '../../../services/onboardingDataService'
+import { isFeatureEnabled } from '../../../lib/featureFlags'
 
 export const OrganizationStep: React.FC = () => {
-  const { nextStep, markStepCompleted, setOrganizationId, userType, organizationId } = useOnboarding();
-  const { user } = useAuth();
-  const skipUserTypeSelection = isFeatureEnabled('SKIP_USER_TYPE_SELECTION');
-  
-  const [isAutoCreating, setIsAutoCreating] = useState(false);
+  const { nextStep, markStepCompleted, setOrganizationId, userType, organizationId } =
+    useOnboarding()
+  const { user } = useAuth()
+  const skipUserTypeSelection = isFeatureEnabled('SKIP_USER_TYPE_SELECTION')
+
+  const [isAutoCreating, setIsAutoCreating] = useState(false)
+  const [hasAttemptedAutoCreate, setHasAttemptedAutoCreate] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-  });
+  })
 
   const handleAutoCreate = useCallback(async () => {
-    setIsAutoCreating(true);
-    
+    if (hasAttemptedAutoCreate) {
+      return
+    }
+
+    setHasAttemptedAutoCreate(true)
+    setIsAutoCreating(true)
+
     try {
-      const organization = await onboardingApi.autoCreateOrganization();
-      
-      // Save organization data for review step
+      const organization = await onboardingApi.autoCreateOrganization()
+
       onboardingDataService.saveOrganizationData({
         name: organization.name,
         description: (organization as any).description || '',
-        slug: organization.slug
-      });
-      
-      setOrganizationId(organization.id);
-      markStepCompleted('organization');
-      nextStep();
+        slug: organization.slug,
+      })
+
+      setOrganizationId(organization.id)
+      markStepCompleted('organization')
+
+      await new Promise((resolve) => setTimeout(resolve, 200))
+      nextStep()
     } catch (error) {
-      console.error('Failed to auto-create organization:', error);
+      console.error('Failed to auto-create organization:', error)
+      alert(
+        `Failed to create organization: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }. Please try again.`
+      )
+      setHasAttemptedAutoCreate(false)
     } finally {
-      setIsAutoCreating(false);
+      setIsAutoCreating(false)
     }
-  }, [setOrganizationId, markStepCompleted, nextStep]);
+  }, [setOrganizationId, markStepCompleted, nextStep, hasAttemptedAutoCreate])
 
   useEffect(() => {
-    // Load existing data or set default name
-    const existingData = onboardingDataService.getOrganizationData();
-    const profileData = onboardingDataService.getProfileData();
-    
+    const existingData = onboardingDataService.getOrganizationData()
+    const profileData = onboardingDataService.getProfileData()
+
     if (existingData?.name) {
       setFormData({
         name: existingData.name,
-        description: existingData.description || ''
-      });
+        description: existingData.description || '',
+      })
     } else {
-      // Set default organization name based on user's name
-      const userName = profileData?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
-      const defaultOrgName = `${userName}&rsquo;s org`;
+      const userName =
+        profileData?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'
+      const defaultOrgName = `${userName}&rsquo;s org`
       setFormData({
         name: defaultOrgName,
-        description: ''
-      });
+        description: '',
+      })
     }
-  }, [user]);
+  }, [user])
 
-  // Separate effect for auto-creation
   useEffect(() => {
-    if (skipUserTypeSelection && !organizationId && !isAutoCreating) {
-      handleAutoCreate();
+    if (skipUserTypeSelection && !hasAttemptedAutoCreate && !organizationId) {
+      handleAutoCreate()
+    } else if (organizationId) {
+      markStepCompleted('organization')
+      setTimeout(() => nextStep(), 100)
     }
-  }, [skipUserTypeSelection, organizationId, isAutoCreating, handleAutoCreate]);
+  }, [
+    skipUserTypeSelection,
+    hasAttemptedAutoCreate,
+    organizationId,
+    handleAutoCreate,
+    markStepCompleted,
+    nextStep,
+  ])
 
   const handleManualCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsAutoCreating(true);
+    e.preventDefault()
+    setIsAutoCreating(true)
 
     try {
-      const slug = formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-      
-      let organization;
+      const slug = formData.name
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '')
+
+      let organization
       if (organizationId) {
         // Update existing organization
         organization = await organizationApi.update(organizationId, {
           name: formData.name,
           description: formData.description,
-        });
+        })
       } else {
-        // Create new organization
         organization = await organizationApi.create({
           name: formData.name,
           description: formData.description,
           slug,
-        });
-        setOrganizationId(organization.id);
+        })
+        setOrganizationId(organization.id)
       }
 
-      // Save organization data for review step
       onboardingDataService.saveOrganizationData({
         name: formData.name,
         description: formData.description,
-        slug: organization.slug || slug
-      });
+        slug: organization.slug || slug,
+      })
 
-      markStepCompleted('organization');
-      nextStep();
+      markStepCompleted('organization')
+      nextStep()
     } catch (error) {
-      console.error('Failed to create/update organization:', error);
+      console.error('Failed to create/update organization:', error)
     } finally {
-      setIsAutoCreating(false);
+      setIsAutoCreating(false)
     }
-  };
+  }
 
-  // If skipping user type selection, show auto-creating state
   if (skipUserTypeSelection) {
     return (
       <div className="py-6 text-center">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-6">
           <Building className="w-8 h-8 text-indigo-600" />
         </div>
-        
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          Setting Up Your Workspace
-        </h2>
+
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">Setting Up Your Workspace</h2>
         <p className="text-gray-600 mb-8">
           We&rsquo;re automatically creating your personal workspace
         </p>
@@ -128,7 +148,7 @@ export const OrganizationStep: React.FC = () => {
           <span className="text-indigo-600 font-medium">Creating workspace...</span>
         </div>
       </div>
-    );
+    )
   }
 
   if (userType === 'solo') {
@@ -137,10 +157,8 @@ export const OrganizationStep: React.FC = () => {
         <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-6">
           <Building className="w-8 h-8 text-indigo-600" />
         </div>
-        
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          Create Your Workspace
-        </h2>
+
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">Create Your Workspace</h2>
         <p className="text-gray-600 mb-8">
           We&rsquo;ll create a personal workspace for you automatically
         </p>
@@ -163,17 +181,13 @@ export const OrganizationStep: React.FC = () => {
           )}
         </button>
       </div>
-    );
+    )
   }
 
   return (
     <div className="py-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-2">
-        Create Your Organization
-      </h2>
-      <p className="text-gray-600 mb-6">
-        This will be the main workspace for your team
-      </p>
+      <h2 className="text-2xl font-bold text-gray-800 mb-2">Create Your Organization</h2>
+      <p className="text-gray-600 mb-6">This will be the main workspace for your team</p>
 
       <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <div className="flex items-start gap-3">
@@ -183,7 +197,8 @@ export const OrganizationStep: React.FC = () => {
           <div>
             <h4 className="font-medium text-blue-900 mb-1">Beta Limitation</h4>
             <p className="text-sm text-blue-700">
-              During our beta period, we&rsquo;ve limited users to one organization to ensure optimal performance and gather focused feedback. Thank you for your understanding!
+              During our beta period, we&rsquo;ve limited users to one organization to ensure
+              optimal performance and gather focused feedback. Thank you for your understanding!
             </p>
           </div>
         </div>
@@ -205,7 +220,11 @@ export const OrganizationStep: React.FC = () => {
           />
           {formData.name && (
             <p className="mt-1 text-xs text-gray-500">
-              URL: reflect.app/{formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}
+              URL: reflect.app/
+              {formData.name
+                .toLowerCase()
+                .replace(/\s+/g, '-')
+                .replace(/[^a-z0-9-]/g, '')}
             </p>
           )}
         </div>
@@ -229,12 +248,15 @@ export const OrganizationStep: React.FC = () => {
           disabled={isAutoCreating || !formData.name}
           className="w-full py-3 px-6 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isAutoCreating 
-            ? (organizationId ? 'Updating Organization...' : 'Creating Organization...') 
-            : (organizationId ? 'Update Organization' : 'Create Organization')
-          }
+          {isAutoCreating
+            ? organizationId
+              ? 'Updating Organization...'
+              : 'Creating Organization...'
+            : organizationId
+              ? 'Update Organization'
+              : 'Create Organization'}
         </button>
       </form>
     </div>
-  );
-};
+  )
+}

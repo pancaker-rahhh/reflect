@@ -174,9 +174,9 @@ class OnboardingService:
                 user.user_metadata['steps_completed'] = current_steps
 
             if request.has_created_organization is not None:
-                user.user_metadata['has_created_organization'] = (
-                    request.has_created_organization
-                )
+                user.user_metadata[
+                    'has_created_organization'
+                ] = request.has_created_organization
 
             if request.metadata:
                 user.user_metadata.update(request.metadata)
@@ -307,51 +307,93 @@ class OnboardingService:
         self, user_id: uuid.UUID, db: AsyncSession
     ) -> Organization:
         try:
+            logger.info(f'Starting auto-create organization for user {user_id}')
             user = await db.get(User, user_id)
             if not user:
                 raise ValueError(f'User {user_id} not found')
 
+            existing_org_result = await db.execute(
+                select(OrganizationMember).where(OrganizationMember.user_id == user_id)
+            )
+            existing_memberships = existing_org_result.scalars().all()
+
+            if existing_memberships:
+                existing_org = await db.get(
+                    Organization, existing_memberships[0].organization_id
+                )
+                logger.info(
+                    f'User {user_id} already has organization {existing_org.id}, returning existing organization'
+                )
+                return existing_org
+
             org_name = f"{user.name or user.email.split('@')[0]}'s Organization"
-            org_slug = org_name.lower().replace("'", '').replace(' ', '-')
+            base_slug = org_name.lower().replace("'", '').replace(' ', '-')
 
-            timestamp = datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')
-            org_slug = f'{org_slug}-{timestamp}'
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    timestamp = datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S%f')
+                    org_slug = f'{base_slug}-{timestamp}'
 
-            organization = Organization(
-                name=org_name,
-                slug=org_slug,
-                description='Personal organization',
-                settings={
-                    'auto_created': True,
-                    'created_for': 'solo_developer',
-                },
-                created_by=user_id,
-            )
-            db.add(organization)
-            await db.flush()
+                    if attempt > 0:
+                        org_slug = f'{org_slug}-{attempt}'
 
-            member = OrganizationMember(
-                organization_id=organization.id,
-                user_id=user_id,
-                role='owner',
-            )
-            db.add(member)
+                    logger.info(
+                        f'Creating organization with name: {org_name}, slug: {org_slug} (attempt {attempt + 1})'
+                    )
+                    organization = Organization(
+                        name=org_name,
+                        slug=org_slug,
+                        description='Personal organization',
+                        settings={
+                            'auto_created': True,
+                            'created_for': 'solo_developer',
+                        },
+                        created_by=user_id,
+                    )
+                    db.add(organization)
+                    await db.flush()
+                    logger.info(f'Organization created with ID: {organization.id}')
 
-            user.user_metadata = user.user_metadata or {}
-            user.user_metadata['has_created_organization'] = True
-            user.user_metadata['primary_organization_id'] = str(organization.id)
+                    member = OrganizationMember(
+                        organization_id=organization.id,
+                        user_id=user_id,
+                        role='owner',
+                    )
+                    db.add(member)
+                    logger.info(
+                        f'Added user {user_id} as owner to organization {organization.id}'
+                    )
 
-            await db.commit()
-            await db.refresh(organization)
+                    user.user_metadata = user.user_metadata or {}
+                    user.user_metadata['has_created_organization'] = True
+                    user.user_metadata['primary_organization_id'] = str(organization.id)
 
-            logger.info(
-                f'Auto-created organization {organization.id} for user {user_id}'
-            )
-            return organization
+                    await db.commit()
+                    await db.refresh(organization)
+
+                    logger.info(
+                        f'Auto-created organization {organization.id} for user {user_id} with membership committed'
+                    )
+                    return organization
+
+                except Exception as e:
+                    if (
+                        'duplicate key value violates unique constraint' in str(e)
+                        and attempt < max_retries - 1
+                    ):
+                        logger.warning(
+                            f'Slug conflict on attempt {attempt + 1}, retrying...'
+                        )
+                        await db.rollback()
+                        continue
+                    else:
+                        raise e
 
         except Exception as e:
             logger.error(
-                f'Failed to auto-create organization for user {user_id}: {str(e)}'
+                f'Failed to auto-create organization for user {user_id}: {str(e)}',
+                exc_info=True,
             )
             await db.rollback()
             raise

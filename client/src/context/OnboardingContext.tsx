@@ -188,7 +188,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
       await queryClient.invalidateQueries({ queryKey: ['projects'] })
 
       localStorage.removeItem(ONBOARDING_STORAGE_KEY)
-      navigate('/app/dashboard')
+      navigate('/dashboard')
     } catch (error) {
       setState((prev) => ({
         ...prev,
@@ -206,7 +206,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
       await onboardingApi.skip()
 
       localStorage.removeItem(ONBOARDING_STORAGE_KEY)
-      navigate('/app/dashboard')
+      navigate('/dashboard')
     } catch (error) {
       setState((prev) => ({
         ...prev,
