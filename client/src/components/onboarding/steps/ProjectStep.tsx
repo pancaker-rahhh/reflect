@@ -77,6 +77,10 @@ export const ProjectStep: React.FC = () => {
           }
         }
 
+        if (!project) {
+          throw new Error('Failed to create project after all retry attempts')
+        }
+
         setProjectId(project.id)
         localStorage.setItem('onboarding_project_id', project.id)
       }
