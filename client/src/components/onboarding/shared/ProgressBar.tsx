@@ -3,17 +3,24 @@ import { useOnboarding } from '../../../context/OnboardingContext'
 import { Sparkles } from 'lucide-react'
 import { ProgressWizard } from '@/components/ui/progress'
 import type { OnboardingStep } from '../../../context/OnboardingContext'
+import { isFeatureEnabled } from '../../../lib/featureFlags'
 
 export const ProgressBar: React.FC = () => {
   const { currentStep, userType, completedSteps } = useOnboarding()
+  const skipUserTypeSelection = isFeatureEnabled('SKIP_USER_TYPE_SELECTION')
 
   const getSteps = () => {
-    const baseSteps = [
-      { key: 'user-type', label: 'Account Type' },
+    const baseSteps = [{ key: 'welcome', label: 'Welcome' }]
+
+    if (!skipUserTypeSelection) {
+      baseSteps.push({ key: 'user-type', label: 'Account Type' })
+    }
+
+    baseSteps.push(
       { key: 'profile', label: 'Profile' },
       { key: 'organization', label: userType === 'solo' ? 'Workspace' : 'Organization' },
-      { key: 'project', label: 'Project' },
-    ]
+      { key: 'project', label: 'Project' }
+    )
 
     if (userType === 'team') {
       baseSteps.push({ key: 'team-setup', label: 'Team Setup' })
@@ -26,7 +33,6 @@ export const ProgressBar: React.FC = () => {
   const currentStepIndex = steps.findIndex((step) => step.key === currentStep)
   const totalSteps = steps.length
 
-  // Calculate progress based on completed steps, not current step
   const completedStepsCount = steps.filter((step) =>
     completedSteps.has(step.key as OnboardingStep)
   ).length

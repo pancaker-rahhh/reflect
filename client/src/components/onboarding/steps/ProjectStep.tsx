@@ -5,7 +5,8 @@ import { projectApi, onboardingApi } from '../../../lib/api'
 import { onboardingDataService } from '../../../services/onboardingDataService'
 
 export const ProjectStep: React.FC = () => {
-  const { nextStep, markStepCompleted, setProjectId, organizationId, projectId } = useOnboarding()
+  const { nextStep, markStepCompleted, setProjectId, organizationId, projectId, goToStep } =
+    useOnboarding()
 
   const [formData, setFormData] = useState({
     name: '',
@@ -14,7 +15,21 @@ export const ProjectStep: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false)
 
   useEffect(() => {
-    // Load existing project data if available
+    if (!organizationId) {
+      goToStep('organization')
+    }
+  }, [organizationId, goToStep])
+
+  if (!organizationId) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
+        <p className="text-gray-600">Setting up your workspace...</p>
+      </div>
+    )
+  }
+
+  useEffect(() => {
     const existingData = onboardingDataService.getProjectData()
     if (existingData?.name) {
       setFormData({
@@ -29,21 +44,41 @@ export const ProjectStep: React.FC = () => {
     setIsCreating(true)
 
     try {
+      if (!organizationId) {
+        alert('No organization ID available. Please go back and complete the organization step.')
+        return
+      }
+
       let project
       if (projectId) {
-        // Update existing project
         project = await projectApi.updateProject(projectId, {
           name: formData.name,
           description: formData.description,
         })
       } else {
-        // Create new project
-        project = await projectApi.createProject({
-          name: formData.name,
-          description: formData.description,
-          organization_id: organizationId!,
-        })
+        let retryCount = 0
+        const maxRetries = 3
+
+        while (retryCount < maxRetries) {
+          try {
+            project = await projectApi.createProject({
+              name: formData.name,
+              description: formData.description,
+              organization_id: organizationId,
+            })
+            break
+          } catch (error: any) {
+            retryCount++
+            if (error?.response?.status === 403 && retryCount < maxRetries) {
+              await new Promise((resolve) => setTimeout(resolve, 1000 * retryCount))
+              continue
+            }
+            throw error
+          }
+        }
+
         setProjectId(project.id)
+        localStorage.setItem('onboarding_project_id', project.id)
       }
 
       // Save project data for review step
@@ -75,6 +110,13 @@ export const ProjectStep: React.FC = () => {
         const errorData = error.response.data
         alert(
           `Project limit exceeded!\n\nYou have ${errorData.current_usage} projects (limit: ${errorData.limit})\n\n${errorData.message}`
+        )
+      } else if (error?.response?.status === 403) {
+        // Authorization error - likely organization access issue
+        const message =
+          error?.response?.data?.detail || error?.message || 'Not authorized for this organization'
+        alert(
+          `Authorization Error: ${message}\n\nThis might be a temporary issue. Please try again or contact support if the problem persists.`
         )
       } else {
         // Generic error message

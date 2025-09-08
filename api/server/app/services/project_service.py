@@ -35,11 +35,20 @@ logger = get_logger(__name__)
 async def _check_organization_access(
     db: AsyncSession, user_id: UUID, organization_id: UUID
 ):
+    logger.info(
+        f'Checking organization access for user {user_id} in organization {organization_id}'
+    )
     member = await organization_service.get_user_membership(
         organization_id, user_id, db
     )
     if not member:
+        logger.error(
+            f'User {user_id} not found as member of organization {organization_id}'
+        )
         raise ForbiddenError('Not authorized for this organization')
+    logger.info(
+        f'User {user_id} has {member.role} access to organization {organization_id}'
+    )
     return member
 
 
