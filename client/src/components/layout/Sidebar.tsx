@@ -28,37 +28,37 @@ interface NavItem {
 const navigation: NavItem[] = [
   {
     label: 'Dashboard',
-    href: '/dashboard',
+    href: '/app/dashboard',
     icon: LayoutDashboard,
   },
   {
     label: 'Widgets',
-    href: '/widgets',
+    href: '/app/widgets',
     icon: Puzzle,
   },
   {
     label: 'Feedback & Roadmap',
-    href: '/feedback',
+    href: '/app/feedback',
     icon: MessageSquare,
     children: [
-      { label: 'Responses', href: '/feedback/responses', icon: FileText },
-      { label: 'Reviews', href: '/feedback/reviews', icon: Star },
-      { label: 'Bug Reports', href: '/feedback/bugs', icon: Bug },
-      { label: 'Feature Requests', href: '/feedback/features', icon: Lightbulb },
-      { label: 'Roadmap', href: '/roadmap', icon: Map },
+      { label: 'Responses', href: '/app/feedback/responses', icon: FileText },
+      { label: 'Reviews', href: '/app/feedback/reviews', icon: Star },
+      { label: 'Bug Reports', href: '/app/feedback/bugs', icon: Bug },
+      { label: 'Feature Requests', href: '/app/feedback/features', icon: Lightbulb },
+      { label: 'Roadmap', href: '/app/roadmap', icon: Map },
     ],
   },
   {
     label: 'Settings',
-    href: '/settings',
+    href: '/app/settings',
     icon: Settings,
     children: [
-      { label: 'Account Settings', href: '/settings/account', icon: Users },
+      { label: 'Account Settings', href: '/app/settings/account', icon: Users },
       ...(isFeatureEnabled('SHOW_ORG_SETTINGS_IN_SIDEBAR')
-        ? [{ label: 'Organization Settings', href: '/settings/organization', icon: Users }]
+        ? [{ label: 'Organization Settings', href: '/app/settings/organization', icon: Users }]
         : []),
-      { label: 'Project Settings', href: '/settings/project', icon: Settings },
-      { label: 'Roadmap Settings', href: '/settings/roadmap', icon: Map },
+      { label: 'Project Settings', href: '/app/settings/project', icon: Settings },
+      { label: 'Roadmap Settings', href: '/app/settings/roadmap', icon: Map },
     ],
   },
 ]

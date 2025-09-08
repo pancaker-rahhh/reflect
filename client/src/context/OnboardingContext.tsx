@@ -32,7 +32,7 @@ interface OnboardingContextType extends OnboardingState {
   previousStep: () => void
   goToStep: (step: OnboardingStep) => void
   markStepCompleted: (step: OnboardingStep) => void
-  setOrganizationId: (id: string | null) => void
+  setOrganizationId: (id: string) => void
   setProjectId: (id: string) => void
   completeOnboarding: () => Promise<void>
   skipOnboarding: () => Promise<void>
@@ -67,11 +67,25 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
   const skipUserTypeSelection = isFeatureEnabled('SKIP_USER_TYPE_SELECTION')
 
   const [state, setState] = useState<OnboardingState>(() => {
+    const savedState = localStorage.getItem(ONBOARDING_STORAGE_KEY)
+    if (savedState) {
+      try {
+        const parsed = JSON.parse(savedState)
+        return {
+          ...parsed,
+          completedSteps: new Set(parsed.completedSteps || []),
+        }
+      } catch (error) {
+        console.error('Failed to parse saved onboarding state:', error)
+      }
+    }
+
+    // If skipping user type selection, auto-set to solo
     const initialUserType = skipUserTypeSelection ? 'solo' : null
-    const initialStep = 'welcome'
+    const initialStep = skipUserTypeSelection ? 'profile' : 'welcome'
     const initialCompletedSteps = skipUserTypeSelection
-      ? new Set<OnboardingStep>(['user-type'])
-      : new Set<OnboardingStep>()
+      ? new Set(['welcome', 'user-type'])
+      : new Set()
 
     return {
       currentStep: initialStep,
@@ -146,7 +160,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     }))
   }
 
-  const setOrganizationId = (id: string | null) => {
+  const setOrganizationId = (id: string) => {
     setState((prev) => ({
       ...prev,
       organizationId: id,
@@ -171,7 +185,6 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
 
       // Invalidate queries to refetch updated organization and project data
       await queryClient.invalidateQueries({ queryKey: ['organizations'] })
-      await queryClient.invalidateQueries({ queryKey: ['organization'] })
       await queryClient.invalidateQueries({ queryKey: ['projects'] })
 
       localStorage.removeItem(ONBOARDING_STORAGE_KEY)
@@ -206,49 +219,16 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
 
   const resetOnboarding = () => {
     localStorage.removeItem(ONBOARDING_STORAGE_KEY)
-    localStorage.removeItem('onboarding_project_id')
     setState({
-      currentStep: skipUserTypeSelection ? 'profile' : 'welcome',
-      userType: skipUserTypeSelection ? 'solo' : null,
-      completedSteps: skipUserTypeSelection ? new Set(['welcome', 'user-type']) : new Set(),
+      currentStep: 'welcome',
+      userType: null,
+      completedSteps: new Set(),
       organizationId: null,
       projectId: null,
       isLoading: false,
       error: null,
     })
   }
-
-  useEffect(() => {
-    localStorage.removeItem(ONBOARDING_STORAGE_KEY)
-    localStorage.removeItem('onboarding_project_id')
-  }, [])
-
-  useEffect(() => {
-    const checkExistingOrganization = async () => {
-      if (state.currentStep === 'organization' && skipUserTypeSelection) {
-        try {
-          const { organizationApi } = await import('../lib/api')
-          const organizations = await organizationApi.getMy()
-
-          if (organizations && organizations.length > 0) {
-            setOrganizationId(organizations[0].id)
-            markStepCompleted('organization')
-            nextStep()
-          }
-        } catch (error) {
-          console.error('Failed to check existing organizations:', error)
-        }
-      }
-    }
-
-    checkExistingOrganization()
-  }, [state.currentStep, skipUserTypeSelection, setOrganizationId, markStepCompleted, nextStep])
-  useEffect(() => {
-    ;(window as any).resetOnboarding = resetOnboarding
-    return () => {
-      delete (window as any).resetOnboarding
-    }
-  }, [resetOnboarding])
 
   const isStepAccessible = (step: OnboardingStep): boolean => {
     const steps = getRelevantSteps()
@@ -261,8 +241,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
 
     if (stepIndex === currentIndex + 1) {
       if (state.currentStep === 'user-type' && !state.userType) return false
-      if (state.currentStep === 'organization' && !state.completedSteps.has('organization'))
-        return false
+      if (state.currentStep === 'organization' && !state.organizationId) return false
       if (state.currentStep === 'project' && !state.projectId) return false
       return true
     }

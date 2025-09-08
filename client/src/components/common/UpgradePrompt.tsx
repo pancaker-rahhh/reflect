@@ -15,7 +15,7 @@ export function UpgradePrompt({ message, onUpgrade }: UpgradePromptProps) {
     if (onUpgrade) {
       onUpgrade()
     } else {
-      navigate('/settings/billing')
+      navigate('/app/settings/billing')
     }
   }
 
