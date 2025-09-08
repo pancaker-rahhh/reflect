@@ -39,7 +39,7 @@ export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) =>
         if (data.is_first_time && !isOnboardingRoute) {
           navigate('/onboarding')
         } else if (!data.is_first_time && isOnboardingRoute) {
-          navigate('/dashboard')
+          navigate('/app/dashboard')
         }
 
         setHasCheckedOnboarding(true)

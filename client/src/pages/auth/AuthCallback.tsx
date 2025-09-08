@@ -1,23 +1,23 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import { SyncLoader } from '../../components/auth/SyncLoader';
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
+import { SyncLoader } from '../../components/auth/SyncLoader'
 
 export function AuthCallback() {
-  const navigate = useNavigate();
-  const { user, syncing, loading } = useAuth();
+  const navigate = useNavigate()
+  const { user, syncing, loading } = useAuth()
 
   useEffect(() => {
-    // Navigate to home (which has OnboardingGuard) when auth is complete and sync is done
+    // Navigate to app dashboard when auth is complete and sync is done
     // The OnboardingGuard will redirect to onboarding if needed
     if (user && !syncing && !loading) {
-      navigate('/');
+      navigate('/app/dashboard')
     }
-  }, [user, syncing, loading, navigate]);
+  }, [user, syncing, loading, navigate])
 
   // Show sync loader while authenticating or syncing
   if (loading || syncing || user) {
-    return <SyncLoader />;
+    return <SyncLoader />
   }
 
   // Fallback loading state
@@ -28,5 +28,5 @@ export function AuthCallback() {
         <p className="text-gray-600">Completing sign in...</p>
       </div>
     </div>
-  );
+  )
 }

@@ -370,7 +370,7 @@ declare global {
       modules: finalModules,
       primaryType: (widgetType || 'FEEDBACK') as FeedbackType,
       content: {
-        headerTitle: content.headerTitle || 'Feedback',
+        headerTitle: content.headerTitle || 'We value your feedback',
         mainQuestion: content.mainQuestion || getDefaultQuestionForType(backendConfig.widget_type),
         submitButtonText: content.submitButtonText || 'Submit Feedback',
         thankYouTitle: content.thankYouTitle || 'Thank you!',
@@ -384,10 +384,10 @@ declare global {
           backendConfig.position || configPosition
         ) as WidgetConfiguration['appearance']['position'],
         colors: {
-          primary: theme.primary || '#3b82f6',
+          primary: theme.primary || '#6B46C1',
           background: theme.background || (configTheme === 'dark' ? '#1f2937' : '#ffffff'),
           text: theme.text || (configTheme === 'dark' ? '#f9fafb' : '#1f2937'),
-          buttonColor: theme.primary || '#3b82f6',
+          buttonColor: theme.primary || '#6B46C1',
           buttonTextColor: '#ffffff',
         },
         showBranding: theme.show_branding !== false,

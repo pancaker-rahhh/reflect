@@ -30,7 +30,7 @@ export function UsageAwareButton({
 
   const handleClick = () => {
     if (!canCreate) {
-      navigate('/settings/billing')
+      navigate('/app/settings/billing')
       return
     }
     action()

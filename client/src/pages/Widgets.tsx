@@ -74,7 +74,7 @@ export function Widgets() {
   const activeWidgets = filteredWidgets.filter((widget) => widget.status === 'active')
 
   const handleCreateWidget = () => {
-    navigate('/widgets/new')
+    navigate('/app/widgets/new')
   }
 
   const handleDeleteWidget = (widgetId: string, widgetName: string) => {

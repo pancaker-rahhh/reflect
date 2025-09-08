@@ -25,7 +25,7 @@ export function Dashboard() {
   const { getUsageInfo } = useSubscription()
 
   const handleUpgrade = () => {
-    navigate('/settings/billing')
+    navigate('/app/settings/billing')
   }
 
   const { data: organizations } = useQuery({
