@@ -7,52 +7,52 @@ on:
       - 'api/**'
   workflow_dispatch:
 
-env:
-  RAILWAY_TOKEN: ${{ secrets.RAILWAY_DEPLOYMENT_TOKEN }}
-
 jobs:
   deploy:
     name: Deploy to Railway
     runs-on: ubuntu-latest
     environment: prod
+    container: ghcr.io/railwayapp/cli:latest
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Set Railway environment variables
-        run: |
-          # Set all environment variables in Railway
-          railway variables set POSTGRES_DB="${{ secrets.POSTGRES_DB }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          railway variables set POSTGRES_USER="${{ secrets.POSTGRES_USER }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          railway variables set POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          railway variables set POSTGRES_HOST="${{ secrets.POSTGRES_HOST }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          railway variables set POSTGRES_PORT="${{ secrets.POSTGRES_PORT }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          
-          railway variables set SUPABASE_URL="${{ secrets.SUPABASE_URL }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          railway variables set SUPABASE_ANON_KEY="${{ secrets.SUPABASE_ANON_KEY }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          railway variables set SUPABASE_SERVICE_KEY="${{ secrets.SUPABASE_SERVICE_KEY }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          railway variables set SUPABASE_JWT_SECRET="${{ secrets.SUPABASE_JWT_SECRET }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          
-          railway variables set APP_NAME="${{ vars.APP_NAME }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          railway variables set APP_VERSION="${{ vars.APP_VERSION }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          railway variables set API_PREFIX="${{ vars.API_PREFIX }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          railway variables set DEBUG="${{ vars.DEBUG }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          
-          railway variables set SECRET_KEY="${{ secrets.SECRET_KEY }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          railway variables set LOG_LEVEL="${{ secrets.LOG_LEVEL }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          
-          railway variables set R2_ACCOUNT_ID="${{ secrets.R2_ACCOUNT_ID }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          railway variables set R2_ACCESS_KEY_ID="${{ secrets.R2_ACCESS_KEY_ID }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          railway variables set R2_SECRET_ACCESS_KEY="${{ secrets.R2_SECRET_ACCESS_KEY }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          railway variables set R2_BUCKET_NAME="${{ secrets.R2_BUCKET_NAME }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          railway variables set CDN_BASE_URL="${{ secrets.CDN_BASE_URL }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          railway variables set CDN_ZONE_ID="${{ secrets.CDN_ZONE_ID }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-          railway variables set CDN_API_TOKEN="${{ secrets.CDN_API_TOKEN }}" --service ${{ secrets.RAILWAY_SERVICE_ID }}
-
       - name: Deploy to Railway
         run: railway up --service=${{ secrets.RAILWAY_SERVICE_ID }}
         working-directory: ./api
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_DEPLOYMENT_TOKEN }}
+          # Database Configuration
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          
+          # Supabase Configuration
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_JWT_SECRET: ${{ secrets.SUPABASE_JWT_SECRET }}
+          
+          # Application Settings
+          APP_NAME: ${{ vars.APP_NAME }}
+          APP_VERSION: ${{ vars.APP_VERSION }}
+          API_PREFIX: ${{ vars.API_PREFIX }}
+          DEBUG: ${{ vars.DEBUG }}
+          
+          # Security
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          
+          # Logging
+          LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
+          
+          # Cloudflare R2 Configuration
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          CDN_BASE_URL: ${{ secrets.CDN_BASE_URL }}
+          CDN_ZONE_ID: ${{ secrets.CDN_ZONE_ID }}
+          CDN_API_TOKEN: ${{ secrets.CDN_API_TOKEN }}
