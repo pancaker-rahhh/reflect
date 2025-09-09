@@ -1,0 +1,14 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "/app/.venv/bin/python server/run.py"
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+region = "us-east1"
+
+[env]
+PORT = "8000"
+PYTHONPATH = "/app"
