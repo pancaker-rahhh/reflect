@@ -1,26 +1,7 @@
 from functools import lru_cache
 from typing import List, Optional, Any
-from pydantic import field_validator, Field, GetCoreSchemaHandler
-from pydantic_core import core_schema
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-
-class DatabaseUrlStr(str):
-    """Custom string type that prevents Pydantic from auto-parsing as PostgresDsn"""
-    
-    @classmethod
-    def __get_pydantic_core_schema__(
-        cls, source_type: Any, handler: GetCoreSchemaHandler
-    ) -> core_schema.CoreSchema:
-        return core_schema.no_info_plain_validator_function(cls.validate)
-    
-    @classmethod
-    def validate(cls, value: Any) -> str:
-        if isinstance(value, str):
-            return value
-        if hasattr(value, '__str__'):
-            return str(value)
-        raise ValueError(f"Expected string, got {type(value)}")
 
 
 class Settings(BaseSettings):
@@ -37,7 +18,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = 'reflect_dev_pass'
     POSTGRES_HOST: str = 'localhost'
     POSTGRES_PORT: int = 5432
-    DATABASE_URL: Optional[DatabaseUrlStr] = None
+    DATABASE_URL: str = None
     DATABASE_POOL_SIZE: int = 20
     DATABASE_MAX_OVERFLOW: int = 0
 
@@ -53,7 +34,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # CORS
-    CORS_ORIGINS: str = 'http://localhost:3000,http://localhost:5173,http://localhost:5174'
+    CORS_ORIGINS: str = 'http://localhost:3000,http://localhost:5173,http://localhost:5174,https://reflectfeedback.com'
     CORS_HEADERS: str = '*'
 
     # Frontend & Email Configuration
@@ -124,13 +105,10 @@ class Settings(BaseSettings):
 
     @field_validator('DATABASE_URL', mode='before')
     @classmethod
-    def construct_database_url(cls, v: Any, values) -> Optional[DatabaseUrlStr]:
-        # Handle PostgresDsn objects (from Pydantic's automatic parsing)
-        if hasattr(v, '__str__') and not isinstance(v, str):
-            return DatabaseUrlStr(str(v))
+    def construct_database_url(cls, v: Any, values) -> Optional[str]:
         
         if isinstance(v, str) and v.strip() != '':
-            return DatabaseUrlStr(v)
+            return v
 
         user = values.data.get('POSTGRES_USER')
         password = values.data.get('POSTGRES_PASSWORD')
@@ -139,7 +117,7 @@ class Settings(BaseSettings):
         db = values.data.get('POSTGRES_DB')
 
         if all([user, password, host, port, db]):
-            return DatabaseUrlStr(f'postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}')
+            return f'postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}'
 
         raise ValueError("Database connection failed: DATABASE_URL is not set and could not be constructed from POSTGRES_* variables.")
 
