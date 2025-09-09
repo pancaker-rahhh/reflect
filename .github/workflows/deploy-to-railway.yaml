@@ -18,11 +18,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Login to Railway
+        run: railway login --token ${{ secrets.RAILWAY_DEPLOYMENT_TOKEN }}
+
       - name: Deploy to Railway
         run: railway up --service=${{ secrets.RAILWAY_SERVICE_ID }}
         working-directory: ./api
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_DEPLOYMENT_TOKEN }}
           # Database Configuration
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
