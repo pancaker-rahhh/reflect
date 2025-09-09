@@ -360,6 +360,7 @@ class FeedbackRepository(BaseRepository[Feedback]):
     async def get_public_feedback_for_widget(
         self,
         db: AsyncSession,
+        widget_id: Optional[UUID] = None,
         project_id: Optional[UUID] = None,
         feedback_type: Optional[str] = None,
         limit: int = 100,
@@ -401,6 +402,10 @@ class FeedbackRepository(BaseRepository[Feedback]):
         """
 
         params = {}
+
+        if widget_id:
+            base_query += ' AND f.widget_id = :widget_id'
+            params['widget_id'] = str(widget_id)
 
         if project_id:
             base_query += ' AND f.project_id = :project_id'
@@ -469,6 +474,36 @@ class FeedbackRepository(BaseRepository[Feedback]):
             feedback_data.append(feedback_item)
 
         return feedback_data
+
+    async def get_public_bug_reports_for_widget(
+        self,
+        db: AsyncSession,
+        widget_id: UUID,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> List[Dict[str, Any]]:
+        return await self.get_public_feedback_for_widget(
+            db=db,
+            widget_id=widget_id,
+            feedback_type='bug_report',
+            limit=limit,
+            offset=offset,
+        )
+
+    async def get_public_reviews_for_widget(
+        self,
+        db: AsyncSession,
+        widget_id: UUID,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> List[Dict[str, Any]]:
+        return await self.get_public_feedback_for_widget(
+            db=db,
+            widget_id=widget_id,
+            feedback_type='review',
+            limit=limit,
+            offset=offset,
+        )
 
     async def get_widget_metrics(
         self, db: AsyncSession, widget_id: UUID, time_range: str = 'all'
