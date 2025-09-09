@@ -1,6 +1,6 @@
 from functools import lru_cache
-from typing import List, Optional
-from pydantic import field_validator, PostgresDsn
+from typing import List, Optional, Any
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = 'reflect_dev_pass'
     POSTGRES_HOST: str = 'localhost'
     POSTGRES_PORT: int = 5432
-    DATABASE_URL: Optional[PostgresDsn] = None
+    DATABASE_URL: str = None
     DATABASE_POOL_SIZE: int = 20
     DATABASE_MAX_OVERFLOW: int = 0
 
@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # CORS
-    CORS_ORIGINS: str = 'http://localhost:3000,http://localhost:5173,http://localhost:5174'
+    CORS_ORIGINS: str = 'http://localhost:3000,http://localhost:5173,http://localhost:5174,https://reflectfeedback.com'
     CORS_HEADERS: str = '*'
 
     # Frontend & Email Configuration
@@ -67,7 +67,9 @@ class Settings(BaseSettings):
     CDN_API_TOKEN: Optional[str] = None
 
     model_config = SettingsConfigDict(
-        env_file='.env', case_sensitive=True, extra='ignore'
+        env_file='.env', case_sensitive=True, extra='ignore',
+        # Prevent automatic URL parsing
+        str_strip_whitespace=True
     )
 
     @property
@@ -103,7 +105,8 @@ class Settings(BaseSettings):
 
     @field_validator('DATABASE_URL', mode='before')
     @classmethod
-    def construct_database_url(cls, v: Optional[str], values) -> str:
+    def construct_database_url(cls, v: Any, values) -> Optional[str]:
+        
         if isinstance(v, str) and v.strip() != '':
             return v
 
