@@ -19,10 +19,20 @@ COPY --from=builder /app/.venv /app/.venv
 COPY server/ ./server/
 RUN chown -R appuser:appuser /app
 
+RUN echo '#!/bin/bash\n\
+set -e\n\
+echo "Running database migrations..."\n\
+cd /app/server\n\
+/app/.venv/bin/alembic upgrade head\n\
+echo "Migrations completed. Starting application..."\n\
+exec /app/.venv/bin/python server/run.py' > /app/start.sh \
+    && chmod +x /app/start.sh \
+    && chown appuser:appuser /app/start.sh
+
 USER appuser
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-CMD ["/app/.venv/bin/python", "server/run.py"]
+CMD ["/app/start.sh"]
