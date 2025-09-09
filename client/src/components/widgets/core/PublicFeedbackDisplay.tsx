@@ -44,6 +44,7 @@ export function PublicFeedbackDisplay({
   const [data, setData] = useState<PublicFeedbackData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [votingItems, setVotingItems] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetchPublicData()
@@ -84,6 +85,64 @@ export function PublicFeedbackDisplay({
       setError(err instanceof Error ? err.message : 'Failed to fetch data')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const voteFeature = async (featureId: string) => {
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+      const response = await fetch(`${apiBaseUrl}/public/features/upvote`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          widgetKey,
+          featureId,
+        }),
+      })
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          throw new Error('Too many requests. Please try again later.')
+        }
+        throw new Error('Failed to vote. Please try again.')
+      }
+
+      const result = await response.json()
+      return result
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Vote failed')
+    }
+  }
+
+  const handleVote = async (featureId: string) => {
+    if (votingItems.has(featureId)) return
+
+    setVotingItems((prev) => new Set(prev).add(featureId))
+
+    try {
+      const result = await voteFeature(featureId)
+
+      setData((prevData) =>
+        prevData.map((item) =>
+          item.id === featureId
+            ? {
+                ...item,
+                upvotes: result.newVoteCount,
+                hasUserUpvoted: result.hasUserVoted,
+              }
+            : item
+        )
+      )
+    } catch (err) {
+      console.error('Vote failed:', err)
+    } finally {
+      setVotingItems((prev) => {
+        const newSet = new Set(prev)
+        newSet.delete(featureId)
+        return newSet
+      })
     }
   }
 
@@ -298,6 +357,38 @@ export function PublicFeedbackDisplay({
                   votes
                 </span>
               </div>
+
+              {feedbackType === 'FEATURE_REQUEST' && (
+                <button
+                  onClick={() => handleVote(item.id)}
+                  disabled={votingItems.has(item.id)}
+                  className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                    item.hasUserUpvoted
+                      ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  } ${
+                    votingItems.has(item.id) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                  }`}
+                  style={{
+                    backgroundColor: item.hasUserUpvoted ? `${colors.primary}20` : undefined,
+                    color: item.hasUserUpvoted ? colors.primary : undefined,
+                  }}
+                >
+                  {votingItems.has(item.id) ? (
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 15l7-7 7 7"
+                      />
+                    </svg>
+                  )}
+                  <span>{item.hasUserUpvoted ? 'Voted' : 'Vote'}</span>
+                </button>
+              )}
             </div>
           </div>
         ))}
