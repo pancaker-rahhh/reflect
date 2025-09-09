@@ -48,19 +48,7 @@ class PublicFeedbackPayload(BaseModel):
     context: Optional[Dict[str, Any]] = None
 
 
-@public_router.get('/widgets/{public_key}', response_model=WidgetReadPublic)
-@create_rate_limit_decorator('widget_access', is_anonymous=True)
-async def get_public_widget_config(
-    request: Request,
-    public_key: str,
-    db: AsyncSession = Depends(get_db),
-    service: WidgetService = Depends(lambda: widget_service),
-):
-    sanitized_public_key = InputSanitizer.sanitize_widget_key(public_key)
-    if not sanitized_public_key:
-        raise HTTPException(status_code=400, detail='Invalid widget key')
-
-    return await service.get_public_widget_config(db, public_key=sanitized_public_key)
+# Moved to end of file to avoid route conflicts with specific routes
 
 
 @public_router.get(
@@ -503,3 +491,18 @@ async def upvote_general_feedback(
         'hasUserVoted': vote_result['hasUserVoted'],
         'action': vote_result['action'],
     }
+
+
+@public_router.get('/widgets/{public_key}', response_model=WidgetReadPublic)
+@create_rate_limit_decorator('widget_access', is_anonymous=True)
+async def get_public_widget_config(
+    request: Request,
+    public_key: str,
+    db: AsyncSession = Depends(get_db),
+    service: WidgetService = Depends(lambda: widget_service),
+):
+    sanitized_public_key = InputSanitizer.sanitize_widget_key(public_key)
+    if not sanitized_public_key:
+        raise HTTPException(status_code=400, detail='Invalid widget key')
+
+    return await service.get_public_widget_config(db, public_key=sanitized_public_key)
