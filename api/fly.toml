@@ -1,6 +1,6 @@
 # api/fly.toml
 app = "reflect-api"
-primary_region = "sin"
+primary_region = "iad"
 
 [build]
   dockerfile = "Dockerfile"
