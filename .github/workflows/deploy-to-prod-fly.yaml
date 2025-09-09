@@ -24,6 +24,9 @@ jobs:
 
       - name: Set Fly.io secrets
         run: |
+          # Exit immediately if any command fails
+          set -e
+          
           # Database Configuration
           flyctl secrets set POSTGRES_DB="${{ secrets.POSTGRES_DB }}" --app ${{ secrets.FLY_APP_NAME }}
           flyctl secrets set POSTGRES_USER="${{ secrets.POSTGRES_USER }}" --app ${{ secrets.FLY_APP_NAME }}
