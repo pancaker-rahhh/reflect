@@ -103,7 +103,10 @@ class Settings(BaseSettings):
 
     @field_validator('DATABASE_URL', mode='before')
     @classmethod
-    def construct_database_url(cls, v: Optional[str], values) -> str:
+    def construct_database_url(cls, v, values) -> str:
+        if hasattr(v, '__str__') and not isinstance(v, str):
+            return str(v)
+        
         if isinstance(v, str) and v.strip() != '':
             return v
 
