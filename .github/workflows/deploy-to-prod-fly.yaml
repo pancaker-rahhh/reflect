@@ -34,47 +34,16 @@ jobs:
           flyctl secrets set SUPABASE_JWT_SECRET="${{ secrets.SUPABASE_JWT_SECRET }}" --app ${{ secrets.FLY_APP_NAME }}
           
           # Application Settings
-          flyctl secrets set APP_NAME="${{ secrets.APP_NAME }}" --app ${{ secrets.FLY_APP_NAME }}
-          flyctl secrets set APP_VERSION="${{ secrets.APP_VERSION }}" --app ${{ secrets.FLY_APP_NAME }}
-          flyctl secrets set API_PREFIX="${{ secrets.API_PREFIX }}" --app ${{ secrets.FLY_APP_NAME }}
-          flyctl secrets set DEBUG="${{ secrets.DEBUG }}" --app ${{ secrets.FLY_APP_NAME }}
+          flyctl secrets set APP_NAME="${{ vars.APP_NAME }}" --app ${{ secrets.FLY_APP_NAME }}
+          flyctl secrets set APP_VERSION="${{ vars.APP_VERSION }}" --app ${{ secrets.FLY_APP_NAME }}
+          flyctl secrets set API_PREFIX="${{ vars.API_PREFIX }}" --app ${{ secrets.FLY_APP_NAME }}
+          flyctl secrets set DEBUG="${{ vars.DEBUG }}" --app ${{ secrets.FLY_APP_NAME }}
           
           # Security
           flyctl secrets set SECRET_KEY="${{ secrets.SECRET_KEY }}" --app ${{ secrets.FLY_APP_NAME }}
-          flyctl secrets set ALGORITHM="${{ secrets.ALGORITHM }}" --app ${{ secrets.FLY_APP_NAME }}
-          flyctl secrets set ACCESS_TOKEN_EXPIRE_MINUTES="${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}" --app ${{ secrets.FLY_APP_NAME }}
-          
-          # CORS
-          flyctl secrets set CORS_ORIGINS="${{ secrets.CORS_ORIGINS }}" --app ${{ secrets.FLY_APP_NAME }}
-          flyctl secrets set CORS_HEADERS="${{ secrets.CORS_HEADERS }}" --app ${{ secrets.FLY_APP_NAME }}
-          
-          # Frontend & Email Configuration
-          flyctl secrets set FRONTEND_URL="${{ secrets.FRONTEND_URL }}" --app ${{ secrets.FLY_APP_NAME }}
-          flyctl secrets set EMAIL_FROM="${{ secrets.EMAIL_FROM }}" --app ${{ secrets.FLY_APP_NAME }}
-          flyctl secrets set EMAIL_FROM_NAME="${{ secrets.EMAIL_FROM_NAME }}" --app ${{ secrets.FLY_APP_NAME }}
-          
-          # Task Backend
-          flyctl secrets set TASK_BACKEND="${{ secrets.TASK_BACKEND }}" --app ${{ secrets.FLY_APP_NAME }}
           
           # Logging
           flyctl secrets set LOG_LEVEL="${{ secrets.LOG_LEVEL }}" --app ${{ secrets.FLY_APP_NAME }}
-          
-          # Optional Monitoring (only set if secrets exist)
-          if [ -n "${{ secrets.AXIOM_TOKEN }}" ]; then
-            flyctl secrets set AXIOM_TOKEN="${{ secrets.AXIOM_TOKEN }}" --app ${{ secrets.FLY_APP_NAME }}
-          fi
-          if [ -n "${{ secrets.AXIOM_DATASET }}" ]; then
-            flyctl secrets set AXIOM_DATASET="${{ secrets.AXIOM_DATASET }}" --app ${{ secrets.FLY_APP_NAME }}
-          fi
-          if [ -n "${{ secrets.POSTHOG_API_KEY }}" ]; then
-            flyctl secrets set POSTHOG_API_KEY="${{ secrets.POSTHOG_API_KEY }}" --app ${{ secrets.FLY_APP_NAME }}
-          fi
-          if [ -n "${{ secrets.POSTHOG_HOST }}" ]; then
-            flyctl secrets set POSTHOG_HOST="${{ secrets.POSTHOG_HOST }}" --app ${{ secrets.FLY_APP_NAME }}
-          fi
-          if [ -n "${{ secrets.SENTRY_DSN }}" ]; then
-            flyctl secrets set SENTRY_DSN="${{ secrets.SENTRY_DSN }}" --app ${{ secrets.FLY_APP_NAME }}
-          fi
           
           # Cloudflare R2 Configuration
           flyctl secrets set R2_ACCOUNT_ID="${{ secrets.R2_ACCOUNT_ID }}" --app ${{ secrets.FLY_APP_NAME }}
