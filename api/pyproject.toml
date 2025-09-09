@@ -3,7 +3,9 @@ name = "reflect-api"
 version = "0.1.0"
 description = "Reflect API - Feedback Management Platform"
 authors = [
-    {name = "Your Name",email = "you@example.com"}
+    {name = "Indira Kumar",email = "indirak@reflectfeedback.com"},
+    {name = "Kameel",email = "skameel@reflectfeedback.com"},
+    {name = "Keshav",email="keshavr@reflectfeedback.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.12"
