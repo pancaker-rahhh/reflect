@@ -119,7 +119,21 @@ export function PublicFeedbackDisplay({
   const handleVote = async (featureId: string) => {
     if (votingItems.has(featureId)) return
 
+    const currentItem = data.find((item) => item.id === featureId)
+    if (!currentItem) return
+
     setVotingItems((prev) => new Set(prev).add(featureId))
+
+    const optimisticUpdate = {
+      upvotes: currentItem.hasUserUpvoted
+        ? (currentItem.upvotes || 0) - 1
+        : (currentItem.upvotes || 0) + 1,
+      hasUserUpvoted: !currentItem.hasUserUpvoted,
+    }
+
+    setData((prevData) =>
+      prevData.map((item) => (item.id === featureId ? { ...item, ...optimisticUpdate } : item))
+    )
 
     try {
       const result = await voteFeature(featureId)
@@ -136,6 +150,9 @@ export function PublicFeedbackDisplay({
         )
       )
     } catch (err) {
+      setData((prevData) =>
+        prevData.map((item) => (item.id === featureId ? { ...item, ...currentItem } : item))
+      )
       console.error('Vote failed:', err)
     } finally {
       setVotingItems((prev) => {
@@ -350,7 +367,7 @@ export function PublicFeedbackDisplay({
                     d="M5 15l7-7 7 7"
                   />
                 </svg>
-                <span className="text-sm">
+                <span className="text-sm transition-all duration-200">
                   {feedbackType === 'FEATURE_REQUEST'
                     ? item.upvotes || 0
                     : item.feedback_votes || 0}{' '}
