@@ -1,11 +1,11 @@
 FROM python:3.12.10-slim-bookworm AS builder
 
-RUN pip install --no-cache-dir poetry==1.8.3
-ENV POETRY_NO_INTERACTION=1 POETRY_VENV_IN_PROJECT=1
+RUN pip install --no-cache-dir poetry==2.1.4
+ENV POETRY_NO_INTERACTION=1 POETRY_VENV_IN_PROJECT=1 POETRY_VIRTUALENVS_IN_PROJECT=true
 
 WORKDIR /app
 COPY pyproject.toml poetry.lock ./
-RUN poetry install --only=main --no-root
+RUN poetry install --without dev
 
 FROM python:3.12.10-slim-bookworm AS runtime
 
