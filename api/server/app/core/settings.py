@@ -1,6 +1,6 @@
 from functools import lru_cache
 from typing import List, Optional
-from pydantic import field_validator
+from pydantic import field_validator, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = 'reflect_dev_pass'
     POSTGRES_HOST: str = 'localhost'
     POSTGRES_PORT: int = 5432
-    DATABASE_URL: str = ''
+    DATABASE_URL: Optional[PostgresDsn] = None
     DATABASE_POOL_SIZE: int = 20
     DATABASE_MAX_OVERFLOW: int = 0
 
@@ -104,8 +104,9 @@ class Settings(BaseSettings):
     @field_validator('DATABASE_URL', mode='before')
     @classmethod
     def construct_database_url(cls, v: Optional[str], values) -> str:
-        if v:
+        if isinstance(v, str) and v.strip() != '':
             return v
+
         user = values.data.get('POSTGRES_USER')
         password = values.data.get('POSTGRES_PASSWORD')
         host = values.data.get('POSTGRES_HOST')
@@ -114,7 +115,8 @@ class Settings(BaseSettings):
 
         if all([user, password, host, port, db]):
             return f'postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}'
-        return ''
+
+        raise ValueError("Database connection failed: DATABASE_URL is not set and could not be constructed from POSTGRES_* variables.")
 
 
 @lru_cache()
