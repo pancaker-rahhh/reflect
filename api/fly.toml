@@ -11,6 +11,10 @@ primary_region = "iad"
   PORT = "8000"
   PYTHONPATH = "/app"
 
+[resources]
+  memory_mb = 512
+  cpu_count = 1
+
 [[services]]
   protocol = "tcp"
   internal_port = 8000
