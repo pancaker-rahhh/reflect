@@ -23,6 +23,7 @@ interface FeatureRequestFormProps {
   onUpvote?: (featureId: string) => Promise<void>
   widgetKey?: string
   isSubmitting?: boolean
+  showExistingFeatures?: boolean
   colors: {
     primary: string
     background: string
@@ -74,6 +75,7 @@ export function FeatureRequestForm({
   onSubmit,
   widgetKey,
   isSubmitting,
+  showExistingFeatures = true,
   colors,
   content,
 }: FeatureRequestFormProps) {
@@ -475,6 +477,10 @@ export function FeatureRequestForm({
       </div>
     </div>
   )
+
+  if (!showExistingFeatures) {
+    return <div className="space-y-4">{renderCreateForm()}</div>
+  }
 
   return (
     <div className="space-y-4">{view === 'list' ? renderFeatureList() : renderCreateForm()}</div>
