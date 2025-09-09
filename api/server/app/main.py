@@ -12,6 +12,7 @@ from app.core.middleware import CorrelationIDMiddleware, RequestLoggingMiddlewar
 from app.core.rate_limiting import setup_rate_limiting
 from app.db import engine
 from app.router.api_router import api_router
+from app.router.v1.health_router import health_router
 
 
 @asynccontextmanager
@@ -55,6 +56,7 @@ def create_application() -> FastAPI:
     app.add_exception_handler(Exception, general_error_handler)
 
     app.include_router(api_router)
+    app.include_router(health_router)
 
     @app.get('/')
     async def root():
