@@ -15,6 +15,7 @@ from app.router.v1 import (
     dashboard_router,
     integrations_router,
     roadmap_integrations_router,
+    usage_tracking_router,
     subscription_router,
     upgrade_router,
 )
@@ -30,6 +31,11 @@ api_router.include_router(onboarding_router.router)
 api_router.include_router(invitation_router.router)
 api_router.include_router(dashboard_router.dashboard_router)
 api_router.include_router(integrations_router.router)
+api_router.include_router(
+    usage_tracking_router.router,
+    prefix='/organizations/{organization_id}',
+    tags=['Usage Tracking'],
+)
 api_router.include_router(
     subscription_router.router,
     prefix='/organizations/{organization_id}',

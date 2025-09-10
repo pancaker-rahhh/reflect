@@ -1,188 +1,112 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import select
 from datetime import datetime, timezone
-
 from app.models.organization_model import Organization
-from app.models.usage_tracking_model import UsageTracking
 from app.core.logging import get_logger
+from app.core.subscription_constants import PLAN_LIMITS, FEATURE_FLAGS
 
 logger = get_logger(__name__)
 
 
 class SubscriptionService:
-    PLAN_LIMITS = {
-        'free': {
-            'projects': 1,
-            'widgets': 1,
-            'responses': 20,
-        },
-        'pro': {
-            'projects': 999999,
-            'widgets': 999999,
-            'responses': 999999,
-        },
-    }
-
-    FEATURE_FLAGS = {
-        'free': {
-            'advanced_targeting': False,
-            'branding_removal': False,
-            'priority_support': False,
-            'dofollow_backlink': False,
-            'jira_integration': False,
-        },
-        'pro': {
-            'advanced_targeting': True,
-            'branding_removal': True,
-            'priority_support': True,
-            'dofollow_backlink': True,
-            'jira_integration': True,
-        },
-    }
+    """
+    Service for managing subscription plans and billing.
+    This service handles subscription-related operations separate from usage tracking.
+    """
 
     async def get_organization_subscription(
         self, db: AsyncSession, organization_id: UUID
     ) -> Optional[Organization]:
+        """Get organization subscription details."""
         stmt = select(Organization).where(Organization.id == organization_id)
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_subscription_plan(
+        self, db: AsyncSession, organization_id: UUID
+    ) -> str:
+        """Get the current subscription plan for an organization."""
+        organization = await self.get_organization_subscription(db, organization_id)
+        if not organization:
+            return 'free'
+        return organization.subscription_plan or 'free'
+
+    async def get_subscription_status(
+        self, db: AsyncSession, organization_id: UUID
+    ) -> str:
+        """Get the current subscription status for an organization."""
+        organization = await self.get_organization_subscription(db, organization_id)
+        if not organization:
+            return 'inactive'
+        return organization.subscription_status or 'inactive'
+
     async def get_plan_limits(
         self, db: AsyncSession, organization_id: UUID
     ) -> Dict[str, int]:
-        organization = await self.get_organization_subscription(db, organization_id)
-        if not organization:
-            return self.PLAN_LIMITS['free']
-
-        plan = organization.subscription_plan or 'free'
-        return self.PLAN_LIMITS.get(plan, self.PLAN_LIMITS['free'])
+        """Get plan limits for an organization."""
+        plan = await self.get_subscription_plan(db, organization_id)
+        return PLAN_LIMITS.get(plan, PLAN_LIMITS['free'])
 
     async def get_plan_features(
         self, db: AsyncSession, organization_id: UUID
     ) -> Dict[str, bool]:
-        organization = await self.get_organization_subscription(db, organization_id)
-        if not organization:
-            return self.FEATURE_FLAGS['free']
-
-        plan = organization.subscription_plan or 'free'
-        return self.FEATURE_FLAGS.get(plan, self.FEATURE_FLAGS['free'])
+        """Get plan features for an organization."""
+        plan = await self.get_subscription_plan(db, organization_id)
+        return FEATURE_FLAGS.get(plan, FEATURE_FLAGS['free'])
 
     async def is_feature_enabled(
         self, db: AsyncSession, organization_id: UUID, feature: str
     ) -> bool:
+        """Check if a specific feature is enabled for an organization."""
         features = await self.get_plan_features(db, organization_id)
         return features.get(feature, False)
 
-    async def check_usage_limit(
-        self, db: AsyncSession, organization_id: UUID, resource_type: str
+    async def get_available_plans(self) -> List[Dict[str, any]]:
+        """Get all available subscription plans."""
+        return [
+            {
+                'name': 'free',
+                'display_name': 'Free',
+                'limits': PLAN_LIMITS['free'],
+                'features': FEATURE_FLAGS['free'],
+                'price': 0,
+            },
+            {
+                'name': 'pro',
+                'display_name': 'Pro',
+                'limits': PLAN_LIMITS['pro'],
+                'features': FEATURE_FLAGS['pro'],
+                'price': 29,  # This should be configured elsewhere
+            },
+        ]
+
+    async def update_subscription_plan(
+        self, db: AsyncSession, organization_id: UUID, plan: str, status: str = 'active'
     ) -> bool:
-        limits = await self.get_plan_limits(db, organization_id)
-        limit = limits.get(resource_type, 0)
+        """Update an organization's subscription plan."""
+        organization = await self.get_organization_subscription(db, organization_id)
+        if not organization:
+            return False
 
-        if limit >= 999:
-            return True
-
-        current_usage = await self.get_current_usage(db, organization_id, resource_type)
-        return current_usage < limit
-
-    async def get_current_usage(
-        self, db: AsyncSession, organization_id: UUID, resource_type: str
-    ) -> int:
-        current_month = datetime.now(timezone.utc).replace(
-            day=1, hour=0, minute=0, second=0, microsecond=0
-        )
-
-        stmt = select(UsageTracking).where(
-            and_(
-                UsageTracking.organization_id == organization_id,
-                UsageTracking.resource_type == resource_type,
-                UsageTracking.period_start == current_month,
-            )
-        )
-        result = await db.execute(stmt)
-        usage_record = result.scalar_one_or_none()
-
-        return usage_record.usage_count if usage_record else 0
-
-    async def get_all_usage(
-        self, db: AsyncSession, organization_id: UUID
-    ) -> Dict[str, int]:
-        limits = await self.get_plan_limits(db, organization_id)
-        usage_dict = {}
-
-        # Initialize all resources with 0 usage
-        for resource_type in limits.keys():
-            usage_dict[resource_type] = await self.get_current_usage(
-                db, organization_id, resource_type
-            )
-
-        return usage_dict
-
-    async def increment_usage(
-        self,
-        db: AsyncSession,
-        organization_id: UUID,
-        resource_type: str,
-        amount: int = 1,
-    ) -> None:
-        current_month = datetime.now(timezone.utc).replace(
-            day=1, hour=0, minute=0, second=0, microsecond=0
-        )
-
-        stmt = select(UsageTracking).where(
-            and_(
-                UsageTracking.organization_id == organization_id,
-                UsageTracking.resource_type == resource_type,
-                UsageTracking.period_start == current_month,
-            )
-        )
-        result = await db.execute(stmt)
-        usage_record = result.scalar_one_or_none()
-
-        if usage_record:
-            usage_record.usage_count += amount
-            usage_record.updated_at = datetime.now(timezone.utc)
-        else:
-            new_record = UsageTracking(
-                organization_id=organization_id,
-                resource_type=resource_type,
-                usage_count=amount,
-                period_start=current_month,
-            )
-            db.add(new_record)
+        organization.subscription_plan = plan
+        organization.subscription_status = status
+        organization.updated_at = datetime.now(timezone.utc)
 
         await db.commit()
-
-    async def decrement_usage(
-        self,
-        db: AsyncSession,
-        organization_id: UUID,
-        resource_type: str,
-        amount: int = 1,
-    ) -> None:
-        current_month = datetime.now(timezone.utc).replace(
-            day=1, hour=0, minute=0, second=0, microsecond=0
+        logger.info(
+            f'Updated subscription plan for organization {organization_id} to {plan}'
         )
+        return True
 
-        stmt = select(UsageTracking).where(
-            and_(
-                UsageTracking.organization_id == organization_id,
-                UsageTracking.resource_type == resource_type,
-                UsageTracking.period_start == current_month,
-            )
+    async def cancel_subscription(
+        self, db: AsyncSession, organization_id: UUID
+    ) -> bool:
+        """Cancel an organization's subscription."""
+        return await self.update_subscription_plan(
+            db, organization_id, 'free', 'cancelled'
         )
-        result = await db.execute(stmt)
-        usage_record = result.scalar_one_or_none()
-
-        if usage_record and usage_record.usage_count > 0:
-            usage_record.usage_count = max(0, usage_record.usage_count - amount)
-            usage_record.updated_at = datetime.now(timezone.utc)
-            await db.commit()
-            logger.info(
-                f'Decremented {resource_type} usage for organization {organization_id} to {usage_record.usage_count}'
-            )
 
 
 subscription_service = SubscriptionService()
