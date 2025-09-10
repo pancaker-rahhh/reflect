@@ -1,6 +1,4 @@
-import subprocess
 import asyncio
-import os
 from pathlib import Path
 from typing import Dict, Any
 from app.services.r2_storage_service import r2_storage_service, R2StorageService
@@ -71,76 +69,23 @@ class CDNDeploymentService:
         try:
             api_root = Path(__file__).parent.parent.parent.parent.parent
             client_dir = api_root / 'client'
-
-            npm_path = None
-            try:
-                npm_locations = [
-                    'npm',
-                    r'C:\Program Files\nodejs\npm.cmd',  # Windows default
-                    r'C:\Program Files (x86)\nodejs\npm.cmd',  # Windows 32-bit
-                    r'C:\Users\{}\AppData\Roaming\npm\npm.cmd'.format(
-                        os.getenv('USERNAME', '')
-                    ),
-                ]
-
-                for location in npm_locations:
-                    try:
-                        npm_check = subprocess.run(
-                            [location, '--version'],
-                            capture_output=True,
-                            text=True,
-                            timeout=10,
-                        )
-                        if npm_check.returncode == 0:
-                            npm_path = location
-                            break
-                    except Exception:
-                        continue
-
-                if not npm_path:
-                    raise Exception('npm not found')
-
-            except Exception as npm_error:
-                raise Exception(f'npm not available: {npm_error}')
-
-            if not client_dir.exists():
-                raise Exception(f'Client directory not found at {client_dir}')
-
-            if os.name == 'nt':  # Windows
-                result = subprocess.run(
-                    f'"{npm_path}" run build:widget',
-                    cwd=str(client_dir),
-                    capture_output=True,
-                    text=True,
-                    timeout=60,
-                    shell=True,
-                )
-            else:
-                result = subprocess.run(
-                    [npm_path, 'run', 'build:widget'],
-                    cwd=str(client_dir),
-                    capture_output=True,
-                    text=True,
-                    timeout=60,
-                )
-
-            if result.returncode != 0:
-                raise Exception(f'Widget build failed: {result.stderr}')
-
             widget_file = client_dir / 'dist-widget' / 'widget.js'
+
             if not widget_file.exists():
-                raise Exception(f'Built widget file not found at {widget_file}')
+                raise Exception(
+                    f'Built widget file not found at {widget_file}. Please run "npm run build:widget" in the client directory first.'
+                )
 
             with open(widget_file, 'r', encoding='utf-8') as f:
                 content = f.read()
 
-            logger.info(f'Successfully built widget, size: {len(content)} bytes')
+            logger.info(
+                f'Successfully loaded pre-built widget, size: {len(content)} bytes'
+            )
             return content
 
-        except subprocess.TimeoutExpired:
-            raise Exception('Widget build timed out')
         except Exception as e:
-            logger.error(f'Widget build error: {str(e)}')
+            logger.error(f'Widget loading error: {str(e)}')
             raise
 
     def _prepare_widget_config(self, widget) -> Dict[str, Any]:
