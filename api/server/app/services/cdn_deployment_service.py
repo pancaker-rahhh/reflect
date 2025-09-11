@@ -67,6 +67,7 @@ class CDNDeploymentService:
 
     async def _build_widget_content(self) -> str:
         try:
+            # Widget file is always within the API server directory
             server_dir = Path(__file__).parent.parent.parent
             widget_file = server_dir / 'widget.js'
 
