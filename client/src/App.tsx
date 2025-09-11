@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
+import { HelmetProvider } from 'react-helmet-async'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { SkipLink } from '@/components/common/SkipLink'
 import { PageLoading } from '@/components/common/LoadingSpinner'
@@ -58,82 +59,96 @@ const RoadmapSettings = lazy(() =>
 const OrganizationSettings = lazy(() =>
   import('@/pages/settings/OrganizationSettings').then((m) => ({ default: m.OrganizationSettings }))
 )
+const TermsOfService = lazy(() =>
+  import('@/pages/legal/TermsOfService').then((m) => ({ default: m.TermsOfService }))
+)
+const PrivacyPolicy = lazy(() =>
+  import('@/pages/legal/PrivacyPolicy').then((m) => ({ default: m.PrivacyPolicy }))
+)
+const CookiePolicy = lazy(() =>
+  import('@/pages/legal/CookiePolicy').then((m) => ({ default: m.CookiePolicy }))
+)
 const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m.NotFound })))
 
 function App() {
   return (
     <ErrorBoundary>
-      <TooltipProvider>
-        <BrowserRouter>
-          <AuthProvider>
-            <AppProvider>
-              <SkipLink />
-              <Suspense fallback={<PageLoading />}>
-                <Routes>
-                  {/* Public routes */}
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/auth/verify-otp" element={<VerifyOtp />} />
-                  <Route path="/auth/callback" element={<AuthCallback />} />
-                  <Route path="/invite" element={<InvitationAcceptancePage />} />
-                  <Route path="/invitation/accept" element={<InvitationAcceptancePage />} />
-                  <Route path="/public/roadmap/:publicSlug" element={<PublicRoadmap />} />
-                  <Route path="/public/r/:subdomain" element={<PublicRoadmap />} />
-                  <Route path="/widget-view" element={<WidgetView />} />
+      <HelmetProvider>
+        <TooltipProvider>
+          <BrowserRouter>
+            <AuthProvider>
+              <AppProvider>
+                <SkipLink />
+                <Suspense fallback={<PageLoading />}>
+                  <Routes>
+                    {/* Public routes */}
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/auth/verify-otp" element={<VerifyOtp />} />
+                    <Route path="/auth/callback" element={<AuthCallback />} />
+                    <Route path="/invite" element={<InvitationAcceptancePage />} />
+                    <Route path="/invitation/accept" element={<InvitationAcceptancePage />} />
+                    <Route path="/public/roadmap/:publicSlug" element={<PublicRoadmap />} />
+                    <Route path="/public/r/:subdomain" element={<PublicRoadmap />} />
+                    <Route path="/widget-view" element={<WidgetView />} />
+                    <Route path="/terms" element={<TermsOfService />} />
+                    <Route path="/privacy" element={<PrivacyPolicy />} />
+                    <Route path="/cookies" element={<CookiePolicy />} />
 
-                  {/* Onboarding route */}
-                  <Route
-                    path="/onboarding"
-                    element={
-                      <ProtectedRoute>
-                        <OnboardingPage />
-                      </ProtectedRoute>
-                    }
-                  />
+                    {/* Onboarding route */}
+                    <Route
+                      path="/onboarding"
+                      element={
+                        <ProtectedRoute>
+                          <OnboardingPage />
+                        </ProtectedRoute>
+                      }
+                    />
 
-                  {/* Protected routes with onboarding guard */}
-                  <Route
-                    path="/app"
-                    element={
-                      <ProtectedRoute>
-                        <OnboardingGuard>
-                          <AppLayout>
-                            <Outlet />
-                            <Toaster />
-                          </AppLayout>
-                        </OnboardingGuard>
-                      </ProtectedRoute>
-                    }
-                  >
-                    <Route index element={<Navigate to="/app/dashboard" replace />} />
-                    <Route path="dashboard" element={<Dashboard />} />
-                    <Route path="widgets" element={<Widgets />} />
-                    <Route path="widgets/new" element={<WidgetCreate />} />
-                    <Route path="widgets/:widgetId/edit" element={<WidgetCreate />} />
-                    <Route path="widgets/:widgetId/get-code" element={<WidgetGetCode />} />
-                    <Route path="widgets/create" element={<WidgetCreate />} />
-                    <Route path="feedback/responses" element={<Responses />} />
-                    <Route path="feedback/reviews" element={<Reviews />} />
-                    <Route path="feedback/bugs" element={<BugReports />} />
-                    <Route path="feedback/features" element={<FeatureRequests />} />
-                    <Route path="roadmap" element={<RoadmapPage />} />
-                    <Route path="settings/*" element={<AccountSettingsLayout />}>
-                      <Route index element={<Navigate to="account" replace />} />
-                      <Route path="account" element={<AccountSettings />} />
-                      <Route path="notifications" element={<NotificationSettings />} />
-                      <Route path="billing" element={<BillingSettings />} />
+                    {/* Protected routes with onboarding guard */}
+                    <Route
+                      path="/app"
+                      element={
+                        <ProtectedRoute>
+                          <OnboardingGuard>
+                            <AppLayout>
+                              <Outlet />
+                              <Toaster />
+                            </AppLayout>
+                          </OnboardingGuard>
+                        </ProtectedRoute>
+                      }
+                    >
+                      <Route index element={<Navigate to="/app/dashboard" replace />} />
+                      <Route path="dashboard" element={<Dashboard />} />
+                      <Route path="widgets" element={<Widgets />} />
+                      <Route path="widgets/new" element={<WidgetCreate />} />
+                      <Route path="widgets/:widgetId/edit" element={<WidgetCreate />} />
+                      <Route path="widgets/:widgetId/get-code" element={<WidgetGetCode />} />
+                      <Route path="widgets/create" element={<WidgetCreate />} />
+                      <Route path="feedback/responses" element={<Responses />} />
+                      <Route path="feedback/reviews" element={<Reviews />} />
+                      <Route path="feedback/bugs" element={<BugReports />} />
+                      <Route path="feedback/features" element={<FeatureRequests />} />
+                      <Route path="roadmap" element={<RoadmapPage />} />
+                      <Route path="settings/*" element={<AccountSettingsLayout />}>
+                        <Route index element={<Navigate to="account" replace />} />
+                        <Route path="account" element={<AccountSettings />} />
+                        <Route path="notifications" element={<NotificationSettings />} />
+                        <Route path="billing" element={<BillingSettings />} />
+                      </Route>
+                      <Route path="settings/project" element={<ProjectSettings />} />
+                      <Route path="settings/roadmap" element={<RoadmapSettings />} />
+                      <Route path="settings/organization" element={<OrganizationSettings />} />
                     </Route>
-                    <Route path="settings/project" element={<ProjectSettings />} />
-                    <Route path="settings/roadmap" element={<RoadmapSettings />} />
-                    <Route path="settings/organization" element={<OrganizationSettings />} />
-                  </Route>
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </AppProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </AppProvider>
+            </AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </HelmetProvider>
     </ErrorBoundary>
   )
 }
