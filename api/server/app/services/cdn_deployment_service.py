@@ -67,20 +67,20 @@ class CDNDeploymentService:
 
     async def _build_widget_content(self) -> str:
         try:
-            api_root = Path(__file__).parent.parent.parent.parent.parent
-            client_dir = api_root / 'client'
-            widget_file = client_dir / 'dist-widget' / 'widget.js'
+            # Widget file is always within the API server directory
+            server_dir = Path(__file__).parent.parent.parent
+            widget_file = server_dir / 'widget.js'
 
             if not widget_file.exists():
                 raise Exception(
-                    f'Built widget file not found at {widget_file}. Please run "npm run build:widget" in the client directory first.'
+                    f'Built widget file not found at {widget_file}. Please ensure widget.js is present in the server directory.'
                 )
 
             with open(widget_file, 'r', encoding='utf-8') as f:
                 content = f.read()
 
             logger.info(
-                f'Successfully loaded pre-built widget, size: {len(content)} bytes'
+                f'Successfully loaded pre-built widget from {widget_file}, size: {len(content)} bytes'
             )
             return content
 
