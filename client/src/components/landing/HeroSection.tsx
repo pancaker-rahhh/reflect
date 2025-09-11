@@ -318,8 +318,10 @@ export const HeroSection = () => {
                 backgroundClip: 'text',
               }}
             >
-              Reflect
+              Collect User Feedback
             </motion.span>
+            <br />
+            <span className="text-white/90">in 3 Minutes</span>
           </motion.h1>
 
           <motion.p
@@ -328,7 +330,8 @@ export const HeroSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
           >
-            Experience feedback in real-time. Watch your input transform into insights instantly.
+            The fastest way to collect bug reports, feature requests, and user insights.
+            <strong className="text-white"> No coding required.</strong> Free plan available.
           </motion.p>
 
           <motion.button
