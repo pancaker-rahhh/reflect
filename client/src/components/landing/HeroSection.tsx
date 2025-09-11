@@ -208,6 +208,7 @@ export const HeroSection = () => {
 
   return (
     <motion.div
+      id="hero"
       ref={containerRef}
       className="relative isolate overflow-hidden min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"
       onMouseMove={handleMouseMove}
