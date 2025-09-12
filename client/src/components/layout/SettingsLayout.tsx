@@ -5,22 +5,22 @@ import { cn } from '@/lib/utils'
 const accountSettingsNavigation = [
   {
     name: 'Account',
-    href: '/settings/account',
+    href: '/app/settings/account',
     icon: User,
-    description: 'Personal information'
+    description: 'Personal information',
   },
   {
     name: 'Notifications',
-    href: '/settings/notifications',
+    href: '/app/settings/notifications',
     icon: Bell,
-    description: 'Email preferences'
+    description: 'Email preferences',
   },
   {
     name: 'Billing',
-    href: '/settings/billing',
+    href: '/app/settings/billing',
     icon: CreditCard,
-    description: 'Subscription & billing'
-  }
+    description: 'Subscription & billing',
+  },
 ]
 
 export function AccountSettingsLayout() {
@@ -28,11 +28,8 @@ export function AccountSettingsLayout() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Account Settings</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage your account, notifications, and billing preferences
-        </p>
       </div>
-      
+
       <div className="flex flex-col lg:flex-row gap-6">
         <aside className="lg:w-64 space-y-2">
           <nav className="flex flex-row lg:flex-col gap-1 lg:space-y-1 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0">
@@ -59,7 +56,7 @@ export function AccountSettingsLayout() {
             ))}
           </nav>
         </aside>
-        
+
         <main className="flex-1 min-w-0">
           <Outlet />
         </main>
