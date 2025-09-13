@@ -108,7 +108,7 @@ export function FeatureRequestForm({
         const features = await response.json()
         setExistingFeatures(features)
       } else {
-        // Fallback to mock data if API fails
+        // Fallback to sample data if API fails
         setExistingFeatures([
           {
             id: '1',
@@ -132,7 +132,7 @@ export function FeatureRequestForm({
       }
     } catch (error) {
       console.error('Failed to load features:', error)
-      // Fallback to empty array or mock data
+      // Fallback to empty array
       setExistingFeatures([])
     } finally {
       setIsLoadingFeatures(false)

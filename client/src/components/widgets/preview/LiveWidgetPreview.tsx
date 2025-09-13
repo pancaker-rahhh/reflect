@@ -166,7 +166,7 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
 
   const handleWidgetSubmit = useCallback(
     async (_data: FeedbackData) => {
-      // Mock submission delay for preview
+      // Simulate submission delay for preview
       return new Promise<void>((resolve) => {
         setTimeout(() => {
           // Check if widget has multiple modules to show menu or go to success

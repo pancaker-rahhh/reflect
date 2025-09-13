@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '@/services(mock)/api'
+import { api } from '@/services/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -33,12 +33,14 @@ const notificationTypes = [
   }
 ]
 
+// notification itself isn't implemented yet, so commenting out for now
+
 export function NotificationSettings() {
   const queryClient = useQueryClient()
   
   const { data: settings, isLoading } = useQuery({
     queryKey: ['notification-settings'],
-    queryFn: () => api.getNotificationSettings()
+    // queryFn: () => api.getNotificationSettings()
   })
 
   const updateSettingsMutation = useMutation({
@@ -52,16 +54,16 @@ export function NotificationSettings() {
     }
   })
 
-  const handleToggle = (key: keyof NotificationSettingsType, value: boolean) => {
-    if (!settings) return
+  // const handleToggle = (key: keyof NotificationSettingsType, value: boolean) => {
+    // if (!settings) return
     
-    const newSettings = {
-      ...settings,
-      [key]: value
-    }
+    // const newSettings = {
+    //   ...settings,
+    //   [key]: value
+    // }
     
-    updateSettingsMutation.mutate(newSettings)
-  }
+    // updateSettingsMutation.mutate(newSettings)
+  // }
 
   if (isLoading || !settings) {
     return (
@@ -98,7 +100,7 @@ export function NotificationSettings() {
         <CardContent className="space-y-6">
           {notificationTypes.map((notification) => {
             const Icon = notification.icon
-            const isEnabled = settings[notification.key]
+            // const isEnabled = settings[notification.key]
             
             return (
               <div key={notification.key} className="flex items-start space-x-4">
@@ -115,8 +117,8 @@ export function NotificationSettings() {
                     </Label>
                     <Switch
                       id={notification.key}
-                      checked={isEnabled}
-                      onCheckedChange={(checked) => handleToggle(notification.key, checked)}
+                      // checked={isEnabled}
+                      // onCheckedChange={(checked) => handleToggle(notification.key, checked)}
                       disabled={updateSettingsMutation.isPending}
                     />
                   </div>
