@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy to Railway
-        run: railway up
+        run: railway up --service api
         working-directory: ./api
         env:
           # Railway Authentication
