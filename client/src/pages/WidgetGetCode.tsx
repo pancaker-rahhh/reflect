@@ -32,7 +32,7 @@ export function WidgetGetCode() {
           Could not find the widget you&apos;re looking for. It might have been deleted.
         </p>
         <Button asChild>
-          <Link to="/widgets">
+          <Link to="/app/widgets">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Widgets
           </Link>
@@ -107,7 +107,7 @@ export function WidgetGetCode() {
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button asChild variant="outline">
-            <Link to="/widgets">
+            <Link to="/app/widgets">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Widgets
             </Link>
