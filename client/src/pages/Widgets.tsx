@@ -82,11 +82,11 @@ export function Widgets() {
   }
 
   const handleEditWidget = (widgetId: string) => {
-    navigate(`/widgets/${widgetId}/edit`)
+    navigate(`/app/widgets/${widgetId}/edit`)
   }
 
   const handleGetCode = (widgetId: string) => {
-    navigate(`/widgets/${widgetId}/get-code`)
+    navigate(`/app/widgets/${widgetId}/get-code`)
   }
 
   const confirmDelete = () => {
