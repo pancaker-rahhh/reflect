@@ -1,3 +1,5 @@
+// this is widgets page in the UI
+// 'widget.tsx' is the code for the widget
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
