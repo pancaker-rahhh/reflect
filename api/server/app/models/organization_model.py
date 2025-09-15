@@ -1,6 +1,12 @@
 from typing import List, Optional, TYPE_CHECKING
 from datetime import datetime
-from sqlalchemy import String, ForeignKey, UniqueConstraint, DateTime as DateTimeColumn
+from sqlalchemy import (
+    String,
+    ForeignKey,
+    UniqueConstraint,
+    DateTime as DateTimeColumn,
+    Enum,
+)
 from sqlalchemy.dialects.postgresql import UUID, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 import re
@@ -20,6 +26,12 @@ class OrganizationRole(str, enum.Enum):
     MEMBER = 'member'
 
 
+class SubscriptionPlanEnum(str, enum.Enum):
+    FREE = 'free'
+    PRO_MONTHLY = 'pro_monthly'
+    PRO_YEARLY = 'pro_yearly'
+
+
 class ProjectRole(str, enum.Enum):
     ADMIN = 'admin'
     EDITOR = 'editor'
@@ -34,7 +46,10 @@ class Organization(BaseModel):
         String(100), unique=True, nullable=False, index=True
     )
     description: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
-    subscription_plan: Mapped[str] = mapped_column(String(20), default='free')
+    subscription_plan: Mapped[SubscriptionPlanEnum] = mapped_column(
+        Enum(SubscriptionPlanEnum, values_callable=lambda e: [m.value for m in e]),
+        default=SubscriptionPlanEnum.FREE,
+    )
     subscription_status: Mapped[str] = mapped_column(String(20), default='active')
     subscription_ends_at: Mapped[Optional[datetime]] = mapped_column(
         DateTimeColumn(timezone=True), nullable=True

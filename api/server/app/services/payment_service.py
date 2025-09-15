@@ -3,7 +3,7 @@ import hmac
 import json
 from typing import Dict, Any
 from uuid import UUID
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.settings import get_settings
 from app.core.logging import get_logger
@@ -13,7 +13,9 @@ from app.core.subscription_plans import (
     SUBSCRIPTION_STATUS,
 )
 from app.services.subscription_service import subscription_service
+from app.models.organization_model import SubscriptionPlanEnum
 from dodopayments import DodoPayments
+from app.services.notification_service import notification_service
 
 logger = get_logger(__name__)
 settings = get_settings()
@@ -183,7 +185,12 @@ class PaymentService:
             return
 
         # Update subscription details
-        organization.subscription_plan = plan_id or 'pro'
+        if plan_id == 'pro_monthly':
+            organization.subscription_plan = SubscriptionPlanEnum.PRO_MONTHLY
+        elif plan_id == 'pro_yearly':
+            organization.subscription_plan = SubscriptionPlanEnum.PRO_YEARLY
+        else:
+            organization.subscription_plan = SubscriptionPlanEnum.PRO_MONTHLY
         organization.subscription_status = SUBSCRIPTION_STATUS['ACTIVE']
         organization.dodo_subscription_id = subscription_id
         organization.payment_status = PAYMENT_STATUS['SUCCEEDED']
@@ -232,6 +239,14 @@ class PaymentService:
 
         logger.info(
             f'Payment failed for organization {organization_id}, payment_id: {payment_id}'
+        )
+
+        # Send notification (dummy email function for now)
+        customer_email = data.get('customer', {}).get('email')
+        notification_service.send_payment_failed_email(
+            to_email=customer_email,
+            organization_id=str(organization_id),
+            payment_id=payment_id,
         )
 
     async def _handle_payment_cancelled(
@@ -499,6 +514,14 @@ class PaymentService:
             f'Subscription failed for organization {organization_id}, subscription_id: {subscription_id}'
         )
 
+        # Send notification (dummy email function for now)
+        customer_email = data.get('customer', {}).get('email')
+        notification_service.send_subscription_failed_email(
+            to_email=customer_email,
+            organization_id=str(organization_id),
+            subscription_id=subscription_id,
+        )
+
     async def _handle_subscription_renewed(
         self, db: AsyncSession, data: Dict[str, Any]
     ) -> None:
@@ -560,6 +583,104 @@ class PaymentService:
 
         except Exception as e:
             logger.error(f'Failed to cancel subscription: {str(e)}')
+            return False
+
+    async def schedule_subscription_cancellation(
+        self,
+        db: AsyncSession,
+        organization_id: UUID,
+        grace_period_hours: int = 3,
+    ) -> bool:
+        """Mark org for cancellation after a grace period. Does not call Dodo immediately."""
+        from app.services.subscription_service import subscription_service
+
+        organization = await subscription_service.get_organization_subscription(
+            db, organization_id
+        )
+        if not organization:
+            raise ValueError('Organization not found')
+
+        organization.subscription_status = SUBSCRIPTION_STATUS['ACTIVE']
+        organization.subscription_ends_at = datetime.now(timezone.utc) + timedelta(
+            hours=grace_period_hours
+        )
+        organization.updated_at = datetime.now(timezone.utc)
+        await db.commit()
+        logger.info(
+            f'Scheduled subscription cancellation for organization {organization_id} after {grace_period_hours} hours'
+        )
+        return True
+
+    async def undo_scheduled_cancellation(
+        self, db: AsyncSession, organization_id: UUID
+    ) -> bool:
+        """Undo a scheduled cancellation if within grace period."""
+        from app.services.subscription_service import subscription_service
+
+        organization = await subscription_service.get_organization_subscription(
+            db, organization_id
+        )
+        if not organization:
+            raise ValueError('Organization not found')
+
+        organization.subscription_ends_at = None
+        organization.updated_at = datetime.now(timezone.utc)
+        await db.commit()
+        logger.info(
+            f'Cancelled scheduled subscription cancellation for organization {organization_id}'
+        )
+        return True
+
+    async def change_subscription_plan(
+        self,
+        db: AsyncSession,
+        organization_id: UUID,
+        new_plan_id: str,
+        proration_billing_mode: str = 'difference_immediately',
+        quantity: int = 1,
+    ) -> bool:
+        """Change Dodo subscription plan for an organization."""
+        if not self.client:
+            raise ValueError('Dodo Payments client not initialized')
+
+        plan = get_plan_by_id(new_plan_id)
+        if not plan or not plan.get('dodo_product_id'):
+            raise ValueError(f'Invalid plan ID: {new_plan_id}')
+
+        from app.services.subscription_service import subscription_service
+
+        organization = await subscription_service.get_organization_subscription(
+            db, organization_id
+        )
+        if not organization or not organization.dodo_subscription_id:
+            raise ValueError('Active subscription not found for organization')
+
+        try:
+            self.client.subscriptions.change_plan(
+                subscription_id=organization.dodo_subscription_id,
+                product_id=plan['dodo_product_id'],
+                proration_billing_mode=proration_billing_mode,
+                quantity=quantity,
+            )
+
+            # Update local state optimistically; webhook will reconcile
+            if new_plan_id == 'pro_monthly':
+                organization.subscription_plan = SubscriptionPlanEnum.PRO_MONTHLY
+            elif new_plan_id == 'pro_yearly':
+                organization.subscription_plan = SubscriptionPlanEnum.PRO_YEARLY
+            else:
+                organization.subscription_plan = SubscriptionPlanEnum.PRO_MONTHLY
+            organization.updated_at = datetime.now(timezone.utc)
+            await db.commit()
+
+            logger.info(
+                f'Changed plan for organization {organization_id} to {new_plan_id}'
+            )
+            return True
+        except Exception as e:
+            logger.error(
+                f'Failed to change plan for organization {organization_id}: {str(e)}'
+            )
             return False
 
 

@@ -74,6 +74,21 @@ export const paymentApi = {
   ): Promise<{ success: boolean; message: string; organization_id: string }> =>
     apiClient.post(`/organizations/${organizationId}/payment/cancel-subscription`),
 
+  undoCancelSubscription: (
+    organizationId: string
+  ): Promise<{ success: boolean; message: string; organization_id: string }> =>
+    apiClient.post(`/organizations/${organizationId}/payment/cancel-subscription/undo`),
+
+  changePlan: (
+    organizationId: string,
+    newPlanId: string,
+    quantity = 1
+  ): Promise<{ success: boolean; message: string; organization_id: string; new_plan_id: string }> =>
+    apiClient.post(`/organizations/${organizationId}/payment/change-plan`, {
+      new_plan_id: newPlanId,
+      quantity,
+    }),
+
   getPaymentPlans: (organizationId: string): Promise<PaymentPlansResponse> =>
     apiClient.get(`/organizations/${organizationId}/payment/plans`),
 }

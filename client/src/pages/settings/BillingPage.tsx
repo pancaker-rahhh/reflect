@@ -13,23 +13,60 @@ import { useSubscription } from '@/hooks/useSubscription'
 export default function BillingPage() {
   const navigate = useNavigate()
   const { subscription, isLoading: subscriptionLoading } = useSubscription()
-  const { cancelSubscription, isCancelling } = usePayment()
+  const {
+    cancelSubscription,
+    undoCancelSubscription,
+    changePlan,
+    isCancelling,
+    isUndoingCancellation,
+    isChangingPlan,
+  } = usePayment()
   const [showUpgrade, setShowUpgrade] = useState(false)
   const [cancellationError, setCancellationError] = useState<string | null>(null)
+  const [changeError, setChangeError] = useState<string | null>(null)
+  const [infoMessage, setInfoMessage] = useState<string | null>(null)
+  const [isCancellationScheduled, setIsCancellationScheduled] = useState(false)
 
   const handleCancelSubscription = async () => {
     if (
-      !confirm('Are you sure you want to cancel your subscription? This action cannot be undone.')
+      !confirm('Are you sure you want to cancel your subscription? You can undo within 3 hours.')
     ) {
       return
     }
 
     try {
       setCancellationError(null)
+      setInfoMessage(null)
       await cancelSubscription()
-      // The subscription will be updated via the webhook
+      setInfoMessage('Cancellation scheduled. You can undo within 3 hours.')
+      setIsCancellationScheduled(true)
     } catch (error) {
       setCancellationError(error instanceof Error ? error.message : 'Failed to cancel subscription')
+    }
+  }
+
+  const handleUndoCancellation = async () => {
+    try {
+      setCancellationError(null)
+      setInfoMessage(null)
+      await undoCancelSubscription()
+      setInfoMessage('Cancellation has been undone.')
+      setIsCancellationScheduled(false)
+    } catch (error) {
+      setCancellationError(error instanceof Error ? error.message : 'Failed to undo cancellation')
+    }
+  }
+
+  const handleChangePlan = async (target: 'monthly' | 'yearly') => {
+    if (!subscription) return
+    try {
+      setChangeError(null)
+      setInfoMessage(null)
+      const newPlanId = target === 'monthly' ? 'pro_monthly' : 'pro_yearly'
+      await changePlan(newPlanId)
+      setInfoMessage('Plan change initiated successfully.')
+    } catch (error) {
+      setChangeError(error instanceof Error ? error.message : 'Failed to change plan')
     }
   }
 
@@ -108,7 +145,9 @@ export default function BillingPage() {
               <>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-semibold capitalize">{subscription.plan} Plan</h3>
+                    <h3 className="text-lg font-semibold capitalize">
+                      {subscription.plan.replace('_', ' ')} Plan
+                    </h3>
                     <p className="text-sm text-muted-foreground">Status: {subscription.status}</p>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -116,6 +155,22 @@ export default function BillingPage() {
                     {getStatusBadge(subscription.status)}
                   </div>
                 </div>
+
+                {infoMessage && (
+                  <Alert>
+                    <AlertDescription>{infoMessage}</AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Failure banners */}
+                {subscription.status === 'past_due' && (
+                  <Alert variant="destructive">
+                    <AlertDescription className="flex items-center justify-between">
+                      <span>Payment failed. Please try again to restore service.</span>
+                      <Button onClick={() => setShowUpgrade(true)}>Retry Payment</Button>
+                    </AlertDescription>
+                  </Alert>
+                )}
 
                 <Separator />
 
@@ -164,17 +219,41 @@ export default function BillingPage() {
                     </div>
                   </div>
 
-                  <div className="flex space-x-2">
+                  <div className="flex flex-col md:flex-row gap-2">
                     {subscription.plan === 'free' ? (
                       <Button onClick={() => setShowUpgrade(true)}>Upgrade Plan</Button>
                     ) : (
-                      <Button
-                        variant="outline"
-                        onClick={handleCancelSubscription}
-                        disabled={isCancelling}
-                      >
-                        {isCancelling ? 'Cancelling...' : 'Cancel Subscription'}
-                      </Button>
+                      <>
+                        <div className="flex gap-2">
+                          {subscription.plan === 'pro_monthly' && (
+                            <Button
+                              variant="outline"
+                              onClick={() => handleChangePlan('yearly')}
+                              disabled={isChangingPlan}
+                            >
+                              {isChangingPlan ? 'Changing…' : 'Switch to Yearly'}
+                            </Button>
+                          )}
+                          {subscription.plan === 'pro_yearly' && (
+                            <Button
+                              variant="outline"
+                              onClick={() => handleChangePlan('monthly')}
+                              disabled={isChangingPlan}
+                              className="w-full bg-primary/90 text-white hover:bg-primary hover:text-white"
+                            >
+                              {isChangingPlan ? 'Changing…' : 'Switch to Monthly'}
+                            </Button>
+                          )}
+                        </div>
+                        <Button
+                          variant="outline"
+                          onClick={handleCancelSubscription}
+                          disabled={isCancelling}
+                          className="w-full hover:bg-red-500 hover:text-white"
+                        >
+                          {isCancelling ? 'Cancelling…' : 'Cancel Subscription'}
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -183,6 +262,32 @@ export default function BillingPage() {
                   <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>{cancellationError}</AlertDescription>
+                  </Alert>
+                )}
+
+                {changeError && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{changeError}</AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Undo cancellation banner during grace window */}
+                {subscription.status !== 'cancelled' && isCancellationScheduled && (
+                  <Alert>
+                    <AlertDescription className="flex items-center justify-between">
+                      <span>
+                        Cancellation scheduled. Your subscription will end soon. You can undo within
+                        the grace period.
+                      </span>
+                      <Button
+                        variant="outline"
+                        onClick={handleUndoCancellation}
+                        disabled={isUndoingCancellation}
+                      >
+                        {isUndoingCancellation ? 'Undoing…' : 'Undo Cancellation'}
+                      </Button>
+                    </AlertDescription>
                   </Alert>
                 )}
               </>

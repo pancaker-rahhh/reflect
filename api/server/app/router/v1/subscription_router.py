@@ -15,14 +15,21 @@ async def get_subscription_plan(
     organization_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> Dict[str, str]:
+) -> Dict[str, Any]:
     plan = await subscription_service.get_subscription_plan(db, organization_id)
     status = await subscription_service.get_subscription_status(db, organization_id)
+    organization = await subscription_service.get_organization_subscription(
+        db, organization_id
+    )
 
     return {
         'plan': plan,
         'status': status,
         'organization_id': str(organization_id),
+        'subscription_ends_at': organization.subscription_ends_at.isoformat()
+        if getattr(organization, 'subscription_ends_at', None)
+        else None,
+        'payment_status': getattr(organization, 'payment_status', None),
     }
 
 

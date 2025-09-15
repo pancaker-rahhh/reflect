@@ -45,6 +45,34 @@ export function usePayment() {
     },
   })
 
+  // Undo cancel subscription mutation
+  const undoCancelSubscriptionMutation = useMutation({
+    mutationFn: (organizationId: string) => paymentApi.undoCancelSubscription(organizationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subscription-plan'] })
+      queryClient.invalidateQueries({ queryKey: ['subscription-limits'] })
+      queryClient.invalidateQueries({ queryKey: ['subscription-features'] })
+    },
+  })
+
+  // Change plan mutation
+  const changePlanMutation = useMutation({
+    mutationFn: ({
+      organizationId,
+      newPlanId,
+      quantity = 1,
+    }: {
+      organizationId: string
+      newPlanId: string
+      quantity?: number
+    }) => paymentApi.changePlan(organizationId, newPlanId, quantity),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subscription-plan'] })
+      queryClient.invalidateQueries({ queryKey: ['subscription-limits'] })
+      queryClient.invalidateQueries({ queryKey: ['subscription-features'] })
+    },
+  })
+
   // Get payment status
   const getPaymentStatus = async (paymentId: string) => {
     if (!currentOrganization?.id) return null
@@ -78,6 +106,26 @@ export function usePayment() {
     return cancelSubscriptionMutation.mutateAsync(currentOrganization.id)
   }
 
+  const undoCancelSubscription = () => {
+    if (!currentOrganization?.id) {
+      throw new Error('Organization not found')
+    }
+
+    return undoCancelSubscriptionMutation.mutateAsync(currentOrganization.id)
+  }
+
+  const changePlan = (newPlanId: string, quantity = 1) => {
+    if (!currentOrganization?.id) {
+      throw new Error('Organization not found')
+    }
+
+    return changePlanMutation.mutateAsync({
+      organizationId: currentOrganization.id,
+      newPlanId,
+      quantity,
+    })
+  }
+
   return {
     // Data
     paymentPlans: paymentPlans?.plans || [],
@@ -87,17 +135,28 @@ export function usePayment() {
     isLoading: plansLoading,
     isCreatingPayment: createPaymentLinkMutation.isPending,
     isCancelling: cancelSubscriptionMutation.isPending,
+    isUndoingCancellation: undoCancelSubscriptionMutation.isPending,
+    isChangingPlan: changePlanMutation.isPending,
 
     // Errors
-    error: plansError || createPaymentLinkMutation.error || cancelSubscriptionMutation.error,
+    error:
+      plansError ||
+      createPaymentLinkMutation.error ||
+      cancelSubscriptionMutation.error ||
+      undoCancelSubscriptionMutation.error ||
+      changePlanMutation.error,
 
     // Actions
     createPaymentLink,
     cancelSubscription,
+    undoCancelSubscription,
+    changePlan,
     getPaymentStatus,
 
     // Mutations for direct access
     createPaymentLinkMutation,
     cancelSubscriptionMutation,
+    undoCancelSubscriptionMutation,
+    changePlanMutation,
   }
 }

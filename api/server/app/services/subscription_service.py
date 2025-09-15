@@ -25,7 +25,12 @@ class SubscriptionService:
         organization = await self.get_organization_subscription(db, organization_id)
         if not organization:
             return 'free'
-        return organization.subscription_plan or 'free'
+        plan = organization.subscription_plan
+        # Support Enum or string storage
+        try:
+            return plan.value if hasattr(plan, 'value') else (plan or 'free')
+        except Exception:
+            return 'free'
 
     async def get_subscription_status(
         self, db: AsyncSession, organization_id: UUID
@@ -39,13 +44,21 @@ class SubscriptionService:
         self, db: AsyncSession, organization_id: UUID
     ) -> Dict[str, int]:
         plan = await self.get_subscription_plan(db, organization_id)
-        return PLAN_LIMITS.get(plan, PLAN_LIMITS['free'])
+        plan_key = plan
+        return PLAN_LIMITS.get(
+            'pro' if plan in ('pro_monthly', 'pro_yearly') else plan_key,
+            PLAN_LIMITS['free'],
+        )
 
     async def get_plan_features(
         self, db: AsyncSession, organization_id: UUID
     ) -> Dict[str, bool]:
         plan = await self.get_subscription_plan(db, organization_id)
-        return FEATURE_FLAGS.get(plan, FEATURE_FLAGS['free'])
+        plan_key = plan
+        return FEATURE_FLAGS.get(
+            'pro' if plan in ('pro_monthly', 'pro_yearly') else plan_key,
+            FEATURE_FLAGS['free'],
+        )
 
     async def is_feature_enabled(
         self, db: AsyncSession, organization_id: UUID, feature: str
@@ -80,6 +93,19 @@ class SubscriptionService:
         return await self.update_subscription_plan(
             db, organization_id, 'free', 'cancelled'
         )
+
+    async def list_organizations_due_cancellation(
+        self, db: AsyncSession
+    ) -> List[Organization]:
+        """Return organizations whose scheduled cancellation time has passed."""
+        now = datetime.now(timezone.utc)
+        stmt = select(Organization).where(
+            Organization.subscription_ends_at.is_not(None),
+            Organization.subscription_ends_at <= now,
+            Organization.subscription_status != 'cancelled',
+        )
+        result = await db.execute(stmt)
+        return list(result.scalars().all())
 
 
 subscription_service = SubscriptionService()
