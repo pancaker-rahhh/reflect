@@ -41,20 +41,8 @@ interface PaymentFormProps {
   onError?: (error: string) => void
 }
 
-// Simple function to format country codes into readable names
-const formatCountryName = (code: string): string => {
-  return code
-    .split('')
-    .map((char, index) => (index === 0 ? char.toUpperCase() : char.toLowerCase()))
-    .join('')
-    .replace(/([A-Z])/g, ' $1')
-    .trim()
-}
-
-const COUNTRIES = supportedCountries.map((code) => ({
-  code,
-  name: formatCountryName(code),
-}))
+// Use the country data directly from the JSON file
+const COUNTRIES = supportedCountries
 
 export function PaymentForm({
   planId,
