@@ -14,8 +14,6 @@ router = APIRouter()
 
 
 class PaymentLinkRequest(BaseModel):
-    """Request model for creating payment links."""
-
     plan_id: str = Field(..., description='Subscription plan ID')
     email: str = Field(..., description='Customer email')
     firstName: str = Field(..., description='Customer first name')
@@ -28,8 +26,6 @@ class PaymentLinkRequest(BaseModel):
 
 
 class PaymentLinkResponse(BaseModel):
-    """Response model for payment link creation."""
-
     payment_link: str
     subscription_id: str
     payment_id: str

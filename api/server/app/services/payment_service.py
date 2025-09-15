@@ -62,6 +62,10 @@ class PaymentService:
             checkout_url += f'&firstName={user_details.get("firstName")}'
             checkout_url += f'&lastName={user_details.get("lastName")}'
 
+            # Add organization metadata for webhook processing
+            checkout_url += f'&metadata[organization_id]={organization_id}'
+            checkout_url += f'&metadata[plan_id]={plan_id}'
+
             logger.info(
                 f'Created payment link for organization {organization_id}, plan {plan_id}',
                 extra={
@@ -202,7 +206,6 @@ class PaymentService:
     async def _handle_payment_failed(
         self, db: AsyncSession, data: Dict[str, Any]
     ) -> None:
-        """Handle failed payment webhook."""
         payment_id = data.get('id')
         metadata = data.get('metadata', {})
         organization_id = metadata.get('organization_id')
@@ -234,7 +237,6 @@ class PaymentService:
     async def _handle_payment_cancelled(
         self, db: AsyncSession, data: Dict[str, Any]
     ) -> None:
-        """Handle cancelled payment webhook."""
         payment_id = data.get('id')
         metadata = data.get('metadata', {})
         organization_id = metadata.get('organization_id')
@@ -266,7 +268,6 @@ class PaymentService:
     async def _handle_payment_processing(
         self, db: AsyncSession, data: Dict[str, Any]
     ) -> None:
-        """Handle processing payment webhook."""
         payment_id = data.get('id')
         metadata = data.get('metadata', {})
         organization_id = metadata.get('organization_id')
@@ -298,7 +299,6 @@ class PaymentService:
     async def _handle_subscription_created(
         self, db: AsyncSession, data: Dict[str, Any]
     ) -> None:
-        """Handle subscription created webhook."""
         subscription_id = data.get('id')
         customer_email = data.get('customer', {}).get('email')
         metadata = data.get('metadata', {})
@@ -332,7 +332,6 @@ class PaymentService:
     async def _handle_subscription_updated(
         self, db: AsyncSession, data: Dict[str, Any]
     ) -> None:
-        """Handle subscription updated webhook."""
         subscription_id = data.get('id')
         status = data.get('status')
         metadata = data.get('metadata', {})
@@ -375,7 +374,6 @@ class PaymentService:
     async def _handle_subscription_cancelled(
         self, db: AsyncSession, data: Dict[str, Any]
     ) -> None:
-        """Handle subscription cancelled webhook."""
         subscription_id = data.get('id')
         metadata = data.get('metadata', {})
         organization_id = metadata.get('organization_id')
@@ -408,7 +406,6 @@ class PaymentService:
     async def _handle_subscription_active(
         self, db: AsyncSession, data: Dict[str, Any]
     ) -> None:
-        """Handle subscription active webhook."""
         subscription_id = data.get('id')
         metadata = data.get('metadata', {})
         organization_id = metadata.get('organization_id')
@@ -441,7 +438,6 @@ class PaymentService:
     async def _handle_subscription_expired(
         self, db: AsyncSession, data: Dict[str, Any]
     ) -> None:
-        """Handle subscription expired webhook."""
         subscription_id = data.get('id')
         metadata = data.get('metadata', {})
         organization_id = metadata.get('organization_id')
@@ -474,7 +470,6 @@ class PaymentService:
     async def _handle_subscription_failed(
         self, db: AsyncSession, data: Dict[str, Any]
     ) -> None:
-        """Handle subscription failed webhook."""
         subscription_id = data.get('id')
         metadata = data.get('metadata', {})
         organization_id = metadata.get('organization_id')
@@ -507,7 +502,6 @@ class PaymentService:
     async def _handle_subscription_renewed(
         self, db: AsyncSession, data: Dict[str, Any]
     ) -> None:
-        """Handle subscription renewed webhook."""
         subscription_id = data.get('id')
         metadata = data.get('metadata', {})
         organization_id = metadata.get('organization_id')
@@ -540,16 +534,6 @@ class PaymentService:
     async def cancel_subscription(
         self, db: AsyncSession, organization_id: UUID
     ) -> bool:
-        """
-        Cancel subscription through Dodo Payments.
-
-        Args:
-            db: Database session
-            organization_id: Organization ID
-
-        Returns:
-            True if cancellation successful
-        """
         if not self.client:
             raise ValueError('Dodo Payments client not initialized')
 
@@ -565,7 +549,6 @@ class PaymentService:
                 organization.dodo_subscription_id, status='cancelled'
             )
 
-            # Update local database
             organization.subscription_status = SUBSCRIPTION_STATUS['CANCELLED']
             organization.subscription_plan = 'free'
             organization.updated_at = datetime.now(timezone.utc)
