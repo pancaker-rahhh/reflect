@@ -41,6 +41,17 @@ class Organization(BaseModel):
     subscription_ends_at: Mapped[Optional[datetime]] = mapped_column(
         DateTimeColumn(timezone=True), nullable=True
     )
+
+    # Dodo Payments fields
+    dodo_subscription_id: Mapped[Optional[str]] = mapped_column(
+        String(255), nullable=True, index=True
+    )
+    dodo_customer_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    payment_status: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    last_payment_date: Mapped[Optional[datetime]] = mapped_column(
+        DateTimeColumn(timezone=True), nullable=True
+    )
+    payment_metadata: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     settings: Mapped[dict] = mapped_column(JSON, default=dict)
     created_by: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),

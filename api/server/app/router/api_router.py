@@ -17,6 +17,8 @@ from app.router.v1 import (
     roadmap_integrations_router,
     usage_tracking_router,
     subscription_router,
+    payment_router,
+    webhook_router,
     upgrade_router,
 )
 
@@ -40,6 +42,16 @@ api_router.include_router(
     subscription_router.router,
     prefix='/organizations/{organization_id}',
     tags=['Subscription'],
+)
+api_router.include_router(
+    payment_router.router,
+    prefix='/organizations/{organization_id}',
+    tags=['Payment'],
+)
+api_router.include_router(
+    webhook_router.router,
+    prefix='/organization/payments',
+    tags=['Webhook'],
 )
 api_router.include_router(
     roadmap_integrations_router.router,

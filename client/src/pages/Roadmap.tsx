@@ -618,15 +618,11 @@ export function RoadmapPage() {
                             'flex-shrink-0 w-80 bg-gradient-to-b from-background via-card/50 to-muted/20 rounded-xl border border-border/50 shadow-sm transition-all duration-500 ease-out hover:shadow-md hover:border-border/70 scroll-snap-start',
                             dragOverColumn === column.id &&
                               'ring-2 ring-primary/60 ring-offset-2 shadow-lg scale-[1.02] bg-gradient-to-b from-primary/5 via-primary/10 to-primary/5',
-                            'animate-in slide-in-from-left-2 duration-700 hover-lift',
-                            columnIndex > 0 && 'delay-[calc(var(--index)*150ms)]'
+                            'animate-in slide-in-from-left-2 duration-700 hover-lift'
                           )}
-                          style={
-                            {
-                              '--index': columnIndex,
-                              animationDelay: `${columnIndex * 150}ms`,
-                            } as React.CSSProperties
-                          }
+                          style={{
+                            animationDelay: `${columnIndex * 150}ms`,
+                          }}
                           onDragOver={handleDragOver}
                           onDragEnter={(e) => handleDragEnter(e, column.id)}
                           onDragLeave={handleDragLeave}

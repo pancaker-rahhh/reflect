@@ -18,7 +18,7 @@ export function FreeTierAlert() {
   const { getUsageInfo } = useSubscription()
 
   const handleUpgrade = () => {
-    navigate('/app/settings/billing')
+    navigate('/app/settings/billing-new')
   }
 
   const isFreeTier =

@@ -6,20 +6,15 @@ from datetime import datetime, timezone
 from app.models.organization_model import Organization
 from app.core.logging import get_logger
 from app.core.subscription_constants import PLAN_LIMITS, FEATURE_FLAGS
+from app.core.subscription_plans import get_active_plans
 
 logger = get_logger(__name__)
 
 
 class SubscriptionService:
-    """
-    Service for managing subscription plans and billing.
-    This service handles subscription-related operations separate from usage tracking.
-    """
-
     async def get_organization_subscription(
         self, db: AsyncSession, organization_id: UUID
     ) -> Optional[Organization]:
-        """Get organization subscription details."""
         stmt = select(Organization).where(Organization.id == organization_id)
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
@@ -27,7 +22,6 @@ class SubscriptionService:
     async def get_subscription_plan(
         self, db: AsyncSession, organization_id: UUID
     ) -> str:
-        """Get the current subscription plan for an organization."""
         organization = await self.get_organization_subscription(db, organization_id)
         if not organization:
             return 'free'
@@ -36,7 +30,6 @@ class SubscriptionService:
     async def get_subscription_status(
         self, db: AsyncSession, organization_id: UUID
     ) -> str:
-        """Get the current subscription status for an organization."""
         organization = await self.get_organization_subscription(db, organization_id)
         if not organization:
             return 'inactive'
@@ -45,47 +38,28 @@ class SubscriptionService:
     async def get_plan_limits(
         self, db: AsyncSession, organization_id: UUID
     ) -> Dict[str, int]:
-        """Get plan limits for an organization."""
         plan = await self.get_subscription_plan(db, organization_id)
         return PLAN_LIMITS.get(plan, PLAN_LIMITS['free'])
 
     async def get_plan_features(
         self, db: AsyncSession, organization_id: UUID
     ) -> Dict[str, bool]:
-        """Get plan features for an organization."""
         plan = await self.get_subscription_plan(db, organization_id)
         return FEATURE_FLAGS.get(plan, FEATURE_FLAGS['free'])
 
     async def is_feature_enabled(
         self, db: AsyncSession, organization_id: UUID, feature: str
     ) -> bool:
-        """Check if a specific feature is enabled for an organization."""
         features = await self.get_plan_features(db, organization_id)
         return features.get(feature, False)
 
     async def get_available_plans(self) -> List[Dict[str, any]]:
         """Get all available subscription plans."""
-        return [
-            {
-                'name': 'free',
-                'display_name': 'Free',
-                'limits': PLAN_LIMITS['free'],
-                'features': FEATURE_FLAGS['free'],
-                'price': 0,
-            },
-            {
-                'name': 'pro',
-                'display_name': 'Pro',
-                'limits': PLAN_LIMITS['pro'],
-                'features': FEATURE_FLAGS['pro'],
-                'price': 29,  # This should be configured elsewhere
-            },
-        ]
+        return get_active_plans()
 
     async def update_subscription_plan(
         self, db: AsyncSession, organization_id: UUID, plan: str, status: str = 'active'
     ) -> bool:
-        """Update an organization's subscription plan."""
         organization = await self.get_organization_subscription(db, organization_id)
         if not organization:
             return False
@@ -103,7 +77,6 @@ class SubscriptionService:
     async def cancel_subscription(
         self, db: AsyncSession, organization_id: UUID
     ) -> bool:
-        """Cancel an organization's subscription."""
         return await self.update_subscription_plan(
             db, organization_id, 'free', 'cancelled'
         )

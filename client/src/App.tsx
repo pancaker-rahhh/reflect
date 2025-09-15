@@ -49,6 +49,12 @@ const NotificationSettings = lazy(() =>
 const BillingSettings = lazy(() =>
   import('@/pages/settings/BillingSettings').then((m) => ({ default: m.BillingSettings }))
 )
+const BillingPage = lazy(() =>
+  import('@/pages/settings/BillingPage').then((m) => ({ default: m.default }))
+)
+const PaymentStatus = lazy(() =>
+  import('@/pages/PaymentStatus').then((m) => ({ default: m.default }))
+)
 const ProjectSettings = lazy(() =>
   import('@/pages/settings/ProjectSettings').then((m) => ({ default: m.ProjectSettings }))
 )
@@ -80,6 +86,7 @@ function App() {
                   <Route path="/public/roadmap/:publicSlug" element={<PublicRoadmap />} />
                   <Route path="/public/r/:subdomain" element={<PublicRoadmap />} />
                   <Route path="/widget-view" element={<WidgetView />} />
+                  <Route path="/payment-status" element={<PaymentStatus />} />
 
                   {/* Onboarding route */}
                   <Route
@@ -122,6 +129,7 @@ function App() {
                       <Route path="account" element={<AccountSettings />} />
                       <Route path="notifications" element={<NotificationSettings />} />
                       <Route path="billing" element={<BillingSettings />} />
+                      <Route path="billing-new" element={<BillingPage />} />
                     </Route>
                     <Route path="settings/project" element={<ProjectSettings />} />
                     <Route path="settings/roadmap" element={<RoadmapSettings />} />

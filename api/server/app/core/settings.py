@@ -34,11 +34,13 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # CORS
-    CORS_ORIGINS: str = 'http://localhost:3000,http://localhost:5173,http://localhost:5174'
+    CORS_ORIGINS: str = (
+        'http://localhost:3000,http://localhost:5173,http://localhost:5174'
+    )
     CORS_HEADERS: str = '*'
 
     # Frontend & Email Configuration
-    FRONTEND_URL: str = 'http://localhost:3000'
+    FRONTEND_URL: str = 'http://localhost:5173'
     EMAIL_FROM: str = 'noreply@reflect.app'
     EMAIL_FROM_NAME: str = 'Reflect'
 
@@ -65,6 +67,18 @@ class Settings(BaseSettings):
     CDN_BASE_URL: str = 'https://cdn.example.com'
     CDN_ZONE_ID: Optional[str] = None
     CDN_API_TOKEN: Optional[str] = None
+
+    # Dodo Payments Test Configuration
+    DODO_TEST_API_KEY: str = ''
+    DODO_TEST_PRODUCT_ID_PRO_MONTHLY: str = ''
+    DODO_TEST_PRODUCT_ID_PRO_YEARLY: str = ''
+    # Dodo Payments Configuration
+    DODO_API_KEY: str = ''
+    DODO_WEBHOOK_SECRET: str = ''
+    DODO_RETURN_URL: str = ''
+    DODO_PRODUCT_ID_PRO_MONTHLY: str = ''
+    DODO_PRODUCT_ID_PRO_YEARLY: str = ''
+
 
     model_config = SettingsConfigDict(
         env_file='.env', case_sensitive=True, extra='ignore'
