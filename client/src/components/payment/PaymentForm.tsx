@@ -56,6 +56,7 @@ export function PaymentForm({
     register,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors, isValid },
   } = useForm<PaymentFormData>({
     resolver: zodResolver(paymentFormSchema),
@@ -111,7 +112,12 @@ export function PaymentForm({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {error && (
             <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription className="flex items-center justify-between">
+                <span>{error}</span>
+                <Button variant="outline" size="sm" onClick={() => setError(null)} className="ml-2">
+                  Dismiss
+                </Button>
+              </AlertDescription>
             </Alert>
           )}
 
@@ -184,19 +190,35 @@ export function PaymentForm({
             {errors.country && <p className="text-sm text-destructive">{errors.country.message}</p>}
           </div>
 
-          <Button type="submit" className="w-full" disabled={!isValid || isLoading}>
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-                <CreditCard className="mr-2 h-4 w-4" />
-                Continue to Payment
-              </>
+          <div className="space-y-2">
+            <Button type="submit" className="w-full" disabled={!isValid || isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  Continue to Payment
+                </>
+              )}
+            </Button>
+
+            {error && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  setError(null)
+                  reset() // Reset form using React Hook Form
+                }}
+              >
+                Try Again
+              </Button>
             )}
-          </Button>
+          </div>
         </form>
 
         <div className="mt-4 text-center text-sm text-muted-foreground">

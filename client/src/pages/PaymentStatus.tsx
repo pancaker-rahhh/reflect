@@ -139,7 +139,7 @@ function PaymentStatusContent() {
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <Card className="border-0 shadow-lg">
         <CardHeader className="text-center pb-6">
-          <div className="mb-6">{config.icon}</div>
+          <div className="flex justify-center mb-6">{config.icon}</div>
           <CardTitle className={`text-3xl font-bold ${config.color}`}>{config.title}</CardTitle>
           <CardDescription className="text-lg mt-2">{config.description}</CardDescription>
         </CardHeader>

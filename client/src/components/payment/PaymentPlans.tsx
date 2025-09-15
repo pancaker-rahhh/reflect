@@ -64,6 +64,7 @@ export function PaymentPlans({ onPlanSelect: _onPlanSelect, selectedPlanId }: Pa
 
   const handlePaymentError = (error: string) => {
     setError(error)
+    // Keep the payment form open so user can retry
   }
 
   if (isLoading) {
@@ -100,10 +101,21 @@ export function PaymentPlans({ onPlanSelect: _onPlanSelect, selectedPlanId }: Pa
           onError={handlePaymentError}
         />
 
-        <div className="text-center">
-          <Button variant="outline" onClick={() => setShowPaymentForm(false)}>
+        <div className="text-center space-y-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setShowPaymentForm(false)
+              setError(null) // Clear any errors when going back
+            }}
+          >
             Back to Plans
           </Button>
+          {error && (
+            <p className="text-sm text-muted-foreground">
+              Having trouble? You can go back and try a different plan.
+            </p>
+          )}
         </div>
       </div>
     )
