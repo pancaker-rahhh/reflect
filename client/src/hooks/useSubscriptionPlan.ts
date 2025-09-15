@@ -1,11 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAppContext } from '@/context/AppContext'
-import {
-  subscriptionApi,
-  type SubscriptionPlan,
-  type SubscriptionLimits,
-  type SubscriptionFeatures,
-} from '@/lib/api/subscription'
+import { subscriptionApi, type SubscriptionFeatures } from '@/lib/api/subscription'
 
 export function useSubscriptionPlan() {
   const { currentOrganization } = useAppContext()

@@ -76,13 +76,13 @@ function PaymentStatusContent() {
   const config = PAYMENT_STATUS_CONFIG[status] || PAYMENT_STATUS_CONFIG.processing
 
   // Fetch organization data to verify subscription status
-  const { data: organizations, refetch } = useQuery({
+  const { refetch } = useQuery({
     queryKey: ['organizations', 'my'],
     queryFn: () => organizationApi.getMy(),
     enabled: status === 'succeeded' && !isVerifying,
   })
 
-  const _organization = organizations?.[0]
+  // const _organization = organizations?.[0]
 
   useEffect(() => {
     // Simulate loading for better UX

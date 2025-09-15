@@ -19,10 +19,6 @@ class PaymentLinkRequest(BaseModel):
     firstName: str = Field(..., description='Customer first name')
     lastName: str = Field(..., description='Customer last name')
     country: str = Field(..., description='Customer country code')
-    city: str = Field(..., description='Customer city')
-    state: str = Field(..., description='Customer state/province')
-    street: str = Field(..., description='Customer street address')
-    zipcode: str = Field(..., description='Customer ZIP/postal code')
 
 
 class PaymentLinkResponse(BaseModel):
@@ -55,10 +51,6 @@ async def create_payment_link(
             'firstName': request.firstName,
             'lastName': request.lastName,
             'country': request.country,
-            'city': request.city,
-            'state': request.state,
-            'street': request.street,
-            'zipcode': request.zipcode,
             'userId': str(current_user.id),
         }
 

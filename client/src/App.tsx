@@ -46,9 +46,6 @@ const AccountSettings = lazy(() =>
 const NotificationSettings = lazy(() =>
   import('@/pages/settings/NotificationSettings').then((m) => ({ default: m.NotificationSettings }))
 )
-const BillingSettings = lazy(() =>
-  import('@/pages/settings/BillingSettings').then((m) => ({ default: m.BillingSettings }))
-)
 const BillingPage = lazy(() =>
   import('@/pages/settings/BillingPage').then((m) => ({ default: m.default }))
 )
@@ -128,8 +125,7 @@ function App() {
                       <Route index element={<Navigate to="account" replace />} />
                       <Route path="account" element={<AccountSettings />} />
                       <Route path="notifications" element={<NotificationSettings />} />
-                      <Route path="billing" element={<BillingSettings />} />
-                      <Route path="billing-new" element={<BillingPage />} />
+                      <Route path="billing" element={<BillingPage />} />
                     </Route>
                     <Route path="settings/project" element={<ProjectSettings />} />
                     <Route path="settings/roadmap" element={<RoadmapSettings />} />

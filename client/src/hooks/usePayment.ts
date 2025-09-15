@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAppContext } from '@/context/AppContext'
-import { paymentApi, type PaymentLinkRequest, type PaymentPlan } from '@/lib/api/payment'
+import { paymentApi, type PaymentLinkRequest } from '@/lib/api/payment'
 
 export function usePayment() {
   const { currentOrganization } = useAppContext()
@@ -101,4 +101,3 @@ export function usePayment() {
     cancelSubscriptionMutation,
   }
 }
-

@@ -6,10 +6,6 @@ export interface PaymentLinkRequest {
   firstName: string
   lastName: string
   country: string
-  city: string
-  state: string
-  street: string
-  zipcode: string
 }
 
 export interface PaymentLinkResponse {

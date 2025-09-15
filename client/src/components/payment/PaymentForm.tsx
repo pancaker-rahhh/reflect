@@ -24,10 +24,6 @@ const paymentFormSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
   country: z.string().min(2, 'Please select a country'),
-  city: z.string().min(2, 'City is required'),
-  state: z.string().min(2, 'State/Province is required'),
-  street: z.string().min(5, 'Street address is required'),
-  zipcode: z.string().min(3, 'ZIP/Postal code is required'),
 })
 
 type PaymentFormData = z.infer<typeof paymentFormSchema>
@@ -82,10 +78,6 @@ export function PaymentForm({
         firstName: data.firstName,
         lastName: data.lastName,
         country: data.country,
-        city: data.city,
-        state: data.state,
-        street: data.street,
-        zipcode: data.zipcode,
       }
 
       const response = await paymentApi.createPaymentLink(currentOrganization.id, request)
@@ -190,32 +182,6 @@ export function PaymentForm({
               </Select>
             </div>
             {errors.country && <p className="text-sm text-destructive">{errors.country.message}</p>}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="street">Street Address</Label>
-            <Input id="street" placeholder="123 Main Street" {...register('street')} />
-            {errors.street && <p className="text-sm text-destructive">{errors.street.message}</p>}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
-              <Input id="city" placeholder="New York" {...register('city')} />
-              {errors.city && <p className="text-sm text-destructive">{errors.city.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="state">State/Province</Label>
-              <Input id="state" placeholder="NY" {...register('state')} />
-              {errors.state && <p className="text-sm text-destructive">{errors.state.message}</p>}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="zipcode">ZIP/Postal Code</Label>
-            <Input id="zipcode" placeholder="10001" {...register('zipcode')} />
-            {errors.zipcode && <p className="text-sm text-destructive">{errors.zipcode.message}</p>}
           </div>
 
           <Button type="submit" className="w-full" disabled={!isValid || isLoading}>
