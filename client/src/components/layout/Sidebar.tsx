@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   Puzzle,
@@ -65,6 +65,7 @@ const navigation: NavItem[] = [
 
 export function Sidebar() {
   const location = useLocation()
+  const navigate = useNavigate()
   const [expandedItems, setExpandedItems] = useState<string[]>(['Feedback & Roadmap', 'Settings'])
   const [isExpanded, setIsExpanded] = useState(false)
   const collapseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -182,7 +183,10 @@ export function Sidebar() {
 
       {isExpanded && (
         <div className="p-3 border-t border-border">
-          <button className="w-full bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors">
+          <button
+            onClick={() => navigate('/app/settings/billing')}
+            className="w-full bg-primary/90 text-primary-foreground rounded-md px-4 py-2 text-sm font-medium hover:bg-primary transition-colors"
+          >
             Upgrade Now
           </button>
         </div>
