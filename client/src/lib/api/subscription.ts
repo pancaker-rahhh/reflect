@@ -26,14 +26,6 @@ export interface FeatureCheck {
   organization_id: string
 }
 
-export interface AvailablePlan {
-  name: string
-  display_name: string
-  limits: SubscriptionLimits
-  features: SubscriptionFeatures
-  price: number
-}
-
 export interface PlanUpdateResponse {
   success: boolean
   plan: string
@@ -59,9 +51,6 @@ export const subscriptionApi = {
 
   checkFeature: (organizationId: string, featureName: string): Promise<FeatureCheck> =>
     apiClient.get(`/organizations/${organizationId}/subscription/feature/${featureName}`),
-
-  getAvailablePlans: (): Promise<AvailablePlan[]> =>
-    apiClient.get(`/organizations/subscription/plans`),
 
   updatePlan: (organizationId: string, plan: string): Promise<PlanUpdateResponse> =>
     apiClient.post(`/organizations/${organizationId}/subscription/update-plan`, { plan }),

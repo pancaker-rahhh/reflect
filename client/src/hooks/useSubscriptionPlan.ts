@@ -5,7 +5,6 @@ import {
   type SubscriptionPlan,
   type SubscriptionLimits,
   type SubscriptionFeatures,
-  type AvailablePlan,
 } from '@/lib/api/subscription'
 
 export function useSubscriptionPlan() {
@@ -48,17 +47,6 @@ export function useSubscriptionPlan() {
     refetchOnWindowFocus: false,
   })
 
-  const {
-    data: availablePlans,
-    isLoading: plansLoading,
-    error: plansError,
-  } = useQuery({
-    queryKey: ['available-plans'],
-    queryFn: () => subscriptionApi.getAvailablePlans(),
-    staleTime: 10 * 60 * 1000, // Plans don't change often
-    refetchOnWindowFocus: false,
-  })
-
   const updatePlanMutation = useMutation({
     mutationFn: ({ organizationId, plan }: { organizationId: string; plan: string }) =>
       subscriptionApi.updatePlan(organizationId, plan),
@@ -78,8 +66,8 @@ export function useSubscriptionPlan() {
     },
   })
 
-  const isLoading = planLoading || limitsLoading || featuresLoading || plansLoading
-  const error = planError || limitsError || featuresError || plansError
+  const isLoading = planLoading || limitsLoading || featuresLoading
+  const error = planError || limitsError || featuresError
 
   const isFeatureEnabled = (feature: string): boolean => {
     return features?.[feature as keyof SubscriptionFeatures] ?? false
@@ -113,7 +101,6 @@ export function useSubscriptionPlan() {
     plan: subscriptionPlan,
     limits,
     features,
-    availablePlans,
     isLoading,
     error,
     isFeatureEnabled,
