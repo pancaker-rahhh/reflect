@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { organizationApi } from '@/lib/api/organization'
 import { upgradeApi } from '@/lib/api/upgrade'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,8 +12,14 @@ import { motion } from 'framer-motion'
 export function BillingSettings() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const location = useLocation()
+  const [isVerifying, setIsVerifying] = useState(false)
 
-  const { data: organizations, isLoading } = useQuery({
+  const {
+    data: organizations,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['organizations', 'my'],
     queryFn: () => organizationApi.getMy(),
   })
@@ -27,7 +34,18 @@ export function BillingSettings() {
     },
   })
 
-  const currentPlan = organization?.subscription_tier || 'free'
+  const currentPlan = organization?.subscription_plan || 'free'
+
+  // Handle payment success verification
+  useEffect(() => {
+    if (location.state?.paymentSuccess) {
+      setIsVerifying(true)
+      // Refetch organization data to get updated subscription status
+      refetch().then(() => {
+        setIsVerifying(false)
+      })
+    }
+  }, [location.state?.paymentSuccess, refetch])
 
   // Get all 3 plans: Free, Pro Monthly, Pro Yearly
   const plans = [
@@ -76,10 +94,29 @@ export function BillingSettings() {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Current Plan</h3>
             <div className="flex items-center gap-2">
-              <Badge variant={currentPlan === 'free' ? 'secondary' : 'default'}>
-                {plans.find((p) => p.id === currentPlan)?.display_name || 'Free'}
-              </Badge>
-              {currentPlan === 'pro' && <Crown className="h-4 w-4 text-yellow-500" />}
+              {isVerifying ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
+                  <span className="text-sm text-muted-foreground">Verifying plan status...</span>
+                </div>
+              ) : (
+                <>
+                  <Badge variant={currentPlan === 'free' ? 'secondary' : 'default'}>
+                    {plans.find((p) => p.id === currentPlan)?.display_name || 'Free'}
+                  </Badge>
+                  {(currentPlan === 'pro' ||
+                    currentPlan === 'pro_monthly' ||
+                    currentPlan === 'pro_yearly') && <Crown className="h-4 w-4 text-yellow-500" />}
+                  {location.state?.paymentSuccess && (
+                    <Badge
+                      variant="default"
+                      className="bg-green-100 text-green-800 border-green-200"
+                    >
+                      ✓ Payment Successful
+                    </Badge>
+                  )}
+                </>
+              )}
             </div>
           </div>
 

@@ -29,7 +29,7 @@ const organizations: Organization[] = [
     id: 'org-1',
     name: 'webapp',
     slug: 'webapp',
-    subscription_tier: 'free',
+    subscription_plan: 'free',
     settings: {},
     created_at: '2024-01-01T00:00:00Z',
     // ownerId: 'user-1', // Not part of Organization interface

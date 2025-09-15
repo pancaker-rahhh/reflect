@@ -108,8 +108,8 @@ export function Dashboard() {
       {(() => {
         const responseUsage = getUsageInfo('responses')
         const isFreeTier =
-          currentOrganization?.subscription_tier === 'free' ||
-          !currentOrganization?.subscription_tier
+          currentOrganization?.subscription_plan === 'free' ||
+          !currentOrganization?.subscription_plan
         if (isFreeTier && responseUsage.percentage >= 80) {
           return (
             <Alert

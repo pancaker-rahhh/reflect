@@ -6,7 +6,6 @@ from sqlalchemy.orm import relationship, Mapped, mapped_column
 import re
 import uuid
 import enum
-
 from app.models.base_model import BaseModel
 
 if TYPE_CHECKING:
@@ -35,7 +34,6 @@ class Organization(BaseModel):
         String(100), unique=True, nullable=False, index=True
     )
     description: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
-    subscription_tier: Mapped[str] = mapped_column(String(50), default='free')
     subscription_plan: Mapped[str] = mapped_column(String(20), default='free')
     subscription_status: Mapped[str] = mapped_column(String(20), default='active')
     subscription_ends_at: Mapped[Optional[datetime]] = mapped_column(

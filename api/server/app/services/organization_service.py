@@ -4,7 +4,6 @@ from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
-
 from app.models.organization_model import (
     Organization,
     OrganizationMember,
