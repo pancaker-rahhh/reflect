@@ -10,8 +10,10 @@ export const ProgressBar: React.FC = () => {
   const skipUserTypeSelection = isFeatureEnabled('SKIP_USER_TYPE_SELECTION')
 
   const getSteps = () => {
-    const baseSteps = [{ key: 'welcome', label: 'Welcome' }]
+    const baseSteps = []
 
+    // Welcome page is not counted as a step - it's just intro UX
+    // Only include actual steps that require user action
     if (!skipUserTypeSelection) {
       baseSteps.push({ key: 'user-type', label: 'Account Type' })
     }
@@ -33,10 +35,16 @@ export const ProgressBar: React.FC = () => {
   const currentStepIndex = steps.findIndex((step) => step.key === currentStep)
   const totalSteps = steps.length
 
+  // Don't show progress bar on welcome page
+  if (currentStep === 'welcome') {
+    return null
+  }
+
+  // Only count completed steps that are actually visible to the user
   const completedStepsCount = steps.filter((step) =>
     completedSteps.has(step.key as OnboardingStep)
   ).length
-  const progressPercentage = (completedStepsCount / totalSteps) * 100
+  const progressPercentage = totalSteps > 0 ? (completedStepsCount / totalSteps) * 100 : 0
 
   const progressSteps = steps.map((step, _index) => ({
     key: step.key,

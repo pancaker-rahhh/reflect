@@ -82,10 +82,9 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
 
     // If skipping user type selection, auto-set to solo
     const initialUserType = skipUserTypeSelection ? 'solo' : null
-    const initialStep = skipUserTypeSelection ? 'profile' : 'welcome'
-    const initialCompletedSteps = skipUserTypeSelection
-      ? new Set(['welcome', 'user-type'])
-      : new Set()
+    const initialStep = 'welcome' // Always start with welcome page for good UX
+    // Don't pre-mark skipped steps as completed - they shouldn't count toward progress
+    const initialCompletedSteps = new Set()
 
     return {
       currentStep: initialStep,
@@ -114,7 +113,10 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     setState((prev) => ({
       ...prev,
       userType: type,
-      completedSteps: new Set([...prev.completedSteps, 'user-type']),
+      // Only mark user-type as completed if it's actually a visible step
+      completedSteps: skipUserTypeSelection
+        ? prev.completedSteps
+        : new Set([...prev.completedSteps, 'user-type']),
     }))
   }
 
@@ -137,27 +139,40 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     const currentIndex = steps.indexOf(state.currentStep)
 
     if (currentIndex > 0) {
+      let targetStep = steps[currentIndex - 1]
+
+      // If we're using the feature flag and the target step is organization,
+      // skip it and go to the step before that (since org auto-advances)
+      if (skipUserTypeSelection && targetStep === 'organization' && currentIndex > 1) {
+        targetStep = steps[currentIndex - 2]
+      }
+
       setState((prev) => ({
         ...prev,
-        currentStep: steps[currentIndex - 1],
+        currentStep: targetStep,
       }))
     }
   }
 
   const goToStep = (step: OnboardingStep) => {
-    if (isStepAccessible(step)) {
-      setState((prev) => ({
+    if (!isStepAccessible(step)) return
+    setState((prev) => {
+      if (prev.currentStep === step) return prev
+      return {
         ...prev,
         currentStep: step,
-      }))
-    }
+      }
+    })
   }
 
   const markStepCompleted = (step: OnboardingStep) => {
-    setState((prev) => ({
-      ...prev,
-      completedSteps: new Set([...prev.completedSteps, step]),
-    }))
+    setState((prev) => {
+      if (prev.completedSteps.has(step)) return prev
+      return {
+        ...prev,
+        completedSteps: new Set([...prev.completedSteps, step]),
+      }
+    })
   }
 
   const setOrganizationId = (id: string) => {
@@ -188,7 +203,8 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
       await queryClient.invalidateQueries({ queryKey: ['projects'] })
 
       localStorage.removeItem(ONBOARDING_STORAGE_KEY)
-      navigate('/dashboard')
+      // Use replace to prevent going back to onboarding via browser back button
+      navigate('/app/dashboard', { replace: true })
     } catch (error) {
       setState((prev) => ({
         ...prev,
@@ -206,7 +222,8 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
       await onboardingApi.skip()
 
       localStorage.removeItem(ONBOARDING_STORAGE_KEY)
-      navigate('/dashboard')
+      // Use replace to prevent going back to onboarding via browser back button
+      navigate('/app/dashboard', { replace: true })
     } catch (error) {
       setState((prev) => ({
         ...prev,
