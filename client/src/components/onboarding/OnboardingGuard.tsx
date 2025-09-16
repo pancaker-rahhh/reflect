@@ -37,9 +37,12 @@ export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) =>
         const data = await onboardingApi.checkFirstTime()
 
         if (data.is_first_time && !isOnboardingRoute) {
+          // Clear any existing onboarding state to ensure fresh start
+          localStorage.removeItem('reflect_onboarding_state')
           navigate('/onboarding')
         } else if (!data.is_first_time && isOnboardingRoute) {
-          navigate('/app/dashboard')
+          // Use replace to prevent going back to onboarding via browser back button
+          navigate('/app/dashboard', { replace: true })
         }
 
         setHasCheckedOnboarding(true)
