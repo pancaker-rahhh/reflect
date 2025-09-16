@@ -27,7 +27,8 @@ from app.core.exceptions import (
     SubscriptionLimitExceededError,
 )
 from app.core.logging import get_logger
-from app.services.subscription_service import subscription_service
+from app.services.usage_tracking_service import usage_tracking_service
+from app.core.subscription_constants import PLAN_LIMITS
 
 logger = get_logger(__name__)
 
@@ -91,15 +92,26 @@ class ProjectService:
             raise ForbiddenError('Only owners and admins can create projects')
 
         # Check subscription limits for project creation
-        can_create = await subscription_service.check_usage_limit(
-            db, project_in.organization_id, 'projects'
+        organization = await usage_tracking_service.get_organization_subscription(
+            db, project_in.organization_id
+        )
+        if not organization:
+            limits = PLAN_LIMITS['free']
+        else:
+            plan = organization.subscription_plan or 'free'
+            limits = PLAN_LIMITS.get(plan, PLAN_LIMITS['free'])
+
+        limit = limits.get('projects', 0)
+        can_create = (
+            limit >= 999
+            or await usage_tracking_service.get_current_usage(
+                db, project_in.organization_id, 'projects'
+            )
+            < limit
         )
 
         if not can_create:
-            limits = await subscription_service.get_plan_limits(
-                db, project_in.organization_id
-            )
-            current_usage = await subscription_service.get_current_usage(
+            current_usage = await usage_tracking_service.get_current_usage(
                 db, project_in.organization_id, 'projects'
             )
             raise SubscriptionLimitExceededError(
@@ -125,7 +137,7 @@ class ProjectService:
         new_project = await self.repository.create(db, **project_data)
 
         # Increment usage count for subscription tracking
-        await subscription_service.increment_usage(
+        await usage_tracking_service.increment_usage(
             db, project_in.organization_id, 'projects'
         )
 

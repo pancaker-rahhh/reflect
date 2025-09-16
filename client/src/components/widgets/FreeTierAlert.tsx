@@ -22,7 +22,7 @@ export function FreeTierAlert() {
   }
 
   const isFreeTier =
-    currentOrganization?.subscription_tier === 'free' || !currentOrganization?.subscription_tier
+    currentOrganization?.subscription_plan === 'free' || !currentOrganization?.subscription_plan
 
   if (!isFreeTier) return null
 

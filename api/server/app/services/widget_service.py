@@ -10,7 +10,8 @@ from app.services.cdn_deployment_service import cdn_deployment_service
 from app.core.settings import get_settings
 from app.core.logging import get_logger
 from app.core.exceptions import SubscriptionLimitExceededError
-from app.services.subscription_service import subscription_service
+from app.services.usage_tracking_service import usage_tracking_service
+from app.core.subscription_constants import PLAN_LIMITS
 
 logger = get_logger(__name__)
 settings = get_settings()
@@ -75,15 +76,26 @@ class WidgetService:
             db, user_id, widget_in.project_id
         )
 
-        can_create = await subscription_service.check_usage_limit(
-            db, project.organization_id, 'widgets'
+        organization = await usage_tracking_service.get_organization_subscription(
+            db, project.organization_id
+        )
+        if not organization:
+            limits = PLAN_LIMITS['free']
+        else:
+            plan = organization.subscription_plan or 'free'
+            limits = PLAN_LIMITS.get(plan, PLAN_LIMITS['free'])
+
+        limit = limits.get('widgets', 0)
+        can_create = (
+            limit >= 999
+            or await usage_tracking_service.get_current_usage(
+                db, project.organization_id, 'widgets'
+            )
+            < limit
         )
 
         if not can_create:
-            limits = await subscription_service.get_plan_limits(
-                db, project.organization_id
-            )
-            current_usage = await subscription_service.get_current_usage(
+            current_usage = await usage_tracking_service.get_current_usage(
                 db, project.organization_id, 'widgets'
             )
             raise SubscriptionLimitExceededError(
@@ -107,7 +119,7 @@ class WidgetService:
 
         widget = await self.repository.create(db, **widget_data)
 
-        await subscription_service.increment_usage(
+        await usage_tracking_service.increment_usage(
             db, project.organization_id, 'widgets'
         )
         await self._deploy_to_cdn(widget)

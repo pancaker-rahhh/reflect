@@ -32,13 +32,14 @@ export const OrganizationStep: React.FC = () => {
 
       onboardingDataService.saveOrganizationData({
         name: organization.name,
-        description: (organization as any).description || '',
+        description: '',
         slug: organization.slug,
       })
 
       setOrganizationId(organization.id)
       markStepCompleted('organization')
 
+      // Auto-advance after successful creation
       await new Promise((resolve) => setTimeout(resolve, 200))
       nextStep()
     } catch (error) {
@@ -77,7 +78,9 @@ export const OrganizationStep: React.FC = () => {
   useEffect(() => {
     if (skipUserTypeSelection && !hasAttemptedAutoCreate && !organizationId) {
       handleAutoCreate()
-    } else if (organizationId) {
+    } else if (skipUserTypeSelection && organizationId && !hasAttemptedAutoCreate) {
+      // If we already have an org and we're using the feature flag, auto-advance
+      // This handles the case where user navigates back after org was already created
       markStepCompleted('organization')
       setTimeout(() => nextStep(), 100)
     }
@@ -123,9 +126,15 @@ export const OrganizationStep: React.FC = () => {
       })
 
       markStepCompleted('organization')
+      // Auto-advance after successful creation/update
       nextStep()
     } catch (error) {
       console.error('Failed to create/update organization:', error)
+      alert(
+        `Failed to ${organizationId ? 'update' : 'create'} organization: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }. Please try again.`
+      )
     } finally {
       setIsAutoCreating(false)
     }

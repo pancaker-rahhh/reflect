@@ -37,7 +37,6 @@ async def upgrade_to_pro(
         .where(Organization.id == organization_id)
         .values(
             subscription_plan='pro',
-            subscription_tier='pro',
             subscription_status='active',
         )
     )

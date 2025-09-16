@@ -20,15 +20,7 @@ export const ProjectStep: React.FC = () => {
     }
   }, [organizationId, goToStep])
 
-  if (!organizationId) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-        <p className="text-gray-600">Setting up your workspace...</p>
-      </div>
-    )
-  }
-
+  // Populate form data from cached onboarding data at mount
   useEffect(() => {
     const existingData = onboardingDataService.getProjectData()
     if (existingData?.name) {
@@ -38,6 +30,15 @@ export const ProjectStep: React.FC = () => {
       })
     }
   }, [])
+
+  if (!organizationId) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
+        <p className="text-gray-600">Setting up your workspace...</p>
+      </div>
+    )
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

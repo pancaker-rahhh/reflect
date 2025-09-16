@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-
 import { api } from '@/lib/api'
 import { MetricsCards } from '@/components/dashboard/MetricsCards'
 import { TimeRangeFilter } from '@/components/dashboard/TimeRangeFilter'
@@ -15,6 +14,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useSubscription } from '@/hooks/useSubscription'
 import { organizationApi } from '@/lib/api/organization'
 import { useNavigate } from 'react-router-dom'
+import { FreeTierAlert } from '@/components/widgets/FreeTierAlert'
 
 export type TimeRange = 'all' | 'week' | 'month' | 'year'
 
@@ -108,8 +108,8 @@ export function Dashboard() {
       {(() => {
         const responseUsage = getUsageInfo('responses')
         const isFreeTier =
-          currentOrganization?.subscription_tier === 'free' ||
-          !currentOrganization?.subscription_tier
+          currentOrganization?.subscription_plan === 'free' ||
+          !currentOrganization?.subscription_plan
         if (isFreeTier && responseUsage.percentage >= 80) {
           return (
             <Alert
@@ -144,6 +144,9 @@ export function Dashboard() {
       ) : (
         metrics && <MetricsCards metrics={metrics} />
       )}
+
+      {/* Free Tier Alert */}
+      <FreeTierAlert />
 
       {/* Main Content Grid */}
       <div className="grid gap-12 xl:grid-cols-3">

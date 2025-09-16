@@ -26,6 +26,8 @@ RATE_LIMITS = {
     'voting': {'calls': 20, 'period': 60},
     'health_check': {'calls': 100, 'period': 60},
     'general_public': {'calls': 40, 'period': 60},
+    # Subscription management: limit plan changes to once per 30 days (approx)
+    'subscription_change': {'calls': 1, 'period': 60 * 60 * 24 * 30},
 }
 
 ANONYMOUS_IP_LIMITS = {

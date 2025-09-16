@@ -505,6 +505,18 @@ wrapt = ">=1.10,<2"
 dev = ["PyTest", "PyTest-Cov", "bump2version (<1)", "setuptools ; python_version >= \"3.12\"", "tox"]
 
 [[package]]
+name = "distro"
+version = "1.9.0"
+description = "Distro - an OS platform information API"
+optional = false
+python-versions = ">=3.6"
+groups = ["main"]
+files = [
+    {file = "distro-1.9.0-py3-none-any.whl", hash = "sha256:7bffd925d65168f85027d8da9af6bddab658135b840670a223589bc0c8ef02b2"},
+    {file = "distro-1.9.0.tar.gz", hash = "sha256:2fa77c6fd8940f116ee1d6b94a2f90b13b5ea8d019b98bc8bafdcabcdd9bdbed"},
+]
+
+[[package]]
 name = "dnspython"
 version = "2.8.0"
 description = "DNS toolkit"
@@ -524,6 +536,29 @@ doq = ["aioquic (>=1.2.0)"]
 idna = ["idna (>=3.10)"]
 trio = ["trio (>=0.30)"]
 wmi = ["wmi (>=1.5.1) ; platform_system == \"Windows\""]
+
+[[package]]
+name = "dodopayments"
+version = "1.53.3"
+description = "The official Python library for the Dodo Payments API"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "dodopayments-1.53.3-py3-none-any.whl", hash = "sha256:a5d01eb37e37ac3de4b28bf035f447742e3c75139ef4b6ac583e8519e746e386"},
+    {file = "dodopayments-1.53.3.tar.gz", hash = "sha256:3a793296c1921d8744f2249ac1b4335829e6441d6e13f3ea824674dda579da5c"},
+]
+
+[package.dependencies]
+anyio = ">=3.5.0,<5"
+distro = ">=1.7.0,<2"
+httpx = ">=0.23.0,<1"
+pydantic = ">=1.9.0,<3"
+sniffio = "*"
+typing-extensions = ">=4.10,<5"
+
+[package.extras]
+aiohttp = ["aiohttp", "httpx-aiohttp (>=0.1.8)"]
 
 [[package]]
 name = "email-validator"
@@ -1992,4 +2027,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "d8ff538d530f5c1700902b79169f5caf5c533cf92acba203c5f216a9bacd0eca"
+content-hash = "72dae17705c437532d56762e42fb13392ef2b31da6b4502e8b58e5b0bd5471d4"

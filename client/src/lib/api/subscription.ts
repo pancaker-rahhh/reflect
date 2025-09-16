@@ -1,11 +1,17 @@
 import { apiClient } from '../client'
 
+export interface SubscriptionPlan {
+  plan: 'free' | 'pro' | 'pro_monthly' | 'pro_yearly'
+  status: string
+  organization_id: string
+  subscription_ends_at?: string | null
+  payment_status?: string | null
+}
+
 export interface SubscriptionLimits {
   projects: number
   widgets: number
   responses: number
-  bug_reports: number
-  feature_requests: number
 }
 
 export interface SubscriptionFeatures {
@@ -13,21 +19,7 @@ export interface SubscriptionFeatures {
   branding_removal: boolean
   priority_support: boolean
   dofollow_backlink: boolean
-}
-
-export interface SubscriptionInfo {
-  plan: 'free' | 'pro'
-  status: string
-  limits: SubscriptionLimits
-  features: SubscriptionFeatures
-  usage: Record<string, number>
-}
-
-export interface UsageCheck {
-  can_create: boolean
-  current_usage: number
-  limit: number
-  resource_type: string
+  jira_integration: boolean
 }
 
 export interface FeatureCheck {
@@ -36,22 +28,35 @@ export interface FeatureCheck {
   organization_id: string
 }
 
+export interface PlanUpdateResponse {
+  success: boolean
+  plan: string
+  organization_id: string
+}
+
+export interface SubscriptionCancelResponse {
+  success: boolean
+  plan: string
+  status: string
+  organization_id: string
+}
+
 export const subscriptionApi = {
+  getPlan: (organizationId: string): Promise<SubscriptionPlan> =>
+    apiClient.get(`/organizations/${organizationId}/subscription/plan`),
+
   getLimits: (organizationId: string): Promise<SubscriptionLimits> =>
     apiClient.get(`/organizations/${organizationId}/subscription/limits`),
 
   getFeatures: (organizationId: string): Promise<SubscriptionFeatures> =>
     apiClient.get(`/organizations/${organizationId}/subscription/features`),
 
-  getUsage: (organizationId: string): Promise<Record<string, number>> =>
-    apiClient.get(`/organizations/${organizationId}/subscription/usage`),
-
-  getInfo: (organizationId: string): Promise<SubscriptionInfo> =>
-    apiClient.get(`/organizations/${organizationId}/subscription/info`),
-
-  checkUsage: (organizationId: string, resourceType: string): Promise<UsageCheck> =>
-    apiClient.get(`/organizations/${organizationId}/subscription/check/${resourceType}`),
-
   checkFeature: (organizationId: string, featureName: string): Promise<FeatureCheck> =>
     apiClient.get(`/organizations/${organizationId}/subscription/feature/${featureName}`),
+
+  updatePlan: (organizationId: string, plan: string): Promise<PlanUpdateResponse> =>
+    apiClient.post(`/organizations/${organizationId}/subscription/update-plan`, { plan }),
+
+  cancelSubscription: (organizationId: string): Promise<SubscriptionCancelResponse> =>
+    apiClient.post(`/organizations/${organizationId}/subscription/cancel`),
 }

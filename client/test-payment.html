@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dodo Payments Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #1f2937;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #374151;
+        }
+        button {
+            background: #7c3aed;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 5px;
+        }
+        button:hover {
+            background: #6d28d9;
+        }
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+        .error {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+        .info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #374151;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Dodo Payments Test Interface</h1>
+        
+        <div class="test-section">
+            <h3>1. Test API Connection</h3>
+            <p>Test if the backend API is running and accessible.</p>
+            <button onclick="testApiConnection()">Test API Connection</button>
+            <div id="apiResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Get Available Plans</h3>
+            <p>Fetch available subscription plans from the backend.</p>
+            <button onclick="getPlans()">Get Plans</button>
+            <div id="plansResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Create Payment Link</h3>
+            <p>Create a payment link for testing (requires authentication).</p>
+            
+            <div class="form-group">
+                <label for="planId">Plan ID:</label>
+                <select id="planId">
+                    <option value="pro_monthly">Pro Monthly ($29)</option>
+                    <option value="pro_yearly">Pro Yearly ($260)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" value="test@example.com" placeholder="test@example.com">
+            </div>
+
+            <div class="form-group">
+                <label for="firstName">First Name:</label>
+                <input type="text" id="firstName" value="Test" placeholder="Test">
+            </div>
+
+            <div class="form-group">
+                <label for="lastName">Last Name:</label>
+                <input type="text" id="lastName" value="User" placeholder="User">
+            </div>
+
+            <div class="form-group">
+                <label for="country">Country:</label>
+                <select id="country">
+                    <option value="US">United States</option>
+                    <option value="CA">Canada</option>
+                    <option value="GB">United Kingdom</option>
+                    <option value="AU">Australia</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="city">City:</label>
+                <input type="text" id="city" value="San Francisco" placeholder="San Francisco">
+            </div>
+
+            <div class="form-group">
+                <label for="state">State/Province:</label>
+                <input type="text" id="state" value="CA" placeholder="CA">
+            </div>
+
+            <div class="form-group">
+                <label for="street">Street Address:</label>
+                <input type="text" id="street" value="123 Test Street" placeholder="123 Test Street">
+            </div>
+
+            <div class="form-group">
+                <label for="zipcode">ZIP/Postal Code:</label>
+                <input type="text" id="zipcode" value="94105" placeholder="94105">
+            </div>
+
+            <button onclick="createPaymentLink()">Create Payment Link</button>
+            <div id="paymentResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Test Payment Status Page</h3>
+            <p>Test the payment status page with different scenarios.</p>
+            <button onclick="testPaymentStatus('succeeded')">Test Success</button>
+            <button onclick="testPaymentStatus('failed')">Test Failed</button>
+            <button onclick="testPaymentStatus('processing')">Test Processing</button>
+            <button onclick="testPaymentStatus('cancelled')">Test Cancelled</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        
+        function showResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `result ${type}`;
+            element.textContent = content;
+        }
+
+        async function testApiConnection() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                if (response.ok) {
+                    showResult('apiResult', '✅ API is running and accessible!', 'success');
+                } else {
+                    showResult('apiResult', `❌ API returned status: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showResult('apiResult', `❌ Failed to connect to API: ${error.message}`, 'error');
+            }
+        }
+
+        async function getPlans() {
+            try {
+                const response = await fetch(`${API_BASE}/subscription/plans`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('plansResult', `✅ Plans fetched successfully!\n\n${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    showResult('plansResult', `❌ Failed to fetch plans: ${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult('plansResult', `❌ Error fetching plans: ${error.message}`, 'error');
+            }
+        }
+
+        async function createPaymentLink() {
+            const formData = {
+                plan_id: document.getElementById('planId').value,
+                email: document.getElementById('email').value,
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                country: document.getElementById('country').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                street: document.getElementById('street').value,
+                zipcode: document.getElementById('zipcode').value
+            };
+
+            try {
+                // Note: This will fail without authentication, but we can see the structure
+                const response = await fetch(`${API_BASE}/organization/payments/create-link`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // 'Authorization': 'Bearer YOUR_JWT_TOKEN_HERE' // Add this for real testing
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('paymentResult', `✅ Payment link created!\n\n${JSON.stringify(data, null, 2)}`, 'success');
+                    
+                    // If we have a payment link, open it in a new tab
+                    if (data.payment_link) {
+                        setTimeout(() => {
+                            window.open(data.payment_link, '_blank');
+                        }, 1000);
+                    }
+                } else {
+                    showResult('paymentResult', `❌ Failed to create payment link: ${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult('paymentResult', `❌ Error creating payment link: ${error.message}`, 'error');
+            }
+        }
+
+        function testPaymentStatus(status) {
+            const params = new URLSearchParams({
+                payment_id: `pay_test_${Date.now()}`,
+                status: status
+            });
+            
+            const url = `http://localhost:5173/payment-status?${params.toString()}`;
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>

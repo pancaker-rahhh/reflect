@@ -47,8 +47,11 @@ const AccountSettings = lazy(() =>
 const NotificationSettings = lazy(() =>
   import('@/pages/settings/NotificationSettings').then((m) => ({ default: m.NotificationSettings }))
 )
-const BillingSettings = lazy(() =>
-  import('@/pages/settings/BillingSettings').then((m) => ({ default: m.BillingSettings }))
+const BillingPage = lazy(() =>
+  import('@/pages/settings/BillingPage').then((m) => ({ default: m.default }))
+)
+const PaymentStatus = lazy(() =>
+  import('@/pages/PaymentStatus').then((m) => ({ default: m.default }))
 )
 const ProjectSettings = lazy(() =>
   import('@/pages/settings/ProjectSettings').then((m) => ({ default: m.ProjectSettings }))
@@ -91,6 +94,7 @@ function App() {
                     <Route path="/public/roadmap/:publicSlug" element={<PublicRoadmap />} />
                     <Route path="/public/r/:subdomain" element={<PublicRoadmap />} />
                     <Route path="/widget-view" element={<WidgetView />} />
+                    <Route path="/payment-status" element={<PaymentStatus />} />
                     <Route path="/terms" element={<TermsOfService />} />
                     <Route path="/privacy" element={<PrivacyPolicy />} />
                     <Route path="/cookies" element={<CookiePolicy />} />
@@ -135,12 +139,13 @@ function App() {
                         <Route index element={<Navigate to="account" replace />} />
                         <Route path="account" element={<AccountSettings />} />
                         <Route path="notifications" element={<NotificationSettings />} />
-                        <Route path="billing" element={<BillingSettings />} />
+                        <Route path="billing" element={<BillingPage />} />
                       </Route>
                       <Route path="settings/project" element={<ProjectSettings />} />
                       <Route path="settings/roadmap" element={<RoadmapSettings />} />
                       <Route path="settings/organization" element={<OrganizationSettings />} />
                     </Route>
+
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>

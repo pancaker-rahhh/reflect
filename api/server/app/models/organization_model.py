@@ -1,12 +1,17 @@
 from typing import List, Optional, TYPE_CHECKING
 from datetime import datetime
-from sqlalchemy import String, ForeignKey, UniqueConstraint, DateTime as DateTimeColumn
+from sqlalchemy import (
+    String,
+    ForeignKey,
+    UniqueConstraint,
+    DateTime as DateTimeColumn,
+    Enum,
+)
 from sqlalchemy.dialects.postgresql import UUID, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 import re
 import uuid
 import enum
-
 from app.models.base_model import BaseModel
 
 if TYPE_CHECKING:
@@ -19,6 +24,21 @@ class OrganizationRole(str, enum.Enum):
     OWNER = 'owner'
     ADMIN = 'admin'
     MEMBER = 'member'
+
+
+class SubscriptionPlanEnum(str, enum.Enum):
+    FREE = 'free'
+    PRO_MONTHLY = 'pro_monthly'
+    PRO_YEARLY = 'pro_yearly'
+
+
+class PaymentStatusEnum(str, enum.Enum):
+    PENDING = 'pending'
+    PROCESSING = 'processing'
+    SUCCEEDED = 'succeeded'
+    FAILED = 'failed'
+    CANCELLED = 'cancelled'
+    REFUNDED = 'refunded'
 
 
 class ProjectRole(str, enum.Enum):
@@ -35,12 +55,36 @@ class Organization(BaseModel):
         String(100), unique=True, nullable=False, index=True
     )
     description: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
-    subscription_tier: Mapped[str] = mapped_column(String(50), default='free')
-    subscription_plan: Mapped[str] = mapped_column(String(20), default='free')
+    subscription_plan: Mapped[SubscriptionPlanEnum] = mapped_column(
+        Enum(
+            SubscriptionPlanEnum,
+            values_callable=lambda e: [m.value for m in e],
+            native_enum=False,
+        ),
+        default=SubscriptionPlanEnum.FREE,
+    )
     subscription_status: Mapped[str] = mapped_column(String(20), default='active')
     subscription_ends_at: Mapped[Optional[datetime]] = mapped_column(
         DateTimeColumn(timezone=True), nullable=True
     )
+
+    # Dodo Payments fields
+    dodo_subscription_id: Mapped[Optional[str]] = mapped_column(
+        String(255), nullable=True, index=True
+    )
+    dodo_customer_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    payment_status: Mapped[Optional[PaymentStatusEnum]] = mapped_column(
+        Enum(
+            PaymentStatusEnum,
+            values_callable=lambda e: [m.value for m in e],
+            native_enum=False,
+        ),
+        nullable=True,
+    )
+    last_payment_date: Mapped[Optional[datetime]] = mapped_column(
+        DateTimeColumn(timezone=True), nullable=True
+    )
+    payment_metadata: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     settings: Mapped[dict] = mapped_column(JSON, default=dict)
     created_by: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),

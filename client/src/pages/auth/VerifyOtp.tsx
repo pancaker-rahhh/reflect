@@ -1,32 +1,32 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { AlertCircle, ArrowLeft, Shield } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
-import { SyncLoader } from '../../components/auth/SyncLoader';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Alert, AlertDescription } from '../../components/ui/alert';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation, Navigate } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { AlertCircle, ArrowLeft, Shield } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
+import { SyncLoader } from '../../components/auth/SyncLoader'
+import { Button } from '../../components/ui/button'
+import { Input } from '../../components/ui/input'
+import { Alert, AlertDescription } from '../../components/ui/alert'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
 
 const otpSchema = z.object({
   otp: z.string().length(6, 'OTP must be 6 digits').regex(/^\d+$/, 'OTP must contain only numbers'),
-});
+})
 
-type OtpFormData = z.infer<typeof otpSchema>;
+type OtpFormData = z.infer<typeof otpSchema>
 
 export function VerifyOtp() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { user, loading, syncing, verifyOtp, signInWithEmail } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isResending, setIsResending] = useState(false);
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { user, loading, syncing, verifyOtp, signInWithEmail } = useAuth()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [isResending, setIsResending] = useState(false)
 
-  const email = location.state?.email;
-  const from = location.state?.from || '/dashboard';
+  const email = location.state?.email
+  const from = location.state?.from || '/app/dashboard'
 
   const {
     register,
@@ -35,58 +35,58 @@ export function VerifyOtp() {
     watch,
   } = useForm<OtpFormData>({
     resolver: zodResolver(otpSchema),
-  });
+  })
 
-  const otpValue = watch('otp');
+  const otpValue = watch('otp')
 
   useEffect(() => {
     if (!email) {
-      navigate('/login');
+      navigate('/login')
     }
-  }, [email, navigate]);
+  }, [email, navigate])
 
   if (loading || syncing) {
-    return <SyncLoader />;
+    return <SyncLoader />
   }
 
   if (user && !syncing) {
-    return <Navigate to={from} replace />;
+    return <Navigate to={from} replace />
   }
 
   if (!email) {
-    return null;
+    return null
   }
 
   const onSubmit = async (data: OtpFormData) => {
-    setIsSubmitting(true);
-    setError(null);
+    setIsSubmitting(true)
+    setError(null)
 
-    const { error } = await verifyOtp(email, data.otp);
+    const { error } = await verifyOtp(email, data.otp)
 
     if (error) {
-      setError(error.message);
+      setError(error.message)
     }
     // Navigation will happen automatically via useEffect when sync completes
 
-    setIsSubmitting(false);
-  };
+    setIsSubmitting(false)
+  }
 
   const handleResendCode = async () => {
-    setIsResending(true);
-    setError(null);
+    setIsResending(true)
+    setError(null)
 
-    const { error } = await signInWithEmail(email);
+    const { error } = await signInWithEmail(email)
 
     if (error) {
-      setError(error.message);
+      setError(error.message)
     }
 
-    setIsResending(false);
-  };
+    setIsResending(false)
+  }
 
   const handleBack = () => {
-    navigate('/login');
-  };
+    navigate('/login')
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
@@ -125,9 +125,7 @@ export function VerifyOtp() {
                 autoComplete="one-time-code"
                 autoFocus
               />
-              {errors.otp && (
-                <p className="text-sm text-red-600">{errors.otp.message}</p>
-              )}
+              {errors.otp && <p className="text-sm text-red-600">{errors.otp.message}</p>}
             </div>
 
             <Button
@@ -147,9 +145,7 @@ export function VerifyOtp() {
           </form>
 
           <div className="text-center space-y-2">
-            <p className="text-sm text-gray-600">
-              Didn't receive the code?
-            </p>
+            <p className="text-sm text-gray-600">Didn't receive the code?</p>
             <Button
               type="button"
               variant="ghost"
@@ -161,18 +157,12 @@ export function VerifyOtp() {
             </Button>
           </div>
 
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="w-full"
-            onClick={handleBack}
-          >
+          <Button type="button" variant="ghost" size="sm" className="w-full" onClick={handleBack}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to login
           </Button>
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
