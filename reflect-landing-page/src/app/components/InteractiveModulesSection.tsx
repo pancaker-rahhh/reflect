@@ -321,7 +321,7 @@ const InteractiveModulesSection = () => {
         >
             <motion.a 
               href="#" 
-              className="inline-block rounded-full bg-purple-600 px-8 py-3 text-base font-semibold text-white shadow-lg hover:bg-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 transition-all"
+              className="inline-block rounded-full bg-purple-600 px-8 py-3 text-base font-semibold text-white shadow-lg hover:bg-purple-500 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-purple-600 transition-all"
               whileHover={{ 
                 scale: 1.05,
                 boxShadow: "0 20px 40px rgba(147, 51, 234, 0.3)"

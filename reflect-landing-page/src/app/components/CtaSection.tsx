@@ -31,7 +31,7 @@ const CtaSection = () => {
                             </ul>
                             <a
                                 href="#"
-                                className="mt-10 inline-flex items-center gap-3 rounded-md bg-white px-6 py-3 text-base font-semibold text-purple-600 shadow-sm hover:bg-purple-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-all"
+                                className="mt-10 inline-flex items-center gap-3 rounded-md bg-white px-6 py-3 text-base font-semibold text-purple-600 shadow-sm hover:bg-purple-100 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-white transition-all"
                             >
                                 Get Started for Free
                                 <Rocket size={18} />

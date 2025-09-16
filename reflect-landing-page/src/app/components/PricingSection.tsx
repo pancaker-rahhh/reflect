@@ -237,7 +237,7 @@ const PricingSection = () => {
               </motion.p>
 
               <motion.button
-                className={`mt-8 block rounded-md px-3 py-3 text-center text-base font-semibold leading-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 transition-all ${
+                className={`mt-8 block rounded-md px-3 py-3 text-center text-base font-semibold leading-6 focus-visible:outline focus-visible:outline-offset-2 transition-all ${
                   plan.primary || plan.id === "pro_yearly"
                     ? "bg-purple-600 text-white shadow-sm hover:bg-purple-500 focus-visible:outline-purple-600"
                     : "bg-white text-purple-600 ring-1 ring-inset ring-purple-200 hover:bg-purple-50"
