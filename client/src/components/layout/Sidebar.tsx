@@ -17,6 +17,7 @@ import {
 import { cn } from '@/lib/utils'
 import { OrganizationDropdown } from './OrganizationDropdown'
 import { isFeatureEnabled } from '@/lib/featureFlags'
+import logo from '@/assets/reflect-logo-no-bg.png'
 
 interface NavItem {
   label: string
@@ -160,11 +161,12 @@ export function Sidebar() {
     >
       <div className={cn('p-6 flex items-center', !isExpanded && 'p-4 justify-center')}>
         {!isExpanded ? (
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">R</span>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden bg-transparent">
+            <img src={logo} alt="Reflect" className="h-8 w-8 object-contain" />
           </div>
         ) : (
-          <div className="flex items-center w-full">
+          <div className="flex items-center w-full gap-2">
+            <img src={logo} alt="Reflect" className="h-6 w-6 object-contain" />
             <span className="text-xl font-bold text-primary tracking-tight">Reflect</span>
           </div>
         )}
