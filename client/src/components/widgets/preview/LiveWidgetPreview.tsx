@@ -17,6 +17,18 @@ import type {
 export type PreviewState = 'closed' | 'open' | 'menu' | 'interactive' | 'thankyou'
 export type DeviceType = 'desktop' | 'tablet' | 'mobile'
 
+// Use form colors directly - don't override with theme defaults
+function getFormColors(formColors: any) {
+  return {
+    primary: formColors?.primary || '#0066FF',
+    headerGradientEnd: formColors?.headerGradientEnd,
+    background: formColors?.background || '#FFFFFF',
+    text: formColors?.text || '#000000',
+    buttonColor: formColors?.buttonColor || '#0066FF',
+    buttonTextColor: formColors?.buttonTextColor || '#FFFFFF',
+  }
+}
+
 // Transform WidgetFormData to WidgetConfiguration for WidgetCore
 function transformFormDataToConfig(formData: WidgetFormData): WidgetConfiguration {
   return {
@@ -34,17 +46,11 @@ function transformFormDataToConfig(formData: WidgetFormData): WidgetConfiguratio
       thankYouTitle: 'Thank you!',
       thankYouMessage: 'Your feedback helps us improve.',
     },
-    appearance: formData.appearance || {
-      theme: 'default',
-      position: 'bottom_right',
-      colors: {
-        primary: '#6B46C1',
-        background: '#FFFFFF',
-        text: '#1F2937',
-        buttonColor: '#6B46C1',
-        buttonTextColor: '#FFFFFF',
-      },
-      showBranding: true,
+    appearance: {
+      theme: formData.appearance?.theme || 'default',
+      position: formData.appearance?.position || 'bottom_right',
+      colors: getFormColors(formData.appearance?.colors),
+      showBranding: formData.appearance?.showBranding ?? true,
     },
     behavior: formData.behavior || {
       triggerType: 'immediate',

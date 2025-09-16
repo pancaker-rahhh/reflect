@@ -71,6 +71,18 @@ declare global {
     )
   }
 
+  // Use actual colors from configuration
+  function getConfigColors(themeConfig: any) {
+    return {
+      primary: themeConfig?.primary || '#0066FF',
+      headerGradientEnd: themeConfig?.headerGradientEnd,
+      background: themeConfig?.background || '#FFFFFF',
+      text: themeConfig?.text || '#000000',
+      buttonColor: themeConfig?.buttonColor || '#0066FF',
+      buttonTextColor: themeConfig?.buttonTextColor || '#FFFFFF',
+    }
+  }
+
   function injectWidgetStyles() {
     const style = document.createElement('style')
     style.textContent = `
@@ -314,13 +326,7 @@ declare global {
         position: normalizePosition(
           backendConfig.position || configPosition
         ) as WidgetConfiguration['appearance']['position'],
-        colors: {
-          primary: theme.primary || '#6B46C1',
-          background: theme.background || (configTheme === 'dark' ? '#1f2937' : '#ffffff'),
-          text: theme.text || (configTheme === 'dark' ? '#f9fafb' : '#1f2937'),
-          buttonColor: theme.primary || '#6B46C1',
-          buttonTextColor: '#ffffff',
-        },
+        colors: getConfigColors(theme),
         showBranding: theme.show_branding !== false,
       },
       behavior: {
@@ -558,7 +564,9 @@ declare global {
                 const message =
                   errorData?.detail?.message || errorData?.message || 'Too many requests'
                 throw new Error(
-                  `${message}. Please try again in ${retryMinutes} minute${retryMinutes !== 1 ? 's' : ''}.`
+                  `${message}. Please try again in ${retryMinutes} minute${
+                    retryMinutes !== 1 ? 's' : ''
+                  }.`
                 )
               } catch (parseError) {
                 // Fallback if JSON parsing fails
@@ -566,7 +574,9 @@ declare global {
                 const retrySeconds = retryAfter ? parseInt(retryAfter) : 60
                 const retryMinutes = Math.ceil(retrySeconds / 60)
                 throw new Error(
-                  `Too many requests. Please try again in ${retryMinutes} minute${retryMinutes !== 1 ? 's' : ''}.`
+                  `Too many requests. Please try again in ${retryMinutes} minute${
+                    retryMinutes !== 1 ? 's' : ''
+                  }.`
                 )
               }
             }
@@ -694,7 +704,8 @@ declare global {
     launcherContainer.onclick = toggleWidget
 
     const theme = config.theme_configuration || {}
-    const primaryColor = theme.primary || '#3b82f6'
+    const themeColors = getConfigColors(theme)
+    const primaryColor = themeColors.primary
     const darkerColor = adjustColorBrightness(primaryColor, -20)
 
     Object.assign(launcherContainer.style, {

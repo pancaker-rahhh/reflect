@@ -8,6 +8,18 @@ import type {
   FeedbackType,
 } from '@/components/widgets/core/types'
 
+// Use actual colors from configuration
+function getConfigColors(themeConfig: any) {
+  return {
+    primary: themeConfig?.primary || '#0066FF',
+    headerGradientEnd: themeConfig?.headerGradientEnd,
+    background: themeConfig?.background || '#FFFFFF',
+    text: themeConfig?.text || '#000000',
+    buttonColor: themeConfig?.buttonColor || '#0066FF',
+    buttonTextColor: themeConfig?.buttonTextColor || '#FFFFFF',
+  }
+}
+
 // API function to get widget data
 async function getWidgetData(key: string) {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
@@ -40,14 +52,7 @@ function transformWidgetConfig(backendConfig: Record<string, any>): WidgetConfig
     appearance: {
       theme: theme.theme_name || 'default',
       position: backendConfig.position || 'bottom_right',
-      colors: {
-        primary: theme.primary || '#6B46C1',
-        headerGradientEnd: theme.headerGradientEnd,
-        background: theme.background || '#FFFFFF',
-        text: theme.text || '#1F2937',
-        buttonColor: theme.buttonColor || '#6B46C1',
-        buttonTextColor: theme.buttonTextColor || '#FFFFFF',
-      },
+      colors: getConfigColors(theme),
       showBranding: theme.show_branding !== false,
     },
     behavior: {
