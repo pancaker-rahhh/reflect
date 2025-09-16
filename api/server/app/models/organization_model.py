@@ -32,6 +32,15 @@ class SubscriptionPlanEnum(str, enum.Enum):
     PRO_YEARLY = 'pro_yearly'
 
 
+class PaymentStatusEnum(str, enum.Enum):
+    PENDING = 'pending'
+    PROCESSING = 'processing'
+    SUCCEEDED = 'succeeded'
+    FAILED = 'failed'
+    CANCELLED = 'cancelled'
+    REFUNDED = 'refunded'
+
+
 class ProjectRole(str, enum.Enum):
     ADMIN = 'admin'
     EDITOR = 'editor'
@@ -47,7 +56,11 @@ class Organization(BaseModel):
     )
     description: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     subscription_plan: Mapped[SubscriptionPlanEnum] = mapped_column(
-        Enum(SubscriptionPlanEnum, values_callable=lambda e: [m.value for m in e]),
+        Enum(
+            SubscriptionPlanEnum,
+            values_callable=lambda e: [m.value for m in e],
+            native_enum=False,
+        ),
         default=SubscriptionPlanEnum.FREE,
     )
     subscription_status: Mapped[str] = mapped_column(String(20), default='active')
@@ -60,7 +73,14 @@ class Organization(BaseModel):
         String(255), nullable=True, index=True
     )
     dodo_customer_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    payment_status: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    payment_status: Mapped[Optional[PaymentStatusEnum]] = mapped_column(
+        Enum(
+            PaymentStatusEnum,
+            values_callable=lambda e: [m.value for m in e],
+            native_enum=False,
+        ),
+        nullable=True,
+    )
     last_payment_date: Mapped[Optional[datetime]] = mapped_column(
         DateTimeColumn(timezone=True), nullable=True
     )
