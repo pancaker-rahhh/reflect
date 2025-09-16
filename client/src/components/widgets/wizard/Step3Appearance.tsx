@@ -27,6 +27,49 @@ const themes = [
   { value: 'minimal-dark', label: 'Minimal Dark', description: 'Simple and dark' },
 ]
 
+// Get theme-specific colors
+function getThemeColors(theme: string) {
+  switch (theme) {
+    case 'midnight':
+      return {
+        primary: '#9333EA',
+        headerGradientEnd: '#7C3AED',
+        background: 'rgba(24, 24, 27, 0.95)',
+        text: '#F4F4F5',
+        buttonColor: '#9333EA',
+        buttonTextColor: '#FFFFFF',
+      }
+    case 'minimal-dark':
+      return {
+        primary: '#9CA3AF',
+        headerGradientEnd: '',
+        background: '#111827',
+        text: '#F3F4F6',
+        buttonColor: '#9CA3AF',
+        buttonTextColor: '#FFFFFF',
+      }
+    case 'minimal-light':
+      return {
+        primary: '#6B7280',
+        headerGradientEnd: '',
+        background: '#FFFFFF',
+        text: '#111827',
+        buttonColor: '#6B7280',
+        buttonTextColor: '#FFFFFF',
+      }
+    case 'default':
+    default:
+      return {
+        primary: '#0066FF',
+        headerGradientEnd: '',
+        background: '#FFFFFF',
+        text: '#000000',
+        buttonColor: '#0066FF',
+        buttonTextColor: '#FFFFFF',
+      }
+  }
+}
+
 export function Step3Appearance({ form }: Step3AppearanceProps) {
   return (
     <Form {...form}>
@@ -39,7 +82,20 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
               <FormLabel>Theme</FormLabel>
               <FormControl>
                 <RadioGroup
-                  onValueChange={field.onChange}
+                  onValueChange={(value) => {
+                    field.onChange(value)
+                    // Update colors when theme changes
+                    const themeColors = getThemeColors(value)
+                    form.setValue('appearance.colors.primary', themeColors.primary)
+                    form.setValue(
+                      'appearance.colors.headerGradientEnd',
+                      themeColors.headerGradientEnd
+                    )
+                    form.setValue('appearance.colors.background', themeColors.background)
+                    form.setValue('appearance.colors.text', themeColors.text)
+                    form.setValue('appearance.colors.buttonColor', themeColors.buttonColor)
+                    form.setValue('appearance.colors.buttonTextColor', themeColors.buttonTextColor)
+                  }}
                   defaultValue={field.value}
                   className="grid grid-cols-2 gap-4"
                 >
@@ -81,42 +137,81 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
           )}
         />
 
-        <div className="space-y-4">
-          <h3 className="font-medium">Colors</h3>
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <h3 className="font-medium">Colors</h3>
+            <p className="text-sm text-muted-foreground">
+              Customize the look to match your brand identity.
+            </p>
 
-          <FormField
-            control={form.control}
-            name="appearance.colors.primary"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Primary Color</FormLabel>
-                <FormControl>
-                  <div className="flex gap-2">
-                    <Input type="color" className="w-16 p-1 h-10" {...field} />
-                    <Input placeholder="#6B46C1" {...field} />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="appearance.colors.primary"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Primary Color</FormLabel>
+                  <FormControl>
+                    <div className="flex gap-2">
+                      <Input type="color" className="w-16 p-1 h-10" {...field} />
+                      <Input placeholder="#0066FF" {...field} />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="appearance.colors.buttonColor"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Button Color</FormLabel>
-                <FormControl>
-                  <div className="flex gap-2">
-                    <Input type="color" className="w-16 p-1 h-10" {...field} />
-                    <Input placeholder="#6B46C1" {...field} />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="appearance.colors.headerGradientEnd"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Header Gradient End (Optional)</FormLabel>
+                  <FormControl>
+                    <div className="flex gap-2">
+                      <Input type="color" className="w-16 p-1 h-10" {...field} />
+                      <Input placeholder="#7C3AED" {...field} />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="appearance.colors.background"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Background Color</FormLabel>
+                  <FormControl>
+                    <div className="flex gap-2">
+                      <Input type="color" className="w-16 p-1 h-10" {...field} />
+                      <Input placeholder="#FFFFFF" {...field} />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="appearance.colors.text"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Text Color</FormLabel>
+                  <FormControl>
+                    <div className="flex gap-2">
+                      <Input type="color" className="w-16 p-1 h-10" {...field} />
+                      <Input placeholder="#000000" {...field} />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
 
         <FeatureGateWithDisabledState feature="branding_removal">

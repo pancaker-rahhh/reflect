@@ -40,6 +40,28 @@ interface FeedbackRendererProps {
   widgetKey?: string
 }
 
+// Get relevant placeholder text for each feedback type
+function getPlaceholderText(feedbackType: FeedbackType): string {
+  switch (feedbackType) {
+    case 'NPS':
+      return 'What specifically made you give this score? What would make you more likely to recommend us?'
+    case 'CSAT':
+      return 'What specifically made you give this score? What could we do to improve your satisfaction?'
+    case 'CES':
+      return 'What specifically made you give this score? What made it easy or difficult to get help?'
+    case 'REVIEW':
+      return 'Share your detailed experience with our service...'
+    case 'BUG_REPORT':
+      return 'Describe the bug you encountered. What were you trying to do when it happened?'
+    case 'FEATURE_REQUEST':
+      return "Describe the feature you'd like to see. How would it help you?"
+    case 'FEEDBACK':
+    case 'SURVEY':
+    default:
+      return 'Tell us what you think... Share your thoughts, suggestions, or concerns.'
+  }
+}
+
 export function FeedbackRenderer({
   feedbackType,
   selectedScore,
@@ -167,7 +189,7 @@ export function FeedbackRenderer({
                 <textarea
                   value={additionalFeedback}
                   onChange={(e) => setAdditionalFeedback(e.target.value)}
-                  placeholder="What specifically made you give this score? Your feedback helps us improve..."
+                  placeholder={getPlaceholderText(feedbackType)}
                   className="w-full h-28 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all text-sm"
                   style={{
                     borderColor: additionalFeedback.trim() ? colors.primary : '#E5E7EB',
@@ -208,7 +230,7 @@ export function FeedbackRenderer({
                 <textarea
                   value={additionalFeedback}
                   onChange={(e) => setAdditionalFeedback(e.target.value)}
-                  placeholder="What specifically made you give this score? Your feedback helps us improve..."
+                  placeholder={getPlaceholderText(feedbackType)}
                   className="w-full h-28 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all text-sm"
                   style={{
                     borderColor: additionalFeedback.trim() ? colors.primary : '#E5E7EB',
@@ -249,7 +271,7 @@ export function FeedbackRenderer({
                 <textarea
                   value={additionalFeedback}
                   onChange={(e) => setAdditionalFeedback(e.target.value)}
-                  placeholder="What specifically made you give this score? Your feedback helps us improve..."
+                  placeholder={getPlaceholderText(feedbackType)}
                   className="w-full h-28 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all text-sm"
                   style={{
                     borderColor: additionalFeedback.trim() ? colors.primary : '#E5E7EB',
@@ -424,7 +446,7 @@ function GeneralFeedbackForm({
       <textarea
         value={feedback}
         onChange={(e) => setFeedback(e.target.value)}
-        placeholder="Tell us what you think..."
+        placeholder={getPlaceholderText('FEEDBACK')}
         className="w-full h-32 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all"
         style={{
           borderColor: feedback.trim() ? colors.primary : '#E5E7EB',

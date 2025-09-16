@@ -106,7 +106,7 @@ export function ReviewForm({ onSubmit, isSubmitting, colors, content }: ReviewFo
             <textarea
               value={review}
               onChange={(e) => setReview(e.target.value)}
-              placeholder="What specifically did you like or dislike? Your feedback helps us improve..."
+              placeholder="Share your detailed experience with our service. What did you like or dislike? How can we improve?"
               className="w-full h-28 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all text-sm"
               style={{
                 borderColor: review.trim() ? colors.primary : '#E5E7EB',

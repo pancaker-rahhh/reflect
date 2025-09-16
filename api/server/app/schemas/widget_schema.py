@@ -12,7 +12,12 @@ class TargetingRule(BaseModel):
 
 
 class ThemeConfiguration(BaseModel):
-    primary_color: str = Field('#6366F1')
+    primary_color: str = Field('#0066FF')
+    header_gradient_end: Optional[str] = Field(None)
+    background_color: str = Field('#FFFFFF')
+    text_color: str = Field('#000000')
+    button_color: str = Field('#0066FF')
+    button_text_color: str = Field('#FFFFFF')
     font_family: str = Field('Inter, sans-serif')
     border_radius: int = Field(8)
     show_branding: bool = Field(True)
@@ -72,10 +77,21 @@ class WidgetReadPublic(BaseModel):
         theme_config = widget.theme_configuration or {}
         transformed_theme = {
             'primary': theme_config.get(
-                'primary_color', theme_config.get('primary', '#6366F1')
+                'primary_color', theme_config.get('primary', '#0066FF')
             ),
-            'background': theme_config.get('background', '#ffffff'),
-            'text': theme_config.get('text', '#1f2937'),
+            'headerGradientEnd': theme_config.get(
+                'header_gradient_end', theme_config.get('headerGradientEnd')
+            ),
+            'background': theme_config.get(
+                'background_color', theme_config.get('background', '#ffffff')
+            ),
+            'text': theme_config.get('text_color', theme_config.get('text', '#000000')),
+            'buttonColor': theme_config.get(
+                'button_color', theme_config.get('buttonColor', '#0066FF')
+            ),
+            'buttonTextColor': theme_config.get(
+                'button_text_color', theme_config.get('buttonTextColor', '#FFFFFF')
+            ),
             'show_branding': theme_config.get('show_branding', True),
         }
 

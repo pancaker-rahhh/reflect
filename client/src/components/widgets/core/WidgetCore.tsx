@@ -8,6 +8,18 @@ import { useFeedbackSubmission } from './useFeedbackSubmission'
 import type { WidgetCoreProps } from './types'
 import { FEEDBACK_TYPE_INFO } from './types'
 
+// Helper function to convert hex to RGB
+function hexToRgb(hex: string) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : { r: 0, g: 0, b: 0 }
+}
+
 export function WidgetCore({
   config,
   mode,
@@ -264,22 +276,22 @@ export function WidgetCore({
   // Render menu state
   const renderMenu = () => {
     const availableTypes = getAvailableFeedbackTypes()
+
+    // Use button color for all modules instead of hardcoded colors
+    const buttonColorRgb = hexToRgb(buttonColor)
+    const buttonColorLight = `rgba(${buttonColorRgb.r}, ${buttonColorRgb.g}, ${buttonColorRgb.b}, 0.1)`
+    const buttonColorMedium = `rgba(${buttonColorRgb.r}, ${buttonColorRgb.g}, ${buttonColorRgb.b}, 0.2)`
+
     const availableModules = availableTypes.map((feedbackType) => {
       const info = FEEDBACK_TYPE_INFO[feedbackType]
-      const moduleColors = {
-        NPS: { bg: '#FEF3C7', border: '#F59E0B', icon: '#D97706' },
-        CSAT: { bg: '#DBEAFE', border: '#3B82F6', icon: '#1D4ED8' },
-        CES: { bg: '#D1FAE5', border: '#10B981', icon: '#047857' },
-        FEEDBACK: { bg: '#F3E8FF', border: '#8B5CF6', icon: '#7C3AED' },
-        SURVEY: { bg: '#F3E8FF', border: '#8B5CF6', icon: '#7C3AED' },
-        REVIEW: { bg: '#FEF3C7', border: '#F59E0B', icon: '#D97706' },
-        BUG_REPORT: { bg: '#FEE2E2', border: '#EF4444', icon: '#DC2626' },
-        FEATURE_REQUEST: { bg: '#ECFDF5', border: '#10B981', icon: '#047857' },
-      }
 
       return {
         ...info,
-        color: moduleColors[feedbackType] || moduleColors.FEEDBACK,
+        color: {
+          bg: buttonColorLight,
+          border: buttonColor,
+          icon: buttonColor,
+        },
       }
     })
 
@@ -306,7 +318,7 @@ export function WidgetCore({
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = module.color.icon
-                e.currentTarget.style.backgroundColor = `${module.color.bg}CC`
+                e.currentTarget.style.backgroundColor = buttonColorMedium
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.borderColor = module.color.border
@@ -433,10 +445,10 @@ export function WidgetCore({
     <div
       className={cn(
         'flex flex-col h-full font-sans antialiased relative',
-        isGlassmorphism && 'backdrop-blur-xl bg-white/10 border border-white/20'
+        isGlassmorphism && 'backdrop-blur-xl border border-white/20'
       )}
       style={{
-        backgroundColor: isGlassmorphism ? 'rgba(255, 255, 255, 0.1)' : backgroundColor,
+        backgroundColor: backgroundColor,
         color: textColor,
         backdropFilter: isGlassmorphism ? 'blur(20px)' : undefined,
       }}
@@ -445,10 +457,9 @@ export function WidgetCore({
       <div
         className="p-3 text-center relative overflow-hidden"
         style={{
-          background:
-            theme.theme === 'default'
-              ? `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}dd 100%)`
-              : 'transparent',
+          background: theme.colors.headerGradientEnd
+            ? `linear-gradient(135deg, ${primaryColor} 0%, ${theme.colors.headerGradientEnd} 100%)`
+            : `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}dd 100%)`,
         }}
       >
         <div className="relative z-10">

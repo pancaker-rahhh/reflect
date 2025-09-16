@@ -84,7 +84,7 @@ export function ThemePreview({ theme, position, colors, content, widgetType }: T
                 widgetType === 'review') && (
                 <div className="space-y-3">
                   <textarea
-                    placeholder="Tell us what you think..."
+                    placeholder="Tell us what you think... Share your thoughts, suggestions, or concerns."
                     className="w-full h-16 p-3 border rounded-lg resize-none text-sm"
                     style={{
                       borderColor: '#E5E7EB',
