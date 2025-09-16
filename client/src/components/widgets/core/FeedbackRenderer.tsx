@@ -56,7 +56,9 @@ export function FeedbackRenderer({
   const handleSubmit = async () => {
     if (selectedScore === undefined) return
 
-    const response = `Rating: ${selectedScore}${additionalFeedback.trim() ? ` - ${additionalFeedback.trim()}` : ''}`
+    const response = `Rating: ${selectedScore}${
+      additionalFeedback.trim() ? ` - ${additionalFeedback.trim()}` : ''
+    }`
 
     await onSubmit({
       response,
@@ -348,6 +350,7 @@ export function FeedbackRenderer({
               isSubmitting={isSubmitting}
               colors={colors}
               content={content}
+              showExistingFeatures={false}
             />
           </div>
         </div>

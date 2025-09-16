@@ -23,6 +23,7 @@ interface FeatureRequestFormProps {
   onUpvote?: (featureId: string) => Promise<void>
   widgetKey?: string
   isSubmitting?: boolean
+  showExistingFeatures?: boolean
   colors: {
     primary: string
     background: string
@@ -74,6 +75,7 @@ export function FeatureRequestForm({
   onSubmit,
   widgetKey,
   isSubmitting,
+  showExistingFeatures = true,
   colors,
   content,
 }: FeatureRequestFormProps) {
@@ -106,7 +108,7 @@ export function FeatureRequestForm({
         const features = await response.json()
         setExistingFeatures(features)
       } else {
-        // Fallback to mock data if API fails
+        // Fallback to sample data if API fails
         setExistingFeatures([
           {
             id: '1',
@@ -130,7 +132,7 @@ export function FeatureRequestForm({
       }
     } catch (error) {
       console.error('Failed to load features:', error)
-      // Fallback to empty array or mock data
+      // Fallback to empty array
       setExistingFeatures([])
     } finally {
       setIsLoadingFeatures(false)
@@ -475,6 +477,10 @@ export function FeatureRequestForm({
       </div>
     </div>
   )
+
+  if (!showExistingFeatures) {
+    return <div className="space-y-4">{renderCreateForm()}</div>
+  }
 
   return (
     <div className="space-y-4">{view === 'list' ? renderFeatureList() : renderCreateForm()}</div>

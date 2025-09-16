@@ -1,0 +1,60 @@
+name: Deploy to Railway
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'api/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Railway
+    runs-on: ubuntu-latest
+    environment: prod
+    container: ghcr.io/railwayapp/cli:latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Railway
+        run: railway up --service ${{ vars.RAILWAY_SERVICE_NAME }}
+        working-directory: ./api
+        env:
+          # Railway Authentication
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_DEPLOYMENT_TOKEN }}
+          
+          # Database Configuration
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          
+          # Supabase Configuration
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_JWT_SECRET: ${{ secrets.SUPABASE_JWT_SECRET }}
+          
+          # Application Settings
+          APP_NAME: ${{ vars.APP_NAME }}
+          APP_VERSION: ${{ vars.APP_VERSION }}
+          API_PREFIX: ${{ vars.API_PREFIX }}
+          DEBUG: ${{ vars.DEBUG }}
+          
+          # Security
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          
+          # Logging
+          LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
+          
+          # Cloudflare R2 Configuration
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          CDN_BASE_URL: ${{ secrets.CDN_BASE_URL }}
+          CDN_ZONE_ID: ${{ secrets.CDN_ZONE_ID }}
+          CDN_API_TOKEN: ${{ secrets.CDN_API_TOKEN }}

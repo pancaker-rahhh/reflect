@@ -5,7 +5,6 @@ health_router = APIRouter(prefix='/health', tags=['health'])
 
 
 @health_router.get('')
-@create_rate_limit_decorator('health_check', is_anonymous=True)
 async def health_check(request: Request):
     return {'status': 'ok', 'message': 'Service is healthy'}
 

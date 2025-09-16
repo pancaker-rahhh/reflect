@@ -8,9 +8,6 @@ React + TypeScript frontend for the Reflect feedback management system.
 # Install dependencies
 npm install
 
-# Initialize MSW
-npx msw init public/ --save
-
 # Start development server
 npm run dev
 ```
@@ -23,7 +20,6 @@ npm run dev
 - React Router v6
 - TanStack Query
 - Zustand
-- MSW for API mocking
 
 ## Linting Commands
 

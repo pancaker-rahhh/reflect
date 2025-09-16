@@ -1,4 +1,4 @@
-import { MessageCircle, Star, Bug, Lightbulb } from 'lucide-react'
+// Using inline SVGs to mirror the production live widget shapes exactly
 import type { WidgetFormData } from '@/pages/WidgetCreate'
 import { cn } from '@/lib/utils'
 
@@ -25,63 +25,53 @@ export function TriggerIconPreview({ formData, onClick, isActive }: TriggerIconP
   }
 
   const getWidgetIcon = () => {
-    const { modules } = formData
-
-    if (modules?.reviews) return <Star className="w-5 h-5" />
-    if (modules?.bugReporting) return <Bug className="w-5 h-5" />
-    if (modules?.featureRequests) return <Lightbulb className="w-5 h-5" />
-
-    // Default to feedback icon
-    return <MessageCircle className="w-5 h-5" />
+    // Always show chat/message icon to match production launcher
+    const baseProps = {
+      xmlns: 'http://www.w3.org/2000/svg',
+      viewBox: '0 0 24 24',
+      fill: 'none',
+      stroke: 'currentColor',
+      strokeWidth: 2,
+      strokeLinecap: 'round' as const,
+      strokeLinejoin: 'round' as const,
+      className: 'w-5 h-5',
+    }
+    // Always use feedback icon (message circle)
+    return (
+      <svg {...baseProps}>
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h8.5" />
+        <path d="M18 13a3 3 0 1 0-3.5-3.5" />
+      </svg>
+    )
   }
 
-  const getTriggerText = () => {
-    const { modules, primaryType } = formData
-
-    if (modules?.reviews) return 'Review'
-    if (modules?.bugReporting) return 'Report Bug'
-    if (modules?.featureRequests) return 'Suggest'
-
-    // Check primary type for specific feedback types
-    if (primaryType === 'NPS') return 'Rate Us'
-    if (primaryType === 'CSAT') return 'Feedback'
-    if (primaryType === 'CES') return 'Help Us'
-
-    return 'Feedback'
-  }
+  // Text is intentionally not shown in preview launcher to match live widget
 
   const isMidPosition =
     formData.appearance?.position === 'mid_left' || formData.appearance?.position === 'mid_right'
-  const isMidLeft = formData.appearance?.position === 'mid_left'
 
   if (isMidPosition) {
     return (
       <button
         onClick={onClick}
         className={cn(
-          'absolute z-10 flex items-center justify-center w-12 h-20 shadow-lg',
+          'absolute z-10 flex items-center justify-center w-16 h-16 rounded-full shadow-lg',
           'transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2',
-          'text-white font-medium text-xs',
+          'text-white',
           isActive && 'scale-110 shadow-xl',
           getPositionClasses(formData.appearance?.position || 'bottom_right')
         )}
         style={{
           backgroundColor: formData.appearance?.colors?.primary || '#6B46C1',
           color: formData.appearance?.colors?.buttonTextColor || '#FFFFFF',
-          borderRadius: isMidLeft ? '0 8px 8px 0' : '8px 0 0 8px',
           boxShadow: isActive
             ? `0 20px 25px -5px ${formData.appearance?.colors?.primary || '#6B46C1'}20, 0 10px 10px -5px ${formData.appearance?.colors?.primary || '#6B46C1'}10`
             : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
         }}
       >
-        <div className="flex flex-col items-center space-y-1">
-          <span className={cn('transition-transform duration-200', isActive && 'rotate-12')}>
-            {getWidgetIcon()}
-          </span>
-          <span className="writing-mode-vertical text-center leading-tight">
-            {getTriggerText()}
-          </span>
-        </div>
+        <span className={cn('transition-transform duration-200', isActive && 'rotate-12')}>
+          {getWidgetIcon()}
+        </span>
       </button>
     )
   }
@@ -90,9 +80,9 @@ export function TriggerIconPreview({ formData, onClick, isActive }: TriggerIconP
     <button
       onClick={onClick}
       className={cn(
-        'absolute z-10 flex items-center space-x-2 px-4 py-3 rounded-full shadow-lg',
+        'absolute z-10 flex items-center justify-center w-16 h-16 rounded-full shadow-lg',
         'transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2',
-        'text-white font-medium text-sm',
+        'text-white',
         isActive && 'scale-110 shadow-xl',
         getPositionClasses(formData.appearance?.position || 'bottom_right')
       )}
@@ -107,7 +97,6 @@ export function TriggerIconPreview({ formData, onClick, isActive }: TriggerIconP
       <span className={cn('transition-transform duration-200', isActive && 'rotate-12')}>
         {getWidgetIcon()}
       </span>
-      <span className="hidden sm:inline">{getTriggerText()}</span>
     </button>
   )
 }

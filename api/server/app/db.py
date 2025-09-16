@@ -7,7 +7,7 @@ from app.core.settings import get_settings
 settings = get_settings()
 
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    str(settings.DATABASE_URL),
     echo=settings.LOG_SQL,  # Control SQL query logging via LOG_SQL setting
     pool_size=settings.DATABASE_POOL_SIZE,
     max_overflow=settings.DATABASE_MAX_OVERFLOW,

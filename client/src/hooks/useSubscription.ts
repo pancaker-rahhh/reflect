@@ -1,33 +1,89 @@
-import { useUsageTracking } from './useUsageTracking'
-import { useSubscriptionPlan } from './useSubscriptionPlan'
+import { useQuery } from '@tanstack/react-query'
+import { useAppContext } from '@/context/AppContext'
+import {
+  subscriptionApi,
+  type SubscriptionLimits,
+  type SubscriptionFeatures,
+} from '@/lib/api/subscription'
 
 export function useSubscription() {
-  const usageTracking = useUsageTracking()
-  const subscriptionPlan = useSubscriptionPlan()
+  const { currentOrganization } = useAppContext()
+
+  const {
+    data: plan,
+    isLoading: planLoading,
+    error: planError,
+  } = useQuery({
+    queryKey: ['subscription-plan', currentOrganization?.id],
+    queryFn: () => subscriptionApi.getPlan(currentOrganization?.id || ''),
+    enabled: !!currentOrganization?.id,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+    retry: false,
+  })
+
+  const {
+    data: limits,
+    isLoading: limitsLoading,
+    error: limitsError,
+  } = useQuery({
+    queryKey: ['subscription-limits', currentOrganization?.id],
+    queryFn: () => subscriptionApi.getLimits(currentOrganization?.id || ''),
+    enabled: !!currentOrganization?.id,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+    retry: false,
+  })
+
+  const {
+    data: features,
+    isLoading: featuresLoading,
+    error: featuresError,
+  } = useQuery({
+    queryKey: ['subscription-features', currentOrganization?.id],
+    queryFn: () => subscriptionApi.getFeatures(currentOrganization?.id || ''),
+    enabled: !!currentOrganization?.id,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+    retry: false,
+  })
 
   const subscription =
-    subscriptionPlan.plan && usageTracking.limits && usageTracking.features && usageTracking.usage
+    plan && limits && features
       ? {
-          plan: subscriptionPlan.plan.plan, // 'free' | 'pro_monthly' | 'pro_yearly'
-          status: subscriptionPlan.plan.status,
-          subscription_ends_at: subscriptionPlan.plan.subscription_ends_at,
-          payment_status: subscriptionPlan.plan.payment_status,
-          limits: usageTracking.limits,
-          features: usageTracking.features,
-          usage: usageTracking.usage,
+          plan: plan.plan,
+          status: plan.status,
+          subscription_ends_at: plan.subscription_ends_at,
+          payment_status: plan.payment_status,
+          limits,
+          features,
+          usage: {
+            projects: 0, // This would need to be fetched separately
+            widgets: 0, // This would need to be fetched separately
+            responses: 0, // This would need to be fetched separately
+          },
         }
       : undefined
 
-  const isLoading = usageTracking.isLoading || subscriptionPlan.isLoading
-  const error = usageTracking.error || subscriptionPlan.error
+  const isLoading = planLoading || limitsLoading || featuresLoading
+  const error = planError || limitsError || featuresError
 
   const isFeatureEnabled = (feature: string): boolean => {
-    return subscription?.features[feature as keyof typeof subscription.features] ?? false
+    return subscription?.features[feature as keyof SubscriptionFeatures] ?? false
   }
 
   const canCreateResource = (resourceType: string): boolean => {
-    const currentUsage = subscription?.usage[resourceType] ?? 0
-    const limit = subscription?.limits[resourceType as keyof typeof subscription.limits] ?? 0
+    const currentUsage = subscription?.usage[resourceType as keyof typeof subscription.usage] ?? 0
+    const limit = subscription?.limits[resourceType as keyof SubscriptionLimits] ?? 0
     return currentUsage < limit
   }
 
@@ -45,8 +101,8 @@ export function useSubscription() {
   }
 
   const getUsageInfo = (resourceType: string) => {
-    const currentUsage = subscription?.usage[resourceType] ?? 0
-    const limit = subscription?.limits[resourceType as keyof typeof subscription.limits] ?? 0
+    const currentUsage = subscription?.usage[resourceType as keyof typeof subscription.usage] ?? 0
+    const limit = subscription?.limits[resourceType as keyof SubscriptionLimits] ?? 0
     return {
       current: currentUsage,
       limit,
@@ -64,7 +120,7 @@ export function useSubscription() {
     canCreateResource,
     getUpgradeMessage,
     getUsageInfo,
-    isPro: subscription?.plan === 'pro_monthly' || subscription?.plan === 'pro_yearly',
+    isPro: subscription?.plan === 'pro',
     isFree: subscription?.plan === 'free',
   }
 }

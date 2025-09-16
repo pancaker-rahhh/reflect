@@ -1,4 +1,4 @@
-import { request } from './apiClient'
+import { request } from '../services/apiClient'
 import type { Project } from '@/types'
 
 interface PaginatedProjects {

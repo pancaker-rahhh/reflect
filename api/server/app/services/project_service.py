@@ -344,6 +344,12 @@ class ProjectService:
             logger.info(f'Removed member {member_user_id} from project {project_id}')
 
         return success
+    
+    async def get_project_by_id(self, db: AsyncSession, project_id: UUID) -> Project:
+        project = await self.repository.get(db, id=project_id)
+        if not project:
+            raise NotFoundError('Project not found')
+        return project
 
 
 project_service = ProjectService()

@@ -333,11 +333,11 @@ export function WidgetCreate() {
       if (isEditMode && widgetId) {
         await widgetApi.update(widgetId, data)
         queryClient.invalidateQueries({ queryKey: ['widget', widgetId] })
-        navigate(`/widgets/${widgetId}/get-code`)
+        navigate(`/app/widgets/${widgetId}/get-code`)
       } else {
         const newWidget = await widgetApi.create(currentProject.id, data)
         queryClient.invalidateQueries({ queryKey: ['widgets', currentProject.id] })
-        navigate(`/widgets/${newWidget.id}/get-code`)
+        navigate(`/app/widgets/${newWidget.id}/get-code`)
       }
     } catch (error) {
       console.error(`Failed to ${isEditMode ? 'update' : 'create'} widget:`, error)

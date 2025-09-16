@@ -1,3 +1,5 @@
+// this is widgets page in the UI
+// 'widget.tsx' is the code for the widget
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -82,11 +84,11 @@ export function Widgets() {
   }
 
   const handleEditWidget = (widgetId: string) => {
-    navigate(`/widgets/${widgetId}/edit`)
+    navigate(`/app/widgets/${widgetId}/edit`)
   }
 
   const handleGetCode = (widgetId: string) => {
-    navigate(`/widgets/${widgetId}/get-code`)
+    navigate(`/app/widgets/${widgetId}/get-code`)
   }
 
   const confirmDelete = () => {
