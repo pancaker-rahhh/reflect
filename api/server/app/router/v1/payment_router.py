@@ -1,5 +1,6 @@
-from typing import Dict, Any
+from typing import List, Optional
 from uuid import UUID
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
@@ -17,6 +18,7 @@ router = APIRouter()
 permission_service = PermissionService()
 
 
+# Request Models
 class PaymentLinkRequest(BaseModel):
     plan_id: str = Field(..., description='Subscription plan ID')
     email: str = Field(..., description='Customer email')
@@ -25,6 +27,12 @@ class PaymentLinkRequest(BaseModel):
     country: str = Field(..., description='Customer country code')
 
 
+class ChangePlanRequest(BaseModel):
+    new_plan_id: str = Field(..., description='Target subscription plan id')
+    quantity: int = Field(1, ge=1)
+
+
+# Response Models
 class PaymentLinkResponse(BaseModel):
     payment_link: str
     subscription_id: str
@@ -33,6 +41,50 @@ class PaymentLinkResponse(BaseModel):
     organization_id: str
     amount: float
     currency: str
+
+
+class PaymentStatusResponse(BaseModel):
+    payment_id: str
+    organization_id: str
+    subscription_plan: str
+    subscription_status: str
+    payment_status: Optional[str]
+    last_payment_date: Optional[datetime]
+    dodo_subscription_id: Optional[str]
+
+
+class CancelSubscriptionResponse(BaseModel):
+    success: bool
+    message: str
+    organization_id: str
+
+
+class ChangePlanResponse(BaseModel):
+    success: bool
+    message: str
+    organization_id: str
+    new_plan_id: str
+
+
+class UndoCancelSubscriptionResponse(BaseModel):
+    success: bool
+    message: str
+    organization_id: str
+
+
+class PaymentPlan(BaseModel):
+    id: str
+    name: str
+    price: float
+    currency: str
+    interval: str
+    features: List[str]
+    dodo_product_id: Optional[str]
+
+
+class PaymentPlansResponse(BaseModel):
+    plans: List[PaymentPlan]
+    total: int
 
 
 @router.post('/payment/create-link', response_model=PaymentLinkResponse)
@@ -88,13 +140,13 @@ async def create_payment_link(
         )
 
 
-@router.get('/payment/status/{payment_id}')
+@router.get('/payment/status/{payment_id}', response_model=PaymentStatusResponse)
 async def get_payment_status(
     payment_id: str,
     organization_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> Dict[str, Any]:
+) -> PaymentStatusResponse:
     """
     Get payment status for a specific payment.
 
@@ -114,15 +166,15 @@ async def get_payment_status(
                 status_code=status.HTTP_404_NOT_FOUND, detail='Organization not found'
             )
 
-        return {
-            'payment_id': payment_id,
-            'organization_id': str(organization_id),
-            'subscription_plan': organization.subscription_plan,
-            'subscription_status': organization.subscription_status,
-            'payment_status': organization.payment_status,
-            'last_payment_date': organization.last_payment_date,
-            'dodo_subscription_id': organization.dodo_subscription_id,
-        }
+        return PaymentStatusResponse(
+            payment_id=payment_id,
+            organization_id=str(organization_id),
+            subscription_plan=organization.subscription_plan,
+            subscription_status=organization.subscription_status,
+            payment_status=organization.payment_status,
+            last_payment_date=organization.last_payment_date,
+            dodo_subscription_id=organization.dodo_subscription_id,
+        )
 
     except HTTPException:
         raise
@@ -134,12 +186,12 @@ async def get_payment_status(
         )
 
 
-@router.post('/payment/cancel-subscription')
+@router.post('/payment/cancel-subscription', response_model=CancelSubscriptionResponse)
 async def cancel_subscription(
     organization_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> Dict[str, Any]:
+) -> CancelSubscriptionResponse:
     """
     Cancel subscription through Dodo Payments.
 
@@ -166,11 +218,11 @@ async def cancel_subscription(
 
         if success:
             logger.info(f'Subscription cancelled for organization {organization_id}')
-            return {
-                'success': True,
-                'message': 'Cancellation scheduled. You can undo within 3 hours.',
-                'organization_id': str(organization_id),
-            }
+            return CancelSubscriptionResponse(
+                success=True,
+                message='Cancellation scheduled. You can undo within 3 hours.',
+                organization_id=str(organization_id),
+            )
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -187,12 +239,7 @@ async def cancel_subscription(
         )
 
 
-class ChangePlanRequest(BaseModel):
-    new_plan_id: str = Field(..., description='Target subscription plan id')
-    quantity: int = Field(1, ge=1)
-
-
-@router.post('/payment/change-plan')
+@router.post('/payment/change-plan', response_model=ChangePlanResponse)
 @create_rate_limit_decorator('subscription_change', is_anonymous=False)
 async def change_plan(
     request: Request,
@@ -200,7 +247,7 @@ async def change_plan(
     payload: ChangePlanRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> Dict[str, Any]:
+) -> ChangePlanResponse:
     """Change subscription plan using Dodo Payments.
 
     Security: requires 'manage_billing' permission (owner only per PermissionService).
@@ -241,12 +288,12 @@ async def change_plan(
                 detail='Failed to change plan',
             )
 
-        return {
-            'success': True,
-            'message': 'Plan change initiated successfully',
-            'organization_id': str(organization_id),
-            'new_plan_id': payload.new_plan_id,
-        }
+        return ChangePlanResponse(
+            success=True,
+            message='Plan change initiated successfully',
+            organization_id=str(organization_id),
+            new_plan_id=payload.new_plan_id,
+        )
     except HTTPException:
         raise
     except Exception as e:
@@ -257,12 +304,14 @@ async def change_plan(
         )
 
 
-@router.post('/payment/cancel-subscription/undo')
+@router.post(
+    '/payment/cancel-subscription/undo', response_model=UndoCancelSubscriptionResponse
+)
 async def undo_cancel_subscription(
     organization_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> Dict[str, Any]:
+) -> UndoCancelSubscriptionResponse:
     """Undo a scheduled cancellation during grace period."""
     try:
         # Authorization: require manage_billing
@@ -285,11 +334,11 @@ async def undo_cancel_subscription(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='Unable to undo cancellation',
             )
-        return {
-            'success': True,
-            'message': 'Cancellation has been undone',
-            'organization_id': str(organization_id),
-        }
+        return UndoCancelSubscriptionResponse(
+            success=True,
+            message='Cancellation has been undone',
+            organization_id=str(organization_id),
+        )
     except HTTPException:
         raise
     except Exception as e:
@@ -300,11 +349,11 @@ async def undo_cancel_subscription(
         )
 
 
-@router.get('/payment/plans')
+@router.get('/payment/plans', response_model=PaymentPlansResponse)
 async def get_payment_plans(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> Dict[str, Any]:
+) -> PaymentPlansResponse:
     """
     Get available subscription plans for payment.
 
@@ -319,10 +368,24 @@ async def get_payment_plans(
         # Filter out free plan and return only paid plans
         paid_plans = [plan for plan in plans if plan.get('price', 0) > 0]
 
-        return {
-            'plans': paid_plans,
-            'total': len(paid_plans),
-        }
+        # Convert to PaymentPlan models
+        payment_plans = [
+            PaymentPlan(
+                id=plan['id'],
+                name=plan['name'],
+                price=plan['price'],
+                currency=plan.get('currency', 'USD'),
+                interval=plan.get('interval', 'month'),
+                features=plan.get('features', []),
+                dodo_product_id=plan.get('dodo_product_id'),
+            )
+            for plan in paid_plans
+        ]
+
+        return PaymentPlansResponse(
+            plans=payment_plans,
+            total=len(payment_plans),
+        )
 
     except Exception as e:
         logger.error(f'Failed to get payment plans: {str(e)}')
