@@ -18,8 +18,12 @@ export function useSubscription() {
     queryKey: ['subscription', currentOrganization?.id],
     queryFn: () => subscriptionApi.getInfo(currentOrganization?.id || ''),
     enabled: !!currentOrganization?.id,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
     refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+    retry: false,
   })
 
   const isFeatureEnabled = (feature: string): boolean => {

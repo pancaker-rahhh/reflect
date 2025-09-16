@@ -80,7 +80,7 @@ export function PublicFeedbackDisplay({
       }
 
       const result = await response.json()
-      setData(result)
+      setData(Array.isArray(result) ? result : [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch data')
     } finally {
@@ -209,42 +209,26 @@ export function PublicFeedbackDisplay({
     )
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <div
-          className="animate-spin rounded-full h-8 w-8 border-b-2"
-          style={{ borderColor: colors.primary }}
-        ></div>
-        <span className="ml-3 text-gray-600">Loading {feedbackType.toLowerCase()}s...</span>
+  const PlaceholderCard = () => (
+    <div
+      className="p-4 rounded-lg border border-gray-200 bg-white/50 backdrop-blur-sm animate-pulse"
+      style={{ borderColor: `${colors.primary}20` }}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <div className="h-4 w-24 bg-gray-200 rounded" />
+        <div className="h-3 w-20 bg-gray-200 rounded" />
       </div>
-    )
-  }
+      <div className="h-4 w-3/5 bg-gray-200 rounded mb-2" />
+      <div className="h-4 w-4/5 bg-gray-200 rounded mb-2" />
+      <div className="h-4 w-2/5 bg-gray-200 rounded" />
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+        <div className="h-3 w-16 bg-gray-200 rounded" />
+        <div className="h-7 w-16 bg-gray-200 rounded-full" />
+      </div>
+    </div>
+  )
 
-  if (error) {
-    return (
-      <div className="text-center py-8">
-        <div className="text-red-500 mb-2">⚠️ {error}</div>
-        <button
-          onClick={fetchPublicData}
-          className="px-4 py-2 rounded-lg text-sm"
-          style={{ backgroundColor: colors.primary, color: colors.buttonTextColor }}
-        >
-          Try Again
-        </button>
-      </div>
-    )
-  }
-
-  if (data.length === 0) {
-    return (
-      <div className="text-center py-8 text-gray-500">
-        <div className="text-4xl mb-2">📝</div>
-        <div>No {feedbackType.toLowerCase()}s yet</div>
-        <div className="text-sm mt-1">Be the first to share your thoughts!</div>
-      </div>
-    )
-  }
+  const shouldShowPlaceholders = loading || !!error || !Array.isArray(data) || data.length === 0
 
   return (
     <div className="space-y-4">
@@ -266,7 +250,9 @@ export function PublicFeedbackDisplay({
       </div>
 
       <div className="space-y-4 max-h-96 overflow-y-auto">
-        {data.map((item) => (
+        {shouldShowPlaceholders
+          ? [1, 2, 3].map((i) => <PlaceholderCard key={i} />)
+          : data.map((item) => (
           <div
             key={item.id}
             className="p-4 rounded-lg border border-gray-200 bg-white/50 backdrop-blur-sm"
