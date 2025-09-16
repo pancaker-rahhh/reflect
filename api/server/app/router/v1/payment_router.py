@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 from uuid import UUID
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Request
@@ -75,11 +75,17 @@ class UndoCancelSubscriptionResponse(BaseModel):
 class PaymentPlan(BaseModel):
     id: str
     name: str
+    display_name: str
+    dodo_product_id: Optional[str]
     price: float
     currency: str
-    interval: str
-    features: List[str]
-    dodo_product_id: Optional[str]
+    interval: Optional[str]
+    interval_count: Optional[int]
+    trial_days: int
+    limits: Dict[str, int]
+    features: Dict[str, bool]
+    description: str
+    is_active: bool
 
 
 class PaymentPlansResponse(BaseModel):
@@ -369,18 +375,25 @@ async def get_payment_plans(
         paid_plans = [plan for plan in plans if plan.get('price', 0) > 0]
 
         # Convert to PaymentPlan models
-        payment_plans = [
-            PaymentPlan(
-                id=plan['id'],
-                name=plan['name'],
-                price=plan['price'],
-                currency=plan.get('currency', 'USD'),
-                interval=plan.get('interval', 'month'),
-                features=plan.get('features', []),
-                dodo_product_id=plan.get('dodo_product_id'),
+        payment_plans = []
+        for plan in paid_plans:
+            payment_plans.append(
+                PaymentPlan(
+                    id=plan['id'],
+                    name=plan['name'],
+                    display_name=plan.get('display_name', plan['name']),
+                    dodo_product_id=plan.get('dodo_product_id'),
+                    price=plan['price'],
+                    currency=plan.get('currency', 'USD'),
+                    interval=plan.get('interval'),
+                    interval_count=plan.get('interval_count'),
+                    trial_days=plan.get('trial_days', 0),
+                    limits=plan.get('limits', {}),
+                    features=plan.get('features', {}),
+                    description=plan.get('description', ''),
+                    is_active=plan.get('is_active', True),
+                )
             )
-            for plan in paid_plans
-        ]
 
         return PaymentPlansResponse(
             plans=payment_plans,

@@ -81,7 +81,12 @@ class DashboardService:
                 )
 
             return await self.feedback_repository.get_public_feedback_for_widget(
-                db, project_id, feedback_type, limit, offset
+                db,
+                widget_id=None,
+                project_id=project_id,
+                feedback_type=feedback_type,
+                limit=limit,
+                offset=offset,
             )
         except HTTPException:
             raise
