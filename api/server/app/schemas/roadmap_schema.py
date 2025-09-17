@@ -286,7 +286,7 @@ class RoadmapBase(BaseModel):
         description='Custom subdomain for the roadmap (optional)',
     )
     logo_url: Optional[str] = Field(
-        None, max_length=500, description='URL to the roadmap logo'
+        None, max_length=100000, description='URL to the roadmap logo'
     )
 
     @validator('name')
@@ -311,9 +311,13 @@ class RoadmapBase(BaseModel):
     @validator('logo_url')
     def validate_logo_url(cls, v):
         if v is not None:
-            url_pattern = r'^https?://[^\s/$.?#].[^\s]*$'
-            if not re.match(url_pattern, v):
-                raise ValueError('Logo URL must be a valid HTTP/HTTPS URL')
+            # Allow both HTTP/HTTPS URLs and data URLs for base64 images
+            http_pattern = r'^https?://[^\s/$.?#].[^\s]*$'
+            data_pattern = r'^data:image/[a-zA-Z]+;base64,[A-Za-z0-9+/=]+$'
+            if not (re.match(http_pattern, v) or re.match(data_pattern, v)):
+                raise ValueError(
+                    'Logo URL must be a valid HTTP/HTTPS URL or base64 data URL'
+                )
         return v
 
 
@@ -338,7 +342,7 @@ class RoadmapUpdate(BaseModel):
         description='Custom subdomain for the roadmap (optional)',
     )
     logo_url: Optional[str] = Field(
-        None, max_length=500, description='URL to the roadmap logo'
+        None, max_length=100000, description='URL to the roadmap logo'
     )
 
     @validator('name')
@@ -363,9 +367,13 @@ class RoadmapUpdate(BaseModel):
     @validator('logo_url')
     def validate_logo_url(cls, v):
         if v is not None:
-            url_pattern = r'^https?://[^\s/$.?#].[^\s]*$'
-            if not re.match(url_pattern, v):
-                raise ValueError('Logo URL must be a valid HTTP/HTTPS URL')
+            # Allow both HTTP/HTTPS URLs and data URLs for base64 images
+            http_pattern = r'^https?://[^\s/$.?#].[^\s]*$'
+            data_pattern = r'^data:image/[a-zA-Z]+;base64,[A-Za-z0-9+/=]+$'
+            if not (re.match(http_pattern, v) or re.match(data_pattern, v)):
+                raise ValueError(
+                    'Logo URL must be a valid HTTP/HTTPS URL or base64 data URL'
+                )
         return v
 
 

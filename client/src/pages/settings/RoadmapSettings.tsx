@@ -287,8 +287,8 @@ export function RoadmapSettings() {
       return
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      setUploadError('File size must be less than 2MB')
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('File size must be less than 5MB')
       return
     }
 
@@ -619,7 +619,7 @@ export function RoadmapSettings() {
                                 Drag and drop your logo here, or click to browse
                               </p>
                               <p className="text-sm text-muted-foreground mt-2">
-                                PNG, JPG, GIF up to 2MB
+                                PNG, JPG, GIF up to 5MB
                               </p>
                             </>
                           )}

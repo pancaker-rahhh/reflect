@@ -4,7 +4,6 @@ import { roadmapApi } from '@/lib/api'
 import type { RoadmapActionItem, RoadmapActionItemTag } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader'
 import { MapPin, ArrowLeft, Calendar } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -41,18 +40,29 @@ export function PublicRoadmap() {
             </div>
 
             {/* Columns Skeleton */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
-                <Card key={i} className="border-border/50">
-                  <CardHeader className="pb-4">
-                    <SkeletonLoader className="w-32 h-6" />
-                  </CardHeader>
-                  <CardContent className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-background/50 border border-border/50 rounded-xl p-6">
+                  <div className="mb-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <SkeletonLoader className="w-3 h-3 rounded-full" />
+                      <SkeletonLoader className="w-24 h-6" />
+                    </div>
+                    <SkeletonLoader className="w-16 h-4" />
+                  </div>
+                  <div className="space-y-4">
                     {[1, 2, 3].map((j) => (
-                      <SkeletonLoader key={j} className="w-full h-20" />
+                      <div key={j} className="p-4 bg-muted/30 border border-border/30 rounded-lg">
+                        <SkeletonLoader className="w-full h-4 mb-2" />
+                        <SkeletonLoader className="w-3/4 h-3 mb-3" />
+                        <div className="flex gap-1">
+                          <SkeletonLoader className="w-12 h-5 rounded-full" />
+                          <SkeletonLoader className="w-16 h-5 rounded-full" />
+                        </div>
+                      </div>
                     ))}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -73,6 +83,7 @@ export function PublicRoadmap() {
             <p className="text-muted-foreground max-w-md">
               The roadmap you're looking for doesn't exist or is not publicly accessible.
             </p>
+            {error && <p className="text-sm text-red-500 mt-2">Error: {error.message}</p>}
           </div>
           <Button asChild variant="outline">
             <Link to="/">
@@ -119,55 +130,57 @@ export function PublicRoadmap() {
           </div>
         </div>
 
-        {/* Roadmap Columns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {roadmap.columns?.map((column) => (
-            <Card
-              key={column.id}
-              className="border-border/50 shadow-sm hover:shadow-md transition-all duration-300"
-            >
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-4 h-4 rounded-full shadow-sm"
-                    style={{ backgroundColor: column.color }}
-                  />
-                  <CardTitle className="text-lg">{column.name}</CardTitle>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {roadmap.columns
+            ?.sort((a: any, b: any) => a.order - b.order)
+            ?.map((column) => (
+              <div
+                key={column.id}
+                className="bg-background/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300"
+              >
+                <div className="mb-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div
+                      className="w-3 h-3 rounded-full shadow-sm"
+                      style={{ backgroundColor: column.color }}
+                    />
+                    <h3 className="text-lg font-semibold text-foreground">{column.name}</h3>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>{column.action_items?.length || 0} features</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>{column.action_items?.length || 0} features</span>
-                </div>
-              </CardHeader>
 
-              <CardContent className="space-y-3">
-                {column.action_items?.map((feature: RoadmapActionItem) => (
-                  <div
-                    key={feature.id}
-                    className="p-4 border rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer group"
-                  >
-                    <div className="space-y-2">
-                      <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">
-                        {feature.title}
-                      </h3>
+                <div className="space-y-4">
+                  {column.action_items?.map((feature: RoadmapActionItem) => (
+                    <div
+                      key={feature.id}
+                      className="group p-4 bg-muted/30 border border-border/30 rounded-lg hover:bg-muted/50 hover:border-border/50 transition-all duration-200 cursor-pointer"
+                    >
+                      <div className="space-y-3">
+                        <h4 className="font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                          {feature.title}
+                        </h4>
 
-                      {feature.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {feature.description}
-                        </p>
-                      )}
+                        {feature.description && (
+                          <p className="text-sm text-muted-foreground line-clamp-3">
+                            {feature.description}
+                          </p>
+                        )}
 
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          {feature.feature_tags?.map((featureTag: RoadmapActionItemTag) => (
-                            <Badge
-                              key={featureTag.tag.id}
-                              variant="outline"
-                              className="text-xs px-2 py-1"
-                            >
-                              {featureTag.tag.name}
-                            </Badge>
-                          ))}
-                        </div>
+                        {feature.feature_tags && feature.feature_tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {feature.feature_tags.map((featureTag: RoadmapActionItemTag) => (
+                              <Badge
+                                key={featureTag.tag.id}
+                                variant="outline"
+                                className="text-xs px-2 py-1 bg-background/50"
+                              >
+                                {featureTag.tag.name}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
 
                         {feature.created_at && (
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -177,20 +190,20 @@ export function PublicRoadmap() {
                         )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
 
-                {(!column.action_items || column.action_items.length === 0) && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <div className="w-12 h-12 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <MapPin className="h-6 w-6 opacity-50" />
+                  {(!column.action_items || column.action_items.length === 0) && (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <div className="w-16 h-16 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <MapPin className="h-8 w-8 opacity-50" />
+                      </div>
+                      <p className="text-sm font-medium">No features yet</p>
+                      <p className="text-xs mt-1">Features will appear here when added</p>
                     </div>
-                    <p className="text-sm">No features yet</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                  )}
+                </div>
+              </div>
+            ))}
         </div>
 
         {/* Footer */}
