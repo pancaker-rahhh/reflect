@@ -11,33 +11,26 @@ export function useWidgetState({ config, externalState, onStateChange }: UseWidg
   const getInitialState = useCallback((): WidgetState => {
     if (externalState) return externalState
 
-    // Build available types based on enabled modules
-    const availableTypes: FeedbackType[] = []
-
-    // Always add the primary type first
     const primaryType = config.primaryType || 'FEEDBACK'
 
-    // For scoring types (NPS, CSAT, CES), they should be directly available
-    if (['NPS', 'CSAT', 'CES'].includes(primaryType)) {
-      // Scoring types should be shown directly, not as part of menu system
-      return { type: 'active', feedbackType: primaryType as FeedbackType }
-    }
-
-    // Handle other types with their module mapping
     const primaryModuleMap: Record<string, keyof typeof config.modules> = {
       FEEDBACK: 'feedback',
       SURVEY: 'feedback',
+      NPS: 'feedback',
+      CSAT: 'feedback',
+      CES: 'feedback',
       REVIEW: 'reviews',
       BUG_REPORT: 'bugReporting',
       FEATURE_REQUEST: 'featureRequests',
     }
 
     const primaryModuleKey = primaryModuleMap[primaryType]
-    if (config.modules?.[primaryModuleKey]) {
-      availableTypes.push(primaryType as FeedbackType)
+    const isPrimaryTypeEnabled = config.modules?.[primaryModuleKey] || false
+
+    if (isPrimaryTypeEnabled) {
+      return { type: 'active', feedbackType: primaryType as FeedbackType }
     }
 
-    // Add other enabled modules (except primary type)
     const moduleTypeMap: Record<string, FeedbackType> = {
       feedback: 'FEEDBACK',
       reviews: 'REVIEW',
@@ -45,22 +38,16 @@ export function useWidgetState({ config, externalState, onStateChange }: UseWidg
       featureRequests: 'FEATURE_REQUEST',
     }
 
-    Object.entries(config.modules || {}).forEach(([moduleKey, enabled]) => {
+    for (const [moduleKey, enabled] of Object.entries(config.modules || {})) {
       if (enabled) {
         const feedbackType = moduleTypeMap[moduleKey]
-        if (feedbackType && !availableTypes.includes(feedbackType)) {
-          availableTypes.push(feedbackType)
+        if (feedbackType) {
+          return { type: 'active', feedbackType }
         }
       }
-    })
-
-    // Simple logic: Show menu if multiple types, otherwise show the single type
-    if (availableTypes.length > 1) {
-      return { type: 'menu', availableTypes }
-    } else if (availableTypes.length === 1) {
-      return { type: 'active', feedbackType: availableTypes[0] }
     }
 
+    // Ultimate fallback
     return { type: 'active', feedbackType: 'FEEDBACK' }
   }, [config, externalState])
 
@@ -93,17 +80,38 @@ export function useWidgetState({ config, externalState, onStateChange }: UseWidg
   const getAvailableFeedbackTypes = useCallback((): FeedbackType[] => {
     const types: FeedbackType[] = []
 
-    // Check if we have a primary type that's a scoring type
     const primaryType = config.primaryType
-    if (primaryType && ['NPS', 'CSAT', 'CES'].includes(primaryType)) {
+    const primaryModuleMap: Record<string, keyof typeof config.modules> = {
+      FEEDBACK: 'feedback',
+      SURVEY: 'feedback',
+      NPS: 'feedback',
+      CSAT: 'feedback',
+      CES: 'feedback',
+      REVIEW: 'reviews',
+      BUG_REPORT: 'bugReporting',
+      FEATURE_REQUEST: 'featureRequests',
+    }
+
+    const primaryModuleKey = primaryModuleMap[primaryType]
+    if (primaryType && config.modules?.[primaryModuleKey]) {
       types.push(primaryType as FeedbackType)
     }
 
-    // Add other module types
-    if (config.modules.feedback) types.push('FEEDBACK')
-    if (config.modules.reviews) types.push('REVIEW')
-    if (config.modules.bugReporting) types.push('BUG_REPORT')
-    if (config.modules.featureRequests) types.push('FEATURE_REQUEST')
+    const moduleTypeMap: Record<string, FeedbackType> = {
+      feedback: 'FEEDBACK',
+      reviews: 'REVIEW',
+      bugReporting: 'BUG_REPORT',
+      featureRequests: 'FEATURE_REQUEST',
+    }
+
+    Object.entries(config.modules || {}).forEach(([moduleKey, enabled]) => {
+      if (enabled) {
+        const feedbackType = moduleTypeMap[moduleKey]
+        if (feedbackType && !types.includes(feedbackType)) {
+          types.push(feedbackType)
+        }
+      }
+    })
 
     return types
   }, [config])
