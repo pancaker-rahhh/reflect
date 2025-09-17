@@ -225,6 +225,9 @@ class RoadmapService(BaseRoadmapService):
         }
         created_roadmap = await self.roadmap_repo.create(db, **roadmap_data)
 
+        # Create default columns
+        await self._create_default_columns(db, created_roadmap.id)
+
         return await self.roadmap_repo.get_by_project_id(
             db, project_id=created_roadmap.project_id
         )
@@ -710,6 +713,41 @@ class RoadmapService(BaseRoadmapService):
         self, db: AsyncSession, project_id: UUID
     ) -> RoadmapColumn:
         return await action_item_service._ensure_backlog_column_exists(db, project_id)
+
+    async def _create_default_columns(self, db: AsyncSession, roadmap_id: UUID) -> None:
+        default_columns = [
+            {
+                'name': 'New',
+                'color': '#94A3B8',
+                'order': 0,
+            },
+            {
+                'name': 'In Progress',
+                'color': '#3B82F6',
+                'order': 1,
+            },
+            {
+                'name': 'Planned',
+                'color': '#8B5CF6',
+                'order': 2,
+            },
+            {
+                'name': 'Completed',
+                'color': '#10B981',
+                'order': 3,
+            },
+        ]
+
+        for column_data in default_columns:
+            try:
+                await self.column_repo.create(db, roadmap_id=roadmap_id, **column_data)
+            except Exception as e:
+                from app.core.logging import get_logger
+
+                logger = get_logger(__name__)
+                logger.warning(
+                    f'Failed to create default column {column_data["name"]}: {str(e)}'
+                )
 
 
 roadmap_service = RoadmapService()

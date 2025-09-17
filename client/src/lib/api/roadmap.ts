@@ -20,14 +20,12 @@ export interface RoadmapCreateRequest {
 export interface RoadmapColumnCreateRequest {
   roadmap_id: string
   name: string
-  status: string
   color: string
   order: number
 }
 
 export interface RoadmapColumnUpdateRequest {
   name?: string
-  status?: string
   color?: string
   order?: number
 }

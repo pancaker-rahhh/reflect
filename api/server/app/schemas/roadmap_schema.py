@@ -201,12 +201,6 @@ class RoadmapColumnBase(BaseModel):
         pattern=r'^#[0-9a-fA-F]{6}$',
         description='Column color in hex format',
     )
-    status: str = Field(
-        'new',
-        min_length=1,
-        max_length=50,
-        description='Column status (e.g., new, in-progress, completed)',
-    )
 
     @validator('name')
     def validate_name(cls, v):
@@ -219,20 +213,6 @@ class RoadmapColumnBase(BaseModel):
         if not re.match(r'^#[0-9a-fA-F]{6}$', v):
             raise ValueError('Color must be a valid hex color code (e.g., #FF0000)')
         return v
-
-    @validator('status')
-    def validate_status(cls, v):
-        valid_statuses = [
-            'new',
-            'in-progress',
-            'planned',
-            'under-review',
-            'completed',
-            'declined',
-        ]
-        if v.lower() not in valid_statuses:
-            raise ValueError(f'Status must be one of: {", ".join(valid_statuses)}')
-        return v.lower()
 
 
 class RoadmapColumnCreate(RoadmapColumnBase):
@@ -255,9 +235,6 @@ class RoadmapColumnUpdate(BaseModel):
     color: Optional[str] = Field(
         None, pattern=r'^#[0-9a-fA-F]{6}$', description='Column color in hex format'
     )
-    status: Optional[str] = Field(
-        None, min_length=1, max_length=50, description='Column status'
-    )
     order: Optional[int] = Field(
         None, ge=0, description='Column order within the roadmap'
     )
@@ -272,22 +249,6 @@ class RoadmapColumnUpdate(BaseModel):
     def validate_color(cls, v):
         if v is not None and not re.match(r'^#[0-9a-fA-F]{6}$', v):
             raise ValueError('Color must be a valid hex color code (e.g., #FF0000)')
-        return v
-
-    @validator('status')
-    def validate_status(cls, v):
-        if v is not None:
-            valid_statuses = [
-                'new',
-                'in-progress',
-                'planned',
-                'under-review',
-                'completed',
-                'declined',
-            ]
-            if v.lower() not in valid_statuses:
-                raise ValueError(f'Status must be one of: {", ".join(valid_statuses)}')
-            return v.lower()
         return v
 
     @validator('order')

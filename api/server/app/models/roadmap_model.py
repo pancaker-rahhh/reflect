@@ -100,8 +100,6 @@ class RoadmapColumn(BaseModel):
     )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     color: Mapped[str] = mapped_column(String(7), default='#FFFFFF')
-    status: Mapped[str] = mapped_column(String(50), default='new')
-
     order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     roadmap: Mapped['Roadmap'] = relationship(back_populates='columns')

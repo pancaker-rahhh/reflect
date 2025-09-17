@@ -135,8 +135,6 @@ export function PublicRoadmap() {
                   <CardTitle className="text-lg">{column.name}</CardTitle>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span className="capitalize">{column.status}</span>
-                  <span>•</span>
                   <span>{column.action_items?.length || 0} features</span>
                 </div>
               </CardHeader>
