@@ -13,6 +13,7 @@ import {
   Loader2,
   Settings,
   CheckSquare,
+  GripVertical,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { RoadmapCard } from '@/components/roadmap/RoadmapCard'
@@ -49,6 +50,11 @@ function RoadmapPageContent() {
   } | null>(null)
   const [draggedItem, setDraggedItem] = useState<DragItem | null>(null)
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null)
+  const [draggedColumn, setDraggedColumn] = useState<string | null>(null)
+  const [dragOverColumnPosition, setDragOverColumnPosition] = useState<'left' | 'right' | null>(
+    null
+  )
+  const [isReordering, setIsReordering] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const { toast } = useToast()
 
@@ -238,6 +244,25 @@ function RoadmapPageContent() {
     },
   })
 
+  const updateColumnOrderMutation = useMutation({
+    mutationFn: (updates: { id: string; order: number }[]) => api.updateColumnsOrder(updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
+      toast({
+        title: 'Columns reordered',
+        description: 'Column order has been updated.',
+      })
+    },
+    onError: (error) => {
+      console.error('Error updating column order:', error)
+      toast({
+        title: 'Error reordering columns',
+        description: error.message || 'There was a problem reordering columns.',
+        variant: 'destructive',
+      })
+    },
+  })
+
   // Add loading state for drag operations
   const isMovingFeature = updateFeatureOrderMutation.isPending
 
@@ -252,68 +277,6 @@ function RoadmapPageContent() {
     }
   }
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-  }
-
-  const handleDragEnter = (e: React.DragEvent, columnId: string) => {
-    e.preventDefault()
-    setDragOverColumn(columnId)
-  }
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    const relatedTarget = e.relatedTarget as HTMLElement
-    const currentTarget = e.currentTarget as HTMLElement
-
-    if (!currentTarget.contains(relatedTarget)) {
-      setDragOverColumn(null)
-    }
-  }
-
-  const handleDrop = (e: React.DragEvent, targetColumnId: string) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setDragOverColumn(null)
-
-    // Reset drag visual feedback
-    if (e.target instanceof HTMLElement) {
-      e.target.style.transform = ''
-    }
-
-    if (draggedItem && draggedItem.sourceColumnId !== targetColumnId && roadmap) {
-      const sourceColumn = roadmap.columns.find((col: any) => col.id === draggedItem.sourceColumnId)
-      const targetColumn = roadmap.columns.find((col: any) => col.id === targetColumnId)
-
-      if (!sourceColumn || !targetColumn) {
-        console.error('Source or target column not found:', { sourceColumn, targetColumn })
-        return
-      }
-
-      const targetFeatures = getFeaturesByColumn(targetColumnId)
-      const newOrder =
-        targetFeatures.length > 0 ? Math.max(...targetFeatures.map((f) => f.order)) + 1 : 0
-
-      updateFeatureOrderMutation.mutate([
-        {
-          id: draggedItem.featureId,
-          order: newOrder,
-          column_id: targetColumnId,
-        },
-      ])
-    } else {
-      console.log('Drop conditions not met:', {
-        hasDraggedItem: !!draggedItem,
-        sourceColumnId: draggedItem?.sourceColumnId,
-        targetColumnId,
-        isSameColumn: draggedItem?.sourceColumnId === targetColumnId,
-        hasRoadmap: !!roadmap,
-      })
-    }
-
-    setDraggedItem(null)
-  }
-
   const handleDragEnd = () => {
     setDraggedItem(null)
     setDragOverColumn(null)
@@ -326,6 +289,146 @@ function RoadmapPageContent() {
         el.removeAttribute('data-dragging')
       }
     })
+  }
+
+  const handleColumnDragStart = (e: React.DragEvent, columnId: string) => {
+    setDraggedColumn(columnId)
+    setIsReordering(true)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', columnId)
+
+    // Add visual feedback to the dragged element
+    const target = e.currentTarget as HTMLElement
+    target.style.transform = 'rotate(2deg) scale(1.02)'
+    target.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)'
+    target.style.zIndex = '1000'
+  }
+
+  const handleColumnDragOver = (e: React.DragEvent, columnId: string) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+
+    if (draggedColumn && draggedColumn !== columnId) {
+      const rect = e.currentTarget.getBoundingClientRect()
+      const midpoint = rect.left + rect.width / 2
+      const position = e.clientX < midpoint ? 'left' : 'right'
+      setDragOverColumn(columnId)
+      setDragOverColumnPosition(position)
+
+      // Add visual feedback to the drop target
+      const target = e.currentTarget as HTMLElement
+      target.style.transform = 'scale(1.02)'
+      target.style.transition = 'transform 0.2s ease'
+    }
+  }
+
+  const handleColumnDragEnter = (e: React.DragEvent, columnId: string) => {
+    e.preventDefault()
+    if (draggedColumn && draggedColumn !== columnId) {
+      setDragOverColumn(columnId)
+    }
+  }
+
+  const handleColumnDragLeave = (e: React.DragEvent) => {
+    const relatedTarget = e.relatedTarget as HTMLElement
+    const currentTarget = e.currentTarget as HTMLElement
+
+    if (!currentTarget.contains(relatedTarget)) {
+      setDragOverColumn(null)
+      setDragOverColumnPosition(null)
+
+      // Reset visual feedback
+      const target = e.currentTarget as HTMLElement
+      target.style.transform = ''
+      target.style.transition = ''
+    }
+  }
+
+  const handleColumnDrop = (e: React.DragEvent, targetColumnId: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (draggedColumn && draggedColumn !== targetColumnId && roadmap) {
+      // Get sorted columns by current order
+      const sortedColumns = [...roadmap.columns].sort((a: any, b: any) => a.order - b.order)
+      const sourceIndex = sortedColumns.findIndex((col: any) => col.id === draggedColumn)
+      const targetIndex = sortedColumns.findIndex((col: any) => col.id === targetColumnId)
+
+      if (sourceIndex === -1 || targetIndex === -1) return
+
+      // Remove source from its position
+      const [movedColumn] = sortedColumns.splice(sourceIndex, 1)
+
+      // Insert at target position
+      const newTargetIndex = dragOverColumnPosition === 'left' ? targetIndex : targetIndex + 1
+      sortedColumns.splice(newTargetIndex, 0, movedColumn)
+
+      // Create updates with new order values
+      const updates = sortedColumns.map((col: any, index: number) => ({
+        id: col.id,
+        order: index,
+      }))
+
+      updateColumnOrderMutation.mutate(updates)
+    }
+
+    setDraggedColumn(null)
+    setDragOverColumn(null)
+    setDragOverColumnPosition(null)
+  }
+
+  const handleColumnDragEnd = () => {
+    setDraggedColumn(null)
+    setDragOverColumn(null)
+    setDragOverColumnPosition(null)
+    setIsReordering(false)
+
+    // Reset all visual feedback
+    const draggedElements = document.querySelectorAll('[data-dragging="true"]')
+    draggedElements.forEach((el) => {
+      if (el instanceof HTMLElement) {
+        el.style.transform = ''
+        el.style.boxShadow = ''
+        el.style.zIndex = ''
+        el.removeAttribute('data-dragging')
+      }
+    })
+
+    // Reset all column transforms
+    const columns = document.querySelectorAll('[data-column-id]')
+    columns.forEach((el) => {
+      if (el instanceof HTMLElement) {
+        el.style.transform = ''
+        el.style.transition = ''
+      }
+    })
+  }
+
+  const getColumnSlideStyle = (column: any) => {
+    if (!isReordering || !draggedColumn || !roadmap) return {}
+
+    const sortedColumns = [...roadmap.columns].sort((a: any, b: any) => a.order - b.order)
+    const draggedIndex = sortedColumns.findIndex((col: any) => col.id === draggedColumn)
+    const currentIndex = sortedColumns.findIndex((col: any) => col.id === column.id)
+
+    if (draggedIndex === -1 || currentIndex === -1) return {}
+
+    // Calculate slide direction and distance
+    if (draggedIndex < currentIndex) {
+      // Dragging right, slide columns left
+      return {
+        transform: 'translateX(-20px)',
+        transition: 'transform 0.3s ease-out',
+      }
+    } else if (draggedIndex > currentIndex) {
+      // Dragging left, slide columns right
+      return {
+        transform: 'translateX(20px)',
+        transition: 'transform 0.3s ease-out',
+      }
+    }
+
+    return {}
   }
 
   const handleOpenAddFeatureModal = (column: RoadmapColumn) => {
@@ -509,22 +612,21 @@ function RoadmapPageContent() {
 
   return (
     <div className="space-y-6">
-      {/* Enhanced header with subtle background */}
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-background via-muted/20 to-background p-6 border border-border/50">
-        <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]" />
-        <div className="relative flex items-start justify-between">
+      {/* Header */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold text-gray-900">
               {roadmap.name || 'Product Roadmap'}
             </h1>
-            <p className="text-muted-foreground mt-2 text-lg">
+            <p className="text-gray-600 mt-2 text-lg">
               Plan and track your product development progress
             </p>
           </div>
           <div className="flex items-center gap-2">
             {isSelectionMode && (
               <>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
                   <span>{selectedItems.length} selected</span>
                   <Button variant="ghost" size="sm" onClick={handleSelectAll} className="text-xs">
                     Select All
@@ -542,7 +644,7 @@ function RoadmapPageContent() {
                   <Button
                     onClick={handleBulkJiraPush}
                     disabled={selectedItems.length === 0}
-                    className="bg-primary hover:bg-primary/90"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     Push to JIRA ({selectedItems.length})
                   </Button>
@@ -554,7 +656,7 @@ function RoadmapPageContent() {
               <Button
                 variant="outline"
                 onClick={() => setIsSelectionMode(true)}
-                className="hover:bg-primary/5 hover:border-primary/30 transition-colors"
+                className="hover:bg-gray-50"
               >
                 <CheckSquare className="h-4 w-4 mr-2" />
                 Bulk JIRA
@@ -562,23 +664,14 @@ function RoadmapPageContent() {
             )}
 
             {publicUrl && (
-              <Button
-                variant="outline"
-                asChild
-                className="hover:bg-primary/5 hover:border-primary/30 transition-colors"
-              >
+              <Button variant="outline" asChild className="hover:bg-gray-50">
                 <a href={publicUrl} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="mr-2 h-4 w-4" />
                   View Public Roadmap
                 </a>
               </Button>
             )}
-            <Button
-              variant="outline"
-              size="icon"
-              asChild
-              className="hover:bg-primary/5 hover:border-primary/30 transition-colors"
-            >
+            <Button variant="outline" size="icon" asChild className="hover:bg-gray-50">
               <Link to="/app/settings/roadmap">
                 <Settings className="h-4 w-4" />
               </Link>
@@ -591,82 +684,92 @@ function RoadmapPageContent() {
       <div className="space-y-4">
         {/* Kanban Board with enhanced container and smooth scrolling */}
         <div className="relative">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm text-gray-500">Drag columns by the grip icon to reorder them</p>
+          </div>
           <div
             ref={scrollContainerRef}
             className="overflow-x-auto pb-6 scrollbar-hide smooth-scroll-x"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             <div className="flex gap-6 min-w-max">
-              {roadmap.columns.map((column: any, columnIndex: any) => {
-                const columnFeatures = getFeaturesByColumn(column.id)
+              {roadmap.columns
+                .sort((a: any, b: any) => a.order - b.order)
+                .map((column: any, columnIndex: number) => {
+                  const columnFeatures = getFeaturesByColumn(column.id)
+                  const slideStyle = getColumnSlideStyle(column)
 
-                return (
-                  <div
-                    key={column.id}
-                    className={cn(
-                      'flex-shrink-0 w-80 bg-gradient-to-b from-background via-card/50 to-muted/20 rounded-xl border border-border/50 shadow-sm transition-all duration-500 ease-out hover:shadow-md hover:border-border/70 scroll-snap-start',
-                      dragOverColumn === column.id &&
-                        'ring-2 ring-primary/60 ring-offset-2 shadow-lg scale-[1.02] bg-gradient-to-b from-primary/5 via-primary/10 to-primary/5',
-                      'animate-in slide-in-from-left-2 duration-700 hover-lift'
-                    )}
-                    style={{
-                      animationDelay: `${columnIndex * 150}ms`,
-                    }}
-                    onDragOver={handleDragOver}
-                    onDragEnter={(e) => handleDragEnter(e, column.id)}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => handleDrop(e, column.id)}
-                  >
-                    {/* Enhanced Column Header with better animations */}
-                    <div className="flex items-center justify-between mb-6 p-4 pb-3 border-b border-border/30">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-3 h-3 rounded-full shadow-sm animate-pulse"
-                            style={{ backgroundColor: column.color }}
-                          />
-                          <h3 className="font-semibold text-base text-foreground text-transition">
-                            {column.name}
-                          </h3>
-                        </div>
-                        <Badge
-                          variant="secondary"
-                          className="text-xs font-medium px-2 py-1 bg-primary/10 text-primary border-primary/20 animate-in zoom-in-50 duration-300 hover:scale-105 transition-transform duration-200"
-                          style={{ animationDelay: `${columnIndex * 150 + 200}ms` }}
-                        >
-                          {columnFeatures.length}
-                        </Badge>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 hover:scale-110 btn-interactive"
-                        onClick={() => handleOpenAddFeatureModal(column)}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    {/* Feature Cards */}
-                    <div className="space-y-4 px-4 pb-4">
-                      {/* Loading indicator when moving features */}
-                      {isMovingFeature && (
-                        <div className="flex items-center justify-center py-4 text-muted-foreground animate-in fade-in-50 duration-200">
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                          <span className="text-xs">Moving feature...</span>
-                        </div>
+                  return (
+                    <div
+                      key={column.id}
+                      data-column-id={column.id}
+                      className={cn(
+                        'flex-shrink-0 w-80 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md scroll-snap-start relative transition-all duration-200 cursor-grab active:cursor-grabbing group',
+                        dragOverColumn === column.id &&
+                          'ring-2 ring-blue-500 ring-offset-2 shadow-lg',
+                        draggedColumn === column.id && 'opacity-60'
+                      )}
+                      style={slideStyle}
+                      draggable
+                      onDragStart={(e) => handleColumnDragStart(e, column.id)}
+                      onDragOver={(e) => handleColumnDragOver(e, column.id)}
+                      onDragEnter={(e) => handleColumnDragEnter(e, column.id)}
+                      onDragLeave={handleColumnDragLeave}
+                      onDrop={(e) => handleColumnDrop(e, column.id)}
+                      onDragEnd={handleColumnDragEnd}
+                    >
+                      {/* Drop indicator for left side */}
+                      {dragOverColumn === column.id && dragOverColumnPosition === 'left' && (
+                        <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-500 rounded-full z-10 shadow-lg animate-pulse" />
                       )}
 
-                      {/* Feature Cards with enhanced staggered loading */}
-                      {columnFeatures.map((feature, featureIndex) => (
-                        <div
-                          key={feature.id}
-                          className="animate-in slide-in-from-top-2 duration-500 ease-out"
-                          style={{
-                            animationDelay: `${columnIndex * 150 + featureIndex * 100 + 300}ms`,
-                          }}
+                      {/* Drop indicator for right side */}
+                      {dragOverColumn === column.id && dragOverColumnPosition === 'right' && (
+                        <div className="absolute right-0 top-0 bottom-0 w-2 bg-blue-500 rounded-full z-10 shadow-lg animate-pulse" />
+                      )}
+
+                      {/* Column Header */}
+                      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
+                            <GripVertical className="h-5 w-5 text-gray-400 cursor-grab hover:text-gray-600 transition-all duration-200 hover:scale-110 group-hover:animate-pulse" />
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: column.color }}
+                            />
+                            <h3 className="font-semibold text-base text-gray-900">{column.name}</h3>
+                          </div>
+                          <Badge
+                            variant="secondary"
+                            className="text-xs font-medium px-2 py-1 bg-blue-100 text-blue-800"
+                          >
+                            {columnFeatures.length}
+                          </Badge>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 hover:bg-gray-100"
+                          onClick={() => handleOpenAddFeatureModal(column)}
                         >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      {/* Feature Cards */}
+                      <div className="space-y-3 p-4">
+                        {/* Loading indicator when moving features */}
+                        {isMovingFeature && (
+                          <div className="flex items-center justify-center py-4 text-gray-500">
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            <span className="text-xs">Moving feature...</span>
+                          </div>
+                        )}
+
+                        {/* Feature Cards */}
+                        {columnFeatures.map((feature) => (
                           <RoadmapCard
+                            key={feature.id}
                             feature={feature}
                             columnId={column.id}
                             roadmapId={roadmap.id}
@@ -680,75 +783,62 @@ function RoadmapPageContent() {
                             jiraIntegrations={jiraIntegrations}
                             onConvertToJira={handleConvertToJira}
                           />
-                        </div>
-                      ))}
+                        ))}
 
-                      {/* Enhanced Empty State with better animations */}
-                      {columnFeatures.length === 0 && (
-                        <div
-                          className="text-center py-12 text-muted-foreground border-2 border-dashed border-border/50 rounded-lg bg-gradient-to-br from-muted/20 via-muted/10 to-muted/30 animate-in fade-in-50 duration-700"
-                          style={{ animationDelay: `${columnIndex * 150 + 500}ms` }}
-                        >
-                          {/* Staggered text animations */}
-                          <div className="space-y-2">
-                            <p
-                              className="text-sm font-medium animate-in slide-in-from-top-2 duration-300"
-                              style={{ animationDelay: `${columnIndex * 150 + 700}ms` }}
-                            >
-                              No features yet
-                            </p>
-                            <p
-                              className="text-xs text-muted-foreground animate-in slide-in-from-top-2 duration-300"
-                              style={{ animationDelay: `${columnIndex * 150 + 800}ms` }}
-                            >
+                        {/* Empty State */}
+                        {columnFeatures.length === 0 && (
+                          <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">
+                            <p className="text-sm font-medium">No features yet</p>
+                            <p className="text-xs text-gray-400 mt-1">
                               Get started by adding your first feature
                             </p>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
             </div>
           </div>
         </div>
 
-        {/* Custom Horizontal Slider */}
+        {/* Horizontal Slider */}
         <div className="flex justify-center">
-          <div className="flex items-center space-x-2 bg-muted/30 rounded-full p-2 border border-border/50">
+          <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-2 border border-gray-200">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => scrollToColumn('left')}
-              className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+              className="h-8 w-8 p-0 hover:bg-gray-200"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
 
             <div className="flex items-center space-x-1">
-              {roadmap.columns.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    if (scrollContainerRef.current) {
-                      const columnWidth = 320 + 24 // column width + gap
-                      scrollContainerRef.current.scrollTo({
-                        left: index * columnWidth,
-                        behavior: 'smooth',
-                      })
-                    }
-                  }}
-                  className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-primary/60 transition-colors duration-200"
-                />
-              ))}
+              {roadmap.columns
+                .sort((a: any, b: any) => a.order - b.order)
+                .map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      if (scrollContainerRef.current) {
+                        const columnWidth = 320 + 24 // column width + gap
+                        scrollContainerRef.current.scrollTo({
+                          left: index * columnWidth,
+                          behavior: 'smooth',
+                        })
+                      }
+                    }}
+                    className="w-2 h-2 rounded-full bg-gray-400 hover:bg-blue-500"
+                  />
+                ))}
             </div>
 
             <Button
               variant="ghost"
               size="sm"
               onClick={() => scrollToColumn('right')}
-              className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+              className="h-8 w-8 p-0 hover:bg-gray-200"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>

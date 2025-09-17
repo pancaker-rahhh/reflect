@@ -127,6 +127,29 @@ async def create_roadmap_column(
         )
 
 
+@router.put('/columns/reorder', status_code=status.HTTP_200_OK)
+async def reorder_roadmap_columns(
+    request: dict,
+    db: AsyncSession = Depends(get_db),
+    current_user: TokenData = Depends(get_current_token_data),
+    service: RoadmapService = Depends(lambda: roadmap_service),
+):
+    try:
+        updates = request.get('updates', [])
+        await service.reorder_columns(
+            db, user_id=UUID(current_user.user_id), updates=updates
+        )
+        return {'message': 'Columns reordered successfully'}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f'Error reordering roadmap columns: {str(e)}')
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='An error occurred while reordering columns',
+        )
+
+
 @router.put('/columns/{column_id}', response_model=RoadmapColumnRead)
 async def update_roadmap_column(
     column_id: UUID,

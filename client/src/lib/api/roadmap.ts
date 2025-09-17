@@ -158,4 +158,8 @@ export const roadmapApi = {
   deleteTag: async (tagId: string): Promise<void> => {
     return apiClient.delete(`/roadmap/tags/${tagId}`)
   },
+
+  updateColumnsOrder: async (updates: { id: string; order: number }[]): Promise<void> => {
+    return apiClient.put('/roadmap/columns/reorder', { updates })
+  },
 }

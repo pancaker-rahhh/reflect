@@ -749,5 +749,34 @@ class RoadmapService(BaseRoadmapService):
                     f'Failed to create default column {column_data["name"]}: {str(e)}'
                 )
 
+    async def reorder_columns(
+        self, db: AsyncSession, user_id: UUID, updates: List[dict]
+    ) -> None:
+        for update in updates:
+            column_id = update.get('id')
+            new_order = update.get('order')
+
+            if not column_id or new_order is None:
+                continue
+
+            try:
+                column = await self.column_repo.get(db, UUID(column_id))
+                if not column:
+                    continue
+
+                roadmap = await self.roadmap_repo.get(db, column.roadmap_id)
+                if not roadmap:
+                    continue
+
+                await self.column_repo.update(db, UUID(column_id), order=new_order)
+            except Exception as e:
+                from app.core.logging import get_logger
+
+                logger = get_logger(__name__)
+                logger.warning(
+                    f'Failed to update column order for {column_id}: {str(e)}'
+                )
+                continue
+
 
 roadmap_service = RoadmapService()
