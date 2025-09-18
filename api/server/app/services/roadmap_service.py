@@ -1,7 +1,7 @@
 from uuid import UUID
 from typing import List, Dict, Any, Optional, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Request
 import re
 from app.models.roadmap_model import (
     Roadmap,
@@ -23,6 +23,7 @@ from app.repositories.roadmap_repository import (
     roadmap_feature_tag_repository,
     RoadmapActionItemTagRepository,
 )
+from app.services.roadmap_vote_service import vote_service
 from app.schemas.roadmap_schema import (
     RoadmapUpdate,
     RoadmapColumnCreate,
@@ -346,9 +347,8 @@ class RoadmapService(BaseRoadmapService):
                 roadmap_id=new_column_orm.roadmap_id,
                 name=new_column_orm.name,
                 color=new_column_orm.color,
-                status=new_column_orm.status,
                 order=new_column_orm.order,
-                features=[],
+                action_items=[],
             )
         except Exception as e:
             self._handle_unique_constraint_error(e, 'column')
@@ -512,7 +512,7 @@ class RoadmapService(BaseRoadmapService):
         return {'status': 'success'}
 
     async def upvote_feature(
-        self, db: AsyncSession, feature_id: UUID
+        self, db: AsyncSession, feature_id: UUID, request: Request
     ) -> RoadmapActionItem:
         feature = await self.feature_repo.get(db, id=feature_id)
         if not feature:
@@ -538,10 +538,39 @@ class RoadmapService(BaseRoadmapService):
                 detail='This roadmap is not public',
             )
 
-        feature.vote_count += 1
-        return await self.feature_repo.update(
-            db, id=feature_id, vote_count=feature.vote_count
+        updated_feature = await vote_service.upvote_feature_anonymous(
+            db, feature_id, request
         )
+        feature_with_tags = await self.feature_repo.get_with_tags(db, id=feature_id)
+        return feature_with_tags or updated_feature
+
+    async def upvote_feature_internal(
+        self, db: AsyncSession, user_id: UUID, feature_id: UUID
+    ) -> RoadmapActionItem:
+        feature = await self.feature_repo.get(db, id=feature_id)
+        if not feature:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail='Feature not found'
+            )
+
+        column = await self.column_repo.get(db, id=feature.column_id)
+        if not column:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail='Column not found'
+            )
+
+        roadmap = await self.roadmap_repo.get(db, id=column.roadmap_id)
+        if not roadmap:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail='Roadmap not found'
+            )
+
+        await self._validate_feature_access(db, user_id, feature_id)
+        updated_feature = await vote_service.upvote_feature_authenticated(
+            db, feature_id, user_id
+        )
+        feature_with_tags = await self.feature_repo.get_with_tags(db, id=feature_id)
+        return feature_with_tags or updated_feature
 
     async def assign_user_to_feature(
         self,

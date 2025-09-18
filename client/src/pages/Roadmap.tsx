@@ -210,10 +210,6 @@ function RoadmapPageContent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
       setAddFeatureModalOpen(false)
-      toast({
-        title: 'Feature created',
-        description: 'Your new feature has been added to the roadmap.',
-      })
     },
     onError: (error) => {
       toast({
@@ -229,10 +225,6 @@ function RoadmapPageContent() {
       api.updateFeaturesOrder(updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
-      toast({
-        title: 'Feature moved',
-        description: 'Feature has been moved to the new column.',
-      })
     },
     onError: (error) => {
       console.error('Error updating feature order:', error)
@@ -248,10 +240,6 @@ function RoadmapPageContent() {
     mutationFn: (updates: { id: string; order: number }[]) => api.updateColumnsOrder(updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
-      toast({
-        title: 'Columns reordered',
-        description: 'Column order has been updated.',
-      })
     },
     onError: (error) => {
       console.error('Error updating column order:', error)
@@ -271,9 +259,9 @@ function RoadmapPageContent() {
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('text/plain', featureId)
 
-    // Add visual feedback
+    // Minimal visual feedback
     if (e.target instanceof HTMLElement) {
-      e.target.style.transform = 'rotate(2deg) scale(1.05)'
+      e.target.style.opacity = '0.7'
     }
   }
 
@@ -285,7 +273,7 @@ function RoadmapPageContent() {
     const draggedElements = document.querySelectorAll('[data-dragging="true"]')
     draggedElements.forEach((el) => {
       if (el instanceof HTMLElement) {
-        el.style.transform = ''
+        el.style.opacity = ''
         el.removeAttribute('data-dragging')
       }
     })
@@ -297,11 +285,9 @@ function RoadmapPageContent() {
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('text/plain', columnId)
 
-    // Add visual feedback to the dragged element
+    // Minimal visual feedback
     const target = e.currentTarget as HTMLElement
-    target.style.transform = 'rotate(2deg) scale(1.02)'
-    target.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)'
-    target.style.zIndex = '1000'
+    target.style.opacity = '0.8'
   }
 
   const handleColumnDragOver = (e: React.DragEvent, columnId: string) => {
@@ -387,17 +373,16 @@ function RoadmapPageContent() {
     const draggedElements = document.querySelectorAll('[data-dragging="true"]')
     draggedElements.forEach((el) => {
       if (el instanceof HTMLElement) {
-        el.style.transform = ''
-        el.style.boxShadow = ''
-        el.style.zIndex = ''
+        el.style.opacity = ''
         el.removeAttribute('data-dragging')
       }
     })
 
-    // Reset all column transforms
+    // Reset all column styles
     const columns = document.querySelectorAll('[data-column-id]')
     columns.forEach((el) => {
       if (el instanceof HTMLElement) {
+        el.style.opacity = ''
         el.style.transform = ''
         el.style.transition = ''
       }
@@ -405,29 +390,7 @@ function RoadmapPageContent() {
   }
 
   const getColumnSlideStyle = (column: any) => {
-    if (!isReordering || !draggedColumn || !roadmap) return {}
-
-    const sortedColumns = [...roadmap.columns].sort((a: any, b: any) => a.order - b.order)
-    const draggedIndex = sortedColumns.findIndex((col: any) => col.id === draggedColumn)
-    const currentIndex = sortedColumns.findIndex((col: any) => col.id === column.id)
-
-    if (draggedIndex === -1 || currentIndex === -1) return {}
-
-    // Calculate slide direction and distance
-    if (draggedIndex < currentIndex) {
-      // Dragging right, slide columns left
-      return {
-        transform: 'translateX(-20px)',
-        transition: 'transform 0.3s ease-out',
-      }
-    } else if (draggedIndex > currentIndex) {
-      // Dragging left, slide columns right
-      return {
-        transform: 'translateX(20px)',
-        transition: 'transform 0.3s ease-out',
-      }
-    }
-
+    // Disable slide animations to prevent pop-out effect
     return {}
   }
 
@@ -704,10 +667,10 @@ function RoadmapPageContent() {
                       key={column.id}
                       data-column-id={column.id}
                       className={cn(
-                        'flex-shrink-0 w-80 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md scroll-snap-start relative transition-all duration-200 cursor-grab active:cursor-grabbing group',
+                        'flex-shrink-0 w-80 bg-white rounded-lg border border-gray-200 shadow-sm scroll-snap-start relative cursor-grab active:cursor-grabbing',
                         dragOverColumn === column.id &&
                           'ring-2 ring-blue-500 ring-offset-2 shadow-lg',
-                        draggedColumn === column.id && 'opacity-60'
+                        draggedColumn === column.id && 'opacity-70'
                       )}
                       style={slideStyle}
                       draggable
@@ -732,7 +695,7 @@ function RoadmapPageContent() {
                       <div className="flex items-center justify-between p-4 border-b border-gray-200">
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-2">
-                            <GripVertical className="h-5 w-5 text-gray-400 cursor-grab hover:text-gray-600 transition-all duration-200 hover:scale-110 group-hover:animate-pulse" />
+                            <GripVertical className="h-5 w-5 text-gray-400 cursor-grab" />
                             <div
                               className="w-3 h-3 rounded-full"
                               style={{ backgroundColor: column.color }}

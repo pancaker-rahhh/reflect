@@ -459,12 +459,12 @@ class RoadmapAssignmentResponse(BaseModel):
 
 
 class RoadmapActionItemTagCreate(BaseModel):
-    feature_id: UUID = Field(..., description='ID of the roadmap feature')
+    action_item_id: UUID = Field(..., description='ID of the roadmap feature')
     tag_id: UUID = Field(..., description='ID of the tag to associate')
 
 
 class RoadmapActionItemTagResponse(BaseModel):
-    feature_id: UUID = Field(..., description='ID of the roadmap feature')
+    action_item_id: UUID = Field(..., description='ID of the roadmap feature')
     tag_id: UUID = Field(..., description='ID of the associated tag')
     created_at: datetime = Field(
         ..., description='Timestamp when the association was created'

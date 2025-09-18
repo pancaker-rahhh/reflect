@@ -15,17 +15,9 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 
-import {
-  Sparkles,
-  Loader2,
-  Plus,
-  Check,
-  Lightbulb,
-  FileText,
-  Hash,
-
-} from 'lucide-react'
+import { Sparkles, Loader2, Plus, Check, Lightbulb, FileText, Hash } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { api } from '@/lib/api'
 import type { RoadmapTag } from '@/types'
 
 interface AddFeatureModalProps {
@@ -43,8 +35,6 @@ export interface FeatureFormData {
   description: string
   tagIds: string[]
 }
-
-
 
 export function AddFeatureModal({
   isOpen,
@@ -64,9 +54,7 @@ export function AddFeatureModal({
   // Fetch tags
   const { data: tags = [] } = useQuery({
     queryKey: ['roadmapTags', roadmapId],
-    // commented out because we don't have the getRoadmapTags function in the api.ts file
-    // queryFn: () => (roadmapId ? api.getRoadmapTags(roadmapId) : []),
-    queryFn: () => [],
+    queryFn: () => (roadmapId ? api.getRoadmapTags(roadmapId) : []),
     enabled: !!roadmapId,
   })
 

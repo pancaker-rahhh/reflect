@@ -33,6 +33,7 @@ RATE_LIMITS = {
 ANONYMOUS_IP_LIMITS = {
     'feedback_submission': {'calls': 3, 'period': 300},
     'voting': {'calls': 10, 'period': 300},
+    'roadmap_access': {'calls': 20, 'period': 60},
 }
 
 

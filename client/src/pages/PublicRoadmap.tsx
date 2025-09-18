@@ -1,15 +1,38 @@
 import { useParams } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { roadmapApi } from '@/lib/api'
 import type { RoadmapActionItem, RoadmapActionItemTag } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader'
-import { MapPin, ArrowLeft, Calendar } from 'lucide-react'
+import { MapPin, Calendar, ThumbsUp } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { cn } from '@/lib/utils'
 
 export function PublicRoadmap() {
   const { publicSlug, subdomain } = useParams<{ publicSlug?: string; subdomain?: string }>()
+  const [votingItems, setVotingItems] = useState<Set<string>>(new Set())
+  const [votedItems, setVotedItems] = useState<Set<string>>(new Set())
+  const queryClient = useQueryClient()
+
+  // Load voted items from localStorage on component mount
+  useEffect(() => {
+    const savedVotes = localStorage.getItem('roadmap-votes')
+    if (savedVotes) {
+      try {
+        const votes = JSON.parse(savedVotes)
+        setVotedItems(new Set(votes))
+      } catch (error) {
+        console.error('Failed to parse saved votes:', error)
+      }
+    }
+  }, [])
+
+  // Save voted items to localStorage
+  const saveVotedItems = (items: Set<string>) => {
+    localStorage.setItem('roadmap-votes', JSON.stringify(Array.from(items)))
+  }
 
   const {
     data: roadmap,
@@ -27,6 +50,51 @@ export function PublicRoadmap() {
     },
     enabled: !!(publicSlug || subdomain),
   })
+
+  const upvoteMutation = useMutation({
+    mutationFn: async (featureId: string) => {
+      const response = await fetch(`/api/v1/public/features/${featureId}/vote`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      if (!response.ok) {
+        throw new Error('Failed to upvote feature')
+      }
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['public-roadmap', publicSlug || subdomain] })
+    },
+  })
+
+  const handleUpvote = (featureId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (votingItems.has(featureId)) return
+
+    setVotingItems((prev) => new Set(prev).add(featureId))
+    upvoteMutation.mutate(featureId, {
+      onSuccess: () => {
+        // Toggle vote state - if already voted, remove vote; if not voted, add vote
+        const newVotedItems = new Set(votedItems)
+        if (newVotedItems.has(featureId)) {
+          newVotedItems.delete(featureId)
+        } else {
+          newVotedItems.add(featureId)
+        }
+        setVotedItems(newVotedItems)
+        saveVotedItems(newVotedItems)
+      },
+      onSettled: () => {
+        setVotingItems((prev) => {
+          const newSet = new Set(prev)
+          newSet.delete(featureId)
+          return newSet
+        })
+      },
+    })
+  }
 
   if (isLoading) {
     return (
@@ -83,13 +151,9 @@ export function PublicRoadmap() {
             <p className="text-muted-foreground max-w-md">
               The roadmap you're looking for doesn't exist or is not publicly accessible.
             </p>
-            {error && <p className="text-sm text-red-500 mt-2">Error: {error.message}</p>}
           </div>
           <Button asChild variant="outline">
-            <Link to="/">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Go Home
-            </Link>
+            <Link to="/">Go Home</Link>
           </Button>
         </div>
       </div>
@@ -133,7 +197,7 @@ export function PublicRoadmap() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {roadmap.columns
             ?.sort((a: any, b: any) => a.order - b.order)
-            ?.map((column) => (
+            ?.map((column: any) => (
               <div
                 key={column.id}
                 className="bg-background/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300"
@@ -162,12 +226,6 @@ export function PublicRoadmap() {
                           {feature.title}
                         </h4>
 
-                        {feature.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-3">
-                            {feature.description}
-                          </p>
-                        )}
-
                         {feature.feature_tags && feature.feature_tags.length > 0 && (
                           <div className="flex flex-wrap gap-1">
                             {feature.feature_tags.map((featureTag: RoadmapActionItemTag) => (
@@ -182,12 +240,47 @@ export function PublicRoadmap() {
                           </div>
                         )}
 
-                        {feature.created_at && (
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Calendar className="h-3 w-3" />
-                            <span>{new Date(feature.created_at).toLocaleDateString()}</span>
+                        <div className="flex items-center justify-between">
+                          {feature.created_at && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Calendar className="h-3 w-3" />
+                              <span>{new Date(feature.created_at).toLocaleDateString()}</span>
+                            </div>
+                          )}
+
+                          {/* Vote Count and Button */}
+                          <div className="flex items-center gap-2 text-xs">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className={cn(
+                                'h-6 w-6 p-0 transition-all duration-200',
+                                votedItems.has(feature.id)
+                                  ? 'bg-primary/20 text-primary'
+                                  : 'hover:bg-primary/10 hover:text-primary'
+                              )}
+                              onClick={(e) => handleUpvote(feature.id, e)}
+                              disabled={votingItems.has(feature.id)}
+                            >
+                              <ThumbsUp
+                                className={cn(
+                                  'h-3 w-3',
+                                  votedItems.has(feature.id) && 'text-primary fill-primary'
+                                )}
+                              />
+                            </Button>
+                            <span
+                              className={cn(
+                                'font-medium min-w-[16px] text-center',
+                                votedItems.has(feature.id)
+                                  ? 'text-primary'
+                                  : 'text-muted-foreground'
+                              )}
+                            >
+                              {feature.vote_count || 0}
+                            </span>
                           </div>
-                        )}
+                        </div>
                       </div>
                     </div>
                   ))}

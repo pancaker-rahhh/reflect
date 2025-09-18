@@ -135,7 +135,7 @@ export const roadmapApi = {
   },
 
   upvoteFeature: async (featureId: string): Promise<RoadmapActionItem> => {
-    return apiClient.post<RoadmapActionItem>(`/public/features/${featureId}/vote`)
+    return apiClient.post<RoadmapActionItem>(`/roadmap/features/${featureId}/vote`)
   },
 
   // Tag endpoints

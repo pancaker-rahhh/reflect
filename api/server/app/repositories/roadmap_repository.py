@@ -61,7 +61,9 @@ class RoadmapTagRepository(BaseRepository[RoadmapTag]):
             stmt = (
                 select(
                     RoadmapTag,
-                    func.count(RoadmapActionItemTag.feature_id).label('feature_count'),
+                    func.count(RoadmapActionItemTag.action_item_id).label(
+                        'feature_count'
+                    ),
                 )
                 .outerjoin(
                     RoadmapActionItemTag, RoadmapTag.id == RoadmapActionItemTag.tag_id
@@ -115,7 +117,7 @@ class RoadmapActionItemTagRepository(BaseRepository[RoadmapActionItemTag]):
                 .join(
                     RoadmapActionItemTag, RoadmapActionItemTag.tag_id == RoadmapTag.id
                 )
-                .where(RoadmapActionItemTag.feature_id == feature_id)
+                .where(RoadmapActionItemTag.action_item_id == feature_id)
                 .order_by(RoadmapTag.name)
             )
             result = await db.execute(stmt)
@@ -132,7 +134,7 @@ class RoadmapActionItemTagRepository(BaseRepository[RoadmapActionItemTag]):
                 select(RoadmapActionItem)
                 .join(
                     RoadmapActionItemTag,
-                    RoadmapActionItemTag.feature_id == RoadmapActionItem.id,
+                    RoadmapActionItemTag.action_item_id == RoadmapActionItem.id,
                 )
                 .where(RoadmapActionItemTag.tag_id == tag_id)
                 .order_by(RoadmapActionItem.order)
@@ -151,10 +153,13 @@ class RoadmapActionItemTagRepository(BaseRepository[RoadmapActionItemTag]):
             if existing:
                 return existing
 
-            feature_tag = RoadmapActionItemTag(feature_id=feature_id, tag_id=tag_id)
+            feature_tag = RoadmapActionItemTag(action_item_id=feature_id, tag_id=tag_id)
             return await self.create(
                 db,
-                **{'feature_id': feature_tag.feature_id, 'tag_id': feature_tag.tag_id},
+                **{
+                    'action_item_id': feature_tag.action_item_id,
+                    'tag_id': feature_tag.tag_id,
+                },
             )
         except IntegrityError as e:
             logger.error(
@@ -186,7 +191,7 @@ class RoadmapActionItemTagRepository(BaseRepository[RoadmapActionItemTag]):
         try:
             stmt = select(RoadmapActionItemTag).where(
                 and_(
-                    RoadmapActionItemTag.feature_id == feature_id,
+                    RoadmapActionItemTag.action_item_id == feature_id,
                     RoadmapActionItemTag.tag_id == tag_id,
                 )
             )
@@ -201,14 +206,14 @@ class RoadmapActionItemTagRepository(BaseRepository[RoadmapActionItemTag]):
     ) -> List[RoadmapActionItemTag]:
         try:
             existing_stmt = select(RoadmapActionItemTag.tag_id).where(
-                RoadmapActionItemTag.feature_id == feature_id
+                RoadmapActionItemTag.action_item_id == feature_id
             )
             existing_result = await db.execute(existing_stmt)
             existing_tag_ids = {row[0] for row in existing_result.all()}
 
             new_tag_ids = [tid for tid in tag_ids if tid not in existing_tag_ids]
             new_relationships = [
-                RoadmapActionItemTag(feature_id=feature_id, tag_id=tag_id)
+                RoadmapActionItemTag(action_item_id=feature_id, tag_id=tag_id)
                 for tag_id in new_tag_ids
             ]
 

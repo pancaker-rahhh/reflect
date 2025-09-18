@@ -100,10 +100,6 @@ export function RoadmapSettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
       setIsEdited(false)
-      toast({
-        title: 'Roadmap updated',
-        description: 'Your changes have been saved successfully.',
-      })
     },
   })
 
@@ -724,7 +720,7 @@ export function RoadmapSettings() {
                                 />
                               </div>
 
-                              <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4">
+                              <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4">
                                 <div className="space-y-2">
                                   <Label className="text-xs font-medium text-muted-foreground">
                                     Column Name
@@ -806,7 +802,7 @@ export function RoadmapSettings() {
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 ml-2">
                                 {column._markedForDeletion ? (
                                   <Button
                                     variant="outline"
