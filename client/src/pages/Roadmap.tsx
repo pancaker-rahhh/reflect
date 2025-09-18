@@ -54,7 +54,7 @@ function RoadmapPageContent() {
   const [dragOverColumnPosition, setDragOverColumnPosition] = useState<'left' | 'right' | null>(
     null
   )
-  const [isReordering, setIsReordering] = useState(false)
+  const [, setIsReordering] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const { toast } = useToast()
 
@@ -389,7 +389,7 @@ function RoadmapPageContent() {
     })
   }
 
-  const getColumnSlideStyle = (column: any) => {
+  const getColumnSlideStyle = (_column: any) => {
     // Disable slide animations to prevent pop-out effect
     return {}
   }
@@ -658,7 +658,7 @@ function RoadmapPageContent() {
             <div className="flex gap-6 min-w-max">
               {roadmap.columns
                 .sort((a: any, b: any) => a.order - b.order)
-                .map((column: any, columnIndex: number) => {
+                .map((column: any, _columnIndex: number) => {
                   const columnFeatures = getFeaturesByColumn(column.id)
                   const slideStyle = getColumnSlideStyle(column)
 

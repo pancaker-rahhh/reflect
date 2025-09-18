@@ -20,22 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Calendar,
-  Loader2,
-  ThumbsUp,
-  User,
-  Mail,
-  Tag,
-  Trash2,
-  X,
-  Clock,
-  MapPin,
-  Check,
-  Edit2,
-} from 'lucide-react'
+import { Loader2, ThumbsUp, User, Trash2, X, Clock, MapPin, Check, Edit2 } from 'lucide-react'
 import { safeFormat } from '@/lib/date'
-import { cn } from '@/lib/utils'
 import type { RoadmapActionItem, RoadmapColumn } from '@/types'
 
 interface RoadmapCardDetailProps {
