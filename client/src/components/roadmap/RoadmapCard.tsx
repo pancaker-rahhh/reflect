@@ -118,7 +118,6 @@ export function RoadmapCard({
     onToggleSelection?.(feature)
   }
 
-  // Limit tags to show to prevent overflow
   const maxVisibleTags = 2
   const visibleTags = feature.tags?.slice(0, maxVisibleTags) || []
   const remainingTagsCount =
@@ -128,8 +127,8 @@ export function RoadmapCard({
     <>
       <Card
         className={cn(
-          'relative cursor-pointer border-border/50 bg-card/50 overflow-hidden',
-          isDragged && 'opacity-50',
+          'relative cursor-pointer border-border/50 bg-card/50 overflow-hidden transition-all duration-200',
+          isDragged && 'shadow-lg scale-105 border-blue-500',
           isSelectionMode && 'hover:ring-2 hover:ring-primary/20',
           isSelected && 'ring-2 ring-primary border-primary/50 bg-primary/5'
         )}

@@ -51,9 +51,6 @@ function RoadmapPageContent() {
   const [draggedItem, setDraggedItem] = useState<DragItem | null>(null)
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null)
   const [draggedColumn, setDraggedColumn] = useState<string | null>(null)
-  const [dragOverColumnPosition, setDragOverColumnPosition] = useState<'left' | 'right' | null>(
-    null
-  )
   const [, setIsReordering] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const { toast } = useToast()
@@ -126,7 +123,6 @@ function RoadmapPageContent() {
     enabled: !!project?.id,
   })
 
-  // Debug logging
   console.log('Roadmap Debug:', {
     project,
     roadmap,
@@ -251,7 +247,6 @@ function RoadmapPageContent() {
     },
   })
 
-  // Add loading state for drag operations
   const isMovingFeature = updateFeatureOrderMutation.isPending
 
   const handleDragStart = (e: React.DragEvent, featureId: string, sourceColumnId: string) => {
@@ -259,9 +254,27 @@ function RoadmapPageContent() {
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('text/plain', featureId)
 
-    // Minimal visual feedback
     if (e.target instanceof HTMLElement) {
-      e.target.style.opacity = '0.7'
+      const dragImage = e.target.cloneNode(true) as HTMLElement
+      dragImage.style.transform = 'rotate(5deg)'
+      dragImage.style.opacity = '0.9'
+      dragImage.style.border = '2px solid #3b82f6'
+      dragImage.style.borderRadius = '8px'
+      dragImage.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.2)'
+      dragImage.style.pointerEvents = 'none'
+      dragImage.style.position = 'absolute'
+      dragImage.style.top = '-1000px'
+      dragImage.style.left = '-1000px'
+      dragImage.style.zIndex = '9999'
+
+      document.body.appendChild(dragImage)
+      e.dataTransfer.setDragImage(dragImage, 0, 0)
+
+      setTimeout(() => {
+        if (document.body.contains(dragImage)) {
+          document.body.removeChild(dragImage)
+        }
+      }, 0)
     }
   }
 
@@ -269,7 +282,6 @@ function RoadmapPageContent() {
     setDraggedItem(null)
     setDragOverColumn(null)
 
-    // Reset any remaining drag visual feedback
     const draggedElements = document.querySelectorAll('[data-dragging="true"]')
     draggedElements.forEach((el) => {
       if (el instanceof HTMLElement) {
@@ -285,32 +297,27 @@ function RoadmapPageContent() {
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('text/plain', columnId)
 
-    // Minimal visual feedback
     const target = e.currentTarget as HTMLElement
-    target.style.opacity = '0.8'
+    target.style.opacity = '0.7'
   }
 
   const handleColumnDragOver = (e: React.DragEvent, columnId: string) => {
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
 
-    if (draggedColumn && draggedColumn !== columnId) {
-      const rect = e.currentTarget.getBoundingClientRect()
-      const midpoint = rect.left + rect.width / 2
-      const position = e.clientX < midpoint ? 'left' : 'right'
+    if (draggedItem && draggedItem.sourceColumnId !== columnId) {
       setDragOverColumn(columnId)
-      setDragOverColumnPosition(position)
-
-      // Add visual feedback to the drop target
-      const target = e.currentTarget as HTMLElement
-      target.style.transform = 'scale(1.02)'
-      target.style.transition = 'transform 0.2s ease'
+    } else if (draggedColumn && draggedColumn !== columnId) {
+      setDragOverColumn(columnId)
     }
   }
 
   const handleColumnDragEnter = (e: React.DragEvent, columnId: string) => {
     e.preventDefault()
-    if (draggedColumn && draggedColumn !== columnId) {
+
+    if (draggedItem && draggedItem.sourceColumnId !== columnId) {
+      setDragOverColumn(columnId)
+    } else if (draggedColumn && draggedColumn !== columnId) {
       setDragOverColumn(columnId)
     }
   }
@@ -321,12 +328,6 @@ function RoadmapPageContent() {
 
     if (!currentTarget.contains(relatedTarget)) {
       setDragOverColumn(null)
-      setDragOverColumnPosition(null)
-
-      // Reset visual feedback
-      const target = e.currentTarget as HTMLElement
-      target.style.transform = ''
-      target.style.transition = ''
     }
   }
 
@@ -334,23 +335,50 @@ function RoadmapPageContent() {
     e.preventDefault()
     e.stopPropagation()
 
-    if (draggedColumn && draggedColumn !== targetColumnId && roadmap) {
-      // Get sorted columns by current order
+    if (draggedItem && draggedItem.sourceColumnId !== targetColumnId && roadmap) {
+      const sourceColumn = roadmap.columns.find((col: any) => col.id === draggedItem.sourceColumnId)
+      const targetColumn = roadmap.columns.find((col: any) => col.id === targetColumnId)
+
+      if (sourceColumn && targetColumn) {
+        const sourceFeatures = getFeaturesByColumn(draggedItem.sourceColumnId)
+        const targetFeatures = getFeaturesByColumn(targetColumnId)
+
+        const featureToMove = sourceFeatures.find((f: any) => f.id === draggedItem.featureId)
+
+        if (featureToMove) {
+          const updates = []
+
+          updates.push({
+            id: featureToMove.id,
+            column_id: targetColumnId,
+            order: targetFeatures.length,
+          })
+
+          sourceFeatures
+            .filter((f: any) => f.id !== draggedItem.featureId)
+            .forEach((feature: any, index: number) => {
+              updates.push({
+                id: feature.id,
+                order: index,
+              })
+            })
+
+          updateFeatureOrderMutation.mutate(updates)
+        }
+      }
+    } else if (draggedColumn && draggedColumn !== targetColumnId && roadmap) {
       const sortedColumns = [...roadmap.columns].sort((a: any, b: any) => a.order - b.order)
       const sourceIndex = sortedColumns.findIndex((col: any) => col.id === draggedColumn)
       const targetIndex = sortedColumns.findIndex((col: any) => col.id === targetColumnId)
 
       if (sourceIndex === -1 || targetIndex === -1) return
 
-      // Remove source from its position
-      const [movedColumn] = sortedColumns.splice(sourceIndex, 1)
+      const newOrder = [...sortedColumns]
+      const draggedColumnData = newOrder[sourceIndex]
+      newOrder.splice(sourceIndex, 1)
+      newOrder.splice(targetIndex, 0, draggedColumnData)
 
-      // Insert at target position
-      const newTargetIndex = dragOverColumnPosition === 'left' ? targetIndex : targetIndex + 1
-      sortedColumns.splice(newTargetIndex, 0, movedColumn)
-
-      // Create updates with new order values
-      const updates = sortedColumns.map((col: any, index: number) => ({
+      const updates = newOrder.map((col: any, index: number) => ({
         id: col.id,
         order: index,
       }))
@@ -358,18 +386,16 @@ function RoadmapPageContent() {
       updateColumnOrderMutation.mutate(updates)
     }
 
+    setDraggedItem(null)
     setDraggedColumn(null)
     setDragOverColumn(null)
-    setDragOverColumnPosition(null)
   }
 
   const handleColumnDragEnd = () => {
     setDraggedColumn(null)
     setDragOverColumn(null)
-    setDragOverColumnPosition(null)
     setIsReordering(false)
 
-    // Reset all visual feedback
     const draggedElements = document.querySelectorAll('[data-dragging="true"]')
     draggedElements.forEach((el) => {
       if (el instanceof HTMLElement) {
@@ -378,19 +404,15 @@ function RoadmapPageContent() {
       }
     })
 
-    // Reset all column styles
     const columns = document.querySelectorAll('[data-column-id]')
     columns.forEach((el) => {
       if (el instanceof HTMLElement) {
         el.style.opacity = ''
-        el.style.transform = ''
-        el.style.transition = ''
       }
     })
   }
 
   const getColumnSlideStyle = (_column: any) => {
-    // Disable slide animations to prevent pop-out effect
     return {}
   }
 
@@ -669,10 +691,19 @@ function RoadmapPageContent() {
                       className={cn(
                         'flex-shrink-0 w-80 bg-white rounded-lg border border-gray-200 shadow-sm scroll-snap-start relative cursor-grab active:cursor-grabbing',
                         dragOverColumn === column.id &&
+                          draggedItem &&
+                          draggedItem.sourceColumnId !== column.id &&
+                          'ring-2 ring-blue-500 ring-offset-2 shadow-lg border-blue-500',
+                        dragOverColumn === column.id &&
+                          draggedColumn &&
+                          draggedColumn !== column.id &&
                           'ring-2 ring-blue-500 ring-offset-2 shadow-lg',
                         draggedColumn === column.id && 'opacity-70'
                       )}
-                      style={slideStyle}
+                      style={{
+                        ...slideStyle,
+                        ...getColumnSlideStyle(column),
+                      }}
                       draggable
                       onDragStart={(e) => handleColumnDragStart(e, column.id)}
                       onDragOver={(e) => handleColumnDragOver(e, column.id)}
@@ -681,15 +712,16 @@ function RoadmapPageContent() {
                       onDrop={(e) => handleColumnDrop(e, column.id)}
                       onDragEnd={handleColumnDragEnd}
                     >
-                      {/* Drop indicator for left side */}
-                      {dragOverColumn === column.id && dragOverColumnPosition === 'left' && (
-                        <div className="absolute left-0 top-0 bottom-0 w-2 bg-blue-500 rounded-full z-10 shadow-lg animate-pulse" />
-                      )}
-
-                      {/* Drop indicator for right side */}
-                      {dragOverColumn === column.id && dragOverColumnPosition === 'right' && (
-                        <div className="absolute right-0 top-0 bottom-0 w-2 bg-blue-500 rounded-full z-10 shadow-lg animate-pulse" />
-                      )}
+                      {/* Drop indicator for column reordering */}
+                      {dragOverColumn === column.id &&
+                        draggedColumn &&
+                        draggedColumn !== column.id && (
+                          <div className="absolute inset-0 border-2 border-dashed border-blue-500 bg-blue-50/30 rounded-lg z-10 flex items-center justify-center">
+                            <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+                              Drop here
+                            </div>
+                          </div>
+                        )}
 
                       {/* Column Header */}
                       <div className="flex items-center justify-between p-4 border-b border-gray-200">
