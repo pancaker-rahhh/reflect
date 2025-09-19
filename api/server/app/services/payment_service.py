@@ -1,7 +1,7 @@
 import hashlib
 import hmac
 import json
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from uuid import UUID
 from datetime import datetime, timezone, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,6 +16,7 @@ from app.services.subscription_service import subscription_service
 from app.models.organization_model import SubscriptionPlanEnum
 from dodopayments import DodoPayments
 from app.services.notification_service import notification_service
+import base64
 
 logger = get_logger(__name__)
 settings = get_settings()
@@ -24,8 +25,16 @@ settings = get_settings()
 class PaymentService:
     def __init__(self):
         self.client = None
-        if DodoPayments and settings.DODO_TEST_API_KEY:
-            self.client = DodoPayments(bearer_token=settings.DODO_TEST_API_KEY)
+        # Prefer test key when present; otherwise fallback to live key
+        if DodoPayments:
+            api_key: Optional[str] = None
+            if settings.DODO_TEST_API_KEY and settings.DODO_TEST_API_KEY.strip():
+                api_key = settings.DODO_TEST_API_KEY
+            elif settings.DODO_API_KEY and settings.DODO_API_KEY.strip():
+                api_key = settings.DODO_API_KEY
+
+            if api_key:
+                self.client = DodoPayments(bearer_token=api_key)
 
     async def create_payment_link(
         self,
@@ -630,6 +639,91 @@ class PaymentService:
             f'Cancelled scheduled subscription cancellation for organization {organization_id}'
         )
         return True
+
+    async def request_cancel_at_period_end(
+        self, db: AsyncSession, organization_id: UUID
+    ) -> Optional[datetime]:
+        """Request subscription cancellation at the next billing date.
+
+        - Sends a PATCH to Dodo to set cancel_at_next_billing_date=true
+        - Updates local Organization:
+          subscription_status -> cancelled
+          subscription_ends_at -> next billing date (from Dodo response)
+
+        Returns the next billing date if successful, else None.
+        """
+        if not self.client:
+            raise ValueError('Dodo Payments client not initialized')
+
+        organization = await subscription_service.get_organization_subscription(
+            db, organization_id
+        )
+        if not organization:
+            raise ValueError('Organization not found')
+        if not organization.dodo_subscription_id:
+            raise ValueError('Active Dodo subscription not found for organization')
+
+        try:
+            response = self.client.subscriptions.update(
+                subscription_id=organization.dodo_subscription_id,
+                cancel_at_next_billing_date=True,
+            )
+
+            next_billing_date = self._extract_next_billing_date(response)
+
+            organization.subscription_status = SUBSCRIPTION_STATUS['CANCELLED']
+            organization.subscription_ends_at = next_billing_date
+            organization.updated_at = datetime.now(timezone.utc)
+            await db.commit()
+
+            logger.info(
+                'Requested cancel at period end for organization',
+                extra={
+                    'organization_id': str(organization_id),
+                    'dodo_subscription_id': organization.dodo_subscription_id,
+                    'subscription_ends_at': next_billing_date.isoformat()
+                    if next_billing_date
+                    else None,
+                },
+            )
+
+            return next_billing_date
+        except Exception as e:
+            logger.error(
+                'Failed to request cancellation at period end',
+                extra={
+                    'organization_id': str(organization_id),
+                    'dodo_subscription_id': organization.dodo_subscription_id,
+                    'error': str(e),
+                },
+            )
+            return None
+
+    def _extract_next_billing_date(self, response: Any) -> Optional[datetime]:
+        """Parse next billing date from Dodo's base64-encoded response.data."""
+        try:
+            if not isinstance(response, dict):
+                return None
+            resp = response.get('response')
+            if not isinstance(resp, dict):
+                return None
+            data = resp.get('data')
+            if not isinstance(data, str):
+                return None
+
+            decoded = base64.b64decode(data).decode('utf-8')
+            payload = json.loads(decoded)
+
+            date_str: Optional[str] = payload.get('next_billing_date') or payload.get(
+                'expires_at'
+            )
+            if not isinstance(date_str, str):
+                return None
+
+            normalized = date_str.replace('Z', '+00:00')
+            return datetime.fromisoformat(normalized)
+        except Exception:
+            return None
 
     async def change_subscription_plan(
         self,

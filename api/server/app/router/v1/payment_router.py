@@ -57,6 +57,7 @@ class CancelSubscriptionResponse(BaseModel):
     success: bool
     message: str
     organization_id: str
+    subscription_ends_at: Optional[datetime] = None
 
 
 class ChangePlanResponse(BaseModel):
@@ -217,23 +218,26 @@ async def cancel_subscription(
                 status_code=status.HTTP_403_FORBIDDEN, detail='Forbidden'
             )
 
-        # Schedule cancellation with grace period; actual cancel can be performed separately
-        success = await payment_service.schedule_subscription_cancellation(
-            db=db, organization_id=organization_id, grace_period_hours=3
+        # Request cancel at next billing date in Dodo and update local org
+        next_billing_date = await payment_service.request_cancel_at_period_end(
+            db=db, organization_id=organization_id
         )
 
-        if success:
-            logger.info(f'Subscription cancelled for organization {organization_id}')
-            return CancelSubscriptionResponse(
-                success=True,
-                message='Cancellation scheduled. You can undo within 3 hours.',
-                organization_id=str(organization_id),
-            )
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail='Failed to cancel subscription',
-            )
+        logger.info(
+            'Cancellation at period end requested',
+            extra={
+                'organization_id': str(organization_id),
+                'subscription_ends_at': next_billing_date.isoformat()
+                if next_billing_date
+                else None,
+            },
+        )
+        return CancelSubscriptionResponse(
+            success=True,
+            message='Cancellation scheduled at the next billing date',
+            organization_id=str(organization_id),
+            subscription_ends_at=next_billing_date,
+        )
 
     except HTTPException:
         raise
