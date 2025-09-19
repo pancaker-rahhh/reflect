@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CreditCard, Settings, AlertCircle, CheckCircle2, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -8,11 +8,17 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import { PaymentPlans } from '@/components/payment/PaymentPlans'
 import { usePayment } from '@/hooks/usePayment'
+import { useAppContext } from '@/context/AppContext'
+import { useAuth } from '@/contexts/AuthContext'
+import { organizationApi } from '@/lib/api/organization'
 import { useSubscription } from '@/hooks/useSubscription'
+import { ConfirmationModal } from '@/components/common/ConfirmationModal'
 
 export default function BillingPage() {
   const navigate = useNavigate()
   const { subscription, isLoading: subscriptionLoading } = useSubscription()
+  const { currentOrganization } = useAppContext()
+  const { user } = useAuth()
   const {
     cancelSubscription,
     undoCancelSubscription,
@@ -26,19 +32,45 @@ export default function BillingPage() {
   const [changeError, setChangeError] = useState<string | null>(null)
   const [infoMessage, setInfoMessage] = useState<string | null>(null)
   const [isCancellationScheduled, setIsCancellationScheduled] = useState(false)
+  const [isOrgOwner, setIsOrgOwner] = useState(false)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+
+  // Determine if current user is the organization owner
+  useEffect(() => {
+    let mounted = true
+    const fetchMembers = async () => {
+      try {
+        if (!currentOrganization?.id) return
+        const members = await organizationApi.getMembers(currentOrganization.id)
+        const currentUserId = user?.id
+        const owner = members.find((m) => m.role === 'owner')
+        if (!mounted) return
+        setIsOrgOwner(Boolean(owner && owner.user_id && owner.user_id === currentUserId))
+      } catch (e) {
+        // If member lookup fails, default to hidden for safety
+        if (!mounted) return
+        setIsOrgOwner(false)
+      }
+    }
+    fetchMembers()
+    return () => {
+      mounted = false
+    }
+  }, [currentOrganization?.id, user?.id])
 
   const handleCancelSubscription = async () => {
-    if (
-      !confirm('Are you sure you want to cancel your subscription? You can undo within 3 hours.')
-    ) {
-      return
-    }
-
     try {
       setCancellationError(null)
       setInfoMessage(null)
-      await cancelSubscription()
-      setInfoMessage('Cancellation scheduled. You can undo within 3 hours.')
+      const result = await cancelSubscription()
+      const when = result?.subscription_ends_at
+        ? new Date(result.subscription_ends_at).toLocaleString()
+        : null
+      setInfoMessage(
+        when
+          ? `Cancellation scheduled. Your subscription will end on ${when}.`
+          : 'Cancellation scheduled at the next billing date.'
+      )
       setIsCancellationScheduled(true)
     } catch (error) {
       setCancellationError(error instanceof Error ? error.message : 'Failed to cancel subscription')
@@ -230,6 +262,7 @@ export default function BillingPage() {
                               variant="outline"
                               onClick={() => handleChangePlan('yearly')}
                               disabled={isChangingPlan}
+                              className="w-full bg-primary/90 text-white hover:bg-primary hover:text-white"
                             >
                               {isChangingPlan ? 'Changing…' : 'Switch to Yearly'}
                             </Button>
@@ -245,14 +278,16 @@ export default function BillingPage() {
                             </Button>
                           )}
                         </div>
-                        <Button
-                          variant="outline"
-                          onClick={handleCancelSubscription}
-                          disabled={isCancelling}
-                          className="w-full hover:bg-red-500 hover:text-white"
-                        >
-                          {isCancelling ? 'Cancelling…' : 'Cancel Subscription'}
-                        </Button>
+                        {isOrgOwner && (
+                          <Button
+                            variant="outline"
+                            onClick={() => setShowCancelConfirm(true)}
+                            disabled={isCancelling}
+                            className="w-full hover:bg-red-500 hover:text-white"
+                          >
+                            {isCancelling ? 'Cancelling…' : 'Cancel Subscription'}
+                          </Button>
+                        )}
                       </>
                     )}
                   </div>
@@ -338,6 +373,22 @@ export default function BillingPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Cancel confirmation modal */}
+        <ConfirmationModal
+          isOpen={showCancelConfirm}
+          onClose={() => setShowCancelConfirm(false)}
+          onConfirm={async () => {
+            await handleCancelSubscription()
+            setShowCancelConfirm(false)
+          }}
+          title="Cancel Subscription"
+          description="Are you sure you want to cancel your subscription? This will take effect at the next billing date. You can undo within the grace period."
+          confirmText="Confirm Cancellation"
+          cancelText="Keep Subscription"
+          variant="destructive"
+          isLoading={isCancelling}
+        />
       </div>
     </div>
   )

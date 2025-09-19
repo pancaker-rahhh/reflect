@@ -71,8 +71,12 @@ export const paymentApi = {
 
   cancelSubscription: (
     organizationId: string
-  ): Promise<{ success: boolean; message: string; organization_id: string }> =>
-    apiClient.post(`/organizations/${organizationId}/payment/cancel-subscription`),
+  ): Promise<{
+    success: boolean
+    message: string
+    organization_id: string
+    subscription_ends_at?: string | null
+  }> => apiClient.post(`/organizations/${organizationId}/payment/cancel-subscription`),
 
   undoCancelSubscription: (
     organizationId: string
