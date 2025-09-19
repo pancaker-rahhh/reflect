@@ -1,16 +1,6 @@
 import { formatDistanceToNow } from 'date-fns'
-import { Button } from '@/components/ui/button'
 import { CheckCircle } from 'lucide-react'
-import { useState } from 'react'
-import { FeedbackConversionModal } from '@/components/feedback/FeedbackConversionModal'
-import { useFeedbackConversion } from '@/hooks/useFeedbackConversion'
 import type { RecentActivity } from '@/types'
-
-interface ConversionData {
-  priority: 'low' | 'medium' | 'high' | 'critical'
-  conversion_notes?: string
-  custom_tags?: string[]
-}
 
 interface RecentActivityTableProps {
   activities: RecentActivity[]
@@ -38,30 +28,6 @@ export function RecentActivityTable({
   activities,
   projectId: _projectId,
 }: RecentActivityTableProps) {
-  const [selectedFeedback, setSelectedFeedback] = useState<RecentActivity | null>(null)
-  const [isConversionModalOpen, setIsConversionModalOpen] = useState(false)
-  const { convertFeedbackToRoadmap } = useFeedbackConversion()
-
-  const handleConvertFeedback = async (conversionData: ConversionData) => {
-    if (!selectedFeedback?.id) return
-
-    try {
-      await convertFeedbackToRoadmap(selectedFeedback.id, conversionData)
-    } catch (error) {
-      console.error('Failed to convert feedback:', error)
-    }
-  }
-
-  const openConversionModal = (feedback: RecentActivity) => {
-    setSelectedFeedback(feedback)
-    setIsConversionModalOpen(true)
-  }
-
-  const closeConversionModal = () => {
-    setIsConversionModalOpen(false)
-    setSelectedFeedback(null)
-  }
-
   if (activities.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -75,7 +41,6 @@ export function RecentActivityTable({
       <div className="space-y-6">
         {activities.map((activity) => {
           const isConverted = activity.converted_to_action_item_id
-          const isActionable = activity.is_actionable !== false
           const typeConfigItem = typeConfig[activity.type] || {
             label: activity.type,
             variant: 'default',
@@ -120,24 +85,11 @@ export function RecentActivityTable({
                 </div>
 
                 <div className="flex-shrink-0">
-                  {!isConverted && isActionable && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openConversionModal(activity)}
-                      className="h-8 px-4 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                    >
-                      Convert
-                    </Button>
-                  )}
                   {isConverted && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 px-4 text-sm text-green-600 hover:text-green-700 hover:bg-green-50"
-                    >
-                      View
-                    </Button>
+                    <div className="flex items-center gap-2 text-sm text-green-600">
+                      <CheckCircle className="h-4 w-4" />
+                      <span>Converted</span>
+                    </div>
                   )}
                 </div>
               </div>
@@ -145,20 +97,6 @@ export function RecentActivityTable({
           )
         })}
       </div>
-
-      {selectedFeedback && (
-        <FeedbackConversionModal
-          isOpen={isConversionModalOpen}
-          onClose={closeConversionModal}
-          onConvert={handleConvertFeedback}
-          feedback={{
-            id: selectedFeedback.id,
-            feedback_type: selectedFeedback.type,
-            title: selectedFeedback.summary,
-            message: undefined,
-          }}
-        />
-      )}
     </>
   )
 }

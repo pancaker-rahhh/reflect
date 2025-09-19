@@ -1,6 +1,7 @@
 from uuid import UUID
 from typing import List, Dict, Any, Optional, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from fastapi import HTTPException, status, Request
 import re
 from app.models.roadmap_model import (
@@ -10,6 +11,8 @@ from app.models.roadmap_model import (
     RoadmapItemAssignment,
     RoadmapTag,
 )
+from app.models.feedback_model import Feedback
+from app.core.logging import get_logger
 from app.repositories.roadmap_repository import (
     roadmap_repository,
     RoadmapRepository,
@@ -195,6 +198,7 @@ class RoadmapService(BaseRoadmapService):
         self.tag_repo = tag_repo
         self.feature_tag_repo = feature_tag_repo
         self.project_serv = project_serv
+        self.logger = get_logger(__name__)
 
     async def get_roadmap_by_project_id(
         self, db: AsyncSession, user_id: UUID, project_id: UUID
@@ -474,8 +478,34 @@ class RoadmapService(BaseRoadmapService):
 
     async def delete_feature(self, db: AsyncSession, user_id: UUID, feature_id: UUID):
         await self._validate_feature_access(db, user_id, feature_id)
+
+        # Clear feedback references before deleting the feature
+        await self._clear_feedback_references(db, feature_id)
+
         await self.feature_repo.delete(db, id=feature_id)
         return None
+
+    async def _clear_feedback_references(self, db: AsyncSession, feature_id: UUID):
+        """Clear feedback references to this roadmap feature before deletion"""
+
+        # Find all feedback that references this feature
+        feedback_with_references = await db.execute(
+            select(Feedback).where(Feedback.converted_to_action_item_id == feature_id)
+        )
+        feedback_items = feedback_with_references.scalars().all()
+
+        # Clear the references
+        for feedback in feedback_items:
+            feedback.converted_to_action_item_id = None
+            feedback.conversion_date = None
+            feedback.conversion_notes = None
+            # Don't change status - let it remain as is
+
+        if feedback_items:
+            await db.commit()
+            self.logger.info(
+                f'Cleared {len(feedback_items)} feedback references for deleted feature {feature_id}'
+            )
 
     async def update_features_order(
         self, db: AsyncSession, user_id: UUID, updates: List[Dict[str, Any]]
@@ -713,9 +743,10 @@ class RoadmapService(BaseRoadmapService):
         priority: Optional[str] = None,
         conversion_notes: Optional[str] = None,
         custom_tags: Optional[List[str]] = None,
+        column_id: Optional[str] = None,
     ) -> RoadmapActionItem:
         return await action_item_service.convert_feedback_to_roadmap_item(
-            db, feedback_id, user_id, priority, conversion_notes, custom_tags
+            db, feedback_id, user_id, priority, conversion_notes, custom_tags, column_id
         )
 
     async def auto_assign_priority(
@@ -738,7 +769,7 @@ class RoadmapService(BaseRoadmapService):
         suggested_priority = action_item_service._suggest_priority(mock_feedback)
         return suggested_priority.value
 
-    async def ensure_backlog_column_exists(
+    async def ensure_first_column_exists(
         self, db: AsyncSession, project_id: UUID
     ) -> RoadmapColumn:
         return await action_item_service._ensure_backlog_column_exists(db, project_id)

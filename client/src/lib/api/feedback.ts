@@ -1,15 +1,14 @@
 import { apiClient } from '../client'
 
-// Define the shape of the data we'll send to the backend
 interface FeedbackPayload {
   widgetKey: string
-  response: string // The actual feedback text
-  rating?: number // Rating for feedback types that support it
-  feedbackType?: string // Type of feedback (review, bug_report, etc.)
-  // You could add more data here later, like user agent, current URL, etc.
+  response: string
+  rating?: number
+  feedbackType?: string
 }
 
 interface ConversionData {
+  column_id?: string
   priority: 'low' | 'medium' | 'high' | 'critical'
   custom_tags?: string[]
   conversion_notes?: string
@@ -35,25 +34,21 @@ async function submit(payload: FeedbackPayload): Promise<void> {
   })
 
   if (!response.ok) {
-    // Handle subscription limit errors (403)
     if (response.status === 403) {
       try {
         const errorData = await response.json()
         if (errorData?.detail?.error === 'Response limit exceeded') {
-          // Show a user-friendly message for subscription limits
           throw new Error(
             "Thank you for your feedback! We've received your message and will review it soon."
           )
         }
       } catch (parseError) {
-        // Fallback if JSON parsing fails
         throw new Error(
           "Thank you for your feedback! We've received your message and will review it soon."
         )
       }
     }
 
-    // Handle rate limiting with detailed error information
     if (response.status === 429) {
       try {
         const errorData = await response.json()
@@ -61,13 +56,11 @@ async function submit(payload: FeedbackPayload): Promise<void> {
         const retrySeconds = retryAfter ? parseInt(retryAfter) : 60
         const retryMinutes = Math.ceil(retrySeconds / 60)
 
-        // Use the detailed message from the backend if available
         const message = errorData?.detail?.message || errorData?.message || 'Too many requests'
         throw new Error(
           `${message}. Please try again in ${retryMinutes} minute${retryMinutes !== 1 ? 's' : ''}.`
         )
       } catch (parseError) {
-        // Fallback if JSON parsing fails
         const retryAfter = response.headers.get('Retry-After')
         const retrySeconds = retryAfter ? parseInt(retryAfter) : 60
         const retryMinutes = Math.ceil(retrySeconds / 60)
@@ -79,14 +72,11 @@ async function submit(payload: FeedbackPayload): Promise<void> {
       }
     }
 
-    // Try to get a meaningful error message from the backend for other errors
     const errorData = await response
       .json()
       .catch(() => ({ message: 'Submission failed with an unknown error.' }))
     throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
   }
-
-  // We don't need to return anything on success
 }
 
 async function getActionableFeedback(): Promise<any[]> {
@@ -101,11 +91,22 @@ async function convertToRoadmap(feedbackId: string, conversionData: ConversionDa
   return apiClient.post(`/feedback/${feedbackId}/convert`, conversionData)
 }
 
+async function bulkConvertToRoadmap(
+  feedbackIds: string[],
+  conversionData: ConversionData
+): Promise<any> {
+  return apiClient.post('/feedback/bulk-convert', {
+    feedback_ids: feedbackIds,
+    ...conversionData,
+  })
+}
+
 export const feedbackApi = {
   submit,
   getActionableFeedback,
   getConversionPreview,
   convertToRoadmap,
+  bulkConvertToRoadmap,
 }
 
 export type { FeedbackPayload, ConversionData, ConversionPreview }

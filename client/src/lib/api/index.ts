@@ -137,4 +137,6 @@ export const api = {
   getConversionPreview: (feedbackId: string) => feedbackApi.getConversionPreview(feedbackId),
   convertToRoadmap: (feedbackId: string, conversionData: any) =>
     feedbackApi.convertToRoadmap(feedbackId, conversionData),
+  bulkConvertToRoadmap: (feedbackIds: string[], conversionData: any) =>
+    feedbackApi.bulkConvertToRoadmap(feedbackIds, conversionData),
 }

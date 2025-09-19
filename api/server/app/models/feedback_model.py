@@ -31,14 +31,6 @@ class FeedbackType(str, enum.Enum):
     CES = 'CES'
 
 
-class FeedbackStatus(str, enum.Enum):
-    NEW = 'new'
-    IN_PROGRESS = 'in_progress'
-    RESOLVED = 'resolved'
-    REJECTED = 'rejected'
-    ARCHIVED = 'archived'
-
-
 class FeedbackPriority(str, enum.Enum):
     LOW = 'low'
     MEDIUM = 'medium'
@@ -61,7 +53,6 @@ class Feedback(BaseModel):
         ),
         nullable=False,
     )
-    status = Column(SQLEnum(FeedbackStatus), default=FeedbackStatus.NEW)
 
     title = Column(String(500))
     message = Column(Text)

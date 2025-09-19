@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Search, RotateCcw, TrendingUp, Star } from 'lucide-react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Search, RotateCcw, TrendingUp, Star, CheckSquare } from 'lucide-react'
 import { api } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -13,16 +13,21 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Badge } from '@/components/ui/badge'
 import { StarRating } from '@/components/ui/star-rating'
-import { format } from 'date-fns'
 import { useAppContext } from '@/context/AppContext'
+import { FeedbackCard } from '@/components/feedback/FeedbackCard'
+import { BulkActionsBar } from '@/components/feedback/BulkActionsBar'
+import { FeedbackConversionModal } from '@/components/feedback/FeedbackConversionModal'
 
 export function Reviews() {
   const [searchQuery, setSearchQuery] = useState('')
   const [timeframe, setTimeframe] = useState('all')
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
+  const [isBulkConversionModalOpen, setIsBulkConversionModalOpen] = useState(false)
 
   const { currentProject } = useAppContext()
+  const queryClient = useQueryClient()
 
   const { data: feedback = [], isLoading } = useQuery({
     queryKey: ['reviews', currentProject?.id],
@@ -39,6 +44,67 @@ export function Reviews() {
   const resetFilters = () => {
     setSearchQuery('')
     setTimeframe('all')
+  }
+
+  const convertMutation = useMutation({
+    mutationFn: ({ feedbackId, conversionData }: { feedbackId: string; conversionData: any }) =>
+      api.convertToRoadmap(feedbackId, conversionData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reviews'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap-tags'] })
+    },
+  })
+
+  const bulkConvertMutation = useMutation({
+    mutationFn: async ({
+      feedbackIds,
+      conversionData,
+    }: {
+      feedbackIds: string[]
+      conversionData: any
+    }) => {
+      return api.bulkConvertToRoadmap(feedbackIds, conversionData)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reviews'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap-tags'] })
+      setSelectedItems(new Set())
+      setIsSelectionMode(false)
+    },
+  })
+
+  const handleConvert = async (feedbackId: string, conversionData: any) => {
+    await convertMutation.mutateAsync({ feedbackId, conversionData })
+  }
+
+  const handleBulkConvert = async (conversionData: any) => {
+    const feedbackIds = Array.from(selectedItems)
+    await bulkConvertMutation.mutateAsync({ feedbackIds, conversionData })
+    setIsBulkConversionModalOpen(false)
+  }
+
+  const handleToggleSelection = (feedbackId: string) => {
+    setSelectedItems((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(feedbackId)) {
+        newSet.delete(feedbackId)
+      } else {
+        newSet.add(feedbackId)
+      }
+      return newSet
+    })
+  }
+
+  const handleSelectAll = () => {
+    const allIds = new Set(filteredReviews.map((item: any) => item.id))
+    setSelectedItems(allIds)
+  }
+
+  const handleClearSelection = () => {
+    setSelectedItems(new Set())
+    setIsSelectionMode(false)
   }
 
   const filterReviewsByTimeframe = (reviews: typeof feedback) => {
@@ -99,6 +165,26 @@ export function Reviews() {
           <p className="text-muted-foreground mt-2">
             Manage user reviews and testimonials for your project
           </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {isSelectionMode && (
+            <>
+              <Button variant="outline" onClick={handleSelectAll}>
+                Select All
+              </Button>
+              <Button variant="outline" onClick={handleClearSelection}>
+                Clear Selection
+              </Button>
+            </>
+          )}
+          <Button
+            variant={isSelectionMode ? 'default' : 'outline'}
+            onClick={() => setIsSelectionMode(!isSelectionMode)}
+          >
+            <CheckSquare className="h-4 w-4 mr-2" />
+            {isSelectionMode ? 'Exit Selection' : 'Select Items'}
+          </Button>
         </div>
       </div>
 
@@ -233,40 +319,41 @@ export function Reviews() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {filteredReviews.map((review) => (
-            <Card key={review.id}>
-              <CardContent className="pt-6">
-                <div className="space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h4 className="font-semibold text-lg">{review.title}</h4>
-                      <div className="flex items-center gap-4 mt-1">
-                        <StarRating
-                          rating={review.overall_rating || review.rating || 0}
-                          size="sm"
-                        />
-                        <span className="text-sm text-muted-foreground">
-                          by {review.submitter_name || 'Anonymous'}
-                          {review.submitter_email && ` (${review.submitter_email})`}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <Badge variant={review.is_published ? 'default' : 'secondary'}>
-                        {review.is_published ? 'Published' : 'Unpublished'}
-                      </Badge>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {format(new Date(review.created_at), 'PPP')}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-sm leading-relaxed">{review.message}</p>
-                </div>
-              </CardContent>
-            </Card>
+          {filteredReviews.map((review: any) => (
+            <FeedbackCard
+              key={review.id}
+              feedback={review}
+              isSelectionMode={isSelectionMode}
+              isSelected={selectedItems.has(review.id)}
+              onToggleSelection={handleToggleSelection}
+              onConvert={handleConvert}
+              isConverting={convertMutation.isPending}
+            />
           ))}
         </div>
       )}
+
+      {/* Bulk Actions Bar */}
+      <BulkActionsBar
+        selectedCount={selectedItems.size}
+        onConvertSelected={() => setIsBulkConversionModalOpen(true)}
+        onClearSelection={handleClearSelection}
+        isConverting={bulkConvertMutation.isPending}
+      />
+
+      {/* Bulk Conversion Modal */}
+      <FeedbackConversionModal
+        isOpen={isBulkConversionModalOpen}
+        onClose={() => setIsBulkConversionModalOpen(false)}
+        onConvert={handleBulkConvert}
+        feedback={{
+          id: 'bulk',
+          feedback_type: 'bulk',
+          title: `Convert ${selectedItems.size} items`,
+        }}
+        isBulk={true}
+        selectedCount={selectedItems.size}
+      />
     </div>
   )
 }
