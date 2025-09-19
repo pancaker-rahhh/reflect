@@ -9,6 +9,7 @@ from app.core.settings import get_settings
 from app.core.logging import get_logger
 from app.core.subscription_plans import (
     get_plan_by_id,
+    get_plan_by_dodo_product_id,
     PAYMENT_STATUS,
     SUBSCRIPTION_STATUS,
 )
@@ -134,6 +135,8 @@ class PaymentService:
                 await self._handle_subscription_failed(db, data)
             elif event_type == 'subscription.renewed':
                 await self._handle_subscription_renewed(db, data)
+            elif event_type == 'subscription.plan_changed':
+                await self._handle_subscription_plan_changed(db, data)
             else:
                 logger.info(f'Unhandled webhook event type: {event_type}')
 
@@ -562,6 +565,57 @@ class PaymentService:
         logger.info(
             f'Subscription renewed for organization {organization_id}, subscription_id: {subscription_id}'
         )
+
+    async def _handle_subscription_plan_changed(
+        self, db: AsyncSession, data: Dict[str, Any]
+    ) -> None:
+        subscription_id = data.get('id')
+        metadata = data.get('metadata', {})
+        organization_id = metadata.get('organization_id')
+        product_id = data.get('product_id')
+
+        if not organization_id:
+            logger.warning(
+                f'No organization_id in subscription metadata: {subscription_id}'
+            )
+            return
+
+        organization = await subscription_service.get_organization_subscription(
+            db, UUID(organization_id)
+        )
+        if not organization:
+            logger.warning(
+                f'Organization not found for subscription plan changed: {organization_id}'
+            )
+            return
+
+        # Map Dodo product_id back to our plan id
+        plan = get_plan_by_dodo_product_id(product_id) if product_id else None
+        if plan:
+            plan_id = plan['id']
+            if plan_id == 'pro_monthly':
+                organization.subscription_plan = SubscriptionPlanEnum.PRO_MONTHLY
+            elif plan_id == 'pro_yearly':
+                organization.subscription_plan = SubscriptionPlanEnum.PRO_YEARLY
+            else:
+                organization.subscription_plan = SubscriptionPlanEnum.PRO_MONTHLY
+            organization.updated_at = datetime.now(timezone.utc)
+            await db.commit()
+
+            logger.info(
+                'Subscription plan changed via webhook',
+                extra={
+                    'organization_id': organization_id,
+                    'subscription_id': subscription_id,
+                    'dodo_product_id': product_id,
+                    'plan_id': plan_id,
+                },
+            )
+        else:
+            logger.warning(
+                'Unknown product_id in subscription.plan_changed',
+                extra={'organization_id': organization_id, 'product_id': product_id},
+            )
 
     async def cancel_subscription(
         self, db: AsyncSession, organization_id: UUID
