@@ -20,6 +20,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { api } from '@/lib/api'
 import type { RoadmapActionItem, RoadmapColumn } from '@/types'
 import { Checkbox } from '@/components/ui/checkbox'
+import { StructuredDescription } from '@/components/common/StructuredDescription'
 
 interface RoadmapCardProps {
   feature: RoadmapActionItem
@@ -209,9 +210,12 @@ export function RoadmapCard({
 
           {/* Description */}
           {feature.description && (
-            <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
-              {feature.description}
-            </p>
+            <div className="line-clamp-3">
+              <StructuredDescription
+                description={feature.description}
+                className="text-sm text-muted-foreground leading-relaxed"
+              />
+            </div>
           )}
 
           {/* Tags */}

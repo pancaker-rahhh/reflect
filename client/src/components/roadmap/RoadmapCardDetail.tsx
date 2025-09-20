@@ -23,6 +23,7 @@ import {
 import { Loader2, ThumbsUp, User, Trash2, X, Clock, MapPin, Check, Edit2 } from 'lucide-react'
 import { safeFormat } from '@/lib/date'
 import type { RoadmapActionItem, RoadmapColumn } from '@/types'
+import { StructuredDescription } from '@/components/common/StructuredDescription'
 
 interface RoadmapCardDetailProps {
   isOpen: boolean
@@ -361,13 +362,10 @@ export function RoadmapCardDetail({
               <div className="space-y-3">
                 <Label className="text-sm font-medium">Description</Label>
                 <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                    {feature.description || (
-                      <span className="italic text-muted-foreground/70">
-                        No description provided
-                      </span>
-                    )}
-                  </p>
+                  <StructuredDescription
+                    description={feature.description || ''}
+                    className="text-sm text-muted-foreground leading-relaxed"
+                  />
                 </div>
               </div>
 
