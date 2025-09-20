@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CreditCard, Settings, AlertCircle, CheckCircle2, XCircle } from 'lucide-react'
+import { CreditCard, Settings, AlertCircle, CheckCircle2, XCircle, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -11,6 +11,7 @@ import { usePayment } from '@/hooks/usePayment'
 import { useAppContext } from '@/context/AppContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { organizationApi } from '@/lib/api/organization'
+import { apiClient } from '@/lib/client'
 import { useSubscription } from '@/hooks/useSubscription'
 import { ConfirmationModal } from '@/components/common/ConfirmationModal'
 import { paymentApi, type PaymentItem } from '@/lib/api/payment'
@@ -80,6 +81,26 @@ export default function BillingPage() {
         {status || 'unknown'}
       </Badge>
     )
+  }
+
+  const openInvoice = async (paymentId?: string | null) => {
+    if (!paymentId) return
+    const orgId = currentOrganization?.id
+    if (!orgId) {
+      setPaymentsError('No organization selected')
+      return
+    }
+    try {
+      const blob = await apiClient.getBinary(
+        `/organizations/${orgId}/payment/invoices/${paymentId}`
+      )
+      const blobUrl = URL.createObjectURL(blob)
+      window.open(blobUrl, '_blank', 'noopener')
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000)
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed to open invoice'
+      setPaymentsError(msg)
+    }
   }
 
   // Determine if current user is the organization owner
@@ -471,6 +492,15 @@ export default function BillingPage() {
                         {formatPaymentAmount(p.currency, p.total_amount)}
                       </span>
                       {renderPaymentBadge(p.status)}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openInvoice(p.payment_id || undefined)}
+                        disabled={!p.payment_id}
+                        className="h-7 px-2"
+                      >
+                        <FileText className="h-3.5 w-3.5 mr-1" /> Invoice
+                      </Button>
                     </div>
                   </div>
                 ))}
