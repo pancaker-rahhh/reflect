@@ -56,6 +56,35 @@
     --radius: 0.5rem;
   }
 
+  /* Theme presets using data-theme attribute */
+  [data-theme='purple'] {
+    --primary: 262.1 83.3% 57.8%;
+    --ring: 262.1 83.3% 57.8%;
+    --secondary: 210 40% 96.1%;
+    --accent: 210 40% 96.1%;
+  }
+
+  [data-theme='blue'] {
+    --primary: 221 83% 53%; /* tailwind blue-600 */
+    --ring: 221 83% 53%;
+    --secondary: 210 40% 96.1%;
+    --accent: 210 40% 96.1%;
+  }
+
+  [data-theme='green'] {
+    --primary: 142.1 70.6% 45.3%; /* green-600 */
+    --ring: 142.1 70.6% 45.3%;
+    --secondary: 210 40% 96.1%;
+    --accent: 210 40% 96.1%;
+  }
+
+  [data-theme='rose'] {
+    --primary: 346.8 77.2% 49.8%; /* rose-600 */
+    --ring: 346.8 77.2% 49.8%;
+    --secondary: 210 40% 96.1%;
+    --accent: 210 40% 96.1%;
+  }
+
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
@@ -453,7 +482,7 @@
 
   /* Landing Page Specific Styles */
   .hover-glow:hover {
-    box-shadow: 0 0 20px rgba(147, 51, 234, 0.4);
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.4);
     transition: box-shadow 0.3s ease;
   }
 
