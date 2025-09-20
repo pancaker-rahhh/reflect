@@ -39,6 +39,7 @@ export default function BillingPage() {
   const [isLoadingPayments, setIsLoadingPayments] = useState(false)
   const [paymentsError, setPaymentsError] = useState<string | null>(null)
   const [payments, setPayments] = useState<PaymentItem[] | null>(null)
+  const [showPaymentsExample, setShowPaymentsExample] = useState(false)
 
   const formatPaymentAmount = (currency?: string | null, amountMinor?: number | null): string => {
     if (amountMinor === null || amountMinor === undefined) return '-'
@@ -444,6 +445,7 @@ export default function BillingPage() {
                 variant="outline"
                 onClick={async () => {
                   try {
+                    setShowPaymentsExample(true)
                     setPaymentsError(null)
                     setIsLoadingPayments(true)
                     setPayments(null)
@@ -466,6 +468,22 @@ export default function BillingPage() {
                 {isLoadingPayments ? 'Loading Payments…' : 'View Recent Payments'}
               </Button>
             </div>
+
+            {/* Example card using the same layout as actual items (visible after click) */}
+            {showPaymentsExample && (
+              <div className="mt-2 border rounded-md">
+                <div className="flex items-center justify-between px-3 py-2 text-sm opacity-80">
+                  <div className="flex flex-col">
+                    <span className="font-medium">Example Payment ID</span>
+                    <span className="text-xs text-muted-foreground">DD/MM/YYYY, HH:MM:SS</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs">Amount $</span>
+                    {renderPaymentBadge('succeeded')}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {paymentsError && (
               <Alert variant="destructive">
