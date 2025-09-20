@@ -81,15 +81,6 @@ export function RecentActivityTable({
                     </span>
                   </div>
                 </div>
-
-                <div className="flex-shrink-0">
-                  {isConverted && (
-                    <div className="flex items-center gap-2 text-sm text-green-600">
-                      <CheckCircle className="h-4 w-4" />
-                      <span>Converted</span>
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
           )
