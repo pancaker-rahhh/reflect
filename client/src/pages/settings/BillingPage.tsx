@@ -325,7 +325,11 @@ export default function BillingPage() {
                   </div>
 
                   <div className="flex flex-col md:flex-row gap-2">
-                    {subscription.plan === 'free' ? (
+                    {subscription.status === 'cancelled' || subscription.status === 'expired' ? (
+                      <Button onClick={() => setShowUpgrade(true)} className="w-full md:w-auto">
+                        Renew Subscription
+                      </Button>
+                    ) : subscription.plan === 'free' ? (
                       <Button onClick={() => setShowUpgrade(true)}>Upgrade Plan</Button>
                     ) : (
                       <>
