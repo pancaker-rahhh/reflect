@@ -1,5 +1,3 @@
-import React from 'react'
-
 interface StructuredDescriptionProps {
   description: string
   className?: string

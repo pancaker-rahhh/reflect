@@ -7,7 +7,6 @@ import { ArrowRight, CheckCircle, Loader2, Calendar, User, MessageSquare } from 
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { FeedbackConversionModal } from './FeedbackConversionModal'
-import type { Feedback } from '@/types'
 
 interface FeedbackCardProps {
   feedback: any

@@ -39,7 +39,6 @@ export function RecentActivityTable({
     <>
       <div className="space-y-6">
         {activities.map((activity) => {
-          const isConverted = activity.converted_to_action_item_id
           const typeConfigItem = typeConfig[activity.type] || {
             label: activity.type,
             variant: 'default',
