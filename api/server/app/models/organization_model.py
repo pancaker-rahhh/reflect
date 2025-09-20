@@ -39,6 +39,7 @@ class PaymentStatusEnum(str, enum.Enum):
     FAILED = 'failed'
     CANCELLED = 'cancelled'
     REFUNDED = 'refunded'
+    EXPIRED = 'expired'
 
 
 class ProjectRole(str, enum.Enum):

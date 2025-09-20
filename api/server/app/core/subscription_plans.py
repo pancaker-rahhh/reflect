@@ -69,6 +69,7 @@ PAYMENT_STATUS = {
 SUBSCRIPTION_STATUS = {
     'ACTIVE': 'active',
     'CANCELLED': 'cancelled',
+    'EXPIRED': 'expired',
     'PAST_DUE': 'past_due',
     'UNPAID': 'unpaid',
     'INCOMPLETE': 'incomplete',

@@ -486,7 +486,7 @@ class PaymentService:
             )
             return
 
-        organization.subscription_status = SUBSCRIPTION_STATUS['CANCELLED']
+        organization.subscription_status = SUBSCRIPTION_STATUS['EXPIRED']
         organization.subscription_plan = 'free'
         organization.updated_at = datetime.now(timezone.utc)
 
@@ -632,7 +632,6 @@ class PaymentService:
             return False
 
         try:
-            # Cancel subscription in Dodo
             self.client.subscriptions.update(
                 organization.dodo_subscription_id, status='cancelled'
             )

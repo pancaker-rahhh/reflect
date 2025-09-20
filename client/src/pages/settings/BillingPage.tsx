@@ -177,6 +177,8 @@ export default function BillingPage() {
         return <CheckCircle2 className="h-4 w-4 text-green-500" />
       case 'cancelled':
         return <XCircle className="h-4 w-4 text-red-500" />
+      case 'expired':
+        return <XCircle className="h-4 w-4 text-red-500" />
       case 'past_due':
         return <AlertCircle className="h-4 w-4 text-yellow-500" />
       default:
@@ -194,6 +196,8 @@ export default function BillingPage() {
         )
       case 'cancelled':
         return <Badge variant="destructive">Cancelled</Badge>
+      case 'expired':
+        return <Badge variant="destructive">Expired</Badge>
       case 'past_due':
         return (
           <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
