@@ -3,26 +3,36 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
 import { organizationApi } from '@/lib/api/organization'
+import { useAppContext } from '@/context/AppContext'
 import { useSubscription } from '@/hooks/useSubscription'
 import { UsageBar } from '@/components/common/UsageBar'
 import { useNavigate } from 'react-router-dom'
 
 export function FreeTierAlert() {
   const navigate = useNavigate()
+  const { currentOrganization } = useAppContext()
   const { data: organizations } = useQuery({
     queryKey: ['organizations', 'my'],
     queryFn: () => organizationApi.getMy(),
   })
 
-  const currentOrganization = organizations?.[0]
+  // Prefer the organizations list entry (often richer),
+  // otherwise fall back to context. Pick the one that has subscription_plan.
+  const candidateFromList = organizations?.[0]
+  const org =
+    (candidateFromList && candidateFromList.subscription_plan
+      ? candidateFromList
+      : currentOrganization) ||
+    currentOrganization ||
+    candidateFromList
   const { getUsageInfo } = useSubscription()
 
   const handleUpgrade = () => {
     navigate('/app/settings/billing')
   }
 
-  if (!currentOrganization) return null
-  const isFreeTier = currentOrganization.subscription_plan === 'free'
+  if (!org) return null
+  const isFreeTier = org.subscription_plan === 'free'
   if (!isFreeTier) return null
 
   const widgetUsage = getUsageInfo('widgets')
