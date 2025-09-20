@@ -49,6 +49,8 @@ class OrganizationResponse(BaseModel):
     name: str
     slug: str
     description: Optional[str] = None
+    subscription_plan: Optional[str] = None
+    subscription_status: Optional[str] = None
     settings: dict
     created_by: Optional[UUID] = None
     created_at: datetime

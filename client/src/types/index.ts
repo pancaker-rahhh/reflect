@@ -13,6 +13,7 @@ export interface Organization {
   name: string
   slug: string
   subscription_plan: string
+  subscription_status?: string
   settings: Record<string, unknown>
   created_at: string
   updated_at?: string

@@ -2,6 +2,7 @@ from typing import List, cast
 from uuid import UUID
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.subscription_plans import PLAN_LIMITS
 from app.models.widget_model import Widget, WidgetStatus
 from app.repositories.widget_repository import widget_repository, WidgetRepository
 from app.schemas.widget_schema import WidgetCreate, WidgetUpdate
@@ -11,7 +12,6 @@ from app.core.settings import get_settings
 from app.core.logging import get_logger
 from app.core.exceptions import SubscriptionLimitExceededError
 from app.services.usage_tracking_service import usage_tracking_service
-from app.core.subscription_constants import PLAN_LIMITS
 
 logger = get_logger(__name__)
 settings = get_settings()

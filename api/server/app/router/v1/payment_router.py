@@ -1,7 +1,7 @@
-from typing import List, Optional, Dict
+from typing import Any, List, Optional, Dict
 from uuid import UUID
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
 from app.db import get_db
@@ -57,6 +57,7 @@ class CancelSubscriptionResponse(BaseModel):
     success: bool
     message: str
     organization_id: str
+    subscription_ends_at: Optional[datetime] = None
 
 
 class ChangePlanResponse(BaseModel):
@@ -217,23 +218,26 @@ async def cancel_subscription(
                 status_code=status.HTTP_403_FORBIDDEN, detail='Forbidden'
             )
 
-        # Schedule cancellation with grace period; actual cancel can be performed separately
-        success = await payment_service.schedule_subscription_cancellation(
-            db=db, organization_id=organization_id, grace_period_hours=3
+        # Request cancel at next billing date in Dodo and update local org
+        next_billing_date = await payment_service.request_cancel_at_period_end(
+            db=db, organization_id=organization_id
         )
 
-        if success:
-            logger.info(f'Subscription cancelled for organization {organization_id}')
-            return CancelSubscriptionResponse(
-                success=True,
-                message='Cancellation scheduled. You can undo within 3 hours.',
-                organization_id=str(organization_id),
-            )
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail='Failed to cancel subscription',
-            )
+        logger.info(
+            'Cancellation at period end requested',
+            extra={
+                'organization_id': str(organization_id),
+                'subscription_ends_at': next_billing_date.isoformat()
+                if next_billing_date
+                else None,
+            },
+        )
+        return CancelSubscriptionResponse(
+            success=True,
+            message='Cancellation scheduled at the next billing date',
+            organization_id=str(organization_id),
+            subscription_ends_at=next_billing_date,
+        )
 
     except HTTPException:
         raise
@@ -405,4 +409,112 @@ async def get_payment_plans(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='Failed to get payment plans',
+        )
+
+
+class PaymentItem(BaseModel):
+    brand_id: Optional[str] = None
+    created_at: Optional[datetime] = None
+    currency: Optional[str] = None
+    customer: Optional[Dict[str, Any]] = None
+    digital_products_delivered: Optional[bool] = None
+    metadata: Dict[str, Any] = {}
+    payment_id: Optional[str] = None
+    payment_method: Optional[str] = None
+    payment_method_type: Optional[str] = None
+    status: Optional[str] = None
+    subscription_id: Optional[str] = None
+    total_amount: Optional[int] = None
+
+
+class PaymentsListResponse(BaseModel):
+    items: List[PaymentItem]
+    page_number: int
+    page_size: int
+
+
+@router.get('/payment/payments', response_model=PaymentsListResponse)
+async def list_payments(
+    organization_id: UUID,
+    created_at_gte: Optional[str] = None,
+    created_at_lte: Optional[str] = None,
+    page_size: Optional[int] = None,
+    page_number: Optional[int] = None,
+    subscription_id: Optional[str] = None,
+    customer_id: Optional[str] = None,
+    payment_status: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> PaymentsListResponse:
+    try:
+        has_permissions = await permission_service.has_permission(
+            user_id=current_user.id,
+            permission='manage_billing',
+            organization_id=organization_id,
+            db=db,
+        )
+        if not has_permissions:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail='Forbidden'
+            )
+
+        result = await payment_service.list_payments(
+            db=db,
+            organization_id=organization_id,
+            created_at_gte=created_at_gte,
+            created_at_lte=created_at_lte,
+            page_size=page_size,
+            page_number=page_number,
+            subscription_id=subscription_id,
+            customer_id=customer_id,
+            status=payment_status,
+        )
+        return PaymentsListResponse(**result)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f'Failed to list payments: {str(e)}')
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='Failed to list payments',
+        )
+
+
+@router.get('/payment/invoices/{payment_id}')
+async def get_payment_invoice(
+    organization_id: UUID,
+    payment_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Response:
+    try:
+        has_permissions = await permission_service.has_permission(
+            user_id=current_user.id,
+            permission='manage_billing',
+            organization_id=organization_id,
+            db=db,
+        )
+        if not has_permissions:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail='Forbidden'
+            )
+
+        content = await payment_service.get_payment_invoice_pdf(payment_id)
+        return Response(
+            content=content,
+            media_type='application/pdf',
+            headers={
+                'Content-Disposition': f'attachment; filename="invoice_{payment_id}.pdf"'
+            },
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(
+            'Failed to fetch payment invoice',
+            extra={'payment_id': payment_id, 'error': str(e)},
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='Failed to fetch payment invoice',
         )

@@ -14,7 +14,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useSubscription } from '@/hooks/useSubscription'
 import { organizationApi } from '@/lib/api/organization'
 import { useNavigate } from 'react-router-dom'
-import { FreeTierAlert } from '@/components/widgets/FreeTierAlert'
+import { FreeTierAlert } from '@/components/widgets/SubscriptionMessagesBanner'
 
 export type TimeRange = 'all' | 'week' | 'month' | 'year'
 

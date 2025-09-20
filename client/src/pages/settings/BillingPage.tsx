@@ -1,18 +1,26 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CreditCard, Settings, AlertCircle, CheckCircle2, XCircle } from 'lucide-react'
+import { CreditCard, Settings, AlertCircle, CheckCircle2, XCircle, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import { PaymentPlans } from '@/components/payment/PaymentPlans'
 import { usePayment } from '@/hooks/usePayment'
+import { useAppContext } from '@/context/AppContext'
+import { useAuth } from '@/contexts/AuthContext'
+import { organizationApi } from '@/lib/api/organization'
+import { apiClient } from '@/lib/client'
 import { useSubscription } from '@/hooks/useSubscription'
+import { ConfirmationModal } from '@/components/common/ConfirmationModal'
+import { paymentApi, type PaymentItem } from '@/lib/api/payment'
 
 export default function BillingPage() {
   const navigate = useNavigate()
   const { subscription, isLoading: subscriptionLoading } = useSubscription()
+  const { currentOrganization } = useAppContext()
+  const { user } = useAuth()
   const {
     cancelSubscription,
     undoCancelSubscription,
@@ -26,19 +34,112 @@ export default function BillingPage() {
   const [changeError, setChangeError] = useState<string | null>(null)
   const [infoMessage, setInfoMessage] = useState<string | null>(null)
   const [isCancellationScheduled, setIsCancellationScheduled] = useState(false)
+  const [isOrgOwner, setIsOrgOwner] = useState(false)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [isLoadingPayments, setIsLoadingPayments] = useState(false)
+  const [paymentsError, setPaymentsError] = useState<string | null>(null)
+  const [payments, setPayments] = useState<PaymentItem[] | null>(null)
+  const [showPaymentsExample, setShowPaymentsExample] = useState(false)
 
-  const handleCancelSubscription = async () => {
-    if (
-      !confirm('Are you sure you want to cancel your subscription? You can undo within 3 hours.')
-    ) {
+  const formatPaymentAmount = (currency?: string | null, amountMinor?: number | null): string => {
+    if (amountMinor === null || amountMinor === undefined) return '-'
+    const code = (currency || 'USD').toUpperCase()
+    const zeroDecimals = new Set([
+      'BIF',
+      'CLP',
+      'DJF',
+      'GNF',
+      'JPY',
+      'KMF',
+      'KRW',
+      'MGA',
+      'PYG',
+      'RWF',
+      'UGX',
+      'VND',
+      'VUV',
+      'XAF',
+      'XOF',
+      'XPF',
+      'HUF',
+    ])
+    const amount = zeroDecimals.has(code) ? amountMinor : amountMinor / 100
+    try {
+      return new Intl.NumberFormat(undefined, { style: 'currency', currency: code }).format(amount)
+    } catch {
+      return `${amount.toLocaleString()} ${code}`
+    }
+  }
+
+  const renderPaymentBadge = (status?: string | null) => {
+    const s = (status || '').toLowerCase()
+    if (s === 'succeeded') return <Badge className="bg-green-100 text-green-800">Succeeded</Badge>
+    if (s === 'failed') return <Badge className="bg-red-100 text-red-800">Failed</Badge>
+    if (s === 'processing')
+      return <Badge className="bg-yellow-100 text-yellow-800">Processing</Badge>
+    return (
+      <Badge variant="outline" className="capitalize">
+        {status || 'unknown'}
+      </Badge>
+    )
+  }
+
+  const openInvoice = async (paymentId?: string | null) => {
+    if (!paymentId) return
+    const orgId = currentOrganization?.id
+    if (!orgId) {
+      setPaymentsError('No organization selected')
       return
     }
+    try {
+      const blob = await apiClient.getBinary(
+        `/organizations/${orgId}/payment/invoices/${paymentId}`
+      )
+      const blobUrl = URL.createObjectURL(blob)
+      window.open(blobUrl, '_blank', 'noopener')
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000)
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed to open invoice'
+      setPaymentsError(msg)
+    }
+  }
 
+  // Determine if current user is the organization owner
+  useEffect(() => {
+    let mounted = true
+    const fetchMembers = async () => {
+      try {
+        if (!currentOrganization?.id) return
+        const members = await organizationApi.getMembers(currentOrganization.id)
+        const currentUserId = user?.id
+        const owner = members.find((m) => m.role === 'owner')
+        if (!mounted) return
+        setIsOrgOwner(Boolean(owner && owner.user_id && owner.user_id === currentUserId))
+      } catch (e) {
+        // If member lookup fails, default to hidden for safety
+        if (!mounted) return
+        setIsOrgOwner(false)
+      }
+    }
+    fetchMembers()
+    return () => {
+      mounted = false
+    }
+  }, [currentOrganization?.id, user?.id])
+
+  const handleCancelSubscription = async () => {
     try {
       setCancellationError(null)
       setInfoMessage(null)
-      await cancelSubscription()
-      setInfoMessage('Cancellation scheduled. You can undo within 3 hours.')
+      const result = await cancelSubscription()
+      const when = result?.subscription_ends_at
+        ? new Date(result.subscription_ends_at).toLocaleString()
+        : null
+      setInfoMessage(
+        when
+          ? `Cancellation scheduled. Your subscription will end on ${when}.`
+          : 'Cancellation scheduled at the next billing date.'
+      )
       setIsCancellationScheduled(true)
     } catch (error) {
       setCancellationError(error instanceof Error ? error.message : 'Failed to cancel subscription')
@@ -76,6 +177,8 @@ export default function BillingPage() {
         return <CheckCircle2 className="h-4 w-4 text-green-500" />
       case 'cancelled':
         return <XCircle className="h-4 w-4 text-red-500" />
+      case 'expired':
+        return <XCircle className="h-4 w-4 text-red-500" />
       case 'past_due':
         return <AlertCircle className="h-4 w-4 text-yellow-500" />
       default:
@@ -93,6 +196,8 @@ export default function BillingPage() {
         )
       case 'cancelled':
         return <Badge variant="destructive">Cancelled</Badge>
+      case 'expired':
+        return <Badge variant="destructive">Expired</Badge>
       case 'past_due':
         return (
           <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
@@ -220,7 +325,11 @@ export default function BillingPage() {
                   </div>
 
                   <div className="flex flex-col md:flex-row gap-2">
-                    {subscription.plan === 'free' ? (
+                    {subscription.status === 'cancelled' || subscription.status === 'expired' ? (
+                      <Button onClick={() => setShowUpgrade(true)} className="w-full md:w-auto">
+                        Renew Subscription
+                      </Button>
+                    ) : subscription.plan === 'free' ? (
                       <Button onClick={() => setShowUpgrade(true)}>Upgrade Plan</Button>
                     ) : (
                       <>
@@ -230,6 +339,7 @@ export default function BillingPage() {
                               variant="outline"
                               onClick={() => handleChangePlan('yearly')}
                               disabled={isChangingPlan}
+                              className="w-full bg-primary/90 text-white hover:bg-primary hover:text-white"
                             >
                               {isChangingPlan ? 'Changing…' : 'Switch to Yearly'}
                             </Button>
@@ -245,14 +355,16 @@ export default function BillingPage() {
                             </Button>
                           )}
                         </div>
-                        <Button
-                          variant="outline"
-                          onClick={handleCancelSubscription}
-                          disabled={isCancelling}
-                          className="w-full hover:bg-red-500 hover:text-white"
-                        >
-                          {isCancelling ? 'Cancelling…' : 'Cancel Subscription'}
-                        </Button>
+                        {isOrgOwner && (
+                          <Button
+                            variant="outline"
+                            onClick={() => setShowCancelConfirm(true)}
+                            disabled={isCancelling}
+                            className="w-full hover:bg-red-500 hover:text-white"
+                          >
+                            {isCancelling ? 'Cancelling…' : 'Cancel Subscription'}
+                          </Button>
+                        )}
                       </>
                     )}
                   </div>
@@ -325,19 +437,119 @@ export default function BillingPage() {
         {/* Billing Information */}
         <Card>
           <CardHeader>
-            <CardTitle>Billing Information</CardTitle>
-            <CardDescription>Your billing and payment details</CardDescription>
+            <CardTitle className="flex items-center">
+              <CreditCard className="mr-2 h-5 w-5" />
+              Billing Information
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-center py-8 text-muted-foreground">
-              <CreditCard className="h-12 w-12 mx-auto mb-4" />
+          <CardContent className="space-y-4">
+            <div className="py-1 text-muted-foreground">
               <p>Billing information is managed through our secure payment processor.</p>
-              <p className="text-sm mt-2">
-                For billing questions, please contact our support team.
-              </p>
+              <p className="text-sm mt-1">You can quickly review your recent payments below.</p>
             </div>
+
+            <div>
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  try {
+                    setShowPaymentsExample(true)
+                    setPaymentsError(null)
+                    setIsLoadingPayments(true)
+                    setPayments(null)
+                    const orgId = currentOrganization?.id
+                    if (!orgId) throw new Error('No organization selected')
+                    const res = await paymentApi.listPayments(orgId, {
+                      page_size: 10,
+                      page_number: 0,
+                    })
+                    setPayments(res.items || [])
+                  } catch (e) {
+                    const msg = e instanceof Error ? e.message : 'Failed to load payments'
+                    setPaymentsError(msg)
+                  } finally {
+                    setIsLoadingPayments(false)
+                  }
+                }}
+                disabled={isLoadingPayments}
+              >
+                {isLoadingPayments ? 'Loading Payments…' : 'View Recent Payments'}
+              </Button>
+            </div>
+
+            {/* Example card using the same layout as actual items (visible after click) */}
+            {showPaymentsExample && (
+              <div className="mt-2 border rounded-md">
+                <div className="flex items-center justify-between px-3 py-2 text-sm opacity-80">
+                  <div className="flex flex-col">
+                    <span className="font-medium">Example Payment ID</span>
+                    <span className="text-xs text-muted-foreground">DD/MM/YYYY, HH:MM:SS</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs">Amount $</span>
+                    {renderPaymentBadge('succeeded')}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {paymentsError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{paymentsError}</AlertDescription>
+              </Alert>
+            )}
+
+            {payments && payments.length > 0 && (
+              <div className="mt-2 border rounded-md divide-y">
+                {payments.map((p) => (
+                  <div
+                    key={p.payment_id ?? Math.random()}
+                    className="flex items-center justify-between px-3 py-2 text-sm"
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-medium">{p.payment_id ?? '—'}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {p.created_at ? new Date(p.created_at).toLocaleString() : 'Unknown date'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs">
+                        {formatPaymentAmount(p.currency, p.total_amount)}
+                      </span>
+                      {renderPaymentBadge(p.status)}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openInvoice(p.payment_id || undefined)}
+                        disabled={!p.payment_id}
+                        className="h-7 px-2"
+                      >
+                        <FileText className="h-3.5 w-3.5 mr-1" /> Invoice
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
+
+        {/* Cancel confirmation modal */}
+        <ConfirmationModal
+          isOpen={showCancelConfirm}
+          onClose={() => setShowCancelConfirm(false)}
+          onConfirm={async () => {
+            await handleCancelSubscription()
+            setShowCancelConfirm(false)
+          }}
+          title="Cancel Subscription"
+          description="Are you sure you want to cancel your subscription? This will take effect at the next billing date. You can undo within the grace period."
+          confirmText="Confirm Cancellation"
+          cancelText="Keep Subscription"
+          variant="destructive"
+          isLoading={isCancelling}
+        />
       </div>
     </div>
   )

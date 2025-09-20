@@ -5,8 +5,7 @@ from sqlalchemy import select
 from datetime import datetime, timezone
 from app.models.organization_model import Organization
 from app.core.logging import get_logger
-from app.core.subscription_constants import PLAN_LIMITS, FEATURE_FLAGS
-from app.core.subscription_plans import get_active_plans
+from app.core.subscription_plans import FEATURE_FLAGS, PLAN_LIMITS, get_active_plans
 
 logger = get_logger(__name__)
 

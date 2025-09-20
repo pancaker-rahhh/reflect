@@ -1,33 +1,63 @@
-import { AlertCircle, Zap } from 'lucide-react'
+import { AlertCircle, Zap, RotateCcw } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
 import { organizationApi } from '@/lib/api/organization'
+import { useAppContext } from '@/context/AppContext'
 import { useSubscription } from '@/hooks/useSubscription'
 import { UsageBar } from '@/components/common/UsageBar'
 import { useNavigate } from 'react-router-dom'
 
 export function FreeTierAlert() {
   const navigate = useNavigate()
+  const { currentOrganization } = useAppContext()
   const { data: organizations } = useQuery({
     queryKey: ['organizations', 'my'],
     queryFn: () => organizationApi.getMy(),
   })
 
-  const currentOrganization = organizations?.[0]
+  // Prefer the organizations list entry (often richer),
+  // otherwise fall back to context. Pick the one that has subscription_plan.
+  const candidateFromList = organizations?.[0]
+  const org =
+    (candidateFromList && candidateFromList.subscription_plan
+      ? candidateFromList
+      : currentOrganization) ||
+    currentOrganization ||
+    candidateFromList
   const { getUsageInfo } = useSubscription()
 
   const handleUpgrade = () => {
     navigate('/app/settings/billing')
   }
 
-  const isFreeTier =
-    currentOrganization?.subscription_plan === 'free' || !currentOrganization?.subscription_plan
-
-  if (!isFreeTier) return null
+  if (!org) return null
+  const isFreeTier = org.subscription_plan === 'free'
+  const isCancelled = org.subscription_status === 'cancelled'
+  if (!isFreeTier && !isCancelled) return null
 
   const widgetUsage = getUsageInfo('widgets')
   const responseUsage = getUsageInfo('responses')
+
+  if (isCancelled) {
+    return (
+      <Alert className="border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/30">
+        <AlertCircle className="h-4 w-4 text-red-700" />
+        <AlertTitle className="text-red-900 dark:text-red-100">Subscription Cancelled</AlertTitle>
+        <AlertDescription className="mt-2">
+          <div className="flex items-center gap-3">
+            <Button size="sm" variant="destructive" className="gap-2" onClick={handleUpgrade}>
+              <RotateCcw className="h-4 w-4" />
+              Renew subscription
+            </Button>
+            <span className="text-sm text-red-800 dark:text-red-300">
+              You only have a few days left before you lose access to all your Pro features.
+            </span>
+          </div>
+        </AlertDescription>
+      </Alert>
+    )
+  }
 
   return (
     <Alert className="border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/30">

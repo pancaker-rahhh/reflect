@@ -1,7 +1,7 @@
 import hashlib
 import hmac
 import json
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from uuid import UUID
 from datetime import datetime, timezone, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,6 +9,7 @@ from app.core.settings import get_settings
 from app.core.logging import get_logger
 from app.core.subscription_plans import (
     get_plan_by_id,
+    get_plan_by_dodo_product_id,
     PAYMENT_STATUS,
     SUBSCRIPTION_STATUS,
 )
@@ -16,6 +17,7 @@ from app.services.subscription_service import subscription_service
 from app.models.organization_model import SubscriptionPlanEnum
 from dodopayments import DodoPayments
 from app.services.notification_service import notification_service
+import base64
 
 logger = get_logger(__name__)
 settings = get_settings()
@@ -24,8 +26,18 @@ settings = get_settings()
 class PaymentService:
     def __init__(self):
         self.client = None
-        if DodoPayments and settings.DODO_TEST_API_KEY:
-            self.client = DodoPayments(bearer_token=settings.DODO_TEST_API_KEY)
+        if DodoPayments:
+            api_key: Optional[str] = None
+            if settings.DODO_TEST_API_KEY and settings.DODO_TEST_API_KEY.strip():
+                api_key = settings.DODO_TEST_API_KEY
+                # Use test environment only when test key is present
+                self.client = DodoPayments(
+                    bearer_token=api_key,
+                    environment='test_mode',
+                )
+            elif settings.DODO_API_KEY and settings.DODO_API_KEY.strip():
+                api_key = settings.DODO_API_KEY
+                self.client = DodoPayments(bearer_token=api_key)
 
     async def create_payment_link(
         self,
@@ -125,6 +137,8 @@ class PaymentService:
                 await self._handle_subscription_failed(db, data)
             elif event_type == 'subscription.renewed':
                 await self._handle_subscription_renewed(db, data)
+            elif event_type == 'subscription.plan_changed':
+                await self._handle_subscription_plan_changed(db, data)
             else:
                 logger.info(f'Unhandled webhook event type: {event_type}')
 
@@ -472,7 +486,7 @@ class PaymentService:
             )
             return
 
-        organization.subscription_status = SUBSCRIPTION_STATUS['CANCELLED']
+        organization.subscription_status = SUBSCRIPTION_STATUS['EXPIRED']
         organization.subscription_plan = 'free'
         organization.updated_at = datetime.now(timezone.utc)
 
@@ -554,6 +568,57 @@ class PaymentService:
             f'Subscription renewed for organization {organization_id}, subscription_id: {subscription_id}'
         )
 
+    async def _handle_subscription_plan_changed(
+        self, db: AsyncSession, data: Dict[str, Any]
+    ) -> None:
+        subscription_id = data.get('id')
+        metadata = data.get('metadata', {})
+        organization_id = metadata.get('organization_id')
+        product_id = data.get('product_id')
+
+        if not organization_id:
+            logger.warning(
+                f'No organization_id in subscription metadata: {subscription_id}'
+            )
+            return
+
+        organization = await subscription_service.get_organization_subscription(
+            db, UUID(organization_id)
+        )
+        if not organization:
+            logger.warning(
+                f'Organization not found for subscription plan changed: {organization_id}'
+            )
+            return
+
+        # Map Dodo product_id back to our plan id
+        plan = get_plan_by_dodo_product_id(product_id) if product_id else None
+        if plan:
+            plan_id = plan['id']
+            if plan_id == 'pro_monthly':
+                organization.subscription_plan = SubscriptionPlanEnum.PRO_MONTHLY
+            elif plan_id == 'pro_yearly':
+                organization.subscription_plan = SubscriptionPlanEnum.PRO_YEARLY
+            else:
+                organization.subscription_plan = SubscriptionPlanEnum.PRO_MONTHLY
+            organization.updated_at = datetime.now(timezone.utc)
+            await db.commit()
+
+            logger.info(
+                'Subscription plan changed via webhook',
+                extra={
+                    'organization_id': organization_id,
+                    'subscription_id': subscription_id,
+                    'dodo_product_id': product_id,
+                    'plan_id': plan_id,
+                },
+            )
+        else:
+            logger.warning(
+                'Unknown product_id in subscription.plan_changed',
+                extra={'organization_id': organization_id, 'product_id': product_id},
+            )
+
     async def cancel_subscription(
         self, db: AsyncSession, organization_id: UUID
     ) -> bool:
@@ -567,7 +632,6 @@ class PaymentService:
             return False
 
         try:
-            # Cancel subscription in Dodo
             self.client.subscriptions.update(
                 organization.dodo_subscription_id, status='cancelled'
             )
@@ -631,6 +695,91 @@ class PaymentService:
         )
         return True
 
+    async def request_cancel_at_period_end(
+        self, db: AsyncSession, organization_id: UUID
+    ) -> Optional[datetime]:
+        """Request subscription cancellation at the next billing date.
+
+        - Sends a PATCH to Dodo to set cancel_at_next_billing_date=true
+        - Updates local Organization:
+          subscription_status -> cancelled
+          subscription_ends_at -> next billing date (from Dodo response)
+
+        Returns the next billing date if successful, else None.
+        """
+        if not self.client:
+            raise ValueError('Dodo Payments client not initialized')
+
+        organization = await subscription_service.get_organization_subscription(
+            db, organization_id
+        )
+        if not organization:
+            raise ValueError('Organization not found')
+        if not organization.dodo_subscription_id:
+            raise ValueError('Active Dodo subscription not found for organization')
+
+        try:
+            response = self.client.subscriptions.update(
+                subscription_id=organization.dodo_subscription_id,
+                cancel_at_next_billing_date=True,
+            )
+
+            next_billing_date = self._extract_next_billing_date(response)
+
+            organization.subscription_status = SUBSCRIPTION_STATUS['CANCELLED']
+            organization.subscription_ends_at = next_billing_date
+            organization.updated_at = datetime.now(timezone.utc)
+            await db.commit()
+
+            logger.info(
+                'Requested cancel at period end for organization',
+                extra={
+                    'organization_id': str(organization_id),
+                    'dodo_subscription_id': organization.dodo_subscription_id,
+                    'subscription_ends_at': next_billing_date.isoformat()
+                    if next_billing_date
+                    else None,
+                },
+            )
+
+            return next_billing_date
+        except Exception as e:
+            logger.error(
+                'Failed to request cancellation at period end',
+                extra={
+                    'organization_id': str(organization_id),
+                    'dodo_subscription_id': organization.dodo_subscription_id,
+                    'error': str(e),
+                },
+            )
+            return None
+
+    def _extract_next_billing_date(self, response: Any) -> Optional[datetime]:
+        """Parse next billing date from Dodo's base64-encoded response.data."""
+        try:
+            if not isinstance(response, dict):
+                return None
+            resp = response.get('response')
+            if not isinstance(resp, dict):
+                return None
+            data = resp.get('data')
+            if not isinstance(data, str):
+                return None
+
+            decoded = base64.b64decode(data).decode('utf-8')
+            payload = json.loads(decoded)
+
+            date_str: Optional[str] = payload.get('next_billing_date') or payload.get(
+                'expires_at'
+            )
+            if not isinstance(date_str, str):
+                return None
+
+            normalized = date_str.replace('Z', '+00:00')
+            return datetime.fromisoformat(normalized)
+        except Exception:
+            return None
+
     async def change_subscription_plan(
         self,
         db: AsyncSession,
@@ -682,6 +831,119 @@ class PaymentService:
                 f'Failed to change plan for organization {organization_id}: {str(e)}'
             )
             return False
+
+    async def list_payments(
+        self,
+        db: AsyncSession,
+        organization_id: UUID,
+        *,
+        created_at_gte: Optional[str] = None,
+        created_at_lte: Optional[str] = None,
+        page_size: Optional[int] = None,
+        page_number: Optional[int] = None,
+        subscription_id: Optional[str] = None,
+        customer_id: Optional[str] = None,
+        status: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """List payments from Dodo Payments for an organization.
+
+        If `customer_id` or `subscription_id` are not provided, this method
+        will use values stored on the organization when available.
+        """
+        if not self.client:
+            raise ValueError('Dodo Payments client not initialized')
+
+        from app.services.subscription_service import subscription_service
+
+        org = await subscription_service.get_organization_subscription(
+            db, organization_id
+        )
+        if not org:
+            raise ValueError('Organization not found')
+
+        final_customer_id = customer_id or getattr(org, 'dodo_customer_id', None)
+        final_subscription_id = subscription_id or getattr(
+            org, 'dodo_subscription_id', None
+        )
+
+        try:
+            page = self.client.payments.list(
+                created_at_gte=created_at_gte if created_at_gte else None,
+                created_at_lte=created_at_lte if created_at_lte else None,
+                page_size=page_size if page_size is not None else None,
+                page_number=page_number if page_number is not None else None,
+                subscription_id=final_subscription_id
+                if final_subscription_id
+                else None,
+                customer_id=final_customer_id if final_customer_id else None,
+                status=status if status else None,
+            )
+
+            items = getattr(page, 'items', []) or []
+            return {
+                'items': [
+                    {
+                        'brand_id': getattr(item, 'brand_id', None),
+                        'created_at': getattr(item, 'created_at', None),
+                        'currency': getattr(item, 'currency', None),
+                        'customer': (
+                            getattr(item, 'customer', None).to_dict()  # type: ignore[attr-defined]
+                            if getattr(item, 'customer', None)
+                            and hasattr(getattr(item, 'customer'), 'to_dict')
+                            else getattr(item, 'customer', None)
+                        ),
+                        'digital_products_delivered': getattr(
+                            item, 'digital_products_delivered', None
+                        ),
+                        'metadata': getattr(item, 'metadata', None) or {},
+                        'payment_id': getattr(item, 'payment_id', None),
+                        'payment_method': getattr(item, 'payment_method', None),
+                        'payment_method_type': getattr(
+                            item, 'payment_method_type', None
+                        ),
+                        'status': getattr(item, 'status', None),
+                        'subscription_id': getattr(item, 'subscription_id', None),
+                        'total_amount': getattr(item, 'total_amount', None),
+                    }
+                    for item in items
+                ],
+                'page_number': page_number or 0,
+                'page_size': page_size or 10,
+            }
+        except Exception as e:
+            logger.error(
+                'Failed to list payments',
+                extra={
+                    'organization_id': str(organization_id),
+                    'error': str(e),
+                },
+            )
+            raise
+
+    async def get_payment_invoice_pdf(
+        self,
+        payment_id: str,
+    ) -> bytes:
+        """Fetch invoice PDF bytes for a given payment id from Dodo Payments."""
+        if not self.client:
+            raise ValueError('Dodo Payments client not initialized')
+
+        if not payment_id or not isinstance(payment_id, str):
+            raise ValueError('payment_id must be a non-empty string')
+
+        try:
+            resp = self.client.invoices.payments.retrieve(payment_id)
+
+            content = resp.read()
+            if not isinstance(content, (bytes, bytearray)):
+                return bytes(str(content), 'utf-8')
+            return content
+        except Exception as e:
+            logger.error(
+                'Failed to fetch payment invoice PDF',
+                extra={'payment_id': payment_id, 'error': str(e)},
+            )
+            raise
 
 
 payment_service = PaymentService()

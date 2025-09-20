@@ -1,6 +1,5 @@
 from typing import Dict, List, Any
 from app.core.settings import get_settings
-from app.core.subscription_constants import PLAN_LIMITS, FEATURE_FLAGS
 
 settings = get_settings()
 
@@ -8,6 +7,37 @@ DODO_PRODUCT_IDS = {
     'pro_monthly': settings.DODO_TEST_PRODUCT_ID_PRO_MONTHLY,
     'pro_yearly': settings.DODO_TEST_PRODUCT_ID_PRO_YEARLY,
 }
+
+PLAN_LIMITS = {
+    'free': {
+        'projects': 1,
+        'widgets': 1,
+        'responses': 20,
+    },
+    'pro': {
+        'projects': 999999,
+        'widgets': 999999,
+        'responses': 999999,
+    },
+}
+
+FEATURE_FLAGS = {
+    'free': {
+        'advanced_targeting': False,
+        'branding_removal': False,
+        'priority_support': False,
+        'dofollow_backlink': False,
+        'jira_integration': False,
+    },
+    'pro': {
+        'advanced_targeting': True,
+        'branding_removal': True,
+        'priority_support': True,
+        'dofollow_backlink': True,
+        'jira_integration': True,
+    },
+}
+
 
 SUBSCRIPTION_PLANS: List[Dict[str, Any]] = [
     {
@@ -69,6 +99,7 @@ PAYMENT_STATUS = {
 SUBSCRIPTION_STATUS = {
     'ACTIVE': 'active',
     'CANCELLED': 'cancelled',
+    'EXPIRED': 'expired',
     'PAST_DUE': 'past_due',
     'UNPAID': 'unpaid',
     'INCOMPLETE': 'incomplete',
