@@ -1,7 +1,7 @@
 from typing import Any, List, Optional, Dict
 from uuid import UUID
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
 from app.db import get_db
@@ -477,4 +477,44 @@ async def list_payments(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='Failed to list payments',
+        )
+
+
+@router.get('/payment/invoices/{payment_id}')
+async def get_payment_invoice(
+    organization_id: UUID,
+    payment_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Response:
+    try:
+        has_permissions = await permission_service.has_permission(
+            user_id=current_user.id,
+            permission='manage_billing',
+            organization_id=organization_id,
+            db=db,
+        )
+        if not has_permissions:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail='Forbidden'
+            )
+
+        content = await payment_service.get_payment_invoice_pdf(payment_id)
+        return Response(
+            content=content,
+            media_type='application/pdf',
+            headers={
+                'Content-Disposition': f'attachment; filename="invoice_{payment_id}.pdf"'
+            },
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(
+            'Failed to fetch payment invoice',
+            extra={'payment_id': payment_id, 'error': str(e)},
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='Failed to fetch payment invoice',
         )

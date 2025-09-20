@@ -921,5 +921,30 @@ class PaymentService:
             )
             raise
 
+    async def get_payment_invoice_pdf(
+        self,
+        payment_id: str,
+    ) -> bytes:
+        """Fetch invoice PDF bytes for a given payment id from Dodo Payments."""
+        if not self.client:
+            raise ValueError('Dodo Payments client not initialized')
+
+        if not payment_id or not isinstance(payment_id, str):
+            raise ValueError('payment_id must be a non-empty string')
+
+        try:
+            resp = self.client.invoices.payments.retrieve(payment_id)
+
+            content = resp.read()
+            if not isinstance(content, (bytes, bytearray)):
+                return bytes(str(content), 'utf-8')
+            return content
+        except Exception as e:
+            logger.error(
+                'Failed to fetch payment invoice PDF',
+                extra={'payment_id': payment_id, 'error': str(e)},
+            )
+            raise
+
 
 payment_service = PaymentService()
