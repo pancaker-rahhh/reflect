@@ -1,5 +1,4 @@
 import { formatDistanceToNow } from 'date-fns'
-import { CheckCircle } from 'lucide-react'
 import type { RecentActivity } from '@/types'
 
 interface RecentActivityTableProps {
@@ -68,7 +67,6 @@ export function RecentActivityTable({
                     <span className="text-sm font-medium text-gray-600 uppercase tracking-wide">
                       {typeConfigItem.label}
                     </span>
-                    {isConverted && <CheckCircle className="h-4 w-4 text-green-500" />}
                   </div>
 
                   <h3 className="text-base font-medium text-gray-900 mb-2 leading-relaxed">
