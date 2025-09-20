@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict
+from typing import Any, List, Optional, Dict
 from uuid import UUID
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Request
@@ -409,4 +409,72 @@ async def get_payment_plans(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='Failed to get payment plans',
+        )
+
+
+class PaymentItem(BaseModel):
+    brand_id: Optional[str] = None
+    created_at: Optional[datetime] = None
+    currency: Optional[str] = None
+    customer: Optional[Dict[str, str]] = None
+    digital_products_delivered: Optional[bool] = None
+    metadata: Dict[str, Any] = {}
+    payment_id: Optional[str] = None
+    payment_method: Optional[str] = None
+    payment_method_type: Optional[str] = None
+    status: Optional[str] = None
+    subscription_id: Optional[str] = None
+    total_amount: Optional[int] = None
+
+
+class PaymentsListResponse(BaseModel):
+    items: List[PaymentItem]
+    page_number: int
+    page_size: int
+
+
+@router.get('/payment/payments', response_model=PaymentsListResponse)
+async def list_payments(
+    organization_id: UUID,
+    created_at_gte: Optional[str] = None,
+    created_at_lte: Optional[str] = None,
+    page_size: Optional[int] = None,
+    page_number: Optional[int] = None,
+    subscription_id: Optional[str] = None,
+    customer_id: Optional[str] = None,
+    status: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> PaymentsListResponse:
+    try:
+        has_permissions = await permission_service.has_permission(
+            user_id=current_user.id,
+            permission='manage_billing',
+            organization_id=organization_id,
+            db=db,
+        )
+        if not has_permissions:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail='Forbidden'
+            )
+
+        result = await payment_service.list_payments(
+            db=db,
+            organization_id=organization_id,
+            created_at_gte=created_at_gte,
+            created_at_lte=created_at_lte,
+            page_size=page_size,
+            page_number=page_number,
+            subscription_id=subscription_id,
+            customer_id=customer_id,
+            status=status,
+        )
+        return PaymentsListResponse(**result)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f'Failed to list payments: {str(e)}')
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='Failed to list payments',
         )

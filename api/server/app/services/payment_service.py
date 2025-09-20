@@ -26,15 +26,17 @@ settings = get_settings()
 class PaymentService:
     def __init__(self):
         self.client = None
-        # Prefer test key when present; otherwise fallback to live key
         if DodoPayments:
             api_key: Optional[str] = None
             if settings.DODO_TEST_API_KEY and settings.DODO_TEST_API_KEY.strip():
                 api_key = settings.DODO_TEST_API_KEY
+                # Use test environment only when test key is present
+                self.client = DodoPayments(
+                    bearer_token=api_key,
+                    environment='test_mode',
+                )
             elif settings.DODO_API_KEY and settings.DODO_API_KEY.strip():
                 api_key = settings.DODO_API_KEY
-
-            if api_key:
                 self.client = DodoPayments(bearer_token=api_key)
 
     async def create_payment_link(
@@ -830,6 +832,89 @@ class PaymentService:
                 f'Failed to change plan for organization {organization_id}: {str(e)}'
             )
             return False
+
+    async def list_payments(
+        self,
+        db: AsyncSession,
+        organization_id: UUID,
+        *,
+        created_at_gte: Optional[str] = None,
+        created_at_lte: Optional[str] = None,
+        page_size: Optional[int] = None,
+        page_number: Optional[int] = None,
+        subscription_id: Optional[str] = None,
+        customer_id: Optional[str] = None,
+        status: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """List payments from Dodo Payments for an organization.
+
+        If `customer_id` or `subscription_id` are not provided, this method
+        will use values stored on the organization when available.
+        """
+        if not self.client:
+            raise ValueError('Dodo Payments client not initialized')
+
+        from app.services.subscription_service import subscription_service
+
+        org = await subscription_service.get_organization_subscription(
+            db, organization_id
+        )
+        if not org:
+            raise ValueError('Organization not found')
+
+        final_customer_id = customer_id or getattr(org, 'dodo_customer_id', None)
+        final_subscription_id = subscription_id or getattr(
+            org, 'dodo_subscription_id', None
+        )
+
+        try:
+            page = self.client.payments.list(
+                created_at_gte=created_at_gte if created_at_gte else None,
+                created_at_lte=created_at_lte if created_at_lte else None,
+                page_size=page_size if page_size is not None else None,
+                page_number=page_number if page_number is not None else None,
+                subscription_id=final_subscription_id
+                if final_subscription_id
+                else None,
+                customer_id=final_customer_id if final_customer_id else None,
+                status=status if status else None,
+            )
+
+            items = getattr(page, 'items', []) or []
+            return {
+                'items': [
+                    {
+                        'brand_id': getattr(item, 'brand_id', None),
+                        'created_at': getattr(item, 'created_at', None),
+                        'currency': getattr(item, 'currency', None),
+                        'customer': getattr(item, 'customer', None),
+                        'digital_products_delivered': getattr(
+                            item, 'digital_products_delivered', None
+                        ),
+                        'metadata': getattr(item, 'metadata', None) or {},
+                        'payment_id': getattr(item, 'payment_id', None),
+                        'payment_method': getattr(item, 'payment_method', None),
+                        'payment_method_type': getattr(
+                            item, 'payment_method_type', None
+                        ),
+                        'status': getattr(item, 'status', None),
+                        'subscription_id': getattr(item, 'subscription_id', None),
+                        'total_amount': getattr(item, 'total_amount', None),
+                    }
+                    for item in items
+                ],
+                'page_number': page_number or 0,
+                'page_size': page_size or 10,
+            }
+        except Exception as e:
+            logger.error(
+                'Failed to list payments',
+                extra={
+                    'organization_id': str(organization_id),
+                    'error': str(e),
+                },
+            )
+            raise
 
 
 payment_service = PaymentService()
