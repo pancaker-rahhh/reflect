@@ -21,9 +21,8 @@ export function FreeTierAlert() {
     navigate('/app/settings/billing')
   }
 
-  const isFreeTier =
-    currentOrganization?.subscription_plan === 'free' || !currentOrganization?.subscription_plan
-
+  if (!currentOrganization) return null
+  const isFreeTier = currentOrganization.subscription_plan === 'free'
   if (!isFreeTier) return null
 
   const widgetUsage = getUsageInfo('widgets')
