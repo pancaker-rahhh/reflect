@@ -33,7 +33,6 @@ class FeedbackDataResponse(BaseModel):
     title: Optional[str] = None
     message: Optional[str] = None
     rating: Optional[int] = None
-    status: str
     created_at: datetime
     submitter_name: Optional[str] = None
     submitter_email: Optional[str] = None

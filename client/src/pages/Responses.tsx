@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Search, RotateCcw, MessageCircle } from 'lucide-react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Search, RotateCcw, MessageCircle, CheckSquare } from 'lucide-react'
 import { api } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -14,9 +14,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Badge } from '@/components/ui/badge'
-import { format } from 'date-fns'
 import { useAppContext } from '@/context/AppContext'
+import { FeedbackCard } from '@/components/feedback/FeedbackCard'
+import { BulkActionsBar } from '@/components/feedback/BulkActionsBar'
+import { FeedbackConversionModal } from '@/components/feedback/FeedbackConversionModal'
 import type { SurveyResponse } from '@/types'
 
 export function Responses() {
@@ -25,8 +26,12 @@ export function Responses() {
   const [submissionType, setSubmissionType] = useState<string>('all')
   const [scoreFilter, setScoreFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
+  const [isBulkConversionModalOpen, setIsBulkConversionModalOpen] = useState(false)
 
   const { currentProject } = useAppContext()
+  const queryClient = useQueryClient()
 
   const { data: feedback = [], isLoading } = useQuery({
     queryKey: [
@@ -49,6 +54,67 @@ export function Responses() {
     setSubmissionType('all')
     setScoreFilter('all')
     setSearchQuery('')
+  }
+
+  const convertMutation = useMutation({
+    mutationFn: ({ feedbackId, conversionData }: { feedbackId: string; conversionData: any }) =>
+      api.convertToRoadmap(feedbackId, conversionData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feedback'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap-tags'] })
+    },
+  })
+
+  const bulkConvertMutation = useMutation({
+    mutationFn: async ({
+      feedbackIds,
+      conversionData,
+    }: {
+      feedbackIds: string[]
+      conversionData: any
+    }) => {
+      return api.bulkConvertToRoadmap(feedbackIds, conversionData)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feedback'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap-tags'] })
+      setSelectedItems(new Set())
+      setIsSelectionMode(false)
+    },
+  })
+
+  const handleConvert = async (feedbackId: string, conversionData: any) => {
+    await convertMutation.mutateAsync({ feedbackId, conversionData })
+  }
+
+  const handleBulkConvert = async (conversionData: any) => {
+    const feedbackIds = Array.from(selectedItems)
+    await bulkConvertMutation.mutateAsync({ feedbackIds, conversionData })
+    setIsBulkConversionModalOpen(false)
+  }
+
+  const handleToggleSelection = (feedbackId: string) => {
+    setSelectedItems((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(feedbackId)) {
+        newSet.delete(feedbackId)
+      } else {
+        newSet.add(feedbackId)
+      }
+      return newSet
+    })
+  }
+
+  const handleSelectAll = () => {
+    const allIds = new Set(filteredResponses.map((item: any) => item.id))
+    setSelectedItems(allIds)
+  }
+
+  const handleClearSelection = () => {
+    setSelectedItems(new Set())
+    setIsSelectionMode(false)
   }
 
   const filteredResponses = feedback.filter((item: any) => {
@@ -89,11 +155,33 @@ export function Responses() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Responses</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage and analyze survey responses from your users
-        </p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold">Responses</h1>
+          <p className="text-muted-foreground mt-2">
+            Manage and analyze survey responses from your users
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {isSelectionMode && (
+            <>
+              <Button variant="outline" onClick={handleSelectAll}>
+                Select All
+              </Button>
+              <Button variant="outline" onClick={handleClearSelection}>
+                Clear Selection
+              </Button>
+            </>
+          )}
+          <Button
+            variant={isSelectionMode ? 'default' : 'outline'}
+            onClick={() => setIsSelectionMode(!isSelectionMode)}
+          >
+            <CheckSquare className="h-4 w-4 mr-2" />
+            {isSelectionMode ? 'Exit Selection' : 'Select Items'}
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -180,38 +268,41 @@ export function Responses() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {surveyResponses.map((response) => (
-            <Card key={response.id}>
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{response.userName || 'Anonymous'}</span>
-                      {response.userEmail && (
-                        <span className="text-sm text-muted-foreground">
-                          ({response.userEmail})
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>{format(new Date(response.createdAt), 'PPP')}</span>
-                      <Badge variant="outline">{response.surveyType.toUpperCase()}</Badge>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold">{response.score}/10</div>
-                  </div>
-                </div>
-                {response.comment && (
-                  <div className="bg-muted/50 rounded-lg p-4">
-                    <p className="text-sm">{response.comment}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          {filteredResponses.map((response: any) => (
+            <FeedbackCard
+              key={response.id}
+              feedback={response}
+              isSelectionMode={isSelectionMode}
+              isSelected={selectedItems.has(response.id)}
+              onToggleSelection={handleToggleSelection}
+              onConvert={handleConvert}
+              isConverting={convertMutation.isPending}
+            />
           ))}
         </div>
       )}
+
+      {/* Bulk Actions Bar */}
+      <BulkActionsBar
+        selectedCount={selectedItems.size}
+        onConvertSelected={() => setIsBulkConversionModalOpen(true)}
+        onClearSelection={handleClearSelection}
+        isConverting={bulkConvertMutation.isPending}
+      />
+
+      {/* Bulk Conversion Modal */}
+      <FeedbackConversionModal
+        isOpen={isBulkConversionModalOpen}
+        onClose={() => setIsBulkConversionModalOpen(false)}
+        onConvert={handleBulkConvert}
+        feedback={{
+          id: 'bulk',
+          feedback_type: 'bulk',
+          title: `Convert ${selectedItems.size} items`,
+        }}
+        isBulk={true}
+        selectedCount={selectedItems.size}
+      />
     </div>
   )
 }

@@ -14,7 +14,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from app.models.base_model import BaseModel
+from app.models.base_model import BaseModel, BaseModelWithoutSoftDelete
 from app.models.integration_model import Integration, IntegrationType
 
 if TYPE_CHECKING:
@@ -100,8 +100,6 @@ class RoadmapColumn(BaseModel):
     )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     color: Mapped[str] = mapped_column(String(7), default='#FFFFFF')
-    status: Mapped[str] = mapped_column(String(50), default='new')
-
     order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     roadmap: Mapped['Roadmap'] = relationship(back_populates='columns')
@@ -235,6 +233,11 @@ class RoadmapActionItem(BaseModel):
         back_populates='action_item',
         cascade='all, delete-orphan',
     )
+    votes: Mapped[List['RoadmapVote']] = relationship(
+        'RoadmapVote',
+        back_populates='feature',
+        cascade='all, delete-orphan',
+    )
 
     @property
     def tags(self):
@@ -263,6 +266,33 @@ class RoadmapActionItem(BaseModel):
 
     def is_synced_with(self, integration_type: str) -> bool:
         return self.get_integration(integration_type) is not None
+
+
+class RoadmapVote(BaseModelWithoutSoftDelete):
+    __tablename__ = 'roadmap_votes'
+
+    feature_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey('roadmap_action_items.id', ondelete='CASCADE'),
+        nullable=False,
+        index=True,
+    )
+    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey('users.id', ondelete='CASCADE'), nullable=True
+    )
+    ip_address: Mapped[Optional[str]] = mapped_column(
+        String(45), nullable=True, index=True
+    )
+    user_agent: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    feature = relationship('RoadmapActionItem', back_populates='votes')
+    user = relationship('User', foreign_keys=[user_id])
+
+    __table_args__ = (
+        UniqueConstraint('feature_id', 'user_id', name='uq_roadmap_vote_user'),
+        UniqueConstraint('feature_id', 'ip_address', name='uq_roadmap_vote_ip'),
+        {'extend_existing': True},
+    )
 
 
 class RoadmapItemAssignment(BaseModel):

@@ -238,7 +238,6 @@ export interface RoadmapColumn {
   id: string
   roadmap_id: string
   name: string
-  status: 'new' | 'in-progress' | 'planned' | 'under-review'
   color: string
   order: number
   action_items: RoadmapActionItem[]

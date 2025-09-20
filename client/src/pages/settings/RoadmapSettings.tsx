@@ -9,13 +9,6 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
   MapPin,
   Save,
   Plus,
@@ -27,9 +20,9 @@ import {
   X,
   Loader2,
   Tag,
+  FolderOpen,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { TagManager } from '@/components/roadmap/TagManager'
 import type { Roadmap, RoadmapColumn } from '@/types'
 import { useToast } from '@/components/ui/use-toast'
@@ -47,7 +40,7 @@ export function RoadmapSettings() {
   const [isDragging, setIsDragging] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
-  const [activeSection, setActiveSection] = useState<'overview' | 'columns' | 'tags'>('overview')
+  const [activeSection, setActiveSection] = useState<'general' | 'columns' | 'tags'>('general')
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
@@ -107,10 +100,6 @@ export function RoadmapSettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
       setIsEdited(false)
-      toast({
-        title: 'Roadmap updated',
-        description: 'Your changes have been saved successfully.',
-      })
     },
   })
 
@@ -150,7 +139,6 @@ export function RoadmapSettings() {
       id: `temp-${Date.now()}`,
       roadmap_id: roadmap?.id || 'temp',
       name: 'New Column',
-      status: 'new',
       color: '#6b7280',
       order: columns.length,
       action_items: [],
@@ -160,7 +148,6 @@ export function RoadmapSettings() {
   }
 
   const removeColumn = (columnId: string) => {
-    // Mark column for deletion instead of just removing from local state
     setColumns((prev) =>
       prev.map((col) => (col.id === columnId ? { ...col, _markedForDeletion: true } : col))
     )
@@ -189,18 +176,18 @@ export function RoadmapSettings() {
           ...(formData.logo_url && { logo_url: formData.logo_url }),
         })
 
-        const columnCreationPromises = columns
-          .filter((col) => !col._markedForDeletion)
-          .map((column) => {
+        const customColumns = columns.filter((col) => !col._markedForDeletion)
+        if (customColumns.length > 0) {
+          const columnCreationPromises = customColumns.map((column) => {
             return createColumnMutation.mutateAsync({
               name: column.name,
-              status: column.status,
               color: column.color,
               order: column.order,
               roadmap_id: newRoadmap.id,
             })
           })
-        await Promise.all(columnCreationPromises)
+          await Promise.all(columnCreationPromises)
+        }
       } else {
         await updateRoadmapMutation.mutateAsync({
           name: formData.name,
@@ -296,8 +283,8 @@ export function RoadmapSettings() {
       return
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      setUploadError('File size must be less than 2MB')
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('File size must be less than 5MB')
       return
     }
 
@@ -404,489 +391,465 @@ export function RoadmapSettings() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex items-center justify-center mb-8">
-        <Tabs
-          value={activeSection}
-          onValueChange={(value) => setActiveSection(value as any)}
-          className="w-full max-w-4xl"
-        >
-          <TabsList className="grid w-full grid-cols-3 bg-muted/30 p-1 rounded-lg border border-border/50">
-            <TabsTrigger
-              value="overview"
-              className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
-            >
-              <MapPin className="h-4 w-4" />
-              Overview
-            </TabsTrigger>
-            <TabsTrigger
-              value="columns"
-              className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
-            >
-              <Plus className="h-4 w-4" />
-              Columns
-            </TabsTrigger>
-            <TabsTrigger
-              value="tags"
-              className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
-            >
-              <Tag className="h-4 w-4" />
-              Tags
-            </TabsTrigger>
-          </TabsList>
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="border-b border-gray-200">
+          <nav className="flex">
+            {[
+              { id: 'general', label: 'General', icon: FolderOpen },
+              { id: 'columns', label: 'Columns', icon: Plus },
+              { id: 'tags', label: 'Tags', icon: Tag },
+            ].map((tab) => {
+              const Icon = tab.icon
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveSection(tab.id as any)}
+                  className={`flex-1 lg:flex-initial flex items-center justify-center lg:justify-start gap-2 px-6 py-4 border-b-2 font-medium text-sm transition-colors relative ${
+                    activeSection === tab.id
+                      ? 'border-indigo-500 text-indigo-600 bg-indigo-50/50'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="hidden lg:inline">{tab.label}</span>
+                </button>
+              )
+            })}
+          </nav>
+        </div>
+
+        <div className="min-h-[400px]">
           {/* Content Sections */}
-          <TabsContent value="overview" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Roadmap Configuration Card */}
-              <Card className="border-border/50 shadow-sm hover:shadow-md transition-all duration-300">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-lg flex items-center justify-center">
-                      <MapPin className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl">Roadmap Configuration</CardTitle>
-                      <CardDescription>
-                        Basic settings and branding for your roadmap
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 gap-6">
-                    <div className="space-y-3">
-                      <Label htmlFor="name" className="text-sm font-medium">
-                        Roadmap Name
-                      </Label>
-                      <Input
-                        id="name"
-                        value={formData.name || ''}
-                        onChange={(e) => handleInputChange('name', e.target.value)}
-                        placeholder="Product Roadmap"
-                        className="focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label className="text-sm font-medium">Public Access</Label>
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="public"
-                        checked={formData.is_public || false}
-                        onCheckedChange={(checked) => handleInputChange('is_public', checked)}
-                      />
-                      <Label htmlFor="public" className="text-sm text-muted-foreground">
-                        Make roadmap publicly accessible
-                      </Label>
-                    </div>
-
-                    {formData.is_public && publicRoadmapUrl && (
-                      <div className="mt-4 p-4 bg-muted/30 rounded-lg border border-border/50">
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2">
-                            <ExternalLink className="h-4 w-4 text-primary" />
-                            <Label className="text-sm font-medium text-foreground">
-                              Public Roadmap URL
-                            </Label>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 p-3 bg-background rounded-md border font-mono text-sm text-foreground">
-                              {publicRoadmapUrl}
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => copyToClipboard(publicRoadmapUrl)}
-                              className="shrink-0"
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                          </div>
-
-                          <p className="text-xs text-muted-foreground">
-                            Share this URL with your users or embed it on your website to show your
-                            roadmap publicly.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Logo & Branding Card */}
-              <Card className="border-border/50 shadow-sm hover:shadow-md transition-all duration-300">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-lg flex items-center justify-center">
-                      <Image className="h-5 w-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl">Logo & Branding</CardTitle>
-                      <CardDescription>
-                        Upload your logo and customize the visual identity
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    {formData.logo_url && (
-                      <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
-                        <div className="relative group">
-                          <img
-                            src={formData.logo_url}
-                            alt="Current logo"
-                            className="w-16 h-16 object-contain bg-background rounded-lg border shadow-sm"
-                          />
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="absolute -top-2 -right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-all duration-200"
-                            onClick={clearLogo}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium">Current Logo</p>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {formData.logo_url.startsWith('data:')
-                              ? 'Uploaded image'
-                              : formData.logo_url}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <Input
-                        placeholder="https://example.com/logo.png"
-                        value={
-                          formData.logo_url?.startsWith('data:') ? '' : formData.logo_url || ''
-                        }
-                        onChange={(e) => handleInputChange('logo_url', e.target.value)}
-                        className="flex-1 focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                        disabled={formData.logo_url?.startsWith('data:')}
-                      />
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileInputChange}
-                        className="hidden"
-                      />
-                      <Button
-                        variant="outline"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
-                        className="focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                      >
-                        {isUploading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Uploading...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="mr-2 h-4 w-4" />
-                            Upload
-                          </>
-                        )}
-                      </Button>
-                    </div>
-
-                    {uploadError && (
-                      <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                        <p className="text-sm text-destructive">{uploadError}</p>
-                      </div>
-                    )}
-
-                    <div
-                      className={cn(
-                        'border-2 border-dashed rounded-lg p-8 transition-all duration-200 cursor-pointer hover:border-primary/50 hover:bg-primary/5',
-                        isDragging ? 'border-primary bg-primary/10' : 'border-muted-foreground/25'
-                      )}
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <div className="text-center pointer-events-none">
-                        {isDragging ? (
-                          <>
-                            <Image className="mx-auto h-10 w-10 text-primary mb-3" />
-                            <p className="text-lg font-medium text-primary">Drop your image here</p>
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
-                            <p className="text-base font-medium text-muted-foreground">
-                              Drag and drop your logo here, or click to browse
-                            </p>
-                            <p className="text-sm text-muted-foreground mt-2">
-                              PNG, JPG, GIF up to 2MB
-                            </p>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="columns" className="mt-6">
-            <div className="space-y-6">
-              <Card className="border-border/50 shadow-sm hover:shadow-md transition-all duration-300">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
+          {activeSection === 'general' && (
+            <div className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Roadmap Configuration Card */}
+                <Card className="border-border/50 shadow-sm hover:shadow-md transition-all duration-300">
+                  <CardHeader className="pb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-lg flex items-center justify-center">
-                        <Plus className="h-5 w-5 text-green-600" />
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-lg flex items-center justify-center">
+                        <MapPin className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
-                        <CardTitle className="text-xl">Roadmap Columns</CardTitle>
+                        <CardTitle className="text-xl">Roadmap Configuration</CardTitle>
                         <CardDescription>
-                          Configure the workflow stages and statuses for your roadmap
+                          Basic settings and branding for your roadmap
                         </CardDescription>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      {getDeletedColumnsCount() > 0 && (
-                        <Button
-                          variant="outline"
-                          onClick={restoreAllDeletedColumns}
-                          className="border-amber-200 text-amber-700 hover:bg-amber-50 hover:border-amber-300"
-                        >
-                          Restore {getDeletedColumnsCount()} Deleted
-                        </Button>
-                      )}
-                      <Button
-                        onClick={addColumn}
-                        className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
-                      >
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Column
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {columns.length === 0 ? (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <div className="w-20 h-20 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Plus className="h-10 w-10 opacity-50" />
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 gap-6">
+                      <div className="space-y-3">
+                        <Label htmlFor="name" className="text-sm font-medium">
+                          Roadmap Name
+                        </Label>
+                        <Input
+                          id="name"
+                          value={formData.name || ''}
+                          onChange={(e) => handleInputChange('name', e.target.value)}
+                          placeholder="Product Roadmap"
+                          className="focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                        />
                       </div>
-                      <h3 className="text-lg font-medium mb-2">No columns defined yet</h3>
-                      <p className="text-sm mb-4">
-                        Add columns to organize your roadmap features and create a clear workflow
-                      </p>
-                      <Button onClick={addColumn} variant="outline">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Create First Column
-                      </Button>
                     </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {columns.map((column, index) => (
-                        <div
-                          key={column.id}
-                          className={cn(
-                            'group relative p-6 border rounded-xl transition-all duration-200 hover:shadow-md',
-                            column._markedForDeletion
-                              ? 'border-destructive/50 bg-destructive/5 opacity-60'
-                              : 'border-border/50 bg-muted/20 hover:bg-muted/30'
-                          )}
-                        >
-                          {column._markedForDeletion && (
-                            <div className="absolute top-2 right-2">
-                              <Badge variant="destructive" className="text-xs">
-                                Marked for deletion
-                              </Badge>
-                            </div>
-                          )}
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-3">
-                              <div
-                                className={cn(
-                                  'flex items-center justify-center w-8 h-8 rounded-lg text-sm font-semibold',
-                                  column._markedForDeletion
-                                    ? 'bg-destructive/20 text-destructive'
-                                    : 'bg-muted/50 text-muted-foreground'
-                                )}
-                              >
-                                #{index + 1}
-                              </div>
-                              <div
-                                className={cn(
-                                  'w-4 h-4 rounded-full shadow-sm transition-all duration-200',
-                                  column._markedForDeletion && 'opacity-50'
-                                )}
-                                style={{ backgroundColor: column.color }}
-                              />
+
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">Public Access</Label>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="public"
+                          checked={formData.is_public || false}
+                          onCheckedChange={(checked) => handleInputChange('is_public', checked)}
+                        />
+                        <Label htmlFor="public" className="text-sm text-muted-foreground">
+                          Make roadmap publicly accessible
+                        </Label>
+                      </div>
+
+                      {formData.is_public && publicRoadmapUrl && (
+                        <div className="mt-4 p-4 bg-muted/30 rounded-lg border border-border/50">
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <ExternalLink className="h-4 w-4 text-primary" />
+                              <Label className="text-sm font-medium text-foreground">
+                                Public Roadmap URL
+                              </Label>
                             </div>
 
-                            <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4">
-                              <div className="space-y-2">
-                                <Label className="text-xs font-medium text-muted-foreground">
-                                  Column Name
-                                </Label>
-                                <Input
-                                  value={column.name}
-                                  onChange={(e) =>
-                                    handleColumnChange(column.id, 'name', e.target.value)
-                                  }
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 p-3 bg-background rounded-md border font-mono text-sm text-foreground">
+                                {publicRoadmapUrl}
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => copyToClipboard(publicRoadmapUrl)}
+                                className="shrink-0"
+                              >
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                            </div>
+
+                            <p className="text-xs text-muted-foreground">
+                              Share this URL with your users or embed it on your website to show
+                              your roadmap publicly.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Logo & Branding Card */}
+                <Card className="border-border/50 shadow-sm hover:shadow-md transition-all duration-300">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-lg flex items-center justify-center">
+                        <Image className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl">Logo & Branding</CardTitle>
+                        <CardDescription>
+                          Upload your logo and customize the visual identity
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-4">
+                      {formData.logo_url && (
+                        <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
+                          <div className="relative group">
+                            <img
+                              src={formData.logo_url}
+                              alt="Current logo"
+                              className="w-16 h-16 object-contain bg-background rounded-lg border shadow-sm"
+                            />
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="absolute -top-2 -right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-all duration-200"
+                              onClick={clearLogo}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium">Current Logo</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {formData.logo_url.startsWith('data:')
+                                ? 'Uploaded image'
+                                : formData.logo_url}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Input
+                          placeholder="https://example.com/logo.png"
+                          value={
+                            formData.logo_url?.startsWith('data:') ? '' : formData.logo_url || ''
+                          }
+                          onChange={(e) => handleInputChange('logo_url', e.target.value)}
+                          className="flex-1 focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                          disabled={formData.logo_url?.startsWith('data:')}
+                        />
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileInputChange}
+                          className="hidden"
+                        />
+                        <Button
+                          variant="outline"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={isUploading}
+                          className="focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                        >
+                          {isUploading ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Uploading...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="mr-2 h-4 w-4" />
+                              Upload
+                            </>
+                          )}
+                        </Button>
+                      </div>
+
+                      {uploadError && (
+                        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                          <p className="text-sm text-destructive">{uploadError}</p>
+                        </div>
+                      )}
+
+                      <div
+                        className={cn(
+                          'border-2 border-dashed rounded-lg p-8 transition-all duration-200 cursor-pointer hover:border-primary/50 hover:bg-primary/5',
+                          isDragging ? 'border-primary bg-primary/10' : 'border-muted-foreground/25'
+                        )}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <div className="text-center pointer-events-none">
+                          {isDragging ? (
+                            <>
+                              <Image className="mx-auto h-10 w-10 text-primary mb-3" />
+                              <p className="text-lg font-medium text-primary">
+                                Drop your image here
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
+                              <p className="text-base font-medium text-muted-foreground">
+                                Drag and drop your logo here, or click to browse
+                              </p>
+                              <p className="text-sm text-muted-foreground mt-2">
+                                PNG, JPG, GIF up to 5MB
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+
+          {activeSection === 'columns' && (
+            <div className="p-6">
+              <div className="space-y-6">
+                <Card className="border-border/50 shadow-sm hover:shadow-md transition-all duration-300">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-lg flex items-center justify-center">
+                          <Plus className="h-5 w-5 text-green-600" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-xl">Roadmap Columns</CardTitle>
+                          <CardDescription>
+                            Configure the workflow stages and statuses for your roadmap
+                          </CardDescription>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {getDeletedColumnsCount() > 0 && (
+                          <Button
+                            variant="outline"
+                            onClick={restoreAllDeletedColumns}
+                            className="border-amber-200 text-amber-700 hover:bg-amber-50 hover:border-amber-300"
+                          >
+                            Restore {getDeletedColumnsCount()} Deleted
+                          </Button>
+                        )}
+                        <Button
+                          onClick={addColumn}
+                          className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          Add Column
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {columns.length === 0 ? (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <div className="w-20 h-20 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Plus className="h-10 w-10 opacity-50" />
+                        </div>
+                        <h3 className="text-lg font-medium mb-2">No columns defined yet</h3>
+                        <p className="text-sm mb-4">
+                          Add columns to organize your roadmap features and create a clear workflow
+                        </p>
+                        <Button onClick={addColumn} variant="outline">
+                          <Plus className="mr-2 h-4 w-4" />
+                          Create First Column
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {columns.map((column, index) => (
+                          <div
+                            key={column.id}
+                            className={cn(
+                              'group relative p-6 border rounded-xl transition-all duration-200 hover:shadow-md',
+                              column._markedForDeletion
+                                ? 'border-destructive/50 bg-destructive/5 opacity-60'
+                                : 'border-border/50 bg-muted/20 hover:bg-muted/30'
+                            )}
+                          >
+                            {column._markedForDeletion && (
+                              <div className="absolute top-2 right-2">
+                                <Badge variant="destructive" className="text-xs">
+                                  Marked for deletion
+                                </Badge>
+                              </div>
+                            )}
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center gap-3">
+                                <div
                                   className={cn(
-                                    'text-sm focus:ring-2 focus:ring-primary/20 transition-all duration-200',
-                                    column._markedForDeletion &&
-                                      'bg-destructive/10 border-destructive/30'
+                                    'flex items-center justify-center w-8 h-8 rounded-lg text-sm font-semibold',
+                                    column._markedForDeletion
+                                      ? 'bg-destructive/20 text-destructive'
+                                      : 'bg-muted/50 text-muted-foreground'
                                   )}
-                                  placeholder="Enter column name"
-                                  disabled={column._markedForDeletion}
+                                >
+                                  #{index + 1}
+                                </div>
+                                <div
+                                  className={cn(
+                                    'w-4 h-4 rounded-full shadow-sm transition-all duration-200',
+                                    column._markedForDeletion && 'opacity-50'
+                                  )}
+                                  style={{ backgroundColor: column.color }}
                                 />
                               </div>
 
-                              <div className="space-y-2">
-                                <Label className="text-xs font-medium text-muted-foreground">
-                                  Status
-                                </Label>
-                                <Select
-                                  value={column.status}
-                                  onValueChange={(value) =>
-                                    handleColumnChange(column.id, 'status', value)
-                                  }
-                                  disabled={column._markedForDeletion}
-                                >
-                                  <SelectTrigger
+                              <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                  <Label className="text-xs font-medium text-muted-foreground">
+                                    Column Name
+                                  </Label>
+                                  <Input
+                                    value={column.name}
+                                    onChange={(e) =>
+                                      handleColumnChange(column.id, 'name', e.target.value)
+                                    }
                                     className={cn(
                                       'text-sm focus:ring-2 focus:ring-primary/20 transition-all duration-200',
                                       column._markedForDeletion &&
                                         'bg-destructive/10 border-destructive/30'
                                     )}
-                                  >
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="new">New</SelectItem>
-                                    <SelectItem value="in-progress">In Progress</SelectItem>
-                                    <SelectItem value="planned">Planned</SelectItem>
-                                    <SelectItem value="under-review">Under Review</SelectItem>
-                                    <SelectItem value="completed">Completed</SelectItem>
-                                    <SelectItem value="declined">Declined</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-
-                              <div className="space-y-2">
-                                <Label className="text-xs font-medium text-muted-foreground">
-                                  Color
-                                </Label>
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    type="color"
-                                    value={column.color}
-                                    onChange={(e) =>
-                                      handleColumnChange(column.id, 'color', e.target.value)
-                                    }
-                                    className={cn(
-                                      'w-8 h-8 rounded-lg border cursor-pointer hover:scale-110 transition-transform duration-200',
-                                      column._markedForDeletion && 'opacity-50 cursor-not-allowed'
-                                    )}
-                                    disabled={column._markedForDeletion}
-                                  />
-                                  <Input
-                                    value={column.color}
-                                    onChange={(e) =>
-                                      handleColumnChange(column.id, 'color', e.target.value)
-                                    }
-                                    className={cn(
-                                      'text-sm flex-1 focus:ring-2 focus:ring-primary/20 transition-all duration-200',
-                                      column._markedForDeletion &&
-                                        'bg-destructive/10 border-destructive/30'
-                                    )}
-                                    placeholder="#000000"
+                                    placeholder="Enter column name"
                                     disabled={column._markedForDeletion}
                                   />
                                 </div>
-                              </div>
 
-                              <div className="space-y-2">
-                                <Label className="text-xs font-medium text-muted-foreground">
-                                  Features
-                                </Label>
-                                <div className="flex items-center gap-2">
-                                  <div
-                                    className={cn(
-                                      'w-8 h-8 rounded-lg flex items-center justify-center',
-                                      column._markedForDeletion
-                                        ? 'bg-destructive/20'
-                                        : 'bg-muted/50'
-                                    )}
-                                  >
-                                    <span
+                                <div className="space-y-2">
+                                  <Label className="text-xs font-medium text-muted-foreground">
+                                    Color
+                                  </Label>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="color"
+                                      value={column.color}
+                                      onChange={(e) =>
+                                        handleColumnChange(column.id, 'color', e.target.value)
+                                      }
                                       className={cn(
-                                        'text-xs font-medium',
+                                        'w-8 h-8 rounded-lg border cursor-pointer hover:scale-110 transition-transform duration-200',
+                                        column._markedForDeletion && 'opacity-50 cursor-not-allowed'
+                                      )}
+                                      disabled={column._markedForDeletion}
+                                    />
+                                    <Input
+                                      value={column.color}
+                                      onChange={(e) =>
+                                        handleColumnChange(column.id, 'color', e.target.value)
+                                      }
+                                      className={cn(
+                                        'text-sm flex-1 focus:ring-2 focus:ring-primary/20 transition-all duration-200',
+                                        column._markedForDeletion &&
+                                          'bg-destructive/10 border-destructive/30'
+                                      )}
+                                      placeholder="#000000"
+                                      disabled={column._markedForDeletion}
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label className="text-xs font-medium text-muted-foreground">
+                                    Features
+                                  </Label>
+                                  <div className="flex items-center gap-2">
+                                    <div
+                                      className={cn(
+                                        'w-8 h-8 rounded-lg flex items-center justify-center',
                                         column._markedForDeletion
-                                          ? 'text-destructive'
-                                          : 'text-muted-foreground'
+                                          ? 'bg-destructive/20'
+                                          : 'bg-muted/50'
                                       )}
                                     >
-                                      {column.action_items?.length || 0}
-                                    </span>
+                                      <span
+                                        className={cn(
+                                          'text-xs font-medium',
+                                          column._markedForDeletion
+                                            ? 'text-destructive'
+                                            : 'text-muted-foreground'
+                                        )}
+                                      >
+                                        {column.action_items?.length || 0}
+                                      </span>
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">features</span>
                                   </div>
-                                  <span className="text-xs text-muted-foreground">features</span>
                                 </div>
                               </div>
-                            </div>
 
-                            <div className="flex items-center gap-2">
-                              {column._markedForDeletion ? (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    // Restore the column
-                                    setColumns((prev) =>
-                                      prev.map((col) =>
-                                        col.id === column.id
-                                          ? { ...col, _markedForDeletion: false }
-                                          : col
+                              <div className="flex items-center gap-2 ml-2">
+                                {column._markedForDeletion ? (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      // Restore the column
+                                      setColumns((prev) =>
+                                        prev.map((col) =>
+                                          col.id === column.id
+                                            ? { ...col, _markedForDeletion: false }
+                                            : col
+                                        )
                                       )
-                                    )
-                                    setIsEdited(true)
-                                  }}
-                                  className="text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200"
-                                >
-                                  Restore
-                                </Button>
-                              ) : (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => removeColumn(column.id)}
-                                  className="text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all duration-200"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              )}
+                                      setIsEdited(true)
+                                    }}
+                                    className="text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200"
+                                  >
+                                    Restore
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeColumn(column.id)}
+                                    className="text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all duration-200"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </TabsContent>
+          )}
 
-          <TabsContent value="tags" className="mt-6">
-            <div className="space-y-6">{roadmap && <TagManager roadmapId={roadmap.id} />}</div>
-          </TabsContent>
-        </Tabs>
+          {activeSection === 'tags' && (
+            <div className="p-6">
+              <div className="space-y-6">{roadmap && <TagManager roadmapId={roadmap.id} />}</div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Enhanced Save Bar */}

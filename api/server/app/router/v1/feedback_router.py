@@ -7,6 +7,7 @@ from app.db import get_db
 from app.core.auth import get_current_token_data
 from app.schemas.feedback_schema import (
     FeedbackConversionRequest,
+    BulkFeedbackConversionRequest,
     FeedbackUpdate,
     FeedbackResponsePayload,
     FeedbackCreatePayload,
@@ -21,10 +22,9 @@ from app.core.exceptions import NotFoundError, ValidationError
 from app.core.logging import get_logger
 from app.core.rate_limiting import create_rate_limit_decorator
 from app.core.sanitization import InputSanitizer
+from app.core.dependencies import get_bulk_conversion_service, get_action_item_service
 
 logger = get_logger(__name__)
-# from app.services.tasks.executors.fastapi_executor import FastAPIExecutor
-# from app.services.tasks.base_executor import TaskPriority
 
 
 feedback_router = APIRouter(prefix='/feedback', tags=['feedback'])
@@ -75,9 +75,6 @@ def _convert_feedback_to_dict(item) -> Dict[str, Any]:
         'type': item.feedback_type.value
         if hasattr(item.feedback_type, 'value')
         else str(item.feedback_type),
-        'status': item.status.value
-        if hasattr(item.status, 'value')
-        else str(item.status),
         'summary': title,
         'submittedBy': item.submitter_name or 'Anonymous',
         'timestamp': item.created_at.isoformat() if item.created_at else None,
@@ -119,7 +116,6 @@ async def get_feedback_for_charts(
     """Get feedback data for charts and analytics."""
     try:
         # For now, return empty list until we have data
-        # TODO: Implement logic to get feedback data based on time_range
         return []
     except Exception as e:
         logger.error(f'Error getting feedback chart data: {str(e)}')
@@ -269,6 +265,7 @@ async def convert_feedback_to_roadmap_item(
     conversion_data: FeedbackConversionRequest,
     current_user: TokenData = Depends(get_current_token_data),
     db: AsyncSession = Depends(get_db),
+    action_service=Depends(get_action_item_service),
 ) -> Dict[str, Any]:
     try:
         sanitized_priority = InputSanitizer.sanitize_priority(conversion_data.priority)
@@ -282,13 +279,14 @@ async def convert_feedback_to_roadmap_item(
                 if sanitized_tag:
                     sanitized_tags.append(sanitized_tag)
 
-        roadmap_item = await action_item_service.convert_feedback_to_roadmap_item(
+        roadmap_item = await action_service.convert_feedback_to_roadmap_item(
             db,
             feedback_id,
             UUID(current_user.user_id),
             sanitized_priority,
             sanitized_notes,
             sanitized_tags,
+            conversion_data.column_id,
         )
         return {
             'message': 'Feedback successfully converted to roadmap item',
@@ -297,3 +295,29 @@ async def convert_feedback_to_roadmap_item(
         }
     except (NotFoundError, ValidationError) as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@feedback_router.post(
+    '/bulk-convert',
+    response_model=Dict[str, Any],
+    status_code=status.HTTP_201_CREATED,
+)
+@create_rate_limit_decorator('feedback_submission', is_anonymous=True)
+async def bulk_convert_feedback_to_roadmap_items(
+    request: Request,
+    bulk_request: BulkFeedbackConversionRequest,
+    current_user: TokenData = Depends(get_current_token_data),
+    db: AsyncSession = Depends(get_db),
+    bulk_service=Depends(get_bulk_conversion_service),
+) -> Dict[str, Any]:
+    try:
+        return await bulk_service.process_bulk_conversion(
+            bulk_request, current_user.user_id, db
+        )
+    except ValidationError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f'Bulk conversion error: {str(e)}')
+        raise HTTPException(
+            status_code=500, detail='Internal server error during bulk conversion'
+        )

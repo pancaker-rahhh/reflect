@@ -20,14 +20,12 @@ export interface RoadmapCreateRequest {
 export interface RoadmapColumnCreateRequest {
   roadmap_id: string
   name: string
-  status: string
   color: string
   order: number
 }
 
 export interface RoadmapColumnUpdateRequest {
   name?: string
-  status?: string
   color?: string
   order?: number
 }
@@ -137,7 +135,7 @@ export const roadmapApi = {
   },
 
   upvoteFeature: async (featureId: string): Promise<RoadmapActionItem> => {
-    return apiClient.post<RoadmapActionItem>(`/public/features/${featureId}/vote`)
+    return apiClient.post<RoadmapActionItem>(`/roadmap/features/${featureId}/vote`)
   },
 
   // Tag endpoints
@@ -159,5 +157,9 @@ export const roadmapApi = {
 
   deleteTag: async (tagId: string): Promise<void> => {
     return apiClient.delete(`/roadmap/tags/${tagId}`)
+  },
+
+  updateColumnsOrder: async (updates: { id: string; order: number }[]): Promise<void> => {
+    return apiClient.put('/roadmap/columns/reorder', { updates })
   },
 }

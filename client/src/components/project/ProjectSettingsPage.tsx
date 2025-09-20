@@ -658,7 +658,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
   if (!loading && projects.length === 0) {
     return (
       <>
-        <div className="max-w-7xl mx-auto p-6">
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
           <div className="text-center py-16">
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <FolderOpen className="w-12 h-12 text-gray-400" />
@@ -691,10 +691,14 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Project Settings</h1>
-        <p className="text-gray-600">Manage your project configuration and preferences</p>
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="text-center space-y-6 mb-12">
+        <div className="space-y-3">
+          <h1 className="text-3xl font-bold text-foreground">Project Settings</h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Manage your project configuration and preferences
+          </p>
+        </div>
       </div>
 
       {message && (

@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Search, RotateCcw, Lightbulb, ThumbsUp } from 'lucide-react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Search, RotateCcw, Lightbulb, CheckSquare } from 'lucide-react'
 import { api } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -14,11 +14,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Badge } from '@/components/ui/badge'
-import { format } from 'date-fns'
-import { cn } from '@/lib/utils'
 import { useAppContext } from '@/context/AppContext'
-
+import { FeedbackCard } from '@/components/feedback/FeedbackCard'
+import { BulkActionsBar } from '@/components/feedback/BulkActionsBar'
+import { FeedbackConversionModal } from '@/components/feedback/FeedbackConversionModal'
 
 export function FeatureRequests() {
   const [startDate, setStartDate] = useState<Date | undefined>()
@@ -26,9 +25,12 @@ export function FeatureRequests() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('newest')
   const [searchQuery, setSearchQuery] = useState('')
-
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
+  const [isBulkConversionModalOpen, setIsBulkConversionModalOpen] = useState(false)
 
   const { currentProject } = useAppContext()
+  const queryClient = useQueryClient()
 
   const { data: feedback = [], isLoading } = useQuery({
     queryKey: ['feedback', { type: 'feature_request' }, currentProject?.id],
@@ -51,6 +53,67 @@ export function FeatureRequests() {
     setStatusFilter('all')
     setSortBy('newest')
     setSearchQuery('')
+  }
+
+  const convertMutation = useMutation({
+    mutationFn: ({ feedbackId, conversionData }: { feedbackId: string; conversionData: any }) =>
+      api.convertToRoadmap(feedbackId, conversionData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feedback'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap-tags'] })
+    },
+  })
+
+  const bulkConvertMutation = useMutation({
+    mutationFn: async ({
+      feedbackIds,
+      conversionData,
+    }: {
+      feedbackIds: string[]
+      conversionData: any
+    }) => {
+      return api.bulkConvertToRoadmap(feedbackIds, conversionData)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feedback'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap-tags'] })
+      setSelectedItems(new Set())
+      setIsSelectionMode(false)
+    },
+  })
+
+  const handleConvert = async (feedbackId: string, conversionData: any) => {
+    await convertMutation.mutateAsync({ feedbackId, conversionData })
+  }
+
+  const handleBulkConvert = async (conversionData: any) => {
+    const feedbackIds = Array.from(selectedItems)
+    await bulkConvertMutation.mutateAsync({ feedbackIds, conversionData })
+    setIsBulkConversionModalOpen(false)
+  }
+
+  const handleToggleSelection = (feedbackId: string) => {
+    setSelectedItems((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(feedbackId)) {
+        newSet.delete(feedbackId)
+      } else {
+        newSet.add(feedbackId)
+      }
+      return newSet
+    })
+  }
+
+  const handleSelectAll = () => {
+    const allIds = new Set(filteredFeatureRequests.map((item: any) => item.id))
+    setSelectedItems(allIds)
+  }
+
+  const handleClearSelection = () => {
+    setSelectedItems(new Set())
+    setIsSelectionMode(false)
   }
 
   const filteredFeatureRequests = feedback
@@ -90,36 +153,35 @@ export function FeatureRequests() {
       }
     })
 
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'new':
-        return 'default'
-      case 'under-review':
-        return 'secondary'
-      case 'planned':
-        return 'default'
-      case 'in-progress':
-        return 'secondary'
-      case 'completed':
-        return 'outline'
-      case 'declined':
-        return 'destructive'
-      default:
-        return 'outline'
-    }
-  }
-
-
-
-
-
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Feature Requests</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage and prioritize feature requests from your users
-        </p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold">Feature Requests</h1>
+          <p className="text-muted-foreground mt-2">
+            Manage and prioritize feature requests from your users
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {isSelectionMode && (
+            <>
+              <Button variant="outline" onClick={handleSelectAll}>
+                Select All
+              </Button>
+              <Button variant="outline" onClick={handleClearSelection}>
+                Clear Selection
+              </Button>
+            </>
+          )}
+          <Button
+            variant={isSelectionMode ? 'default' : 'outline'}
+            onClick={() => setIsSelectionMode(!isSelectionMode)}
+          >
+            <CheckSquare className="h-4 w-4 mr-2" />
+            {isSelectionMode ? 'Exit Selection' : 'Select Items'}
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -209,74 +271,41 @@ export function FeatureRequests() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {filteredFeatureRequests.map((feature) => (
-            <Card key={feature.id}>
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex flex-col items-center space-y-1 min-w-[80px]">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => console.log('Upvote not implemented yet')}
-                      disabled={false} // Remove upvoteMutation.isPending
-                      className={cn(
-                        'flex flex-col h-auto py-2 px-3',
-                        (feature.upvotes || 0) > 0 && 'bg-primary/10 border-primary/20'
-                      )}
-                    >
-                      <ThumbsUp className="h-4 w-4 mb-1" />
-                      <span className="text-xs font-semibold">{feature.upvotes || 0}</span>
-                    </Button>
-                    <span className="text-xs text-muted-foreground">upvotes</span>
-                  </div>
-
-                  <div className="flex-1 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1 flex-1">
-                        <div className="flex items-center gap-2">
-                          <Lightbulb className="h-4 w-4" />
-                          <h3 className="font-semibold text-lg">{feature.title}</h3>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>Requested by {feature.submitter_name || 'Anonymous'}</span>
-                          {feature.submitter_email && <span>({feature.submitter_email})</span>}
-                          <span>{format(new Date(feature.created_at), 'PPP')}</span>
-                        </div>
-                      </div>
-                      <Badge variant={getStatusVariant(feature.status || 'new')}>
-                        {(feature.status || 'new').replace('-', ' ').toUpperCase()}
-                      </Badge>
-                    </div>
-
-                    <div className="bg-muted/50 rounded-lg p-4">
-                      <p className="text-sm">
-                        {feature.suggested_solution || feature.message || 'No description provided'}
-                      </p>
-                    </div>
-
-                    {(feature.use_case || feature.benefits) && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-4">
-                        {feature.use_case && (
-                          <div>
-                            <span className="font-medium text-muted-foreground">Use Case:</span>
-                            <p>{feature.use_case}</p>
-                          </div>
-                        )}
-                        {feature.benefits && (
-                          <div>
-                            <span className="font-medium text-muted-foreground">Benefits:</span>
-                            <p>{feature.benefits}</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          {filteredFeatureRequests.map((feature: any) => (
+            <FeedbackCard
+              key={feature.id}
+              feedback={feature}
+              isSelectionMode={isSelectionMode}
+              isSelected={selectedItems.has(feature.id)}
+              onToggleSelection={handleToggleSelection}
+              onConvert={handleConvert}
+              isConverting={convertMutation.isPending}
+            />
           ))}
         </div>
       )}
+
+      {/* Bulk Actions Bar */}
+      <BulkActionsBar
+        selectedCount={selectedItems.size}
+        onConvertSelected={() => setIsBulkConversionModalOpen(true)}
+        onClearSelection={handleClearSelection}
+        isConverting={bulkConvertMutation.isPending}
+      />
+
+      {/* Bulk Conversion Modal */}
+      <FeedbackConversionModal
+        isOpen={isBulkConversionModalOpen}
+        onClose={() => setIsBulkConversionModalOpen(false)}
+        onConvert={handleBulkConvert}
+        feedback={{
+          id: 'bulk',
+          feedback_type: 'bulk',
+          title: `Convert ${selectedItems.size} items`,
+        }}
+        isBulk={true}
+        selectedCount={selectedItems.size}
+      />
     </div>
   )
 }

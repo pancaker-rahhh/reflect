@@ -100,19 +100,20 @@ export const api = {
   getRoadmap: (projectId: string) => roadmapApi.getByProject(projectId),
   createRoadmap: (data: RoadmapCreateRequest) => roadmapApi.createRoadmap(data),
   updateRoadmap: (id: string, data: any) => roadmapApi.updateRoadmap(id, data),
-  
+
   // Roadmap features
   createRoadmapActionItem: (data: any) => roadmapApi.createFeature(data),
   updateRoadmapActionItem: (id: string, data: any) => roadmapApi.updateFeature(id, data),
   deleteRoadmapActionItem: (id: string) => roadmapApi.deleteFeature(id),
   upvoteFeature: (id: string) => roadmapApi.upvoteFeature(id),
   updateFeaturesOrder: (updates: any[]) => roadmapApi.updateFeaturesOrder(updates),
-  
+  updateColumnsOrder: (updates: any[]) => roadmapApi.updateColumnsOrder(updates),
+
   // Roadmap columns
   createRoadmapColumn: (data: any) => roadmapApi.createColumn(data),
   updateRoadmapColumn: (id: string, data: any) => roadmapApi.updateColumn(id, data),
   deleteRoadmapColumn: (id: string) => roadmapApi.deleteColumn(id),
-  
+
   // Roadmap tags
   getRoadmapTags: (roadmapId: string) => roadmapApi.getRoadmapTags(roadmapId),
   createRoadmapTag: (data: any) => roadmapApi.createTag(data),
@@ -130,9 +131,12 @@ export const api = {
   createIntegration: (data: any) => integrationsApi.createJiraIntegration(data),
   updateIntegration: (id: string, data: any) => integrationsApi.updateJiraIntegration(id, data),
   deleteIntegration: (id: string) => integrationsApi.deleteJiraIntegration(id),
-  
+
   // Feedback
   getActionableFeedback: () => feedbackApi.getActionableFeedback(),
   getConversionPreview: (feedbackId: string) => feedbackApi.getConversionPreview(feedbackId),
-  convertToRoadmap: (feedbackId: string, conversionData: any) => feedbackApi.convertToRoadmap(feedbackId, conversionData),
+  convertToRoadmap: (feedbackId: string, conversionData: any) =>
+    feedbackApi.convertToRoadmap(feedbackId, conversionData),
+  bulkConvertToRoadmap: (feedbackIds: string[], conversionData: any) =>
+    feedbackApi.bulkConvertToRoadmap(feedbackIds, conversionData),
 }

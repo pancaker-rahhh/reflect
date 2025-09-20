@@ -47,7 +47,6 @@ from app.models.feedback_model import (
     NPSFeedback,
     CSATFeedback,
     CESFeedback,
-    FeedbackStatus,
     FeedbackType,
     FeedbackPriority,
     FeedbackComment,
@@ -407,9 +406,9 @@ class FeedbackService:
         if not feedback:
             raise NotFoundError('Feedback not found')
 
-        # Validate feedback is not deleted or archived
-        if feedback.status in [FeedbackStatus.ARCHIVED, FeedbackStatus.REJECTED]:
-            raise ValidationError('Cannot upvote archived or rejected feedback')
+        # Validate feedback is not deleted (soft delete check)
+        if feedback.deleted_at is not None:
+            raise ValidationError('Cannot upvote deleted feedback')
 
         # Use atomic increment to prevent race conditions
         feedback.feedback_votes += 1
@@ -441,7 +440,6 @@ class FeedbackService:
             'converted_to_action_item_id ': roadmap_item_id,
             'conversion_date': datetime.utcnow(),
             'conversion_notes': conversion_notes,
-            'status': FeedbackStatus.IN_PROGRESS,
         }
 
         updated_feedback = await feedback_repository.update_polymorphic(

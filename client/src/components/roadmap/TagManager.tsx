@@ -145,20 +145,6 @@ export function TagManager({ roadmapId }: TagManagerProps) {
     }
   }
 
-  // Predefined color palette for better UX
-  const colorPalette = [
-    '#EF4444',
-    '#F97316',
-    '#EAB308',
-    '#22C55E',
-    '#06B6D4',
-    '#3B82F6',
-    '#8B5CF6',
-    '#EC4899',
-    '#6B7280',
-    '#84CC16',
-  ]
-
   return (
     <Card className="border-border/50 shadow-sm hover:shadow-md transition-all duration-300">
       <CardHeader className="pb-4">
@@ -217,18 +203,6 @@ export function TagManager({ roadmapId }: TagManagerProps) {
                     className="flex-1 focus:ring-2 focus:ring-amber-500/20 transition-all duration-200"
                     placeholder="#000000"
                   />
-                </div>
-                {/* Color Palette */}
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {colorPalette.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      className="w-6 h-6 rounded-full border-2 border-border/50 hover:border-foreground transition-all duration-200 hover:scale-110"
-                      style={{ backgroundColor: color }}
-                      onClick={() => setFormData({ ...formData, color })}
-                    />
-                  ))}
                 </div>
               </div>
             </div>
@@ -384,37 +358,6 @@ export function TagManager({ roadmapId }: TagManagerProps) {
                 )}
               </div>
             ))}
-          </div>
-        )}
-
-        {/* Usage Statistics */}
-        {tags.length > 0 && (
-          <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-              <h3 className="text-sm font-medium">Tag Overview</h3>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold text-foreground">{tags.length}</div>
-                <div className="text-xs text-muted-foreground">Total Tags</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-foreground">
-                  {tags.filter((tag: any) => tag.color && tag.color !== '#6B7280').length}
-                </div>
-                <div className="text-xs text-muted-foreground">Custom Colors</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-foreground">
-                  {Math.round(
-                    (tags.filter((tag: any) => tag.name.length > 3).length / tags.length) * 100
-                  )}
-                  %
-                </div>
-                <div className="text-xs text-muted-foreground">Well Named</div>
-              </div>
-            </div>
           </div>
         )}
       </CardContent>

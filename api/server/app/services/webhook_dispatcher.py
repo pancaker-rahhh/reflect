@@ -25,7 +25,6 @@ class WebhookEventDispatcher:
             'widget_id': str(feedback.widget_id),
             'project_id': str(feedback.project_id),
             'feedback_type': feedback.feedback_type.value,
-            'status': feedback.status.value,
             'title': feedback.title,
             'message': feedback.message,
             'rating': feedback.rating,
@@ -74,7 +73,6 @@ class WebhookEventDispatcher:
                 'type': feedback.feedback_type.value,
                 'title': feedback.title,
                 'message': feedback.message,
-                'status': feedback.status.value,
                 'updated_at': feedback.updated_at.isoformat()
                 if feedback.updated_at
                 else None,

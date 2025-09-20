@@ -6,7 +6,6 @@ from datetime import datetime, timedelta, timezone
 from app.core.logging import get_logger
 from app.models.feedback_model import (
     Feedback,
-    FeedbackStatus,
     FeedbackType,
     SurveyFeedback,
     ReviewFeedback,
@@ -39,15 +38,12 @@ class FeedbackRepository(BaseRepository[Feedback]):
         self,
         db: AsyncSession,
         project_id: Optional[UUID] = None,
-        status: Optional[FeedbackStatus] = None,
         skip: int = 0,
         limit: int = 100,
     ) -> List[Feedback]:
         filters = {}
         if project_id:
             filters['project_id'] = project_id
-        if status:
-            filters['status'] = status
         return await self.get_multi(db, skip=skip, limit=limit, **filters)
 
     async def get_by_type(
@@ -296,13 +292,8 @@ class FeedbackRepository(BaseRepository[Feedback]):
         )
         new_feature_requests = feature_result.scalar() or 0
 
-        pending_result = await db.execute(
-            text(
-                f'SELECT COUNT(*) FROM feedback f {base_where} AND f.status = :status'
-            ),
-            {**params, 'status': 'NEW'},
-        )
-        pending_feedback_review = pending_result.scalar() or 0
+        # Since we removed the status column, we'll count all feedback as "pending review"
+        pending_feedback_review = total_feedback_count
 
         return {
             'totalFeedback': total_feedback_count,
@@ -373,7 +364,6 @@ class FeedbackRepository(BaseRepository[Feedback]):
             f.title,
             f.message,
             f.rating,
-            f.status,
             f.created_at,
             f.submitter_name,
             f.submitter_email,
@@ -431,7 +421,6 @@ class FeedbackRepository(BaseRepository[Feedback]):
                 'title': row.title,
                 'message': row.message,
                 'rating': row.rating,
-                'status': row.status,
                 'created_at': row.created_at,
                 'submitter_name': row.submitter_name,
                 'submitter_email': row.submitter_email,

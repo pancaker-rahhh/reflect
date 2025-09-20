@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Search, RotateCcw, Bug, AlertTriangle } from 'lucide-react'
-import { format } from 'date-fns'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Search, RotateCcw, Bug, CheckSquare } from 'lucide-react'
 import { api } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -15,9 +14,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Badge } from '@/components/ui/badge'
-
 import { useAppContext } from '@/context/AppContext'
+import { FeedbackCard } from '@/components/feedback/FeedbackCard'
+import { BulkActionsBar } from '@/components/feedback/BulkActionsBar'
+import { FeedbackConversionModal } from '@/components/feedback/FeedbackConversionModal'
 
 export function BugReports() {
   const [startDate, setStartDate] = useState<Date | undefined>()
@@ -25,8 +25,12 @@ export function BugReports() {
   const [severityFilter, setSeverityFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
+  const [isBulkConversionModalOpen, setIsBulkConversionModalOpen] = useState(false)
 
   const { currentProject } = useAppContext()
+  const queryClient = useQueryClient()
 
   const { data: feedback = [], isLoading } = useQuery({
     queryKey: ['feedback', { type: 'bug_report' }, currentProject?.id],
@@ -41,6 +45,67 @@ export function BugReports() {
     setSeverityFilter('all')
     setStatusFilter('all')
     setSearchQuery('')
+  }
+
+  const convertMutation = useMutation({
+    mutationFn: ({ feedbackId, conversionData }: { feedbackId: string; conversionData: any }) =>
+      api.convertToRoadmap(feedbackId, conversionData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feedback'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap-tags'] })
+    },
+  })
+
+  const bulkConvertMutation = useMutation({
+    mutationFn: async ({
+      feedbackIds,
+      conversionData,
+    }: {
+      feedbackIds: string[]
+      conversionData: any
+    }) => {
+      return api.bulkConvertToRoadmap(feedbackIds, conversionData)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feedback'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap-tags'] })
+      setSelectedItems(new Set())
+      setIsSelectionMode(false)
+    },
+  })
+
+  const handleConvert = async (feedbackId: string, conversionData: any) => {
+    await convertMutation.mutateAsync({ feedbackId, conversionData })
+  }
+
+  const handleBulkConvert = async (conversionData: any) => {
+    const feedbackIds = Array.from(selectedItems)
+    await bulkConvertMutation.mutateAsync({ feedbackIds, conversionData })
+    setIsBulkConversionModalOpen(false)
+  }
+
+  const handleToggleSelection = (feedbackId: string) => {
+    setSelectedItems((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(feedbackId)) {
+        newSet.delete(feedbackId)
+      } else {
+        newSet.add(feedbackId)
+      }
+      return newSet
+    })
+  }
+
+  const handleSelectAll = () => {
+    const allIds = new Set(filteredBugReports.map((item: any) => item.id))
+    setSelectedItems(allIds)
+  }
+
+  const handleClearSelection = () => {
+    setSelectedItems(new Set())
+    setIsSelectionMode(false)
   }
 
   const filteredBugReports = feedback
@@ -78,52 +143,35 @@ export function BugReports() {
       return true
     })
 
-  const getSeverityVariant = (severity: string) => {
-    switch (severity) {
-      case 'critical':
-        return 'destructive'
-      case 'high':
-        return 'destructive'
-      case 'medium':
-        return 'secondary'
-      case 'low':
-        return 'outline'
-      default:
-        return 'outline'
-    }
-  }
-
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'new':
-        return 'default'
-      case 'investigating':
-        return 'secondary'
-      case 'confirmed':
-        return 'default'
-      case 'resolved':
-        return 'outline'
-      case 'wont-fix':
-        return 'outline'
-      default:
-        return 'outline'
-    }
-  }
-
-  const getSeverityIcon = (severity: string) => {
-    if (severity === 'critical' || severity === 'high') {
-      return <AlertTriangle className="h-4 w-4" />
-    }
-    return <Bug className="h-4 w-4" />
-  }
-
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Bug Reports</h1>
-        <p className="text-muted-foreground mt-2">
-          Track and manage bug reports submitted by your users
-        </p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold">Bug Reports</h1>
+          <p className="text-muted-foreground mt-2">
+            Track and manage bug reports submitted by your users
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {isSelectionMode && (
+            <>
+              <Button variant="outline" onClick={handleSelectAll}>
+                Select All
+              </Button>
+              <Button variant="outline" onClick={handleClearSelection}>
+                Clear Selection
+              </Button>
+            </>
+          )}
+          <Button
+            variant={isSelectionMode ? 'default' : 'outline'}
+            onClick={() => setIsSelectionMode(!isSelectionMode)}
+          >
+            <CheckSquare className="h-4 w-4 mr-2" />
+            {isSelectionMode ? 'Exit Selection' : 'Select Items'}
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -215,99 +263,40 @@ export function BugReports() {
       ) : (
         <div className="space-y-4">
           {filteredBugReports.map((bug: any) => (
-            <Card key={bug.id}>
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="space-y-1 flex-1">
-                    <div className="flex items-center gap-2">
-                      {getSeverityIcon(
-                        (bug as any).severity_level || (bug as any).severity || 'medium'
-                      )}
-                      <h3 className="font-semibold text-lg">{(bug as any).title}</h3>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>Reported by {(bug as any).submitter_name || 'Anonymous'}</span>
-                      {(bug as any).submitter_email && (
-                        <span>({(bug as any).submitter_email})</span>
-                      )}
-                      <span>{format(new Date((bug as any).created_at), 'PPP')}</span>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Badge
-                      variant={getSeverityVariant(
-                        (bug as any).severity_level || (bug as any).severity || 'medium'
-                      )}
-                    >
-                      {(
-                        (bug as any).severity_level ||
-                        (bug as any).severity ||
-                        'medium'
-                      ).toUpperCase()}
-                    </Badge>
-                    <Badge variant={getStatusVariant((bug as any).status || 'new')}>
-                      {((bug as any).status || 'new').replace('-', ' ').toUpperCase()}
-                    </Badge>
-                  </div>
-                </div>
-
-                <div className="bg-muted/50 rounded-lg p-4 mb-4">
-                  <p className="text-sm">{(bug as any).description}</p>
-                  <p className="text-sm">
-                    {(bug as any).actual_behavior ||
-                      (bug as any).message ||
-                      'No description provided'}
-                  </p>
-                </div>
-
-                {((bug as any).steps_to_reproduce || (bug as any).expected_behavior) && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
-                    {(bug as any).steps_to_reproduce && (
-                      <div>
-                        <span className="font-medium text-muted-foreground">
-                          Steps to Reproduce:
-                        </span>
-                        <p>{(bug as any).steps_to_reproduce}</p>
-                      </div>
-                    )}
-                    {(bug as any).expected_behavior && (
-                      <div>
-                        <span className="font-medium text-muted-foreground">
-                          Expected Behavior:
-                        </span>
-                        <p>{(bug as any).expected_behavior}</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {((bug as any).browser || (bug as any).os || (bug as any).url) && (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    {(bug as any).browser && (
-                      <div>
-                        <span className="font-medium text-muted-foreground">Browser:</span>
-                        <p>{(bug as any).browser}</p>
-                      </div>
-                    )}
-                    {(bug as any).os && (
-                      <div>
-                        <span className="font-medium text-muted-foreground">OS:</span>
-                        <p>{(bug as any).os}</p>
-                      </div>
-                    )}
-                    {(bug as any).url && (
-                      <div>
-                        <span className="font-medium text-muted-foreground">Page URL:</span>
-                        <p className="truncate">{(bug as any).url}</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <FeedbackCard
+              key={bug.id}
+              feedback={bug}
+              isSelectionMode={isSelectionMode}
+              isSelected={selectedItems.has(bug.id)}
+              onToggleSelection={handleToggleSelection}
+              onConvert={handleConvert}
+              isConverting={convertMutation.isPending}
+            />
           ))}
         </div>
       )}
+
+      {/* Bulk Actions Bar */}
+      <BulkActionsBar
+        selectedCount={selectedItems.size}
+        onConvertSelected={() => setIsBulkConversionModalOpen(true)}
+        onClearSelection={handleClearSelection}
+        isConverting={bulkConvertMutation.isPending}
+      />
+
+      {/* Bulk Conversion Modal */}
+      <FeedbackConversionModal
+        isOpen={isBulkConversionModalOpen}
+        onClose={() => setIsBulkConversionModalOpen(false)}
+        onConvert={handleBulkConvert}
+        feedback={{
+          id: 'bulk',
+          feedback_type: 'bulk',
+          title: `Convert ${selectedItems.size} items`,
+        }}
+        isBulk={true}
+        selectedCount={selectedItems.size}
+      />
     </div>
   )
 }

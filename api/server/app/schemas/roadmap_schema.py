@@ -201,12 +201,6 @@ class RoadmapColumnBase(BaseModel):
         pattern=r'^#[0-9a-fA-F]{6}$',
         description='Column color in hex format',
     )
-    status: str = Field(
-        'new',
-        min_length=1,
-        max_length=50,
-        description='Column status (e.g., new, in-progress, completed)',
-    )
 
     @validator('name')
     def validate_name(cls, v):
@@ -219,20 +213,6 @@ class RoadmapColumnBase(BaseModel):
         if not re.match(r'^#[0-9a-fA-F]{6}$', v):
             raise ValueError('Color must be a valid hex color code (e.g., #FF0000)')
         return v
-
-    @validator('status')
-    def validate_status(cls, v):
-        valid_statuses = [
-            'new',
-            'in-progress',
-            'planned',
-            'under-review',
-            'completed',
-            'declined',
-        ]
-        if v.lower() not in valid_statuses:
-            raise ValueError(f'Status must be one of: {", ".join(valid_statuses)}')
-        return v.lower()
 
 
 class RoadmapColumnCreate(RoadmapColumnBase):
@@ -255,9 +235,6 @@ class RoadmapColumnUpdate(BaseModel):
     color: Optional[str] = Field(
         None, pattern=r'^#[0-9a-fA-F]{6}$', description='Column color in hex format'
     )
-    status: Optional[str] = Field(
-        None, min_length=1, max_length=50, description='Column status'
-    )
     order: Optional[int] = Field(
         None, ge=0, description='Column order within the roadmap'
     )
@@ -272,22 +249,6 @@ class RoadmapColumnUpdate(BaseModel):
     def validate_color(cls, v):
         if v is not None and not re.match(r'^#[0-9a-fA-F]{6}$', v):
             raise ValueError('Color must be a valid hex color code (e.g., #FF0000)')
-        return v
-
-    @validator('status')
-    def validate_status(cls, v):
-        if v is not None:
-            valid_statuses = [
-                'new',
-                'in-progress',
-                'planned',
-                'under-review',
-                'completed',
-                'declined',
-            ]
-            if v.lower() not in valid_statuses:
-                raise ValueError(f'Status must be one of: {", ".join(valid_statuses)}')
-            return v.lower()
         return v
 
     @validator('order')
@@ -325,7 +286,7 @@ class RoadmapBase(BaseModel):
         description='Custom subdomain for the roadmap (optional)',
     )
     logo_url: Optional[str] = Field(
-        None, max_length=500, description='URL to the roadmap logo'
+        None, max_length=100000, description='URL to the roadmap logo'
     )
 
     @validator('name')
@@ -350,9 +311,13 @@ class RoadmapBase(BaseModel):
     @validator('logo_url')
     def validate_logo_url(cls, v):
         if v is not None:
-            url_pattern = r'^https?://[^\s/$.?#].[^\s]*$'
-            if not re.match(url_pattern, v):
-                raise ValueError('Logo URL must be a valid HTTP/HTTPS URL')
+            # Allow both HTTP/HTTPS URLs and data URLs for base64 images
+            http_pattern = r'^https?://[^\s/$.?#].[^\s]*$'
+            data_pattern = r'^data:image/[a-zA-Z]+;base64,[A-Za-z0-9+/=]+$'
+            if not (re.match(http_pattern, v) or re.match(data_pattern, v)):
+                raise ValueError(
+                    'Logo URL must be a valid HTTP/HTTPS URL or base64 data URL'
+                )
         return v
 
 
@@ -377,7 +342,7 @@ class RoadmapUpdate(BaseModel):
         description='Custom subdomain for the roadmap (optional)',
     )
     logo_url: Optional[str] = Field(
-        None, max_length=500, description='URL to the roadmap logo'
+        None, max_length=100000, description='URL to the roadmap logo'
     )
 
     @validator('name')
@@ -402,9 +367,13 @@ class RoadmapUpdate(BaseModel):
     @validator('logo_url')
     def validate_logo_url(cls, v):
         if v is not None:
-            url_pattern = r'^https?://[^\s/$.?#].[^\s]*$'
-            if not re.match(url_pattern, v):
-                raise ValueError('Logo URL must be a valid HTTP/HTTPS URL')
+            # Allow both HTTP/HTTPS URLs and data URLs for base64 images
+            http_pattern = r'^https?://[^\s/$.?#].[^\s]*$'
+            data_pattern = r'^data:image/[a-zA-Z]+;base64,[A-Za-z0-9+/=]+$'
+            if not (re.match(http_pattern, v) or re.match(data_pattern, v)):
+                raise ValueError(
+                    'Logo URL must be a valid HTTP/HTTPS URL or base64 data URL'
+                )
         return v
 
 
@@ -490,12 +459,12 @@ class RoadmapAssignmentResponse(BaseModel):
 
 
 class RoadmapActionItemTagCreate(BaseModel):
-    feature_id: UUID = Field(..., description='ID of the roadmap feature')
+    action_item_id: UUID = Field(..., description='ID of the roadmap feature')
     tag_id: UUID = Field(..., description='ID of the tag to associate')
 
 
 class RoadmapActionItemTagResponse(BaseModel):
-    feature_id: UUID = Field(..., description='ID of the roadmap feature')
+    action_item_id: UUID = Field(..., description='ID of the roadmap feature')
     tag_id: UUID = Field(..., description='ID of the associated tag')
     created_at: datetime = Field(
         ..., description='Timestamp when the association was created'

@@ -8,7 +8,6 @@ from pydantic import BaseModel, Field, EmailStr, ConfigDict
 # Removed IPv4Address, IPv6Address imports - no longer needed
 from app.models.feedback_model import (
     FeedbackType,
-    FeedbackStatus,
     FeedbackPriority,
 )
 
@@ -38,7 +37,6 @@ class FeedbackCreate(FeedbackBase):
 
 class FeedbackUpdate(BaseModel):
     # Base fields
-    status: Optional[FeedbackStatus] = None
     title: Optional[str] = None
     message: Optional[str] = None
     rating: Optional[int] = None
@@ -97,7 +95,6 @@ class FeedbackResponse(BaseModel):
     widget_id: UUID
     project_id: UUID
     feedback_type: FeedbackType
-    status: FeedbackStatus
     title: Optional[str]
     message: Optional[str]
     rating: Optional[int]
@@ -106,7 +103,7 @@ class FeedbackResponse(BaseModel):
     context: Dict[str, Any]
     submitter_name: Optional[str]
     submitter_email: Optional[EmailStr]
-    submitter_id: Optional[str] 
+    submitter_id: Optional[str]
     is_anonymous: bool
     is_internal: bool
     is_spam: bool
@@ -318,6 +315,15 @@ class UpvoteResponse(BaseModel):
 
 
 class FeedbackConversionRequest(BaseModel):
+    column_id: Optional[str] = None
+    priority: Optional[str] = None
+    conversion_notes: Optional[str] = None
+    custom_tags: Optional[List[str]] = None
+
+
+class BulkFeedbackConversionRequest(BaseModel):
+    feedback_ids: List[str]
+    column_id: Optional[str] = None
     priority: Optional[str] = None
     conversion_notes: Optional[str] = None
     custom_tags: Optional[List[str]] = None

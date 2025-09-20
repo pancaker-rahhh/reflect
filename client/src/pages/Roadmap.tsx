@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api, organizationApi, userApi } from '@/lib/api'
@@ -13,13 +13,9 @@ import {
   Loader2,
   Settings,
   CheckSquare,
-  LayoutGrid,
-  List,
-  Calendar,
+  GripVertical,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Progress } from '@/components/ui/progress'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { RoadmapCard } from '@/components/roadmap/RoadmapCard'
 import { AddFeatureModal } from '@/components/roadmap/AddFeatureModal'
 import { BulkJiraModal } from '@/components/roadmap/BulkJiraModal'
@@ -39,7 +35,7 @@ interface FeatureFormData {
   tagIds: string[]
 }
 
-export function RoadmapPage() {
+function RoadmapPageContent() {
   const [addFeatureModalOpen, setAddFeatureModalOpen] = useState(false)
   const [bulkJiraModalOpen, setBulkJiraModalOpen] = useState(false)
   const [individualJiraModalOpen, setIndividualJiraModalOpen] = useState(false)
@@ -51,11 +47,11 @@ export function RoadmapPage() {
   const [selectedColumn, setSelectedColumn] = useState<{
     id: string
     name: string
-    status: string
   } | null>(null)
-  const [activeView, setActiveView] = useState<'board' | 'list' | 'timeline'>('board')
   const [draggedItem, setDraggedItem] = useState<DragItem | null>(null)
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null)
+  const [draggedColumn, setDraggedColumn] = useState<string | null>(null)
+  const [, setIsReordering] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const { toast } = useToast()
 
@@ -101,19 +97,82 @@ export function RoadmapPage() {
 
   const { data: projectsData, isLoading: isLoadingProjects } = useQuery({
     queryKey: ['projects', organizationId],
-    queryFn: () => (organizationId ? api.getProjectsByOrganization(organizationId) : null),
+    queryFn: () => {
+      if (!organizationId) {
+        return Promise.resolve(null)
+      }
+      return api.getProjectsByOrganization(organizationId)
+    },
     enabled: !!organizationId,
   })
 
   const project = projectsData?.items?.[0]
 
-  const { data: roadmap, isLoading: isLoadingRoadmap } = useQuery({
+  const {
+    data: roadmap,
+    isLoading: isLoadingRoadmap,
+    error: roadmapError,
+  } = useQuery({
     queryKey: ['roadmap', project?.id],
     queryFn: () => {
-      return project ? api.getRoadmap(project.id) : null
+      if (!project?.id) {
+        return Promise.resolve(null)
+      }
+      return api.getRoadmap(project.id)
     },
-    enabled: !!project,
+    enabled: !!project?.id,
   })
+
+  console.log('Roadmap Debug:', {
+    project,
+    roadmap,
+    isLoadingRoadmap,
+    roadmapError,
+    hasColumns: roadmap?.columns?.length || 0,
+  })
+
+  const createDefaultColumnsMutation = useMutation({
+    mutationFn: async () => {
+      if (!roadmap?.id) return
+
+      const defaultColumns = [
+        { name: 'New', color: '#94A3B8', order: 0 },
+        { name: 'In Progress', color: '#3B82F6', order: 1 },
+        { name: 'Planned', color: '#8B5CF6', order: 2 },
+        { name: 'Completed', color: '#10B981', order: 3 },
+      ]
+
+      const promises = defaultColumns.map((column) =>
+        api.createRoadmapColumn({
+          roadmap_id: roadmap.id,
+          ...column,
+        })
+      )
+
+      await Promise.all(promises)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
+      toast({
+        title: 'Default columns created',
+        description: 'Your roadmap now has the standard workflow columns.',
+      })
+    },
+    onError: (error) => {
+      console.error('Error creating default columns:', error)
+      toast({
+        title: 'Error creating columns',
+        description: 'Failed to create default columns. Please try again.',
+        variant: 'destructive',
+      })
+    },
+  })
+
+  useEffect(() => {
+    if (roadmap && roadmap.columns.length === 0 && !createDefaultColumnsMutation.isPending) {
+      createDefaultColumnsMutation.mutate()
+    }
+  }, [roadmap, createDefaultColumnsMutation])
 
   const {
     data: integrations = [],
@@ -121,7 +180,12 @@ export function RoadmapPage() {
     error: _integrationsError,
   } = useQuery({
     queryKey: ['integrations', project?.id],
-    queryFn: () => api.getIntegrations(project?.id),
+    queryFn: () => {
+      if (!project?.id) {
+        return Promise.resolve([])
+      }
+      return api.getIntegrations(project.id)
+    },
     enabled: !!project?.id,
   })
 
@@ -142,10 +206,6 @@ export function RoadmapPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
       setAddFeatureModalOpen(false)
-      toast({
-        title: 'Feature created',
-        description: 'Your new feature has been added to the roadmap.',
-      })
     },
     onError: (error) => {
       toast({
@@ -161,10 +221,6 @@ export function RoadmapPage() {
       api.updateFeaturesOrder(updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
-      toast({
-        title: 'Feature moved',
-        description: 'Feature has been moved to the new column.',
-      })
     },
     onError: (error) => {
       console.error('Error updating feature order:', error)
@@ -176,7 +232,21 @@ export function RoadmapPage() {
     },
   })
 
-  // Add loading state for drag operations
+  const updateColumnOrderMutation = useMutation({
+    mutationFn: (updates: { id: string; order: number }[]) => api.updateColumnsOrder(updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
+    },
+    onError: (error) => {
+      console.error('Error updating column order:', error)
+      toast({
+        title: 'Error reordering columns',
+        description: error.message || 'There was a problem reordering columns.',
+        variant: 'destructive',
+      })
+    },
+  })
+
   const isMovingFeature = updateFeatureOrderMutation.isPending
 
   const handleDragStart = (e: React.DragEvent, featureId: string, sourceColumnId: string) => {
@@ -184,23 +254,75 @@ export function RoadmapPage() {
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('text/plain', featureId)
 
-    // Add visual feedback
     if (e.target instanceof HTMLElement) {
-      e.target.style.transform = 'rotate(2deg) scale(1.05)'
+      const dragImage = e.target.cloneNode(true) as HTMLElement
+      dragImage.style.transform = 'rotate(5deg)'
+      dragImage.style.opacity = '0.9'
+      dragImage.style.border = '2px solid #3b82f6'
+      dragImage.style.borderRadius = '8px'
+      dragImage.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.2)'
+      dragImage.style.pointerEvents = 'none'
+      dragImage.style.position = 'absolute'
+      dragImage.style.top = '-1000px'
+      dragImage.style.left = '-1000px'
+      dragImage.style.zIndex = '9999'
+
+      document.body.appendChild(dragImage)
+      e.dataTransfer.setDragImage(dragImage, 0, 0)
+
+      setTimeout(() => {
+        if (document.body.contains(dragImage)) {
+          document.body.removeChild(dragImage)
+        }
+      }, 0)
     }
   }
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragEnd = () => {
+    setDraggedItem(null)
+    setDragOverColumn(null)
+
+    const draggedElements = document.querySelectorAll('[data-dragging="true"]')
+    draggedElements.forEach((el) => {
+      if (el instanceof HTMLElement) {
+        el.style.opacity = ''
+        el.removeAttribute('data-dragging')
+      }
+    })
+  }
+
+  const handleColumnDragStart = (e: React.DragEvent, columnId: string) => {
+    setDraggedColumn(columnId)
+    setIsReordering(true)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', columnId)
+
+    const target = e.currentTarget as HTMLElement
+    target.style.opacity = '0.7'
+  }
+
+  const handleColumnDragOver = (e: React.DragEvent, columnId: string) => {
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
+
+    if (draggedItem && draggedItem.sourceColumnId !== columnId) {
+      setDragOverColumn(columnId)
+    } else if (draggedColumn && draggedColumn !== columnId) {
+      setDragOverColumn(columnId)
+    }
   }
 
-  const handleDragEnter = (e: React.DragEvent, columnId: string) => {
+  const handleColumnDragEnter = (e: React.DragEvent, columnId: string) => {
     e.preventDefault()
-    setDragOverColumn(columnId)
+
+    if (draggedItem && draggedItem.sourceColumnId !== columnId) {
+      setDragOverColumn(columnId)
+    } else if (draggedColumn && draggedColumn !== columnId) {
+      setDragOverColumn(columnId)
+    }
   }
 
-  const handleDragLeave = (e: React.DragEvent) => {
+  const handleColumnDragLeave = (e: React.DragEvent) => {
     const relatedTarget = e.relatedTarget as HTMLElement
     const currentTarget = e.currentTarget as HTMLElement
 
@@ -209,68 +331,95 @@ export function RoadmapPage() {
     }
   }
 
-  const handleDrop = (e: React.DragEvent, targetColumnId: string) => {
+  const handleColumnDrop = (e: React.DragEvent, targetColumnId: string) => {
     e.preventDefault()
     e.stopPropagation()
-    setDragOverColumn(null)
-
-    // Reset drag visual feedback
-    if (e.target instanceof HTMLElement) {
-      e.target.style.transform = ''
-    }
 
     if (draggedItem && draggedItem.sourceColumnId !== targetColumnId && roadmap) {
       const sourceColumn = roadmap.columns.find((col: any) => col.id === draggedItem.sourceColumnId)
       const targetColumn = roadmap.columns.find((col: any) => col.id === targetColumnId)
 
-      if (!sourceColumn || !targetColumn) {
-        console.error('Source or target column not found:', { sourceColumn, targetColumn })
-        return
+      if (sourceColumn && targetColumn) {
+        const sourceFeatures = getFeaturesByColumn(draggedItem.sourceColumnId)
+        const targetFeatures = getFeaturesByColumn(targetColumnId)
+
+        const featureToMove = sourceFeatures.find((f: any) => f.id === draggedItem.featureId)
+
+        if (featureToMove) {
+          const updates = []
+
+          updates.push({
+            id: featureToMove.id,
+            column_id: targetColumnId,
+            order: targetFeatures.length,
+          })
+
+          sourceFeatures
+            .filter((f: any) => f.id !== draggedItem.featureId)
+            .forEach((feature: any, index: number) => {
+              updates.push({
+                id: feature.id,
+                order: index,
+              })
+            })
+
+          updateFeatureOrderMutation.mutate(updates)
+        }
       }
+    } else if (draggedColumn && draggedColumn !== targetColumnId && roadmap) {
+      const sortedColumns = [...roadmap.columns].sort((a: any, b: any) => a.order - b.order)
+      const sourceIndex = sortedColumns.findIndex((col: any) => col.id === draggedColumn)
+      const targetIndex = sortedColumns.findIndex((col: any) => col.id === targetColumnId)
 
-      const targetFeatures = getFeaturesByColumn(targetColumnId)
-      const newOrder =
-        targetFeatures.length > 0 ? Math.max(...targetFeatures.map((f) => f.order)) + 1 : 0
+      if (sourceIndex === -1 || targetIndex === -1) return
 
-      updateFeatureOrderMutation.mutate([
-        {
-          id: draggedItem.featureId,
-          order: newOrder,
-          column_id: targetColumnId,
-        },
-      ])
-    } else {
-      console.log('Drop conditions not met:', {
-        hasDraggedItem: !!draggedItem,
-        sourceColumnId: draggedItem?.sourceColumnId,
-        targetColumnId,
-        isSameColumn: draggedItem?.sourceColumnId === targetColumnId,
-        hasRoadmap: !!roadmap,
-      })
+      const newOrder = [...sortedColumns]
+      const draggedColumnData = newOrder[sourceIndex]
+      newOrder.splice(sourceIndex, 1)
+      newOrder.splice(targetIndex, 0, draggedColumnData)
+
+      const updates = newOrder.map((col: any, index: number) => ({
+        id: col.id,
+        order: index,
+      }))
+
+      updateColumnOrderMutation.mutate(updates)
     }
 
     setDraggedItem(null)
+    setDraggedColumn(null)
+    setDragOverColumn(null)
   }
 
-  const handleDragEnd = () => {
-    setDraggedItem(null)
+  const handleColumnDragEnd = () => {
+    setDraggedColumn(null)
     setDragOverColumn(null)
+    setIsReordering(false)
 
-    // Reset any remaining drag visual feedback
     const draggedElements = document.querySelectorAll('[data-dragging="true"]')
     draggedElements.forEach((el) => {
       if (el instanceof HTMLElement) {
-        el.style.transform = ''
+        el.style.opacity = ''
         el.removeAttribute('data-dragging')
       }
     })
+
+    const columns = document.querySelectorAll('[data-column-id]')
+    columns.forEach((el) => {
+      if (el instanceof HTMLElement) {
+        el.style.opacity = ''
+      }
+    })
+  }
+
+  const getColumnSlideStyle = (_column: any) => {
+    return {}
   }
 
   const handleOpenAddFeatureModal = (column: RoadmapColumn) => {
     setSelectedColumn({
       id: column.id,
       name: column.name,
-      status: column.status,
     })
     setAddFeatureModalOpen(true)
   }
@@ -448,44 +597,21 @@ export function RoadmapPage() {
 
   return (
     <div className="space-y-6">
-      {/* Enhanced header with subtle background */}
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-background via-muted/20 to-background p-6 border border-border/50">
-        <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]" />
-        <div className="relative flex items-start justify-between">
+      {/* Header */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold text-gray-900">
               {roadmap.name || 'Product Roadmap'}
             </h1>
-            <p className="text-muted-foreground mt-2 text-lg">
+            <p className="text-gray-600 mt-2 text-lg">
               Plan and track your product development progress
             </p>
-            {roadmap.columns && roadmap.columns.length > 0 && (
-              <div className="mt-4 max-w-md">
-                <Progress
-                  value={(() => {
-                    const totalFeatures = roadmap.columns.reduce(
-                      (sum, col) => sum + (col.action_items?.length || 0),
-                      0
-                    )
-                    if (totalFeatures === 0) return 0
-                    const completedFeatures = roadmap.columns.reduce((sum, col) => {
-                      if (col.status === 'under-review') {
-                        return sum + (col.action_items?.length || 0)
-                      }
-                      return sum
-                    }, 0)
-                    return Math.round((completedFeatures / totalFeatures) * 100)
-                  })()}
-                  showPercentage={true}
-                  label="Roadmap Progress"
-                />
-              </div>
-            )}
           </div>
           <div className="flex items-center gap-2">
             {isSelectionMode && (
               <>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
                   <span>{selectedItems.length} selected</span>
                   <Button variant="ghost" size="sm" onClick={handleSelectAll} className="text-xs">
                     Select All
@@ -503,7 +629,7 @@ export function RoadmapPage() {
                   <Button
                     onClick={handleBulkJiraPush}
                     disabled={selectedItems.length === 0}
-                    className="bg-primary hover:bg-primary/90"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     Push to JIRA ({selectedItems.length})
                   </Button>
@@ -515,7 +641,7 @@ export function RoadmapPage() {
               <Button
                 variant="outline"
                 onClick={() => setIsSelectionMode(true)}
-                className="hover:bg-primary/5 hover:border-primary/30 transition-colors"
+                className="hover:bg-gray-50"
               >
                 <CheckSquare className="h-4 w-4 mr-2" />
                 Bulk JIRA
@@ -523,24 +649,15 @@ export function RoadmapPage() {
             )}
 
             {publicUrl && (
-              <Button
-                variant="outline"
-                asChild
-                className="hover:bg-primary/5 hover:border-primary/30 transition-colors"
-              >
+              <Button variant="outline" asChild className="hover:bg-gray-50">
                 <a href={publicUrl} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="mr-2 h-4 w-4" />
                   View Public Roadmap
                 </a>
               </Button>
             )}
-            <Button
-              variant="outline"
-              size="icon"
-              asChild
-              className="hover:bg-primary/5 hover:border-primary/30 transition-colors"
-            >
-              <Link to="/settings/roadmap">
+            <Button variant="outline" size="icon" asChild className="hover:bg-gray-50">
+              <Link to="/app/settings/roadmap">
                 <Settings className="h-4 w-4" />
               </Link>
             </Button>
@@ -548,253 +665,180 @@ export function RoadmapPage() {
         </div>
       </div>
 
-      {/* View Tabs */}
-      <div className="flex items-center justify-center mb-6">
-        <Tabs
-          value={activeView}
-          onValueChange={(value) => setActiveView(value as any)}
-          className="w-full"
-        >
-          <TabsList className="grid w-full max-w-md grid-cols-3 bg-muted/30 p-1 rounded-lg border border-border/50">
-            <TabsTrigger
-              value="board"
-              className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
-            >
-              <LayoutGrid className="h-4 w-4" />
-              Board
-            </TabsTrigger>
-            <TabsTrigger
-              value="list"
-              className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
-            >
-              <List className="h-4 w-4" />
-              List
-            </TabsTrigger>
-            <TabsTrigger
-              value="timeline"
-              className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
-            >
-              <Calendar className="h-4 w-4" />
-              Timeline
-            </TabsTrigger>
-          </TabsList>
+      {/* Roadmap Board */}
+      <div className="space-y-4">
+        {/* Kanban Board with enhanced container and smooth scrolling */}
+        <div className="relative">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm text-gray-500">Drag columns by the grip icon to reorder them</p>
+          </div>
+          <div
+            ref={scrollContainerRef}
+            className="overflow-x-auto pb-6 scrollbar-hide smooth-scroll-x"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            <div className="flex gap-6 min-w-max">
+              {roadmap.columns
+                .sort((a: any, b: any) => a.order - b.order)
+                .map((column: any, _columnIndex: number) => {
+                  const columnFeatures = getFeaturesByColumn(column.id)
+                  const slideStyle = getColumnSlideStyle(column)
 
-          <TabsContent value="board" className="mt-0">
-            <div className="relative">
-              {/* Enhanced navigation buttons with better positioning and animations */}
-              <Button
-                variant="outline"
-                size="icon"
-                className="absolute -left-12 top-1/2 -translate-y-1/2 z-20 shadow-lg bg-background/95 backdrop-blur-sm border-2 hover:bg-background hover:scale-110 transition-all duration-300 btn-interactive group"
-                onClick={() => scrollToColumn('left')}
-              >
-                <ChevronLeft className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
-              </Button>
-
-              <Button
-                variant="outline"
-                size="icon"
-                className="absolute -right-12 top-1/2 -translate-y-1/2 z-20 shadow-lg bg-background/95 backdrop-blur-sm border-2 hover:bg-background hover:scale-110 transition-all duration-300 btn-interactive group"
-                onClick={() => scrollToColumn('right')}
-              >
-                <ChevronRight className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
-              </Button>
-
-              {/* Kanban Board with enhanced container and smooth scrolling */}
-              <div className="relative">
-                <div
-                  ref={scrollContainerRef}
-                  className="overflow-x-auto pb-6 px-32 -mx-32 scrollbar-hide smooth-scroll-x"
-                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                >
-                  <div className="flex gap-6 min-w-max px-32">
-                    {roadmap.columns.map((column: any, columnIndex: any) => {
-                      const columnFeatures = getFeaturesByColumn(column.id)
-
-                      return (
-                        <div
-                          key={column.id}
-                          className={cn(
-                            'flex-shrink-0 w-80 bg-gradient-to-b from-background via-card/50 to-muted/20 rounded-xl border border-border/50 shadow-sm transition-all duration-500 ease-out hover:shadow-md hover:border-border/70 scroll-snap-start',
-                            dragOverColumn === column.id &&
-                              'ring-2 ring-primary/60 ring-offset-2 shadow-lg scale-[1.02] bg-gradient-to-b from-primary/5 via-primary/10 to-primary/5',
-                            'animate-in slide-in-from-left-2 duration-700 hover-lift'
-                          )}
-                          style={{
-                            animationDelay: `${columnIndex * 150}ms`,
-                          }}
-                          onDragOver={handleDragOver}
-                          onDragEnter={(e) => handleDragEnter(e, column.id)}
-                          onDragLeave={handleDragLeave}
-                          onDrop={(e) => handleDrop(e, column.id)}
-                        >
-                          {/* Enhanced Column Header with better animations */}
-                          <div className="flex items-center justify-between mb-6 p-4 pb-3 border-b border-border/30">
-                            <div className="flex items-center gap-3">
-                              <div className="flex items-center gap-2">
-                                <div
-                                  className="w-3 h-3 rounded-full shadow-sm animate-pulse"
-                                  style={{ backgroundColor: column.color }}
-                                />
-                                <h3 className="font-semibold text-base text-foreground text-transition">
-                                  {column.name}
-                                </h3>
-                              </div>
-                              <Badge
-                                variant="secondary"
-                                className="text-xs font-medium px-2 py-1 bg-primary/10 text-primary border-primary/20 animate-in zoom-in-50 duration-300 hover:scale-105 transition-transform duration-200"
-                                style={{ animationDelay: `${columnIndex * 150 + 200}ms` }}
-                              >
-                                {columnFeatures.length}
-                              </Badge>
+                  return (
+                    <div
+                      key={column.id}
+                      data-column-id={column.id}
+                      className={cn(
+                        'flex-shrink-0 w-80 bg-white rounded-lg border border-gray-200 shadow-sm scroll-snap-start relative cursor-grab active:cursor-grabbing',
+                        dragOverColumn === column.id &&
+                          draggedItem &&
+                          draggedItem.sourceColumnId !== column.id &&
+                          'ring-2 ring-blue-500 ring-offset-2 shadow-lg border-blue-500',
+                        dragOverColumn === column.id &&
+                          draggedColumn &&
+                          draggedColumn !== column.id &&
+                          'ring-2 ring-blue-500 ring-offset-2 shadow-lg',
+                        draggedColumn === column.id && 'opacity-70'
+                      )}
+                      style={{
+                        ...slideStyle,
+                        ...getColumnSlideStyle(column),
+                      }}
+                      draggable
+                      onDragStart={(e) => handleColumnDragStart(e, column.id)}
+                      onDragOver={(e) => handleColumnDragOver(e, column.id)}
+                      onDragEnter={(e) => handleColumnDragEnter(e, column.id)}
+                      onDragLeave={handleColumnDragLeave}
+                      onDrop={(e) => handleColumnDrop(e, column.id)}
+                      onDragEnd={handleColumnDragEnd}
+                    >
+                      {/* Drop indicator for column reordering */}
+                      {dragOverColumn === column.id &&
+                        draggedColumn &&
+                        draggedColumn !== column.id && (
+                          <div className="absolute inset-0 border-2 border-dashed border-blue-500 bg-blue-50/30 rounded-lg z-10 flex items-center justify-center">
+                            <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+                              Drop here
                             </div>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 hover:scale-110 btn-interactive"
-                              onClick={() => handleOpenAddFeatureModal(column)}
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
                           </div>
+                        )}
 
-                          {/* Feature Cards */}
-                          <div className="space-y-4 px-4 pb-4">
-                            {/* Loading indicator when moving features */}
-                            {isMovingFeature && (
-                              <div className="flex items-center justify-center py-4 text-muted-foreground animate-in fade-in-50 duration-200">
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                <span className="text-xs">Moving feature...</span>
-                              </div>
-                            )}
-
-                            {/* Feature Cards with enhanced staggered loading */}
-                            {columnFeatures.map((feature, featureIndex) => (
-                              <div
-                                key={feature.id}
-                                className="animate-in slide-in-from-top-2 duration-500 ease-out"
-                                style={{
-                                  animationDelay: `${columnIndex * 150 + featureIndex * 100 + 300}ms`,
-                                }}
-                              >
-                                <RoadmapCard
-                                  feature={feature}
-                                  columnId={column.id}
-                                  roadmapId={roadmap.id}
-                                  columns={roadmap.columns}
-                                  onDragStart={handleDragStart}
-                                  onDragEnd={handleDragEnd}
-                                  isDragged={draggedItem?.featureId === feature.id}
-                                  isSelectionMode={isSelectionMode}
-                                  isSelected={selectedItems.some((item) => item.id === feature.id)}
-                                  onToggleSelection={handleToggleSelection}
-                                  jiraIntegrations={jiraIntegrations}
-                                  onConvertToJira={handleConvertToJira}
-                                />
-                              </div>
-                            ))}
-
-                            {/* Enhanced Empty State with better animations */}
-                            {columnFeatures.length === 0 && (
-                              <div
-                                className="text-center py-12 text-muted-foreground border-2 border-dashed border-border/50 rounded-lg bg-gradient-to-br from-muted/20 via-muted/10 to-muted/30 animate-in fade-in-50 duration-700"
-                                style={{ animationDelay: `${columnIndex * 150 + 500}ms` }}
-                              >
-                                {/* Floating icon with subtle animation */}
-                                <div className="p-4 bg-muted/40 rounded-full w-fit mx-auto mb-4 animate-in zoom-in-50 duration-500 animate-float">
-                                  <Plus className="h-6 w-6 text-muted-foreground" />
-                                </div>
-
-                                {/* Staggered text animations */}
-                                <div className="space-y-2 mb-4">
-                                  <p
-                                    className="text-sm font-medium animate-in slide-in-from-top-2 duration-300"
-                                    style={{ animationDelay: `${columnIndex * 150 + 700}ms` }}
-                                  >
-                                    No features yet
-                                  </p>
-                                  <p
-                                    className="text-xs text-muted-foreground animate-in slide-in-from-top-2 duration-300"
-                                    style={{ animationDelay: `${columnIndex * 150 + 800}ms` }}
-                                  >
-                                    Get started by adding your first feature
-                                  </p>
-                                </div>
-
-                                {/* Enhanced button with hover effects */}
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleOpenAddFeatureModal(column)}
-                                  className="text-xs hover:bg-primary/5 hover:border-primary/30 transition-all duration-300 hover:scale-105 hover:shadow-md animate-in slide-in-from-top-2 duration-300 btn-interactive"
-                                  style={{ animationDelay: `${columnIndex * 150 + 900}ms` }}
-                                >
-                                  <Plus className="h-3 w-3 mr-1" />
-                                  Add first feature
-                                </Button>
-                              </div>
-                            )}
+                      {/* Column Header */}
+                      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
+                            <GripVertical className="h-5 w-5 text-gray-400 cursor-grab" />
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: column.color }}
+                            />
+                            <h3 className="font-semibold text-base text-gray-900">{column.name}</h3>
                           </div>
+                          <Badge
+                            variant="secondary"
+                            className="text-xs font-medium px-2 py-1 bg-blue-100 text-blue-800"
+                          >
+                            {columnFeatures.length}
+                          </Badge>
                         </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="list" className="mt-0">
-            <div className="space-y-4">
-              {roadmap.columns?.map((column) => (
-                <div key={column.id} className="bg-card rounded-lg border p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">{column.name}</h3>
-                    <Badge variant="outline">{column.action_items?.length || 0} features</Badge>
-                  </div>
-                  <div className="space-y-2">
-                    {column.action_items?.map((feature) => (
-                      <div
-                        key={feature.id}
-                        className="flex items-center justify-between p-3 bg-muted/50 rounded-md"
-                      >
-                        <div>
-                          <h4 className="font-medium">{feature.title}</h4>
-                          {feature.description && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {feature.description}
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {feature.tags?.map((tag) => (
-                            <Badge key={tag.id} variant="secondary" className="text-xs">
-                              {tag.name}
-                            </Badge>
-                          ))}
-                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 hover:bg-gray-100"
+                          onClick={() => handleOpenAddFeatureModal(column)}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
                       </div>
-                    )) || (
-                      <p className="text-muted-foreground text-center py-4">
-                        No features in this column
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </TabsContent>
 
-          <TabsContent value="timeline" className="mt-0">
-            <div className="space-y-6">
-              <div className="text-center py-12">
-                <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Timeline View</h3>
-                <p className="text-muted-foreground">Timeline view coming soon</p>
-              </div>
+                      {/* Feature Cards */}
+                      <div className="space-y-3 p-4">
+                        {/* Loading indicator when moving features */}
+                        {isMovingFeature && (
+                          <div className="flex items-center justify-center py-4 text-gray-500">
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            <span className="text-xs">Moving feature...</span>
+                          </div>
+                        )}
+
+                        {/* Feature Cards */}
+                        {columnFeatures.map((feature) => (
+                          <RoadmapCard
+                            key={feature.id}
+                            feature={feature}
+                            columnId={column.id}
+                            roadmapId={roadmap.id}
+                            columns={roadmap.columns}
+                            onDragStart={handleDragStart}
+                            onDragEnd={handleDragEnd}
+                            isDragged={draggedItem?.featureId === feature.id}
+                            isSelectionMode={isSelectionMode}
+                            isSelected={selectedItems.some((item) => item.id === feature.id)}
+                            onToggleSelection={handleToggleSelection}
+                            jiraIntegrations={jiraIntegrations}
+                            onConvertToJira={handleConvertToJira}
+                          />
+                        ))}
+
+                        {/* Empty State */}
+                        {columnFeatures.length === 0 && (
+                          <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">
+                            <p className="text-sm font-medium">No features yet</p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              Get started by adding your first feature
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
+
+        {/* Horizontal Slider */}
+        <div className="flex justify-center">
+          <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-2 border border-gray-200">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => scrollToColumn('left')}
+              className="h-8 w-8 p-0 hover:bg-gray-200"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+
+            <div className="flex items-center space-x-1">
+              {roadmap.columns
+                .sort((a: any, b: any) => a.order - b.order)
+                .map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      if (scrollContainerRef.current) {
+                        const columnWidth = 320 + 24 // column width + gap
+                        scrollContainerRef.current.scrollTo({
+                          left: index * columnWidth,
+                          behavior: 'smooth',
+                        })
+                      }
+                    }}
+                    className="w-2 h-2 rounded-full bg-gray-400 hover:bg-blue-500"
+                  />
+                ))}
+            </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => scrollToColumn('right')}
+              className="h-8 w-8 p-0 hover:bg-gray-200"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Add Feature Modal */}
@@ -804,7 +848,7 @@ export function RoadmapPage() {
         onSubmit={handleAddFeature}
         isLoading={createFeatureMutation.isPending}
         columnName={selectedColumn?.name || ''}
-        columnStatus={selectedColumn?.status || ''}
+        columnStatus={selectedColumn?.name || ''}
         roadmapId={roadmap?.id || ''}
       />
 
@@ -830,4 +874,28 @@ export function RoadmapPage() {
       )}
     </div>
   )
+}
+
+export function RoadmapPage() {
+  try {
+    return <RoadmapPageContent />
+  } catch (error) {
+    console.error('Roadmap page error:', error)
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h2>
+          <p className="text-gray-600 mb-4">
+            An unexpected error occurred. Please try refreshing the page.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    )
+  }
 }

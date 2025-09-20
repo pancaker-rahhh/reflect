@@ -1,7 +1,8 @@
 from uuid import UUID
 from typing import List, Dict, Any, Optional, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException, status
+from sqlalchemy import select
+from fastapi import HTTPException, status, Request
 import re
 from app.models.roadmap_model import (
     Roadmap,
@@ -10,6 +11,8 @@ from app.models.roadmap_model import (
     RoadmapItemAssignment,
     RoadmapTag,
 )
+from app.models.feedback_model import Feedback
+from app.core.logging import get_logger
 from app.repositories.roadmap_repository import (
     roadmap_repository,
     RoadmapRepository,
@@ -23,6 +26,7 @@ from app.repositories.roadmap_repository import (
     roadmap_feature_tag_repository,
     RoadmapActionItemTagRepository,
 )
+from app.services.roadmap_vote_service import vote_service
 from app.schemas.roadmap_schema import (
     RoadmapUpdate,
     RoadmapColumnCreate,
@@ -194,6 +198,7 @@ class RoadmapService(BaseRoadmapService):
         self.tag_repo = tag_repo
         self.feature_tag_repo = feature_tag_repo
         self.project_serv = project_serv
+        self.logger = get_logger(__name__)
 
     async def get_roadmap_by_project_id(
         self, db: AsyncSession, user_id: UUID, project_id: UUID
@@ -224,6 +229,9 @@ class RoadmapService(BaseRoadmapService):
             'name': new_roadmap.name,
         }
         created_roadmap = await self.roadmap_repo.create(db, **roadmap_data)
+
+        # Create default columns
+        await self._create_default_columns(db, created_roadmap.id)
 
         return await self.roadmap_repo.get_by_project_id(
             db, project_id=created_roadmap.project_id
@@ -343,9 +351,8 @@ class RoadmapService(BaseRoadmapService):
                 roadmap_id=new_column_orm.roadmap_id,
                 name=new_column_orm.name,
                 color=new_column_orm.color,
-                status=new_column_orm.status,
                 order=new_column_orm.order,
-                features=[],
+                action_items=[],
             )
         except Exception as e:
             self._handle_unique_constraint_error(e, 'column')
@@ -471,8 +478,34 @@ class RoadmapService(BaseRoadmapService):
 
     async def delete_feature(self, db: AsyncSession, user_id: UUID, feature_id: UUID):
         await self._validate_feature_access(db, user_id, feature_id)
+
+        # Clear feedback references before deleting the feature
+        await self._clear_feedback_references(db, feature_id)
+
         await self.feature_repo.delete(db, id=feature_id)
         return None
+
+    async def _clear_feedback_references(self, db: AsyncSession, feature_id: UUID):
+        """Clear feedback references to this roadmap feature before deletion"""
+
+        # Find all feedback that references this feature
+        feedback_with_references = await db.execute(
+            select(Feedback).where(Feedback.converted_to_action_item_id == feature_id)
+        )
+        feedback_items = feedback_with_references.scalars().all()
+
+        # Clear the references
+        for feedback in feedback_items:
+            feedback.converted_to_action_item_id = None
+            feedback.conversion_date = None
+            feedback.conversion_notes = None
+            # Don't change status - let it remain as is
+
+        if feedback_items:
+            await db.commit()
+            self.logger.info(
+                f'Cleared {len(feedback_items)} feedback references for deleted feature {feature_id}'
+            )
 
     async def update_features_order(
         self, db: AsyncSession, user_id: UUID, updates: List[Dict[str, Any]]
@@ -509,7 +542,7 @@ class RoadmapService(BaseRoadmapService):
         return {'status': 'success'}
 
     async def upvote_feature(
-        self, db: AsyncSession, feature_id: UUID
+        self, db: AsyncSession, feature_id: UUID, request: Request
     ) -> RoadmapActionItem:
         feature = await self.feature_repo.get(db, id=feature_id)
         if not feature:
@@ -535,10 +568,39 @@ class RoadmapService(BaseRoadmapService):
                 detail='This roadmap is not public',
             )
 
-        feature.vote_count += 1
-        return await self.feature_repo.update(
-            db, id=feature_id, vote_count=feature.vote_count
+        updated_feature = await vote_service.upvote_feature_anonymous(
+            db, feature_id, request
         )
+        feature_with_tags = await self.feature_repo.get_with_tags(db, id=feature_id)
+        return feature_with_tags or updated_feature
+
+    async def upvote_feature_internal(
+        self, db: AsyncSession, user_id: UUID, feature_id: UUID
+    ) -> RoadmapActionItem:
+        feature = await self.feature_repo.get(db, id=feature_id)
+        if not feature:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail='Feature not found'
+            )
+
+        column = await self.column_repo.get(db, id=feature.column_id)
+        if not column:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail='Column not found'
+            )
+
+        roadmap = await self.roadmap_repo.get(db, id=column.roadmap_id)
+        if not roadmap:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail='Roadmap not found'
+            )
+
+        await self._validate_feature_access(db, user_id, feature_id)
+        updated_feature = await vote_service.upvote_feature_authenticated(
+            db, feature_id, user_id
+        )
+        feature_with_tags = await self.feature_repo.get_with_tags(db, id=feature_id)
+        return feature_with_tags or updated_feature
 
     async def assign_user_to_feature(
         self,
@@ -681,9 +743,10 @@ class RoadmapService(BaseRoadmapService):
         priority: Optional[str] = None,
         conversion_notes: Optional[str] = None,
         custom_tags: Optional[List[str]] = None,
+        column_id: Optional[str] = None,
     ) -> RoadmapActionItem:
         return await action_item_service.convert_feedback_to_roadmap_item(
-            db, feedback_id, user_id, priority, conversion_notes, custom_tags
+            db, feedback_id, user_id, priority, conversion_notes, custom_tags, column_id
         )
 
     async def auto_assign_priority(
@@ -706,10 +769,74 @@ class RoadmapService(BaseRoadmapService):
         suggested_priority = action_item_service._suggest_priority(mock_feedback)
         return suggested_priority.value
 
-    async def ensure_backlog_column_exists(
+    async def ensure_first_column_exists(
         self, db: AsyncSession, project_id: UUID
     ) -> RoadmapColumn:
         return await action_item_service._ensure_backlog_column_exists(db, project_id)
+
+    async def _create_default_columns(self, db: AsyncSession, roadmap_id: UUID) -> None:
+        default_columns = [
+            {
+                'name': 'New',
+                'color': '#94A3B8',
+                'order': 0,
+            },
+            {
+                'name': 'In Progress',
+                'color': '#3B82F6',
+                'order': 1,
+            },
+            {
+                'name': 'Planned',
+                'color': '#8B5CF6',
+                'order': 2,
+            },
+            {
+                'name': 'Completed',
+                'color': '#10B981',
+                'order': 3,
+            },
+        ]
+
+        for column_data in default_columns:
+            try:
+                await self.column_repo.create(db, roadmap_id=roadmap_id, **column_data)
+            except Exception as e:
+                from app.core.logging import get_logger
+
+                logger = get_logger(__name__)
+                logger.warning(
+                    f'Failed to create default column {column_data["name"]}: {str(e)}'
+                )
+
+    async def reorder_columns(
+        self, db: AsyncSession, user_id: UUID, updates: List[dict]
+    ) -> None:
+        for update in updates:
+            column_id = update.get('id')
+            new_order = update.get('order')
+
+            if not column_id or new_order is None:
+                continue
+
+            try:
+                column = await self.column_repo.get(db, UUID(column_id))
+                if not column:
+                    continue
+
+                roadmap = await self.roadmap_repo.get(db, column.roadmap_id)
+                if not roadmap:
+                    continue
+
+                await self.column_repo.update(db, UUID(column_id), order=new_order)
+            except Exception as e:
+                from app.core.logging import get_logger
+
+                logger = get_logger(__name__)
+                logger.warning(
+                    f'Failed to update column order for {column_id}: {str(e)}'
+                )
+                continue
 
 
 roadmap_service = RoadmapService()

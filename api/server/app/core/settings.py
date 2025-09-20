@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     SUPABASE_SERVICE_KEY: str = ''
     SUPABASE_JWT_SECRET: str = ''
 
+    MAX_BULK_CONVERSION_ITEMS: int = 50
+
     # Security
     SECRET_KEY: str = 'dev-secret-key-change-in-production'
     ALGORITHM: str = 'HS256'
@@ -77,11 +79,12 @@ class Settings(BaseSettings):
     DODO_PRODUCT_ID_PRO_MONTHLY: str = ''
     DODO_PRODUCT_ID_PRO_YEARLY: str = ''
 
-
     model_config = SettingsConfigDict(
-        env_file='.env', case_sensitive=True, extra='ignore',
+        env_file='.env',
+        case_sensitive=True,
+        extra='ignore',
         # Prevent automatic URL parsing
-        str_strip_whitespace=True
+        str_strip_whitespace=True,
     )
 
     @property
@@ -118,7 +121,6 @@ class Settings(BaseSettings):
     @field_validator('DATABASE_URL', mode='before')
     @classmethod
     def construct_database_url(cls, v: Any, values) -> Optional[str]:
-        
         if isinstance(v, str) and v.strip() != '':
             return v
 
@@ -131,7 +133,9 @@ class Settings(BaseSettings):
         if all([user, password, host, port, db]):
             return f'postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}'
 
-        raise ValueError("Database connection failed: DATABASE_URL is not set and could not be constructed from POSTGRES_* variables.")
+        raise ValueError(
+            'Database connection failed: DATABASE_URL is not set and could not be constructed from POSTGRES_* variables.'
+        )
 
 
 @lru_cache()

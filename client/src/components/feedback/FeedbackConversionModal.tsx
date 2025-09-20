@@ -1,9 +1,14 @@
-import React, { useState, useEffect } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   Select,
   SelectContent,
@@ -11,352 +16,316 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, Tag, ArrowRight, CheckCircle } from 'lucide-react'
-import { type ConversionPreview } from '@/lib/api'
-import type { ConversionData } from '@/lib/api/feedback'
+import { Loader2, MapPin, Tag, AlertCircle } from 'lucide-react'
+import { api } from '@/lib/api'
+import { useToast } from '@/components/ui/use-toast'
+import { useAppContext } from '@/context/AppContext'
+import type { RoadmapColumn } from '@/types'
+
+interface ConversionData {
+  column_id: string
+  priority?: 'low' | 'medium' | 'high' | 'critical'
+  conversion_notes?: string
+  custom_tags?: string[]
+}
 
 interface FeedbackConversionModalProps {
   isOpen: boolean
   onClose: () => void
+  onConvert: (conversionData: ConversionData) => Promise<void>
   feedback: {
     id: string
     feedback_type: string
-    title?: string
+    title: string
     message?: string
   }
-  onConvert: (data: ConversionData) => Promise<void>
+  isBulk?: boolean
+  selectedCount?: number
 }
 
-const PRIORITY_OPTIONS = [
-  { value: 'low', label: 'Low', color: 'bg-green-100 text-green-800' },
-  { value: 'medium', label: 'Medium', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'high', label: 'High', color: 'bg-orange-100 text-orange-800' },
-  { value: 'critical', label: 'Critical', color: 'bg-red-100 text-red-800' },
-]
-
-export const FeedbackConversionModal: React.FC<FeedbackConversionModalProps> = ({
+export function FeedbackConversionModal({
   isOpen,
   onClose,
-  feedback,
   onConvert,
-}) => {
-  const [priority, setPriority] = useState<'low' | 'medium' | 'high' | 'critical'>('medium')
-  const [conversionNotes, setConversionNotes] = useState<string>('')
+  feedback,
+  isBulk = false,
+  selectedCount = 1,
+}: FeedbackConversionModalProps) {
+  const [selectedColumn, setSelectedColumn] = useState<string>('')
+  const [priority, setPriority] = useState<string>('medium')
+  const [conversionNotes, setConversionNotes] = useState('')
   const [customTags, setCustomTags] = useState<string[]>([])
-  const [newTag, setNewTag] = useState<string>('')
-  const [preview, setPreview] = useState<ConversionPreview | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [tagInput, setTagInput] = useState('')
   const [isConverting, setIsConverting] = useState(false)
-  const [conversionSuccess, setConversionSuccess] = useState(false)
+
+  const { toast } = useToast()
+  const { currentProject } = useAppContext()
+
+  const { data: roadmap } = useQuery({
+    queryKey: ['roadmap', currentProject?.id],
+    queryFn: () => api.getRoadmap(currentProject!.id),
+    enabled: isOpen && !!currentProject?.id,
+  })
+
+  const { data: existingTags = [] } = useQuery({
+    queryKey: ['roadmap-tags', roadmap?.id],
+    queryFn: () => api.getRoadmapTags(roadmap!.id),
+    enabled: isOpen && !!roadmap?.id,
+  })
+
+  const columns =
+    roadmap?.columns?.sort((a: RoadmapColumn, b: RoadmapColumn) => a.order - b.order) || []
 
   useEffect(() => {
-    if (isOpen && feedback) {
-      loadConversionPreview()
-      // Set default priority based on feedback type
-      setPriority(
-        getDefaultPriority(feedback.feedback_type) as 'low' | 'medium' | 'high' | 'critical'
-      )
+    if (isOpen) {
+      setSelectedColumn('')
+      setPriority('medium')
+      setConversionNotes('')
+      setCustomTags([])
+      setTagInput('')
     }
-  }, [isOpen, feedback])
-
-  const loadConversionPreview = async () => {
-    if (!feedback?.id) return
-
-    try {
-      setIsLoading(true)
-      const { api } = await import('@/lib/api')
-      const previewData = await api.getConversionPreview(feedback.id)
-      setPreview(previewData)
-    } catch (error) {
-      console.error('Failed to load conversion preview:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const getDefaultPriority = (feedbackType: string): string => {
-    switch (feedbackType) {
-      case 'bug_report':
-        return 'high'
-      case 'feature_request':
-        return 'medium'
-      case 'review':
-      case 'nps':
-      case 'csat':
-      case 'ces':
-        return 'medium'
-      default:
-        return 'medium'
-    }
-  }
-
-  const addCustomTag = () => {
-    if (newTag.trim() && !customTags.includes(newTag.trim())) {
-      setCustomTags([...customTags, newTag.trim()])
-      setNewTag('')
-    }
-  }
-
-  const removeCustomTag = (tagToRemove: string) => {
-    setCustomTags(customTags.filter((tag) => tag !== tagToRemove))
-  }
+  }, [isOpen])
 
   const handleConvert = async () => {
-    if (!priority) return
+    if (!selectedColumn) {
+      toast({
+        title: 'Column Required',
+        description: 'Please select a column to convert the feedback to.',
+        variant: 'destructive',
+      })
+      return
+    }
 
+    setIsConverting(true)
     try {
-      setIsConverting(true)
       await onConvert({
-        priority,
+        column_id: selectedColumn,
+        priority: priority as 'low' | 'medium' | 'high' | 'critical',
         conversion_notes: conversionNotes || undefined,
         custom_tags: customTags.length > 0 ? customTags : undefined,
       })
-      setConversionSuccess(true)
-      setTimeout(() => {
-        onClose()
-        setConversionSuccess(false)
-      }, 2000)
+
+      toast({
+        title: isBulk ? 'Feedback Converted' : 'Feedback Converted',
+        description: isBulk
+          ? `Successfully converted ${selectedCount} feedback items to roadmap.`
+          : 'Feedback has been converted to a roadmap item.',
+      })
+
+      onClose()
     } catch (error) {
-      console.error('Conversion failed:', error)
+      toast({
+        title: 'Conversion Failed',
+        description: 'Failed to convert feedback. Please try again.',
+        variant: 'destructive',
+      })
     } finally {
       setIsConverting(false)
     }
   }
 
-  const handleClose = () => {
-    if (!isConverting) {
-      setPriority('medium')
-      setConversionNotes('')
-      setCustomTags([])
-      setNewTag('')
-      setPreview(null)
-      setConversionSuccess(false)
-      onClose()
+  const addTag = () => {
+    if (tagInput.trim() && !customTags.includes(tagInput.trim())) {
+      setCustomTags([...customTags, tagInput.trim()])
+      setTagInput('')
     }
   }
 
-  if (!feedback) return null
+  const removeTag = (tagToRemove: string) => {
+    setCustomTags(customTags.filter((tag) => tag !== tagToRemove))
+  }
+
+  const toggleExistingTag = (tagName: string) => {
+    if (customTags.includes(tagName)) {
+      removeTag(tagName)
+    } else {
+      setCustomTags([...customTags, tagName])
+    }
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      addTag()
+    }
+  }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <ArrowRight className="h-5 w-5" />
-            Convert Feedback to Action Item
+          <DialogTitle>
+            {isBulk ? `Convert ${selectedCount} Feedback Items` : 'Convert to Roadmap'}
           </DialogTitle>
+          <DialogDescription>
+            {isBulk
+              ? 'Select a column to convert the selected feedback items to roadmap features.'
+              : 'Convert this feedback into a roadmap feature for tracking and development.'}
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Column - Conversion Form */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Conversion Settings</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Priority Selection */}
-                <div className="space-y-2">
-                  <Label htmlFor="priority">Priority</Label>
-                  <Select
-                    value={priority}
-                    onValueChange={(value) =>
-                      setPriority(value as 'low' | 'medium' | 'high' | 'critical')
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select priority" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PRIORITY_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          <div className="flex items-center gap-2">
-                            <Badge className={option.color}>{option.label}</Badge>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Custom Tags */}
-                <div className="space-y-2">
-                  <Label>Custom Tags</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Add custom tag"
-                      value={newTag}
-                      onChange={(e) => setNewTag(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && addCustomTag()}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={addCustomTag}
-                      disabled={!newTag.trim()}
-                    >
-                      Add
-                    </Button>
-                  </div>
-                  {customTags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {customTags.map((tag) => (
-                        <Badge
-                          key={tag}
-                          variant="secondary"
-                          className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
-                          onClick={() => removeCustomTag(tag)}
-                        >
-                          {tag} ×
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Conversion Notes */}
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Conversion Notes (Optional)</Label>
-                  <Textarea
-                    id="notes"
-                    placeholder="Add any notes about this conversion..."
-                    value={conversionNotes}
-                    onChange={(e) => setConversionNotes(e.target.value)}
-                    rows={3}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Action Buttons */}
-            <div className="flex gap-3">
-              <Button
-                onClick={handleConvert}
-                disabled={!priority || isConverting}
-                className="flex-1"
-              >
-                {isConverting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Converting...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Convert to Action Item
-                  </>
-                )}
-              </Button>
-              <Button variant="outline" onClick={handleClose} disabled={isConverting}>
-                Cancel
-              </Button>
+        <div className="space-y-6">
+          {/* Feedback Preview */}
+          {!isBulk && (
+            <div className="bg-muted/50 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="outline">{feedback.feedback_type}</Badge>
+              </div>
+              <h4 className="font-medium">{feedback.title}</h4>
+              {feedback.message && (
+                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                  {feedback.message}
+                </p>
+              )}
             </div>
+          )}
 
-            {conversionSuccess && (
-              <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg">
-                <CheckCircle className="h-5 w-5" />
-                <span>Successfully converted to action item!</span>
+          {/* Column Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="column" className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              Roadmap Column *
+            </Label>
+            <Select value={selectedColumn} onValueChange={setSelectedColumn}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a column" />
+              </SelectTrigger>
+              <SelectContent>
+                {columns.map((column: RoadmapColumn) => (
+                  <SelectItem key={column.id} value={column.id}>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: column.color }}
+                      />
+                      {column.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {columns.length === 0 && (
+              <div className="flex items-center gap-2 text-sm text-amber-600">
+                <AlertCircle className="h-4 w-4" />
+                <span>No roadmap columns found. Please create a roadmap first.</span>
               </div>
             )}
           </div>
 
-          {/* Right Column - Preview */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Preview</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-6 w-6 animate-spin" />
-                  </div>
-                ) : preview ? (
-                  <div className="space-y-4">
-                    {/* Title */}
-                    <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Title</Label>
-                      <p className="text-lg font-semibold mt-1">{preview.suggested_title}</p>
-                    </div>
+          {/* Priority Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="priority">Priority</Label>
+            <Select value={priority} onValueChange={setPriority}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="critical">Critical</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-                    {/* Description */}
-                    {preview.suggested_description && (
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">
-                          Description
-                        </Label>
-                        <p className="text-sm mt-1 whitespace-pre-wrap">
-                          {preview.suggested_description}
-                        </p>
-                      </div>
-                    )}
+          {/* Tags */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              Tags
+            </Label>
 
-                    {/* Auto-generated Tags */}
-                    <div>
-                      <Label className="text-sm font-medium text-muted-foreground">
-                        Auto-generated Tags
-                      </Label>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {preview.suggested_tags.map((tag, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            <Tag className="h-3 w-3 mr-1" />
-                            {tag.name}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
+            {/* Existing Roadmap Tags */}
+            {existingTags.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-sm text-muted-foreground">Select from existing tags:</Label>
+                <div className="flex flex-wrap gap-2">
+                  {existingTags.map((tag: any) => (
+                    <Badge
+                      key={tag.id}
+                      variant={customTags.includes(tag.name) ? 'default' : 'outline'}
+                      className="cursor-pointer hover:bg-primary/10"
+                      onClick={() => toggleExistingTag(tag.name)}
+                    >
+                      <div
+                        className="w-2 h-2 rounded-full mr-1"
+                        style={{ backgroundColor: tag.color }}
+                      />
+                      {tag.name}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
 
-                    {/* Custom Tags */}
-                    {customTags.length > 0 && (
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">
-                          Custom Tags
-                        </Label>
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          {customTags.map((tag) => (
-                            <Badge key={tag} variant="secondary" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+            {/* Add New Tags */}
+            <div className="space-y-2">
+              <Label className="text-sm text-muted-foreground">Or add a new tag:</Label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Add a new tag..."
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="flex-1 px-3 py-2 text-sm border border-input rounded-md bg-background"
+                />
+                <Button type="button" variant="outline" size="sm" onClick={addTag}>
+                  Add
+                </Button>
+              </div>
+            </div>
 
-                    {/* Feedback Details */}
-                    <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">
-                          Priority
-                        </Label>
-                        <p className="text-sm mt-1 capitalize">{preview.suggested_priority}</p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Tags</Label>
-                        <p className="text-sm mt-1">{preview.suggested_tags.length} tags</p>
-                      </div>
-                    </div>
+            {/* Selected Tags */}
+            {customTags.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-sm text-muted-foreground">Selected tags:</Label>
+                <div className="flex flex-wrap gap-2">
+                  {customTags.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tag)}
+                        className="ml-1 hover:text-destructive"
+                      >
+                        ×
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
-                    {/* Destination Info */}
-                    <div className="bg-blue-50 p-3 rounded-lg">
-                      <p className="text-sm text-blue-800">
-                        <strong>Destination:</strong> This item will be created in the "Backlog"
-                        column of your roadmap with the selected priority and tags.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Tag className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>Preview not available</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          {/* Conversion Notes */}
+          <div className="space-y-2">
+            <Label htmlFor="notes">Conversion Notes (Optional)</Label>
+            <Textarea
+              id="notes"
+              placeholder="Add any notes about this conversion..."
+              value={conversionNotes}
+              onChange={(e) => setConversionNotes(e.target.value)}
+              rows={3}
+            />
           </div>
         </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={isConverting}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConvert}
+            disabled={isConverting || !selectedColumn || columns.length === 0}
+          >
+            {isConverting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isBulk ? `Convert ${selectedCount} Items` : 'Convert to Roadmap'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

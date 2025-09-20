@@ -17,8 +17,10 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/use-toast'
+import { api } from '@/lib/api'
 import type { RoadmapActionItem, RoadmapColumn } from '@/types'
 import { Checkbox } from '@/components/ui/checkbox'
+import { StructuredDescription } from '@/components/common/StructuredDescription'
 
 interface RoadmapCardProps {
   feature: RoadmapActionItem
@@ -55,20 +57,9 @@ export function RoadmapCard({
   const { toast } = useToast()
 
   const upvoteMutation = useMutation({
-    // commented out because we don't have the upvoteFeature function in the api.ts file
-    // mutationFn: (featureId: string) => api.upvoteFeature(featureId),
-    mutationFn: (featureId: string) => {
-      return Promise.resolve({
-        id: featureId,
-        vote_count: 1,
-      })
-    },
+    mutationFn: (featureId: string) => api.upvoteFeature(featureId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmap'] })
-      toast({
-        title: 'Feature upvoted',
-        description: 'Your vote has been recorded.',
-      })
     },
     onError: (error) => {
       toast({
@@ -80,19 +71,9 @@ export function RoadmapCard({
   })
 
   const deleteFeatureMutation = useMutation({
-    // commented out because we don't have the deleteRoadmapActionItem function in the api.ts file
-    // mutationFn: (featureId: string) => api.deleteRoadmapActionItem(featureId),
-    mutationFn: (featureId: string) => {
-      return Promise.resolve({
-        id: featureId,
-      })
-    },
+    mutationFn: (featureId: string) => api.deleteRoadmapActionItem(featureId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmap'] })
-      toast({
-        title: 'Feature deleted',
-        description: 'The feature has been removed from the roadmap.',
-      })
       setShowDeleteConfirm(false)
     },
     onError: (error) => {
@@ -138,7 +119,6 @@ export function RoadmapCard({
     onToggleSelection?.(feature)
   }
 
-  // Limit tags to show to prevent overflow
   const maxVisibleTags = 2
   const visibleTags = feature.tags?.slice(0, maxVisibleTags) || []
   const remainingTagsCount =
@@ -148,8 +128,8 @@ export function RoadmapCard({
     <>
       <Card
         className={cn(
-          'group relative cursor-pointer transition-all duration-300 ease-out hover:shadow-xl hover:scale-[1.02] border-border/50 bg-card/50 hover:bg-card overflow-hidden',
-          isDragged && 'opacity-50 scale-95 rotate-1',
+          'relative cursor-pointer border-border/50 bg-card/50 overflow-hidden transition-all duration-200',
+          isDragged && 'shadow-lg scale-105 border-blue-500',
           isSelectionMode && 'hover:ring-2 hover:ring-primary/20',
           isSelected && 'ring-2 ring-primary border-primary/50 bg-primary/5'
         )}
@@ -158,20 +138,14 @@ export function RoadmapCard({
         onDragEnd={onDragEnd}
         onClick={handleCardClick}
       >
-        {/* Enhanced hover indicator with gradient animation */}
-        <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:via-primary/10 group-hover:to-primary/5 transition-all duration-500 opacity-0 group-hover:opacity-100" />
-
-        {/* Subtle border glow on hover */}
-        <div className="absolute inset-0 rounded-lg border-2 border-transparent group-hover:border-primary/20 transition-all duration-300" />
-
-        {/* Quick Actions - Enhanced hover animation (Edit, JIRA, Delete) */}
+        {/* Quick Actions */}
         {!isSelectionMode && (
-          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 transform translate-y-2 group-hover:translate-y-0 scale-95 group-hover:scale-100">
+          <div className="absolute top-2 right-2 z-20">
             <div className="flex items-center gap-1 bg-background/95 backdrop-blur-sm rounded-lg border border-border/50 p-1 shadow-xl">
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-6 w-6 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 hover:scale-110"
+                className="h-6 w-6 p-0 hover:bg-primary/10 hover:text-primary"
                 onClick={(e) => {
                   e.stopPropagation()
                   setShowDetail(true)
@@ -184,7 +158,7 @@ export function RoadmapCard({
                   size="sm"
                   variant="ghost"
                   className={cn(
-                    'h-7 w-7 p-0 transition-all duration-200 hover:scale-110',
+                    'h-7 w-7 p-0',
                     feature.jira_integration
                       ? 'text-green-600 hover:bg-green-50 hover:text-green-700'
                       : 'hover:bg-blue-50 hover:text-blue-600'
@@ -202,7 +176,7 @@ export function RoadmapCard({
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive transition-all duration-200 hover:scale-110"
+                className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
                 onClick={handleDelete}
                 disabled={deleteFeatureMutation.isPending}
               >
@@ -226,34 +200,36 @@ export function RoadmapCard({
         <div className="p-4 space-y-4 relative z-10">
           {/* Header with Enhanced Drag Handle */}
           <div className="flex items-start justify-between gap-3">
-            <h4 className="font-semibold text-sm leading-tight text-foreground line-clamp-2 flex-1 group-hover:text-primary/80 transition-all duration-300 group-hover:scale-[1.02] origin-left">
+            <h4 className="font-semibold text-sm leading-tight text-foreground line-clamp-2 flex-1">
               {feature.title}
             </h4>
             {!isSelectionMode && (
-              <GripVertical className="h-4 w-4 text-muted-foreground/60 flex-shrink-0 group-hover:text-muted-foreground transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
+              <GripVertical className="h-4 w-4 text-muted-foreground/60 flex-shrink-0" />
             )}
           </div>
 
-          {/* Description with enhanced hover effect */}
+          {/* Description */}
           {feature.description && (
-            <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed group-hover:text-muted-foreground/80 transition-all duration-300 group-hover:line-clamp-none">
-              {feature.description}
-            </p>
+            <div className="line-clamp-3">
+              <StructuredDescription
+                description={feature.description}
+                className="text-sm text-muted-foreground leading-relaxed"
+              />
+            </div>
           )}
 
-          {/* Enhanced Tags with hover animations */}
+          {/* Tags */}
           {feature.tags && feature.tags.length > 0 && (
             <div className="flex items-center flex-wrap gap-2">
-              {visibleTags.map((tag, tagIndex) => (
+              {visibleTags.map((tag) => (
                 <Badge
                   key={tag.id}
                   variant="outline"
-                  className="text-xs font-medium border-none px-2 py-1 shadow-sm transition-all duration-300 hover:scale-110 hover:shadow-md"
+                  className="text-xs font-medium border-none px-2 py-1 shadow-sm"
                   style={{
                     backgroundColor: `${tag.color}15`,
                     color: tag.color,
                     borderColor: `${tag.color}30`,
-                    animationDelay: `${tagIndex * 50}ms`,
                   }}
                 >
                   {tag.name}
@@ -262,7 +238,7 @@ export function RoadmapCard({
               {remainingTagsCount > 0 && (
                 <Badge
                   variant="outline"
-                  className="text-xs font-medium px-2 py-1 bg-muted/50 text-muted-foreground border-border/50 hover:bg-muted/70 transition-all duration-200 hover:scale-105"
+                  className="text-xs font-medium px-2 py-1 bg-muted/50 text-muted-foreground border-border/50"
                 >
                   +{remainingTagsCount}
                 </Badge>
@@ -271,7 +247,7 @@ export function RoadmapCard({
           )}
 
           {feature.feedback_id && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground group-hover:text-muted-foreground/80 transition-all duration-300">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <MessageSquare className="h-3 w-3 text-blue-500" />
               <span className="text-blue-600 font-medium">From Feedback</span>
               <Button
@@ -288,10 +264,10 @@ export function RoadmapCard({
             </div>
           )}
 
-          {/* Enhanced Footer Information with better spacing */}
-          <div className="flex flex-col gap-3 pt-4 border-t border-border/20 group-hover:border-border/40 transition-all duration-300">
+          {/* Footer Information */}
+          <div className="flex flex-col gap-3 pt-4 border-t border-border/20">
             {/* Created Date - Moved to separate line */}
-            <div className="flex items-center gap-2 text-xs text-muted-foreground group-hover:text-muted-foreground/80 transition-all duration-300">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Calendar className="h-3 w-3 text-muted-foreground/60" />
               <span>Created {new Date(feature.created_at).toLocaleDateString()}</span>
             </div>
@@ -300,19 +276,19 @@ export function RoadmapCard({
             <div className="flex items-center justify-between">
               {/* Left side: Submitter and JIRA status */}
               <div className="flex items-center gap-3">
-                {/* Enhanced Submitter Info */}
+                {/* Submitter Info */}
                 {feature.submitter_name ? (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground group-hover:text-muted-foreground/80 transition-all duration-300">
-                    <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-all duration-300 group-hover:scale-110">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
                       <User className="h-3 w-3 text-primary" />
                     </div>
-                    <span className="max-w-[80px] truncate font-medium group-hover:max-w-none transition-all duration-300">
+                    <span className="max-w-[80px] truncate font-medium">
                       {feature.submitter_name}
                     </span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground group-hover:text-muted-foreground/80 transition-all duration-300">
-                    <div className="w-5 h-5 rounded-full bg-muted/50 flex items-center justify-center group-hover:bg-muted/70 transition-all duration-300 group-hover:scale-110">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="w-5 h-5 rounded-full bg-muted/50 flex items-center justify-center">
                       <User className="h-3 w-3 text-muted-foreground" />
                     </div>
                     <span>Anonymous</span>
@@ -336,25 +312,22 @@ export function RoadmapCard({
                 )}
               </div>
 
-              {/* Enhanced Vote Count with better interactions */}
+              {/* Vote Count */}
               <div className="flex items-center gap-2 text-xs">
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-6 w-6 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 hover:scale-110 active:scale-95"
+                  className="h-6 w-6 p-0 hover:bg-primary/10 hover:text-primary"
                   onClick={handleUpvote}
                   disabled={upvoteMutation.isPending}
                 >
                   <ThumbsUp
-                    className={cn(
-                      'h-3 w-3 transition-all duration-200',
-                      feature.vote_count > 0 && 'text-primary fill-primary'
-                    )}
+                    className={cn('h-3 w-3', feature.vote_count > 0 && 'text-primary fill-primary')}
                   />
                 </Button>
                 <span
                   className={cn(
-                    'font-medium min-w-[16px] text-center transition-all duration-200',
+                    'font-medium min-w-[16px] text-center',
                     feature.vote_count > 0 ? 'text-primary' : 'text-muted-foreground'
                   )}
                 >
@@ -364,9 +337,6 @@ export function RoadmapCard({
             </div>
           </div>
         </div>
-
-        {/* Click feedback overlay */}
-        <div className="absolute inset-0 bg-primary/5 rounded-lg opacity-0 group-active:opacity-100 transition-opacity duration-150 pointer-events-none" />
       </Card>
 
       {/* Detail dialog */}
