@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CreditCard, Settings, AlertCircle, CheckCircle2, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { organizationApi } from '@/lib/api/organization'
 import { useSubscription } from '@/hooks/useSubscription'
 import { ConfirmationModal } from '@/components/common/ConfirmationModal'
+import { paymentApi, type PaymentItem } from '@/lib/api/payment'
 
 export default function BillingPage() {
   const navigate = useNavigate()
@@ -34,6 +35,52 @@ export default function BillingPage() {
   const [isCancellationScheduled, setIsCancellationScheduled] = useState(false)
   const [isOrgOwner, setIsOrgOwner] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [isLoadingPayments, setIsLoadingPayments] = useState(false)
+  const [paymentsError, setPaymentsError] = useState<string | null>(null)
+  const [payments, setPayments] = useState<PaymentItem[] | null>(null)
+
+  const formatPaymentAmount = (currency?: string | null, amountMinor?: number | null): string => {
+    if (amountMinor === null || amountMinor === undefined) return '-'
+    const code = (currency || 'USD').toUpperCase()
+    const zeroDecimals = new Set([
+      'BIF',
+      'CLP',
+      'DJF',
+      'GNF',
+      'JPY',
+      'KMF',
+      'KRW',
+      'MGA',
+      'PYG',
+      'RWF',
+      'UGX',
+      'VND',
+      'VUV',
+      'XAF',
+      'XOF',
+      'XPF',
+      'HUF',
+    ])
+    const amount = zeroDecimals.has(code) ? amountMinor : amountMinor / 100
+    try {
+      return new Intl.NumberFormat(undefined, { style: 'currency', currency: code }).format(amount)
+    } catch {
+      return `${amount.toLocaleString()} ${code}`
+    }
+  }
+
+  const renderPaymentBadge = (status?: string | null) => {
+    const s = (status || '').toLowerCase()
+    if (s === 'succeeded') return <Badge className="bg-green-100 text-green-800">Succeeded</Badge>
+    if (s === 'failed') return <Badge className="bg-red-100 text-red-800">Failed</Badge>
+    if (s === 'processing')
+      return <Badge className="bg-yellow-100 text-yellow-800">Processing</Badge>
+    return (
+      <Badge variant="outline" className="capitalize">
+        {status || 'unknown'}
+      </Badge>
+    )
+  }
 
   // Determine if current user is the organization owner
   useEffect(() => {
@@ -360,17 +407,75 @@ export default function BillingPage() {
         {/* Billing Information */}
         <Card>
           <CardHeader>
-            <CardTitle>Billing Information</CardTitle>
-            <CardDescription>Your billing and payment details</CardDescription>
+            <CardTitle className="flex items-center">
+              <CreditCard className="mr-2 h-5 w-5" />
+              Billing Information
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-center py-8 text-muted-foreground">
-              <CreditCard className="h-12 w-12 mx-auto mb-4" />
+          <CardContent className="space-y-4">
+            <div className="py-1 text-muted-foreground">
               <p>Billing information is managed through our secure payment processor.</p>
-              <p className="text-sm mt-2">
-                For billing questions, please contact our support team.
-              </p>
+              <p className="text-sm mt-1">You can quickly review your recent payments below.</p>
             </div>
+
+            <div>
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  try {
+                    setPaymentsError(null)
+                    setIsLoadingPayments(true)
+                    setPayments(null)
+                    const orgId = currentOrganization?.id
+                    if (!orgId) throw new Error('No organization selected')
+                    const res = await paymentApi.listPayments(orgId, {
+                      page_size: 10,
+                      page_number: 0,
+                    })
+                    setPayments(res.items || [])
+                  } catch (e) {
+                    const msg = e instanceof Error ? e.message : 'Failed to load payments'
+                    setPaymentsError(msg)
+                  } finally {
+                    setIsLoadingPayments(false)
+                  }
+                }}
+                disabled={isLoadingPayments}
+              >
+                {isLoadingPayments ? 'Loading Payments…' : 'View Recent Payments'}
+              </Button>
+            </div>
+
+            {paymentsError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{paymentsError}</AlertDescription>
+              </Alert>
+            )}
+
+            {payments && payments.length > 0 && (
+              <div className="mt-2 border rounded-md divide-y">
+                {payments.map((p) => (
+                  <div
+                    key={p.payment_id ?? Math.random()}
+                    className="flex items-center justify-between px-3 py-2 text-sm"
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-medium">{p.payment_id ?? '—'}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {p.created_at ? new Date(p.created_at).toLocaleString() : 'Unknown date'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs">
+                        {formatPaymentAmount(p.currency, p.total_amount)}
+                      </span>
+                      {renderPaymentBadge(p.status)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 

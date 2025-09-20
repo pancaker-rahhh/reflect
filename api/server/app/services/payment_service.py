@@ -887,7 +887,12 @@ class PaymentService:
                         'brand_id': getattr(item, 'brand_id', None),
                         'created_at': getattr(item, 'created_at', None),
                         'currency': getattr(item, 'currency', None),
-                        'customer': getattr(item, 'customer', None),
+                        'customer': (
+                            getattr(item, 'customer', None).to_dict()  # type: ignore[attr-defined]
+                            if getattr(item, 'customer', None)
+                            and hasattr(getattr(item, 'customer'), 'to_dict')
+                            else getattr(item, 'customer', None)
+                        ),
                         'digital_products_delivered': getattr(
                             item, 'digital_products_delivered', None
                         ),

@@ -416,7 +416,7 @@ class PaymentItem(BaseModel):
     brand_id: Optional[str] = None
     created_at: Optional[datetime] = None
     currency: Optional[str] = None
-    customer: Optional[Dict[str, str]] = None
+    customer: Optional[Dict[str, Any]] = None
     digital_products_delivered: Optional[bool] = None
     metadata: Dict[str, Any] = {}
     payment_id: Optional[str] = None
@@ -442,7 +442,7 @@ async def list_payments(
     page_number: Optional[int] = None,
     subscription_id: Optional[str] = None,
     customer_id: Optional[str] = None,
-    status: Optional[str] = None,
+    payment_status: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> PaymentsListResponse:
@@ -467,7 +467,7 @@ async def list_payments(
             page_number=page_number,
             subscription_id=subscription_id,
             customer_id=customer_id,
-            status=status,
+            status=payment_status,
         )
         return PaymentsListResponse(**result)
     except HTTPException:
