@@ -2,6 +2,7 @@ from typing import Tuple, List
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.subscription_plans import PLAN_LIMITS
 from app.models.project_model import Project
 from app.models.organization_model import ProjectRole
 from app.repositories.project_repository import (
@@ -28,7 +29,6 @@ from app.core.exceptions import (
 )
 from app.core.logging import get_logger
 from app.services.usage_tracking_service import usage_tracking_service
-from app.core.subscription_constants import PLAN_LIMITS
 
 logger = get_logger(__name__)
 
