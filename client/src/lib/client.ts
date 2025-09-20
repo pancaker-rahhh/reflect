@@ -22,6 +22,21 @@ function createTimeoutSignal(timeout: number): AbortSignal {
   return controller.signal
 }
 
+function combineSignals(primary: AbortSignal, other?: AbortSignal): AbortSignal {
+  if (!other) return primary
+  const controller = new AbortController()
+  const abort = () => controller.abort()
+
+  if (primary.aborted || other.aborted) {
+    controller.abort()
+    return controller.signal
+  }
+
+  primary.addEventListener('abort', abort, { once: true })
+  other.addEventListener('abort', abort, { once: true })
+  return controller.signal
+}
+
 function shouldRetry(error: Error, attempt: number, maxRetries: number): boolean {
   if (attempt >= maxRetries) return false
   if (error.name === 'AbortError') return false
@@ -71,7 +86,7 @@ async function request<T>(endpoint: string, options: RequestInit & RequestConfig
       const timeoutSignal = createTimeoutSignal(timeout)
       const requestSignal = fetchOptions.signal
       const combinedSignal = requestSignal
-        ? AbortSignal.any([timeoutSignal, requestSignal])
+        ? combineSignals(timeoutSignal, requestSignal)
         : timeoutSignal
 
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -132,13 +147,13 @@ export const apiClient = {
   get: <T>(endpoint: string, config?: RequestConfig) =>
     request<T>(endpoint, { ...config, method: 'GET' }),
 
-  getBinary: async (endpoint: string, config?: RequestConfig): Promise<Blob> => {
+  getBinary: async (endpoint: string, config?: RequestConfig & RequestInit): Promise<Blob> => {
     const {
       timeout = DEFAULT_CONFIG.timeout,
       maxRetries = DEFAULT_CONFIG.maxRetries,
       skipRetry = false,
       ...fetchOptions
-    } = config || {}
+    } = (config as RequestInit & RequestConfig) || {}
 
     const makeRequest = async (attempt: number = 0): Promise<Blob> => {
       try {
@@ -159,7 +174,7 @@ export const apiClient = {
         const timeoutSignal = createTimeoutSignal(timeout)
         const requestSignal = (fetchOptions as RequestInit).signal
         const combinedSignal = requestSignal
-          ? AbortSignal.any([timeoutSignal, requestSignal])
+          ? combineSignals(timeoutSignal, requestSignal)
           : timeoutSignal
 
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
