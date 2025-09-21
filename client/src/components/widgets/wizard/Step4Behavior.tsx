@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Card } from '@/components/ui/card'
-import { Code, Info } from 'lucide-react'
+import { Code } from 'lucide-react'
 
 import type { WidgetFormData } from '@/pages/WidgetCreate'
 
@@ -133,14 +133,6 @@ export function Step4Behavior({ form }: Step4BehaviorProps) {
             </div>
           </div>
         </Card>
-
-        <div className="flex items-start gap-2 p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
-          <Info className="h-5 w-5 text-blue-600 mt-0.5" />
-          <p className="text-sm text-blue-900 dark:text-blue-100">
-            Multi-language support is automatically enabled. The widget will detect the user&apos;s
-            browser language and display content accordingly.
-          </p>
-        </div>
       </div>
     </Form>
   )

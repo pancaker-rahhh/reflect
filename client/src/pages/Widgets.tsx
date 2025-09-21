@@ -9,7 +9,6 @@ import { useAppContext } from '@/context/AppContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { WidgetCard } from '@/components/widgets/WidgetCard'
-import { LanguageSupportBanner } from '@/components/widgets/LanguageSupportBanner'
 import { FreeTierAlert } from '@/components/widgets/SubscriptionMessagesBanner'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageLoading } from '@/components/common/LoadingSpinner'
@@ -160,7 +159,6 @@ export function Widgets() {
         </div>
       </div>
 
-      <LanguageSupportBanner />
       <FreeTierAlert />
 
       <div className="relative">
