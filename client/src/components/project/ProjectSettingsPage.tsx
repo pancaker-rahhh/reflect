@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 // import { useNavigate } from 'react-router-dom'; // Currently unused
 
 import {
@@ -12,7 +12,6 @@ import {
   Check,
   Copy,
   RefreshCw,
-  Globe,
   Lock,
   AlertTriangle,
   Plus,
@@ -73,7 +72,6 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
     name: '',
     description: '',
     visibility: 'private',
-    domain: '',
     timezone: 'UTC',
     language: 'en',
   })
@@ -95,29 +93,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
     },
   ])
 
-  useEffect(() => {
-    if (currentProject || projectId) {
-      loadProjectData()
-    } else {
-      // No project to load, stop loading
-      setLoading(false)
-    }
-  }, [currentProject, projectId])
-
-  useEffect(() => {
-    if (currentOrganization) {
-      loadOrganizationMembers()
-    }
-  }, [currentOrganization])
-
-  useEffect(() => {
-    const id = currentProject?.id || projectId
-    if (id) {
-      loadProjectMembers()
-    }
-  }, [currentProject, projectId])
-
-  const loadProjectData = async () => {
+  const loadProjectData = useCallback(async () => {
     try {
       setLoading(true)
       const id = projectId || currentProject?.id
@@ -129,7 +105,6 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
         name: projectData.name || '',
         description: projectData.description || '',
         visibility: 'private',
-        domain: '',
         timezone: 'UTC',
         language: 'en',
       })
@@ -139,9 +114,34 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
     } finally {
       setLoading(false)
     }
-  }
+  }, [currentProject?.id, projectId])
 
-  const loadOrganizationMembers = async () => {
+  const mergeTeamMembers = useCallback(
+    (projectMems: ProjectMember[], orgMembers: OrganizationMember[]) => {
+      const projectMemberUserIds = new Set(projectMems.map((pm) => pm.user_id))
+      const orgOwners = orgMembers.filter(
+        (om) => om.role === 'owner' && om.user_id && !projectMemberUserIds.has(om.user_id)
+      )
+
+      const ownersAsProjectMembers: ProjectMember[] = orgOwners.map((owner) => ({
+        id: `org-owner-${owner.id}`,
+        user_id: owner.user_id!,
+        project_id: currentProject?.id || projectId || '',
+        role: 'admin' as const,
+        created_at: owner.created_at,
+        updated_at: owner.updated_at || owner.created_at,
+        user_name: owner.user_name,
+        user_email: owner.user_email,
+        is_organization_owner: true,
+      }))
+
+      const allMembers = [...projectMems, ...ownersAsProjectMembers]
+      setAllTeamMembers(allMembers)
+    },
+    [currentProject?.id, projectId]
+  )
+
+  const loadOrganizationMembers = useCallback(async () => {
     try {
       if (!currentOrganization?.id) return
 
@@ -156,9 +156,9 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
       console.error('Failed to load organization members:', error)
       setMessage({ type: 'error', text: 'Failed to load organization members' })
     }
-  }
+  }, [currentOrganization?.id, projectMembers, mergeTeamMembers])
 
-  const loadProjectMembers = async () => {
+  const loadProjectMembers = useCallback(async () => {
     try {
       const id = currentProject?.id || projectId
       if (!id) return
@@ -172,31 +172,36 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
       console.error('Failed to load project members:', error)
       setMessage({ type: 'error', text: 'Failed to load project members' })
     }
-  }
+  }, [currentProject?.id, projectId, organizationMembers, mergeTeamMembers])
 
-  const mergeTeamMembers = (projectMems: ProjectMember[], orgMembers: OrganizationMember[]) => {
-    // Find organization owners who are not already project members
-    const projectMemberUserIds = new Set(projectMems.map((pm) => pm.user_id))
-    const orgOwners = orgMembers.filter(
-      (om) => om.role === 'owner' && om.user_id && !projectMemberUserIds.has(om.user_id)
+  useEffect(() => {
+    if (currentProject || projectId) {
+      loadProjectData()
+    } else {
+      setLoading(false)
+    }
+  }, [currentProject, projectId, loadProjectData])
+
+  useEffect(() => {
+    if (currentOrganization) {
+      loadOrganizationMembers()
+    }
+  }, [currentOrganization, loadOrganizationMembers])
+
+  useEffect(() => {
+    const id = currentProject?.id || projectId
+    if (id) {
+      loadProjectMembers()
+    }
+  }, [currentProject, projectId, loadProjectMembers])
+
+  const isOrganizationOwner = (member: unknown): member is { is_organization_owner: boolean } => {
+    return (
+      typeof member === 'object' &&
+      member !== null &&
+      'is_organization_owner' in (member as Record<string, unknown>) &&
+      Boolean((member as Record<string, unknown>).is_organization_owner)
     )
-
-    // Convert organization owners to project member format
-    const ownersAsProjectMembers: ProjectMember[] = orgOwners.map((owner) => ({
-      id: `org-owner-${owner.id}`, // Use a special ID to distinguish from actual project members
-      user_id: owner.user_id!,
-      project_id: currentProject?.id || projectId || '',
-      role: 'admin' as const, // Organization owners are shown as admins in projects
-      created_at: owner.created_at,
-      updated_at: owner.updated_at || owner.created_at,
-      user_name: owner.user_name,
-      user_email: owner.user_email,
-      is_organization_owner: true, // Add a flag to identify them
-    }))
-
-    // Merge project members with organization owners
-    const allMembers = [...projectMems, ...ownersAsProjectMembers]
-    setAllTeamMembers(allMembers)
   }
 
   const handleSaveGeneral = async () => {
@@ -283,7 +288,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
 
   const handleRemoveMember = (member: ProjectMember) => {
     // Prevent removal of organization owners
-    if ((member as any).is_organization_owner) {
+    if (isOrganizationOwner(member)) {
       setMessage({ type: 'error', text: 'Cannot remove organization owner from project' })
       setTimeout(() => setMessage(null), 3000)
       return
@@ -389,14 +394,6 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
                 <option value="team">Team Only</option>
               </select>
             </div>
-
-            <AnimatedInput
-              label="Custom Domain"
-              value={formData.domain}
-              onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
-              placeholder="app.yourdomain.com"
-              icon={<Globe className="w-4 h-4" />}
-            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -475,7 +472,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
         onRoleChange={async (member, newRole) => {
           try {
             // Prevent role changes for organization owners
-            if ((member as any).is_organization_owner) {
+            if (isOrganizationOwner(member)) {
               setMessage({ type: 'error', text: 'Cannot change role of organization owner' })
               setTimeout(() => setMessage(null), 3000)
               return
@@ -665,7 +662,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">No Projects Found</h2>
             <p className="text-gray-600 mb-8 max-w-md mx-auto">
-              You don't have any projects yet. Create your first project to get started with
+              You don&apos;t have any projects yet. Create your first project to get started with
               collecting feedback and managing your roadmap.
             </p>
             <button
