@@ -17,6 +17,7 @@ import {
 import { cn } from '@/lib/utils'
 import { OrganizationDropdown } from './OrganizationDropdown'
 import { isFeatureEnabled } from '@/lib/featureFlags'
+import { useUser } from '@/contexts/AuthContext'
 
 interface NavItem {
   label: string
@@ -69,6 +70,9 @@ export function Sidebar() {
   const [expandedItems, setExpandedItems] = useState<string[]>(['Feedback & Roadmap', 'Settings'])
   const [isExpanded, setIsExpanded] = useState(false)
   const collapseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const user = useUser()
+  const userEmail = user?.email ?? null
+  const avatarSeed = userEmail ? encodeURIComponent(userEmail) : ''
 
   const toggleExpanded = (label: string) => {
     setExpandedItems((prev) =>
@@ -192,29 +196,31 @@ export function Sidebar() {
         </div>
       )}
 
-      <div className="p-3 border-t border-border">
-        {!isExpanded ? (
-          <div className="flex justify-center">
-            <img
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=john"
-              alt="User avatar"
-              className="h-8 w-8 rounded-full"
-              title="john.doe@example.com"
-            />
-          </div>
-        ) : (
-          <div className="flex items-center gap-3">
-            <img
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=john"
-              alt="User avatar"
-              className="h-8 w-8 rounded-full"
-            />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">john.doe@example.com</p>
+      {userEmail && (
+        <div className="p-3 border-t border-border">
+          {!isExpanded ? (
+            <div className="flex justify-center">
+              <img
+                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`}
+                alt="User avatar"
+                className="h-8 w-8 rounded-full"
+                title={userEmail}
+              />
             </div>
-          </div>
-        )}
-      </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <img
+                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`}
+                alt="User avatar"
+                className="h-8 w-8 rounded-full"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{userEmail}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
