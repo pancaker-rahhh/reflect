@@ -82,10 +82,6 @@ export function Widgets() {
     setDeleteModal({ isOpen: true, widgetId, widgetName })
   }
 
-  const handleEditWidget = (widgetId: string) => {
-    navigate(`/app/widgets/${widgetId}/edit`)
-  }
-
   const handleGetCode = (widgetId: string) => {
     navigate(`/app/widgets/${widgetId}/get-code`)
   }
@@ -206,7 +202,6 @@ export function Widgets() {
                     widget={widget}
                     viewMode={viewMode}
                     onDelete={() => handleDeleteWidget(widget.id, widget.name)}
-                    onEdit={() => handleEditWidget(widget.id)}
                     onGetCode={() => handleGetCode(widget.id)}
                   />
                 ))}

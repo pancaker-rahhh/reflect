@@ -1,13 +1,4 @@
-import {
-  MoreVertical,
-  Eye,
-  Trash2,
-  Palette,
-  Puzzle,
-  Calendar,
-  TrendingUp,
-  Code,
-} from 'lucide-react'
+import { MoreVertical, Trash2, Palette, Puzzle, Calendar, TrendingUp, Code } from 'lucide-react'
 import { useState } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -25,17 +16,10 @@ interface WidgetCardProps {
   widget: Widget
   viewMode?: 'grid' | 'list'
   onDelete: () => void
-  onEdit: () => void
   onGetCode: () => void
 }
 
-export function WidgetCard({
-  widget,
-  viewMode = 'grid',
-  onDelete,
-  onEdit,
-  onGetCode,
-}: WidgetCardProps) {
+export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: WidgetCardProps) {
   const [_copied, _setCopied] = useState(false)
   const { data: metrics, isLoading: metricsLoading } = useWidgetMetrics(widget.id)
 
@@ -99,10 +83,6 @@ export function WidgetCard({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={onEdit} className="gap-2 cursor-pointer">
-                        <Eye className="h-4 w-4" />
-                        <span>Edit Widget</span>
-                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={onGetCode} className="gap-2 cursor-pointer">
                         <Code className="h-4 w-4" />
                         <span>Get Code</span>
@@ -166,10 +146,6 @@ export function WidgetCard({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={onEdit} className="gap-2 cursor-pointer">
-                  <Eye className="h-4 w-4" />
-                  <span>Edit Widget</span>
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={onGetCode} className="gap-2 cursor-pointer">
                   <Code className="h-4 w-4" />
                   <span>Get Code</span>
