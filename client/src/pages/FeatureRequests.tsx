@@ -34,7 +34,7 @@ export function FeatureRequests() {
 
   const { data: feedback = [], isLoading } = useQuery({
     queryKey: ['feedback', { type: 'feature_request' }, currentProject?.id],
-    queryFn: () => api.getFeedbackData('feature_request', currentProject?.id),
+    queryFn: () => api.getFeedbackData('feature_request', currentProject?.id, 'all'),
     refetchInterval: 30000,
     enabled: !!currentProject?.id,
   })

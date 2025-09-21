@@ -65,6 +65,7 @@ class DashboardService:
         db: AsyncSession,
         feedback_type: Optional[str] = None,
         project_id: Optional[str] = None,
+        time_range: str = 'all',
         limit: int = 100,
         offset: int = 0,
     ) -> List[Dict[str, Any]]:
@@ -85,6 +86,7 @@ class DashboardService:
                 widget_id=None,
                 project_id=project_id,
                 feedback_type=feedback_type,
+                time_range=time_range,
                 limit=limit,
                 offset=offset,
             )

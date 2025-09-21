@@ -123,8 +123,8 @@ export const api = {
   getDashboardMetrics: (timeRange?: string, projectId?: string) =>
     dashboardApi.getDashboardMetrics(timeRange, projectId),
   getRecentActivity: (projectId?: string) => dashboardApi.getRecentActivity(projectId),
-  getFeedbackData: (feedbackType?: string, projectId?: string) =>
-    dashboardApi.getFeedbackData(feedbackType, projectId),
+  getFeedbackData: (feedbackType?: string, projectId?: string, timeRange?: string) =>
+    dashboardApi.getFeedbackData(feedbackType, projectId, timeRange),
 
   getIntegrationsByProject: (projectId: string) => integrationsApi.getIntegrations(projectId),
   getIntegrations: (projectId?: string) => integrationsApi.getIntegrations(projectId),

@@ -354,6 +354,7 @@ class FeedbackRepository(BaseRepository[Feedback]):
         widget_id: Optional[UUID] = None,
         project_id: Optional[UUID] = None,
         feedback_type: Optional[str] = None,
+        time_range: str = 'all',
         limit: int = 100,
         offset: int = 0,
     ) -> List[Dict[str, Any]]:
@@ -383,11 +384,20 @@ class FeedbackRepository(BaseRepository[Feedback]):
             frf.use_case,
             frf.suggested_solution,
             frf.benefits,
-            frf.implementation_status
+            frf.implementation_status,
+            -- NPS specific fields
+            nf.nps_score,
+            -- CSAT specific fields
+            cf.csat_score,
+            -- CES specific fields
+            ces.ces_score
         FROM feedback f
         LEFT JOIN review_feedback rf ON f.id = rf.id
         LEFT JOIN bug_report_feedback brf ON f.id = brf.id
         LEFT JOIN feature_request_feedback frf ON f.id = frf.id
+        LEFT JOIN nps_feedback nf ON f.id = nf.id
+        LEFT JOIN csat_feedback cf ON f.id = cf.id
+        LEFT JOIN ces_feedback ces ON f.id = ces.id
         WHERE 1=1
         """
 
@@ -404,6 +414,21 @@ class FeedbackRepository(BaseRepository[Feedback]):
         if feedback_type:
             base_query += ' AND f.feedback_type = :feedback_type'
             params['feedback_type'] = feedback_type
+
+        # Add time range filtering
+        if time_range != 'all':
+            now = datetime.utcnow()
+            if time_range == 'week':
+                cutoff_date = now - timedelta(days=7)
+            elif time_range == 'month':
+                cutoff_date = now - timedelta(days=30)
+            elif time_range == 'year':
+                cutoff_date = now - timedelta(days=365)
+            else:
+                cutoff_date = now - timedelta(days=30)
+
+            base_query += ' AND f.created_at >= :cutoff_date'
+            params['cutoff_date'] = cutoff_date
 
         base_query += ' ORDER BY f.created_at DESC LIMIT :limit OFFSET :offset'
         params['limit'] = limit
@@ -454,6 +479,27 @@ class FeedbackRepository(BaseRepository[Feedback]):
                         'suggested_solution': row.suggested_solution,
                         'benefits': row.benefits,
                         'implementation_status': row.implementation_status,
+                    }
+                )
+
+            elif row.feedback_type == 'NPS':
+                feedback_item.update(
+                    {
+                        'nps_score': row.nps_score,
+                    }
+                )
+
+            elif row.feedback_type == 'CSAT':
+                feedback_item.update(
+                    {
+                        'csat_score': row.csat_score,
+                    }
+                )
+
+            elif row.feedback_type == 'CES':
+                feedback_item.update(
+                    {
+                        'ces_score': row.ces_score,
                     }
                 )
 

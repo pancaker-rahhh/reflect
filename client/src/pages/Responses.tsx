@@ -42,7 +42,8 @@ export function Responses() {
     queryFn: () =>
       api.getFeedbackData(
         submissionType === 'all' ? undefined : submissionType,
-        currentProject?.id
+        currentProject?.id,
+        'all'
       ),
     refetchInterval: 30000,
     enabled: !!currentProject?.id,

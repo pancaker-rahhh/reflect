@@ -52,3 +52,7 @@ class FeedbackDataResponse(BaseModel):
     suggested_solution: Optional[str] = None
     benefits: Optional[str] = None
     implementation_status: Optional[str] = None
+
+    nps_score: Optional[int] = None
+    csat_score: Optional[int] = None
+    ces_score: Optional[int] = None

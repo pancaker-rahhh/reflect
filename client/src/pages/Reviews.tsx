@@ -31,7 +31,7 @@ export function Reviews() {
 
   const { data: feedback = [], isLoading } = useQuery({
     queryKey: ['reviews', currentProject?.id],
-    queryFn: () => api.getFeedbackData('review', currentProject?.id),
+    queryFn: () => api.getFeedbackData('review', currentProject?.id, 'all'),
     refetchInterval: 30000,
     enabled: !!currentProject?.id,
   })

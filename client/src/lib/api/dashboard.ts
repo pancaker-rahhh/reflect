@@ -6,7 +6,7 @@ async function getDashboardMetrics(
   projectId?: string
 ): Promise<DashboardMetrics> {
   const params = new URLSearchParams()
-  if (timeRange && timeRange !== 'all') {
+  if (timeRange) {
     params.append('time_range', timeRange)
   }
   if (projectId) {
@@ -25,13 +25,20 @@ async function getRecentActivity(projectId?: string): Promise<RecentActivity[]> 
   return apiClient.get(`/dashboard/recent-activity?${params.toString()}`)
 }
 
-async function getFeedbackData(feedbackType?: string, projectId?: string): Promise<any[]> {
+async function getFeedbackData(
+  feedbackType?: string,
+  projectId?: string,
+  timeRange?: string
+): Promise<any[]> {
   const params = new URLSearchParams()
   if (feedbackType) {
     params.append('feedback_type', feedbackType)
   }
   if (projectId) {
     params.append('project_id', projectId)
+  }
+  if (timeRange && timeRange !== 'all') {
+    params.append('timeRange', timeRange)
   }
 
   return apiClient.get(`/dashboard/feedback-data?${params.toString()}`)

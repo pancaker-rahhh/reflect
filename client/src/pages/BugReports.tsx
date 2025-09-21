@@ -34,7 +34,7 @@ export function BugReports() {
 
   const { data: feedback = [], isLoading } = useQuery({
     queryKey: ['feedback', { type: 'bug_report' }, currentProject?.id],
-    queryFn: () => api.getFeedbackData('bug_report', currentProject?.id),
+    queryFn: () => api.getFeedbackData('bug_report', currentProject?.id, 'all'),
     refetchInterval: 30000,
     enabled: !!currentProject?.id,
   })
