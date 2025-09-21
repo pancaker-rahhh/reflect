@@ -112,9 +112,6 @@ export function WidgetGetCode() {
               Back to Widgets
             </Link>
           </Button>
-          <Button asChild variant="outline">
-            <Link to="/dashboard">View Dashboard</Link>
-          </Button>
           <Button asChild>
             <Link to="/widgets/new">Create Another Widget</Link>
           </Button>
