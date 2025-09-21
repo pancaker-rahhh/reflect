@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { User, Bell, CreditCard } from 'lucide-react'
+import { User, CreditCard } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const accountSettingsNavigation = [
@@ -8,12 +8,6 @@ const accountSettingsNavigation = [
     href: '/app/settings/account',
     icon: User,
     description: 'Personal information',
-  },
-  {
-    name: 'Notifications',
-    href: '/app/settings/notifications',
-    icon: Bell,
-    description: 'Email preferences',
   },
   {
     name: 'Billing',
