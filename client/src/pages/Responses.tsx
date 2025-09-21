@@ -18,7 +18,6 @@ import { useAppContext } from '@/context/AppContext'
 import { FeedbackCard } from '@/components/feedback/FeedbackCard'
 import { BulkActionsBar } from '@/components/feedback/BulkActionsBar'
 import { FeedbackConversionModal } from '@/components/feedback/FeedbackConversionModal'
-import type { SurveyResponse } from '@/types'
 
 export function Responses() {
   const [startDate, setStartDate] = useState<Date | undefined>()
@@ -34,17 +33,8 @@ export function Responses() {
   const queryClient = useQueryClient()
 
   const { data: feedback = [], isLoading } = useQuery({
-    queryKey: [
-      'feedback',
-      { type: submissionType === 'all' ? undefined : submissionType },
-      currentProject?.id,
-    ],
-    queryFn: () =>
-      api.getFeedbackData(
-        submissionType === 'all' ? undefined : submissionType,
-        currentProject?.id,
-        'all'
-      ),
+    queryKey: ['feedback', currentProject?.id],
+    queryFn: () => api.getFeedbackData(undefined, currentProject?.id, 'all'),
     refetchInterval: 30000,
     enabled: !!currentProject?.id,
   })
@@ -56,6 +46,9 @@ export function Responses() {
     setScoreFilter('all')
     setSearchQuery('')
   }
+
+  const hasActiveFilters =
+    startDate || endDate || submissionType !== 'all' || scoreFilter !== 'all' || searchQuery
 
   const convertMutation = useMutation({
     mutationFn: ({ feedbackId, conversionData }: { feedbackId: string; conversionData: any }) =>
@@ -119,15 +112,39 @@ export function Responses() {
   }
 
   const filteredResponses = feedback.filter((item: any) => {
+    if (submissionType !== 'all' && item.feedback_type !== submissionType) {
+      return false
+    }
+
     if (startDate && new Date(item.created_at) < startDate) return false
     if (endDate && new Date(item.created_at) > endDate) return false
 
-    if (scoreFilter !== 'all' && item.feedback_type === 'survey') {
-      const survey = item as SurveyResponse
-      const score = survey.score
-      if (scoreFilter === 'promoters' && score < 9) return false
-      if (scoreFilter === 'passives' && (score < 7 || score > 8)) return false
-      if (scoreFilter === 'detractors' && score > 6) return false
+    if (scoreFilter !== 'all') {
+      let score: number | null = null
+
+      if (item.feedback_type === 'NPS' && item.nps_score !== null && item.nps_score !== undefined) {
+        score = item.nps_score
+      } else if (
+        item.feedback_type === 'CSAT' &&
+        item.csat_score !== null &&
+        item.csat_score !== undefined
+      ) {
+        score = item.csat_score
+      } else if (
+        item.feedback_type === 'CES' &&
+        item.ces_score !== null &&
+        item.ces_score !== undefined
+      ) {
+        score = item.ces_score
+      } else if (item.rating !== null && item.rating !== undefined) {
+        score = item.rating
+      }
+
+      if (score !== null) {
+        if (scoreFilter === 'promoters' && score < 9) return false
+        if (scoreFilter === 'passives' && (score < 7 || score > 8)) return false
+        if (scoreFilter === 'detractors' && score > 6) return false
+      }
     }
 
     if (searchQuery) {
@@ -135,7 +152,7 @@ export function Responses() {
       const searchableText = [
         item.submitter_name,
         item.submitter_email,
-        item.feedback_type === 'survey' ? (item as SurveyResponse).comment : '',
+        item.widget_name,
         'title' in item ? item.title : '',
         'message' in item ? item.message : '',
         'description' in item ? item.description : '',
@@ -149,10 +166,6 @@ export function Responses() {
 
     return true
   })
-
-  const surveyResponses = filteredResponses.filter(
-    (f) => f.feedback_type === 'survey'
-  ) as SurveyResponse[]
 
   return (
     <div className="space-y-6">
@@ -194,9 +207,31 @@ export function Responses() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-            <DatePicker date={startDate} onDateChange={setStartDate} placeholder="Start date" />
+            <div className="relative">
+              <DatePicker date={startDate} onDateChange={setStartDate} placeholder="Start date" />
+              {startDate && (
+                <button
+                  onClick={() => setStartDate(undefined)}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  type="button"
+                >
+                  ×
+                </button>
+              )}
+            </div>
 
-            <DatePicker date={endDate} onDateChange={setEndDate} placeholder="End date" />
+            <div className="relative">
+              <DatePicker date={endDate} onDateChange={setEndDate} placeholder="End date" />
+              {endDate && (
+                <button
+                  onClick={() => setEndDate(undefined)}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  type="button"
+                >
+                  ×
+                </button>
+              )}
+            </div>
 
             <Select value={submissionType} onValueChange={setSubmissionType}>
               <SelectTrigger>
@@ -204,8 +239,9 @@ export function Responses() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="nps">NPS</SelectItem>
-                <SelectItem value="csat">CSAT</SelectItem>
+                <SelectItem value="NPS">NPS</SelectItem>
+                <SelectItem value="CSAT">CSAT</SelectItem>
+                <SelectItem value="CES">CES</SelectItem>
               </SelectContent>
             </Select>
 
@@ -231,9 +267,26 @@ export function Responses() {
               />
             </div>
 
-            <Button variant="outline" onClick={resetFilters} className="w-full">
+            <Button
+              variant={hasActiveFilters ? 'default' : 'outline'}
+              onClick={resetFilters}
+              className="w-full"
+            >
               <RotateCcw className="mr-2 h-4 w-4" />
               Reset filters
+              {hasActiveFilters && (
+                <span className="ml-2 bg-white/20 text-xs px-1.5 py-0.5 rounded-full">
+                  {
+                    [
+                      startDate,
+                      endDate,
+                      submissionType !== 'all',
+                      scoreFilter !== 'all',
+                      searchQuery,
+                    ].filter(Boolean).length
+                  }
+                </span>
+              )}
             </Button>
           </div>
         </CardContent>
@@ -253,7 +306,7 @@ export function Responses() {
             </Card>
           ))}
         </div>
-      ) : surveyResponses.length === 0 ? (
+      ) : filteredResponses.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <MessageCircle className="h-12 w-12 text-muted-foreground mb-4" />

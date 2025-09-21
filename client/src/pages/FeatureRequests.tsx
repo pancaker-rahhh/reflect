@@ -22,7 +22,6 @@ import { FeedbackConversionModal } from '@/components/feedback/FeedbackConversio
 export function FeatureRequests() {
   const [startDate, setStartDate] = useState<Date | undefined>()
   const [endDate, setEndDate] = useState<Date | undefined>()
-  const [statusFilter, setStatusFilter] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('newest')
   const [searchQuery, setSearchQuery] = useState('')
   const [isSelectionMode, setIsSelectionMode] = useState(false)
@@ -39,21 +38,14 @@ export function FeatureRequests() {
     enabled: !!currentProject?.id,
   })
 
-  // Remove upvoteMutation since upvoteFeature doesn't exist in the API
-  // const upvoteMutation = useMutation({
-  //   mutationFn: (featureId: string) => api.upvoteFeature(featureId),
-  //   onSuccess: () => {
-  //     queryClient.invalidateQueries({ queryKey: ['feedback'] })
-  //   }
-  // })
-
   const resetFilters = () => {
     setStartDate(undefined)
     setEndDate(undefined)
-    setStatusFilter('all')
     setSortBy('newest')
     setSearchQuery('')
   }
+
+  const hasActiveFilters = startDate || endDate || sortBy !== 'newest' || searchQuery
 
   const convertMutation = useMutation({
     mutationFn: ({ feedbackId, conversionData }: { feedbackId: string; conversionData: any }) =>
@@ -122,8 +114,6 @@ export function FeatureRequests() {
       if (startDate && new Date(feature.created_at) < startDate) return false
       if (endDate && new Date(feature.created_at) > endDate) return false
 
-      if (statusFilter !== 'all' && feature.status !== statusFilter) return false
-
       if (searchQuery) {
         const query = searchQuery.toLowerCase()
         const searchableText = [
@@ -131,6 +121,7 @@ export function FeatureRequests() {
           feature.message,
           feature.submitter_name,
           feature.submitter_email,
+          feature.widget_name,
         ]
           .filter(Boolean)
           .join(' ')
@@ -188,29 +179,14 @@ export function FeatureRequests() {
         <CardHeader>
           <CardTitle>Filters</CardTitle>
           <CardDescription>
-            Filter feature requests by date, status, or search for specific features
+            Filter feature requests by date, sort order, or search for specific features
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <DatePicker date={startDate} onDateChange={setStartDate} placeholder="Start date" />
 
             <DatePicker date={endDate} onDateChange={setEndDate} placeholder="End date" />
-
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="new">New</SelectItem>
-                <SelectItem value="under-review">Under Review</SelectItem>
-                <SelectItem value="planned">Planned</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="declined">Declined</SelectItem>
-              </SelectContent>
-            </Select>
 
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger>
@@ -226,16 +202,25 @@ export function FeatureRequests() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Search feature requests"
+                placeholder="Search by widget or content"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
               />
             </div>
 
-            <Button variant="outline" onClick={resetFilters} className="w-full">
+            <Button
+              variant={hasActiveFilters ? 'default' : 'outline'}
+              onClick={resetFilters}
+              className="w-full"
+            >
               <RotateCcw className="mr-2 h-4 w-4" />
               Reset filters
+              {hasActiveFilters && (
+                <span className="ml-2 bg-white/20 text-xs px-1.5 py-0.5 rounded-full">
+                  {[startDate, endDate, sortBy !== 'newest', searchQuery].filter(Boolean).length}
+                </span>
+              )}
             </Button>
           </div>
         </CardContent>
@@ -261,12 +246,16 @@ export function FeatureRequests() {
             <Lightbulb className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No feature requests found</h3>
             <p className="text-muted-foreground text-center max-w-sm">
-              Feature requests will appear here when users suggest new ideas for your application
+              {hasActiveFilters
+                ? 'Try adjusting your filters to see more results'
+                : 'Feature requests will appear here when users suggest new ideas for your application'}
             </p>
-            <Button variant="outline" onClick={resetFilters} className="mt-4">
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Reset Filters
-            </Button>
+            {hasActiveFilters && (
+              <Button variant="outline" onClick={resetFilters} className="mt-4">
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Reset Filters
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (

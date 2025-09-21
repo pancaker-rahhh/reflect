@@ -39,6 +39,7 @@ class FeedbackDataResponse(BaseModel):
     feedback_votes: int
     is_anonymous: bool
     is_actionable: bool
+    widget_name: Optional[str] = None
 
     overall_rating: Optional[int] = None
     is_published: Optional[bool] = None

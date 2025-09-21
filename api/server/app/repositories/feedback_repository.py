@@ -372,6 +372,8 @@ class FeedbackRepository(BaseRepository[Feedback]):
             COALESCE(f.is_anonymous, true) as is_anonymous,
             COALESCE(f.is_actionable, true) as is_actionable,
             f.feedback_metadata,
+            -- Widget information
+            w.name as widget_name,
             -- Review specific fields
             rf.overall_rating,
             rf.is_published,
@@ -392,6 +394,7 @@ class FeedbackRepository(BaseRepository[Feedback]):
             -- CES specific fields
             ces.ces_score
         FROM feedback f
+        LEFT JOIN widgets w ON f.widget_id = w.id
         LEFT JOIN review_feedback rf ON f.id = rf.id
         LEFT JOIN bug_report_feedback brf ON f.id = brf.id
         LEFT JOIN feature_request_feedback frf ON f.id = frf.id
@@ -452,6 +455,7 @@ class FeedbackRepository(BaseRepository[Feedback]):
                 'feedback_votes': row.feedback_votes,
                 'is_anonymous': row.is_anonymous,
                 'is_actionable': row.is_actionable,
+                'widget_name': row.widget_name,
             }
 
             if row.feedback_type == 'review':
