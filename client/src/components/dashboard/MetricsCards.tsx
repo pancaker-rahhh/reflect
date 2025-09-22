@@ -59,6 +59,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       change: metrics.feedbackChange,
       icon: MessageSquare,
       color: 'text-blue-600',
+      suffix: '',
     },
     {
       title: 'Average Rating',
@@ -67,6 +68,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       icon: Star,
       color: 'text-yellow-600',
       decimals: 1,
+      suffix: '',
     },
     {
       title: 'New Bug Reports',
@@ -74,6 +76,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       change: metrics.bugReportsChange,
       icon: Bug,
       color: 'text-red-600',
+      suffix: '',
     },
     {
       title: 'New Feature Requests',
@@ -81,6 +84,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       change: metrics.featureRequestsChange,
       icon: Lightbulb,
       color: 'text-purple-600',
+      suffix: '',
     },
     {
       title: 'Pending Feedback Review',
@@ -88,6 +92,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       change: 0,
       icon: Clock,
       color: 'text-orange-600',
+      suffix: '',
     },
   ]
 
