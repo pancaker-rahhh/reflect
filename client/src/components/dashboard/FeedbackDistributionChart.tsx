@@ -18,15 +18,6 @@ interface TooltipProps {
   }>
 }
 
-interface LabelProps {
-  cx: number
-  cy: number
-  midAngle: number
-  innerRadius: number
-  outerRadius: number
-  percent: number
-}
-
 export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChartProps) {
   const distribution = [
     {
@@ -101,35 +92,6 @@ export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChar
     return null
   }
 
-  const RADIAN = Math.PI / 180
-  const renderCustomizedLabel = ({
-    cx,
-    cy,
-    midAngle,
-    innerRadius,
-    outerRadius,
-    percent,
-  }: LabelProps) => {
-    if (percent < 0.05) return null
-
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5
-    const x = cx + radius * Math.cos(-midAngle * RADIAN)
-    const y = cy + radius * Math.sin(-midAngle * RADIAN)
-
-    return (
-      <text
-        x={x}
-        y={y}
-        fill="white"
-        textAnchor={x > cx ? 'start' : 'end'}
-        dominantBaseline="central"
-        className="text-xs font-medium"
-      >
-        {`${(percent * 100).toFixed(0)}%`}
-      </text>
-    )
-  }
-
   return (
     <div className="space-y-6">
       <div className="h-64">
@@ -139,8 +101,6 @@ export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChar
               data={distribution}
               cx="50%"
               cy="50%"
-              labelLine={false}
-              label={renderCustomizedLabel}
               outerRadius={90}
               fill="#8884d8"
               dataKey="value"

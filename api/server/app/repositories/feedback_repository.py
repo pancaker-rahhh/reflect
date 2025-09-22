@@ -306,7 +306,6 @@ class FeedbackRepository(BaseRepository[Feedback]):
             'newFeatureRequests': new_feature_requests,
             'featureRequestsChange': 0,
             'pendingFeedbackReview': pending_feedback_review,
-            'feedbackConversionRate': 0,
         }
 
     async def get_recent_activities(

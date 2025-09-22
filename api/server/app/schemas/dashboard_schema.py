@@ -13,7 +13,6 @@ class DashboardMetricsResponse(BaseModel):
     newFeatureRequests: int
     featureRequestsChange: int
     pendingFeedbackReview: int
-    feedbackConversionRate: int
 
 
 class RecentActivityResponse(BaseModel):

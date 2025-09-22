@@ -185,21 +185,32 @@ export function Reviews() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <CardTitle>Average Rating</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="pt-0">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="text-4xl font-bold">{averageRating.toFixed(1)}</div>
-                <div>
+                <div className="text-5xl font-bold text-black">{averageRating.toFixed(1)}</div>
+                <div className="flex flex-col gap-2">
                   <StarRating rating={averageRating} size="lg" />
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Based on {reviews.length} reviews
-                  </p>
+                  <p className="text-sm text-muted-foreground">Based on {reviews.length} reviews</p>
                 </div>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-semibold text-muted-foreground">
+                  {reviews.length > 0
+                    ? Math.round(
+                        (reviews.filter((r) => (r.overall_rating || r.rating || 0) >= 4).length /
+                          reviews.length) *
+                          100
+                      )
+                    : 0}
+                  %
+                </div>
+                <p className="text-xs text-muted-foreground">Positive</p>
               </div>
             </div>
           </CardContent>
@@ -228,18 +239,6 @@ export function Reviews() {
                   <span className="text-sm text-muted-foreground w-12 text-right">{count}</span>
                 </div>
               ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Rating Trend</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center justify-center h-[140px]">
-            <div className="text-center text-muted-foreground">
-              <TrendingUp className="h-10 w-10 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No data available</p>
             </div>
           </CardContent>
         </Card>
