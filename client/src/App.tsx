@@ -104,7 +104,9 @@ function App() {
                         path="/onboarding"
                         element={
                           <ProtectedRoute>
-                            <OnboardingPage />
+                            <OnboardingGuard>
+                              <OnboardingPage />
+                            </OnboardingGuard>
                           </ProtectedRoute>
                         }
                       />
