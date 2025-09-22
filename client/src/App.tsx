@@ -2,7 +2,6 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
-import { SkipLink } from '@/components/common/SkipLink'
 import { PageLoading } from '@/components/common/LoadingSpinner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { AuthProvider } from '@/contexts/AuthContext'
@@ -83,7 +82,6 @@ function App() {
             <BrowserRouter>
               <AuthProvider>
                 <AppProvider>
-                  <SkipLink />
                   <Suspense fallback={<PageLoading />}>
                     <Routes>
                       {/* Public routes */}
