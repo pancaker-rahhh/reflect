@@ -89,9 +89,10 @@ export const ProjectStep: React.FC = () => {
               organization_id: organizationId,
             })
             break
-          } catch (error: any) {
+          } catch (error: unknown) {
+            const err = error as { response?: { status?: number } }
             retryCount++
-            if (error?.response?.status === 403 && retryCount < maxRetries) {
+            if (err.response?.status === 403 && retryCount < maxRetries) {
               await new Promise((resolve) => setTimeout(resolve, 1000 * retryCount))
               continue
             }
@@ -125,29 +126,33 @@ export const ProjectStep: React.FC = () => {
 
       markStepCompleted('project')
       await completeOnboarding()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to create project:', error)
 
       // Check if it's a subscription limit error
+      const err = error as {
+        response?: { status?: number; data?: { error?: string; current_usage?: number; limit?: number; message?: string; detail?: string } }
+        message?: string
+      }
       if (
-        error?.response?.status === 403 &&
-        error?.response?.data?.error === 'Project limit exceeded'
+        err.response?.status === 403 &&
+        err.response?.data?.error === 'Project limit exceeded'
       ) {
-        const errorData = error.response.data
+        const errorData = err.response.data!
         alert(
           `Project limit exceeded!\n\nYou have ${errorData.current_usage} projects (limit: ${errorData.limit})\n\n${errorData.message}`
         )
-      } else if (error?.response?.status === 403) {
+      } else if (err.response?.status === 403) {
         // Authorization error - likely organization access issue
         const message =
-          error?.response?.data?.detail || error?.message || 'Not authorized for this organization'
+          err.response?.data?.detail || err.message || 'Not authorized for this organization'
         alert(
           `Authorization Error: ${message}\n\nThis might be a temporary issue. Please try again or contact support if the problem persists.`
         )
       } else {
         // Generic error message
         const message =
-          error?.response?.data?.detail || error?.message || 'Failed to create project'
+          err.response?.data?.detail || err.message || 'Failed to create project'
         alert(`Error: ${message}`)
       }
     } finally {

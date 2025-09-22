@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
 import { useOnboardingKeyboard } from '../../../hooks/useOnboardingKeyboard';
 import { onboardingDataService } from '../../../services/onboardingDataService';
+import type { LucideIcon } from 'lucide-react';
 import { 
   CheckCircle, 
   ArrowRight, 
@@ -90,7 +91,7 @@ export const CompletionStepEnhanced: React.FC = () => {
   const sections: Array<{
     id: string;
     title: string;
-    icon: React.ComponentType<any>;
+    icon: LucideIcon;
     step: 'profile' | 'project';
     fields: Array<{ label: string; value: string | undefined }>;
   }> = [
