@@ -64,15 +64,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (hasProjects && !currentProject) {
-      const onboardingProjectId = localStorage.getItem('onboarding_project_id')
-      if (onboardingProjectId) {
-        const onboardingProject = projects.find((p) => p.id === onboardingProjectId)
-        if (onboardingProject) {
-          setCurrentProject(onboardingProject)
-          localStorage.removeItem('onboarding_project_id')
-          return
-        }
-      }
       setCurrentProject(projects[0])
     }
   }, [hasProjects, projects, currentProject])

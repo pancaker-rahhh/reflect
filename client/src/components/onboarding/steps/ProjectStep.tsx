@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react'
 import { useOnboarding } from '../../../context/OnboardingContext'
 import { FolderPlus } from 'lucide-react'
 import { projectApi, onboardingApi } from '../../../lib/api'
+import { useAppContext } from '../../../context/AppContext'
 import { onboardingDataService } from '../../../services/onboardingDataService'
 
 export const ProjectStep: React.FC = () => {
   const { nextStep, markStepCompleted, setProjectId, organizationId, projectId, setOrganizationId, completeOnboarding } =
     useOnboarding()
+  const { setCurrentProject } = useAppContext()
 
   const [formData, setFormData] = useState({
     name: '',
@@ -102,7 +104,7 @@ export const ProjectStep: React.FC = () => {
         }
 
         setProjectId(project.id)
-        localStorage.setItem('onboarding_project_id', project.id)
+        setCurrentProject(project)
       }
 
       // Save project data for review step

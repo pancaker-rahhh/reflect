@@ -158,7 +158,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
       })
 
       // Invalidate queries to refetch updated organization and project data
-      await queryClient.invalidateQueries({ queryKey: ['organizations'] })
+      await queryClient.invalidateQueries({ queryKey: ['organization'] })
       await queryClient.invalidateQueries({ queryKey: ['projects'] })
 
       localStorage.removeItem(ONBOARDING_STORAGE_KEY)
