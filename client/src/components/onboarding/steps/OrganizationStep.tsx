@@ -7,7 +7,7 @@ import { onboardingDataService } from '../../../services/onboardingDataService'
 import { isFeatureEnabled } from '../../../lib/featureFlags'
 
 export const OrganizationStep: React.FC = () => {
-  const { nextStep, markStepCompleted, setOrganizationId, userType, organizationId } =
+  const { nextStep, setOrganizationId, userType, organizationId } =
     useOnboarding()
   const { user } = useAuth()
   const skipUserTypeSelection = isFeatureEnabled('SKIP_USER_TYPE_SELECTION')
@@ -37,7 +37,6 @@ export const OrganizationStep: React.FC = () => {
       })
 
       setOrganizationId(organization.id)
-      markStepCompleted('organization')
 
       // Auto-advance after successful creation
       await new Promise((resolve) => setTimeout(resolve, 200))
@@ -53,7 +52,7 @@ export const OrganizationStep: React.FC = () => {
     } finally {
       setIsAutoCreating(false)
     }
-  }, [setOrganizationId, markStepCompleted, nextStep, hasAttemptedAutoCreate])
+  }, [setOrganizationId, nextStep, hasAttemptedAutoCreate])
 
   useEffect(() => {
     const existingData = onboardingDataService.getOrganizationData()
@@ -81,7 +80,6 @@ export const OrganizationStep: React.FC = () => {
     } else if (skipUserTypeSelection && organizationId && !hasAttemptedAutoCreate) {
       // If we already have an org and we're using the feature flag, auto-advance
       // This handles the case where user navigates back after org was already created
-      markStepCompleted('organization')
       setTimeout(() => nextStep(), 100)
     }
   }, [
@@ -89,7 +87,6 @@ export const OrganizationStep: React.FC = () => {
     hasAttemptedAutoCreate,
     organizationId,
     handleAutoCreate,
-    markStepCompleted,
     nextStep,
   ])
 
@@ -125,7 +122,6 @@ export const OrganizationStep: React.FC = () => {
         slug: organization.slug || slug,
       })
 
-      markStepCompleted('organization')
       // Auto-advance after successful creation/update
       nextStep()
     } catch (error) {

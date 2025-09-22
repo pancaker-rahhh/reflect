@@ -6,7 +6,7 @@ import { useAppContext } from '../../../context/AppContext'
 import { onboardingDataService } from '../../../services/onboardingDataService'
 
 export const ProjectStep: React.FC = () => {
-  const { nextStep, markStepCompleted, setProjectId, organizationId, projectId, setOrganizationId, completeOnboarding } =
+  const { markStepCompleted, setProjectId, organizationId, projectId, setOrganizationId, completeOnboarding } =
     useOnboarding()
   const { setCurrentProject } = useAppContext()
 
