@@ -4,7 +4,6 @@ import { Sparkles } from 'lucide-react'
 import ProgressBarComponent from '@/components/ui/ProgressBar'
 import type { OnboardingStep } from '../../../context/OnboardingContext'
 
-// Progress Step 16: Integrate ProgressBar with onboarding flow
 export const OnboardingProgressBar: React.FC = () => {
   const { currentStep, completedSteps } = useOnboarding()
 
