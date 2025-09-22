@@ -2,6 +2,7 @@ from typing import List, Optional, Any, Dict
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text, and_
+from sqlalchemy.orm import selectinload
 from datetime import datetime, timedelta, timezone
 from app.core.logging import get_logger
 from app.models.feedback_model import (
@@ -305,7 +306,6 @@ class FeedbackRepository(BaseRepository[Feedback]):
             'newFeatureRequests': new_feature_requests,
             'featureRequestsChange': 0,
             'pendingFeedbackReview': pending_feedback_review,
-            'feedbackConversionRate': 0,
         }
 
     async def get_recent_activities(
@@ -354,113 +354,146 @@ class FeedbackRepository(BaseRepository[Feedback]):
         widget_id: Optional[UUID] = None,
         project_id: Optional[UUID] = None,
         feedback_type: Optional[str] = None,
+        time_range: str = 'all',
         limit: int = 100,
         offset: int = 0,
     ) -> List[Dict[str, Any]]:
-        base_query = """
-        SELECT
-            f.id,
-            f.feedback_type,
-            f.title,
-            f.message,
-            f.rating,
-            f.created_at,
-            f.submitter_name,
-            f.submitter_email,
-            f.feedback_votes,
-            COALESCE(f.is_anonymous, true) as is_anonymous,
-            COALESCE(f.is_actionable, true) as is_actionable,
-            f.feedback_metadata,
-            -- Review specific fields
-            rf.overall_rating,
-            rf.is_published,
-            -- Bug report specific fields
-            brf.severity_level,
-            brf.steps_to_reproduce,
-            brf.expected_behavior,
-            brf.actual_behavior,
-            -- Feature request specific fields
-            frf.use_case,
-            frf.suggested_solution,
-            frf.benefits,
-            frf.implementation_status
-        FROM feedback f
-        LEFT JOIN review_feedback rf ON f.id = rf.id
-        LEFT JOIN bug_report_feedback brf ON f.id = brf.id
-        LEFT JOIN feature_request_feedback frf ON f.id = frf.id
-        WHERE 1=1
-        """
-
-        params = {}
+        stmt = (
+            select(Feedback)
+            .options(selectinload(Feedback.widget))
+            .order_by(Feedback.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
 
         if widget_id:
-            base_query += ' AND f.widget_id = :widget_id'
-            params['widget_id'] = str(widget_id)
+            stmt = stmt.where(Feedback.widget_id == widget_id)
 
         if project_id:
-            base_query += ' AND f.project_id = :project_id'
-            params['project_id'] = str(project_id)
+            stmt = stmt.where(Feedback.project_id == project_id)
 
         if feedback_type:
-            base_query += ' AND f.feedback_type = :feedback_type'
-            params['feedback_type'] = feedback_type
+            stmt = stmt.where(Feedback.feedback_type == feedback_type)
 
-        base_query += ' ORDER BY f.created_at DESC LIMIT :limit OFFSET :offset'
-        params['limit'] = limit
-        params['offset'] = offset
+        if time_range != 'all':
+            now = datetime.utcnow()
+            if time_range == 'week':
+                cutoff_date = now - timedelta(days=7)
+            elif time_range == 'month':
+                cutoff_date = now - timedelta(days=30)
+            elif time_range == 'year':
+                cutoff_date = now - timedelta(days=365)
+            else:
+                cutoff_date = now - timedelta(days=30)
 
-        result = await db.execute(text(base_query), params)
-        rows = result.fetchall()
+            stmt = stmt.where(Feedback.created_at >= cutoff_date)
+
+        result = await db.execute(stmt)
+        feedback_items = result.scalars().all()
 
         feedback_data = []
-        for row in rows:
-            feedback_item = {
-                'id': str(row.id),
-                'type': row.feedback_type,
-                'feedback_type': row.feedback_type,
-                'title': row.title,
-                'message': row.message,
-                'rating': row.rating,
-                'created_at': row.created_at,
-                'submitter_name': row.submitter_name,
-                'submitter_email': row.submitter_email,
-                'feedback_votes': row.feedback_votes,
-                'is_anonymous': row.is_anonymous,
-                'is_actionable': row.is_actionable,
+        for item in feedback_items:
+            feedback_dict = {
+                'id': str(item.id),
+                'type': item.feedback_type,
+                'feedback_type': item.feedback_type,
+                'title': item.title,
+                'message': item.message,
+                'rating': item.rating,
+                'created_at': item.created_at,
+                'submitter_name': item.submitter_name,
+                'submitter_email': item.submitter_email,
+                'feedback_votes': item.feedback_votes,
+                'is_anonymous': item.is_anonymous
+                if item.is_anonymous is not None
+                else True,
+                'is_actionable': item.is_actionable
+                if item.is_actionable is not None
+                else True,
+                'widget_name': item.widget.name if item.widget else None,
             }
 
-            if row.feedback_type == 'review':
-                feedback_item.update(
-                    {
-                        'overall_rating': row.overall_rating,
-                        'is_published': row.is_published,
-                    }
+            if item.feedback_metadata:
+                feedback_dict.update(item.feedback_metadata)
+
+            if item.feedback_type == 'review':
+                review_stmt = select(ReviewFeedback).where(ReviewFeedback.id == item.id)
+                review_result = await db.execute(review_stmt)
+                review_data = review_result.scalar_one_or_none()
+                if review_data:
+                    feedback_dict.update(
+                        {
+                            'overall_rating': review_data.overall_rating,
+                            'is_published': review_data.is_published,
+                        }
+                    )
+
+            elif item.feedback_type == 'bug_report':
+                bug_stmt = select(BugReportFeedback).where(
+                    BugReportFeedback.id == item.id
                 )
+                bug_result = await db.execute(bug_stmt)
+                bug_data = bug_result.scalar_one_or_none()
+                if bug_data:
+                    feedback_dict.update(
+                        {
+                            'severity_level': bug_data.severity_level,
+                            'steps_to_reproduce': bug_data.steps_to_reproduce,
+                            'expected_behavior': bug_data.expected_behavior,
+                            'actual_behavior': bug_data.actual_behavior,
+                        }
+                    )
 
-            elif row.feedback_type == 'bug_report':
-                feedback_item.update(
-                    {
-                        'severity_level': row.severity_level,
-                        'steps_to_reproduce': row.steps_to_reproduce,
-                        'expected_behavior': row.expected_behavior,
-                        'actual_behavior': row.actual_behavior,
-                    }
+            elif item.feedback_type == 'feature_request':
+                feature_stmt = select(FeatureRequestFeedback).where(
+                    FeatureRequestFeedback.id == item.id
                 )
+                feature_result = await db.execute(feature_stmt)
+                feature_data = feature_result.scalar_one_or_none()
+                if feature_data:
+                    feedback_dict.update(
+                        {
+                            'use_case': feature_data.use_case,
+                            'suggested_solution': feature_data.suggested_solution,
+                            'benefits': feature_data.benefits,
+                            'implementation_status': feature_data.implementation_status,
+                        }
+                    )
 
-            elif row.feedback_type == 'feature_request':
-                feedback_item.update(
-                    {
-                        'use_case': row.use_case,
-                        'suggested_solution': row.suggested_solution,
-                        'benefits': row.benefits,
-                        'implementation_status': row.implementation_status,
-                    }
-                )
+            elif item.feedback_type == 'NPS':
+                nps_stmt = select(NPSFeedback).where(NPSFeedback.id == item.id)
+                nps_result = await db.execute(nps_stmt)
+                nps_data = nps_result.scalar_one_or_none()
+                if nps_data:
+                    feedback_dict.update(
+                        {
+                            'nps_score': nps_data.nps_score,
+                        }
+                    )
 
-            if row.feedback_metadata:
-                feedback_item.update(row.feedback_metadata)
+            elif item.feedback_type == 'CSAT':
+                csat_stmt = select(CSATFeedback).where(CSATFeedback.id == item.id)
+                csat_result = await db.execute(csat_stmt)
+                csat_data = csat_result.scalar_one_or_none()
+                if csat_data:
+                    feedback_dict.update(
+                        {
+                            'csat_score': csat_data.csat_score,
+                        }
+                    )
 
-            feedback_data.append(feedback_item)
+            elif item.feedback_type == 'CES':
+                ces_stmt = select(CESFeedback).where(CESFeedback.id == item.id)
+                ces_result = await db.execute(ces_stmt)
+                ces_data = ces_result.scalar_one_or_none()
+                if ces_data:
+                    feedback_dict.update(
+                        {
+                            'ces_score': ces_data.ces_score,
+                        }
+                    )
+
+            feedback_data.append(feedback_dict)
 
         return feedback_data
 

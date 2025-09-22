@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Search, RotateCcw, TrendingUp, Star, CheckSquare } from 'lucide-react'
+import { Search, RotateCcw, Star, CheckSquare } from 'lucide-react'
 import { api } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { StarRating } from '@/components/ui/star-rating'
+import { DatePicker } from '@/components/ui/date-picker'
 import { useAppContext } from '@/context/AppContext'
 import { FeedbackCard } from '@/components/feedback/FeedbackCard'
 import { BulkActionsBar } from '@/components/feedback/BulkActionsBar'
@@ -21,7 +22,9 @@ import { FeedbackConversionModal } from '@/components/feedback/FeedbackConversio
 
 export function Reviews() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [timeframe, setTimeframe] = useState('all')
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined)
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined)
+  const [ratingFilter, setRatingFilter] = useState('all')
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const [isBulkConversionModalOpen, setIsBulkConversionModalOpen] = useState(false)
@@ -31,20 +34,21 @@ export function Reviews() {
 
   const { data: feedback = [], isLoading } = useQuery({
     queryKey: ['reviews', currentProject?.id],
-    queryFn: () => api.getFeedbackData('review', currentProject?.id),
+    queryFn: () => api.getFeedbackData('review', currentProject?.id, 'all'),
     refetchInterval: 30000,
     enabled: !!currentProject?.id,
   })
-
-  // Debug: Log the feedback data to see what's being returned
-  console.log('Reviews - Raw feedback data:', feedback)
 
   const reviews = feedback.filter((f) => f.feedback_type === 'review')
 
   const resetFilters = () => {
     setSearchQuery('')
-    setTimeframe('all')
+    setStartDate(undefined)
+    setEndDate(undefined)
+    setRatingFilter('all')
   }
+
+  const hasActiveFilters = searchQuery || startDate || endDate || ratingFilter !== 'all'
 
   const convertMutation = useMutation({
     mutationFn: ({ feedbackId, conversionData }: { feedbackId: string; conversionData: any }) =>
@@ -107,42 +111,36 @@ export function Reviews() {
     setIsSelectionMode(false)
   }
 
-  const filterReviewsByTimeframe = (reviews: typeof feedback) => {
-    if (timeframe === 'all') return reviews
+  const filteredReviews = reviews.filter((review) => {
+    if (startDate && new Date(review.created_at) < startDate) return false
+    if (endDate && new Date(review.created_at) > endDate) return false
 
-    const now = new Date()
-    const timeframes = {
-      week: 7,
-      month: 30,
-      quarter: 90,
-      year: 365,
+    if (ratingFilter !== 'all') {
+      const rating = review.overall_rating || review.rating || 0
+      if (ratingFilter === 'promoters' && rating < 4) return false
+      if (ratingFilter === 'passives' && (rating < 3 || rating > 3)) return false
+      if (ratingFilter === 'detractors' && rating > 2) return false
     }
 
-    const days = timeframes[timeframe as keyof typeof timeframes]
-    if (!days) return reviews
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      const searchableText = [
+        review.submitter_name,
+        review.submitter_email,
+        review.widget_name,
+        review.title,
+        review.message,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
 
-    const cutoffDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000)
-    return reviews.filter((review) => new Date(review.created_at) >= cutoffDate)
-  }
+      if (!searchableText.includes(query)) return false
+    }
 
-  const filteredReviews = filterReviewsByTimeframe(reviews).filter((review) => {
-    if (!searchQuery) return true
-
-    const query = searchQuery.toLowerCase()
-    const searchableText = [
-      review.submitter_name,
-      review.submitter_email,
-      review.title,
-      review.message,
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase()
-
-    return searchableText.includes(query)
+    return true
   })
 
-  // Fix: Use overall_rating for reviews, fallback to rating
   const averageRating =
     reviews.length > 0
       ? reviews.reduce((sum, review) => sum + (review.overall_rating || review.rating || 0), 0) /
@@ -151,7 +149,6 @@ export function Reviews() {
 
   const ratingDistribution = Array.from({ length: 5 }, (_, i) => {
     const rating = 5 - i
-    // Fix: Use overall_rating for reviews, fallback to rating
     const count = reviews.filter((r) => (r.overall_rating || r.rating || 0) === rating).length
     const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0
     return { rating, count, percentage }
@@ -188,21 +185,32 @@ export function Reviews() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <CardTitle>Average Rating</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="pt-0">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="text-4xl font-bold">{averageRating.toFixed(1)}</div>
-                <div>
+                <div className="text-5xl font-bold text-black">{averageRating.toFixed(1)}</div>
+                <div className="flex flex-col gap-2">
                   <StarRating rating={averageRating} size="lg" />
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Based on {reviews.length} reviews
-                  </p>
+                  <p className="text-sm text-muted-foreground">Based on {reviews.length} reviews</p>
                 </div>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-semibold text-muted-foreground">
+                  {reviews.length > 0
+                    ? Math.round(
+                        (reviews.filter((r) => (r.overall_rating || r.rating || 0) >= 4).length /
+                          reviews.length) *
+                          100
+                      )
+                    : 0}
+                  %
+                </div>
+                <p className="text-xs text-muted-foreground">Positive</p>
               </div>
             </div>
           </CardContent>
@@ -234,52 +242,55 @@ export function Reviews() {
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Rating Trend</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center justify-center h-[140px]">
-            <div className="text-center text-muted-foreground">
-              <TrendingUp className="h-10 w-10 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No data available</p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Search & Filter</CardTitle>
+          <CardTitle>Filters</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Filter reviews by date, rating, or search for specific content
+          </p>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <DatePicker date={startDate} onDateChange={setStartDate} placeholder="Start date" />
+
+            <DatePicker date={endDate} onDateChange={setEndDate} placeholder="End date" />
+
+            <Select value={ratingFilter} onValueChange={setRatingFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Rating" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Ratings</SelectItem>
+                <SelectItem value="promoters">Promoters (4-5)</SelectItem>
+                <SelectItem value="passives">Passives (3)</SelectItem>
+                <SelectItem value="detractors">Detractors (1-2)</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Search by name, email, or review text"
+                placeholder="Search by widget or content"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
               />
             </div>
 
-            <Select value={timeframe} onValueChange={setTimeframe}>
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="Timeframe" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Time</SelectItem>
-                <SelectItem value="week">Last Week</SelectItem>
-                <SelectItem value="month">Last Month</SelectItem>
-                <SelectItem value="quarter">Last Quarter</SelectItem>
-                <SelectItem value="year">Last Year</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button variant="outline" onClick={resetFilters}>
+            <Button
+              variant={hasActiveFilters ? 'default' : 'outline'}
+              onClick={resetFilters}
+              className="w-full"
+            >
               <RotateCcw className="mr-2 h-4 w-4" />
-              Reset
+              Reset filters
+              {hasActiveFilters && (
+                <span className="ml-2 bg-white/20 text-xs px-1.5 py-0.5 rounded-full">
+                  {[startDate, endDate, ratingFilter !== 'all', searchQuery].filter(Boolean).length}
+                </span>
+              )}
             </Button>
           </div>
         </CardContent>
@@ -305,11 +316,11 @@ export function Reviews() {
             <Star className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No reviews found</h3>
             <p className="text-muted-foreground text-center max-w-sm">
-              {searchQuery || timeframe !== 'all'
+              {hasActiveFilters
                 ? 'Try adjusting your filters to see more results'
                 : 'Reviews will appear here once users submit them'}
             </p>
-            {(searchQuery || timeframe !== 'all') && (
+            {hasActiveFilters && (
               <Button variant="outline" onClick={resetFilters} className="mt-4">
                 <RotateCcw className="mr-2 h-4 w-4" />
                 Reset Filters

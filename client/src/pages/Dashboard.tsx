@@ -69,8 +69,8 @@ export function Dashboard() {
     error: feedbackError,
     refetch: refetchFeedback,
   } = useQuery({
-    queryKey: ['feedback-data', currentProject?.id],
-    queryFn: () => api.getFeedbackData(undefined, currentProject?.id),
+    queryKey: ['feedback-data', timeRange, currentProject?.id],
+    queryFn: () => api.getFeedbackData(undefined, currentProject?.id, timeRange),
     refetchInterval: 30000,
     enabled: !!currentProject?.id,
     retry: 3,

@@ -13,12 +13,13 @@ interface NPSDistributionChartProps {
   feedback: Array<{
     type: string
     rating: number | null
+    nps_score?: number | null
   }>
 }
 
 export function NPSDistributionChart({ feedback }: NPSDistributionChartProps) {
   const npsSurveys = feedback.filter(
-    (f) => f.type === 'NPS' && f.rating !== null && f.rating !== undefined
+    (f) => f.type === 'NPS' && f.nps_score !== null && f.nps_score !== undefined
   )
 
   if (npsSurveys.length === 0) {
@@ -34,9 +35,9 @@ export function NPSDistributionChart({ feedback }: NPSDistributionChartProps) {
 
   const distribution = Array.from({ length: 11 }, (_, i) => ({
     score: i,
-    count: npsSurveys.filter((s) => s.rating === i).length,
+    count: npsSurveys.filter((s) => s.nps_score === i).length,
     percentage: (
-      (npsSurveys.filter((s) => s.rating === i).length / npsSurveys.length) *
+      (npsSurveys.filter((s) => s.nps_score === i).length / npsSurveys.length) *
       100
     ).toFixed(1),
   }))
@@ -47,8 +48,12 @@ export function NPSDistributionChart({ feedback }: NPSDistributionChartProps) {
     return '#10b981'
   }
 
-  const detractors = npsSurveys.filter((s) => s.rating && s.rating <= 6).length
-  const promoters = npsSurveys.filter((s) => s.rating && s.rating >= 9).length
+  const detractors = npsSurveys.filter(
+    (s) => s.nps_score !== null && s.nps_score !== undefined && s.nps_score <= 6
+  ).length
+  const promoters = npsSurveys.filter(
+    (s) => s.nps_score !== null && s.nps_score !== undefined && s.nps_score >= 9
+  ).length
   const npsScore = Math.round(((promoters - detractors) / npsSurveys.length) * 100)
 
   const CustomTooltip = ({

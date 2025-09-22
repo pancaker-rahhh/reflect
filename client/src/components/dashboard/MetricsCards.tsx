@@ -1,13 +1,4 @@
-import {
-  TrendingUp,
-  TrendingDown,
-  MessageSquare,
-  Star,
-  Bug,
-  Lightbulb,
-  Clock,
-  BarChart3,
-} from 'lucide-react'
+import { TrendingUp, TrendingDown, MessageSquare, Star, Bug, Lightbulb, Clock } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import type { DashboardMetrics } from '@/types'
@@ -68,6 +59,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       change: metrics.feedbackChange,
       icon: MessageSquare,
       color: 'text-blue-600',
+      suffix: '',
     },
     {
       title: 'Average Rating',
@@ -76,6 +68,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       icon: Star,
       color: 'text-yellow-600',
       decimals: 1,
+      suffix: '',
     },
     {
       title: 'New Bug Reports',
@@ -83,6 +76,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       change: metrics.bugReportsChange,
       icon: Bug,
       color: 'text-red-600',
+      suffix: '',
     },
     {
       title: 'New Feature Requests',
@@ -90,6 +84,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       change: metrics.featureRequestsChange,
       icon: Lightbulb,
       color: 'text-purple-600',
+      suffix: '',
     },
     {
       title: 'Pending Feedback Review',
@@ -97,15 +92,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       change: 0,
       icon: Clock,
       color: 'text-orange-600',
-    },
-    {
-      title: 'Feedback Conversion Rate',
-      value: metrics.feedbackConversionRate || 0,
-      change: 0,
-      icon: BarChart3,
-      color: 'text-green-600',
-      decimals: 1,
-      suffix: '%',
+      suffix: '',
     },
   ]
 

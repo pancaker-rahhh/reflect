@@ -13,7 +13,6 @@ class DashboardMetricsResponse(BaseModel):
     newFeatureRequests: int
     featureRequestsChange: int
     pendingFeedbackReview: int
-    feedbackConversionRate: int
 
 
 class RecentActivityResponse(BaseModel):
@@ -39,6 +38,7 @@ class FeedbackDataResponse(BaseModel):
     feedback_votes: int
     is_anonymous: bool
     is_actionable: bool
+    widget_name: Optional[str] = None
 
     overall_rating: Optional[int] = None
     is_published: Optional[bool] = None
@@ -52,3 +52,7 @@ class FeedbackDataResponse(BaseModel):
     suggested_solution: Optional[str] = None
     benefits: Optional[str] = None
     implementation_status: Optional[str] = None
+
+    nps_score: Optional[int] = None
+    csat_score: Optional[int] = None
+    ces_score: Optional[int] = None
