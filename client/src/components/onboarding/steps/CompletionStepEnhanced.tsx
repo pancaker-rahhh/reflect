@@ -2,15 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useOnboarding } from '../../../context/OnboardingContext';
 import { useOnboardingKeyboard } from '../../../hooks/useOnboardingKeyboard';
 import { onboardingDataService } from '../../../services/onboardingDataService';
-import { isFeatureEnabled } from '../../../lib/featureFlags';
 import { 
   CheckCircle, 
   ArrowRight, 
-  Edit2, 
   User, 
-  Building2, 
-  FolderOpen, 
-  Users,
+  FolderOpen,
   Check,
   ChevronRight,
   Sparkles
@@ -41,11 +37,8 @@ export const CompletionStepEnhanced: React.FC = () => {
   const { 
     completeOnboarding, 
     userType, 
-    isLoading,
-    goToStep
+    isLoading
   } = useOnboarding();
-  
-  const skipUserTypeSelection = isFeatureEnabled('SKIP_USER_TYPE_SELECTION');
   const [isReviewing, setIsReviewing] = useState(true);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     profile: {},
@@ -73,10 +66,7 @@ export const CompletionStepEnhanced: React.FC = () => {
         role: allData.profile?.role || 'Not specified',
         company: allData.profile?.company || 'Not specified'
       },
-      organization: {
-        name: allData.organization?.name || 'Organization not set',
-        type: userType === 'solo' ? 'Personal Workspace' : 'Team Organization'
-      },
+      organization: {},
       project: {
         name: allData.project?.name || 'Project not created',
         description: allData.project?.description || 'No description provided'
@@ -90,9 +80,7 @@ export const CompletionStepEnhanced: React.FC = () => {
     setOnboardingData(savedData);
   };
 
-  const handleEdit = (step: 'profile' | 'organization' | 'project' | 'team-setup') => {
-    goToStep(step);
-  };
+  // Editing is disabled on the summary page
 
   const handleConfirm = async () => {
     setIsReviewing(false);
@@ -103,7 +91,7 @@ export const CompletionStepEnhanced: React.FC = () => {
     id: string;
     title: string;
     icon: React.ComponentType<any>;
-    step: 'profile' | 'organization' | 'project' | 'team-setup';
+    step: 'profile' | 'project';
     fields: Array<{ label: string; value: string | undefined }>;
   }> = [
     {
@@ -118,16 +106,6 @@ export const CompletionStepEnhanced: React.FC = () => {
       ]
     },
     {
-      id: 'organization',
-      title: userType === 'solo' ? 'Your Workspace' : 'Your Organization',
-      icon: Building2,
-      step: 'organization' as const,
-      fields: [
-        { label: 'Name', value: onboardingData.organization.name },
-        { label: 'Type', value: onboardingData.organization.type }
-      ]
-    },
-    {
       id: 'project',
       title: 'Your Project',
       icon: FolderOpen,
@@ -138,27 +116,6 @@ export const CompletionStepEnhanced: React.FC = () => {
       ]
     }
   ];
-
-  if (userType === 'team') {
-    sections.push({
-      id: 'team',
-      title: 'Your Team',
-      icon: Users,
-      step: 'team-setup' as const,
-      fields: [
-        { 
-          label: 'Team Members', 
-          value: onboardingData.team.memberCount ? 
-            `${onboardingData.team.memberCount} member${onboardingData.team.memberCount !== 1 ? 's' : ''} added${onboardingData.team.members?.length ? ` (${onboardingData.team.members.map(m => m.email).join(', ')})` : ''}` : 
-            'No members added'
-        },
-        { 
-          label: 'Bulk Invitations', 
-          value: onboardingData.team.invitesSent ? `${onboardingData.team.invitesSent} invite${onboardingData.team.invitesSent !== 1 ? 's' : ''} sent` : 'No bulk invites sent'
-        }
-      ]
-    });
-  }
 
   if (isReviewing) {
     return (
@@ -203,16 +160,6 @@ export const CompletionStepEnhanced: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  
-                  {!skipUserTypeSelection && (
-                    <button
-                      onClick={() => handleEdit(section.step)}
-                      className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors group"
-                      title="Edit this section"
-                    >
-                      <Edit2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                    </button>
-                  )}
                 </div>
               </div>
             );
@@ -225,24 +172,13 @@ export const CompletionStepEnhanced: React.FC = () => {
             <div>
               <h4 className="font-semibold text-gray-900 mb-1">Everything look good?</h4>
               <p className="text-sm text-gray-600">
-                {skipUserTypeSelection ? (
-                  'You can always change these information from your settings page later.'
-                ) : (
-                  'You can always change these settings later from your dashboard. Click the edit buttons above to make changes now, or continue to finish setup.'
-                )}
+                You can always change these settings later from your dashboard. Click the edit buttons above to make changes now, or continue to finish setup.
               </p>
             </div>
           </div>
         </div>
 
         <div className="flex gap-3">
-          <button
-            onClick={() => goToStep('welcome')}
-            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
-          >
-            Start Over
-          </button>
-          
           <button
             onClick={handleConfirm}
             disabled={isLoading}

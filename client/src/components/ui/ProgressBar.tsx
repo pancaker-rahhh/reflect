@@ -314,7 +314,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
                   <button
                     onClick={() => handleStepChange(index)}
                     className={cn(
-                      'rounded-full transition-all duration-300 group-hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                      'rounded-full transition-all duration-300 group-hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center justify-center',
                       config.stepSize,
                       isCompleted
                         ? cn('shadow-md', colors.stepCompleted)
@@ -324,7 +324,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
                     )}
                     aria-label={`${stepLabel} - ${isCompleted ? 'Completed' : isCurrent ? 'Current' : 'Pending'}`}
                   >
-                    {isCompleted && <Check className="w-2 h-2 text-white" />}
+                    {isCompleted && <Check className={cn(colors.text, config.icon)} />}
                   </button>
                   <span
                     className={cn(

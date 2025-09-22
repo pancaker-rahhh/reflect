@@ -3,18 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
 import { onboardingApi } from '../lib/api'
-import { isFeatureEnabled } from '../lib/featureFlags'
 
 export type UserType = 'solo' | 'team'
 
 export type OnboardingStep =
-  | 'welcome'
-  | 'user-type'
   | 'profile'
-  | 'organization'
   | 'project'
-  | 'team-setup'
-  | 'completion'
 
 interface OnboardingState {
   currentStep: OnboardingStep
@@ -27,7 +21,6 @@ interface OnboardingState {
 }
 
 interface OnboardingContextType extends OnboardingState {
-  setUserType: (type: UserType) => void
   nextStep: () => void
   previousStep: () => void
   goToStep: (step: OnboardingStep) => void
@@ -35,7 +28,6 @@ interface OnboardingContextType extends OnboardingState {
   setOrganizationId: (id: string) => void
   setProjectId: (id: string) => void
   completeOnboarding: () => Promise<void>
-  skipOnboarding: () => Promise<void>
   resetOnboarding: () => void
   isStepAccessible: (step: OnboardingStep) => boolean
 }
@@ -44,17 +36,7 @@ const OnboardingContext = createContext<OnboardingContextType | undefined>(undef
 
 const ONBOARDING_STORAGE_KEY = 'reflect_onboarding_state'
 
-const getSteps = (userType: UserType | null, skipUserTypeSelection: boolean): OnboardingStep[] => {
-  if (skipUserTypeSelection) {
-    return ['welcome', 'profile', 'organization', 'project', 'completion']
-  }
-
-  if (userType === 'solo') {
-    return ['welcome', 'user-type', 'profile', 'organization', 'project', 'completion']
-  }
-
-  return ['welcome', 'user-type', 'profile', 'organization', 'project', 'team-setup', 'completion']
-}
+const getSteps = (): OnboardingStep[] => ['profile', 'project']
 
 interface OnboardingProviderProps {
   children: ReactNode
@@ -64,7 +46,6 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user: _user } = useAuth()
-  const skipUserTypeSelection = isFeatureEnabled('SKIP_USER_TYPE_SELECTION')
 
   const [state, setState] = useState<OnboardingState>(() => {
     const savedState = localStorage.getItem(ONBOARDING_STORAGE_KEY)
@@ -80,10 +61,8 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
       }
     }
 
-    // If skipping user type selection, auto-set to solo
-    const initialUserType = skipUserTypeSelection ? 'solo' : null
-    const initialStep = 'welcome' // Always start with welcome page for good UX
-    // Don't pre-mark skipped steps as completed - they shouldn't count toward progress
+    const initialUserType = null
+    const initialStep: OnboardingStep = 'profile'
     const initialCompletedSteps = new Set()
 
     return {
@@ -105,20 +84,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     localStorage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify(stateToSave))
   }, [state])
 
-  const getRelevantSteps = (): OnboardingStep[] => {
-    return getSteps(state.userType, skipUserTypeSelection)
-  }
-
-  const setUserType = (type: UserType) => {
-    setState((prev) => ({
-      ...prev,
-      userType: type,
-      // Only mark user-type as completed if it's actually a visible step
-      completedSteps: skipUserTypeSelection
-        ? prev.completedSteps
-        : new Set([...prev.completedSteps, 'user-type']),
-    }))
-  }
+  const getRelevantSteps = (): OnboardingStep[] => getSteps()
 
   const nextStep = () => {
     const steps = getRelevantSteps()
@@ -139,14 +105,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     const currentIndex = steps.indexOf(state.currentStep)
 
     if (currentIndex > 0) {
-      let targetStep = steps[currentIndex - 1]
-
-      // If we're using the feature flag and the target step is organization,
-      // skip it and go to the step before that (since org auto-advances)
-      if (skipUserTypeSelection && targetStep === 'organization' && currentIndex > 1) {
-        targetStep = steps[currentIndex - 2]
-      }
-
+      const targetStep = steps[currentIndex - 1]
       setState((prev) => ({
         ...prev,
         currentStep: targetStep,
@@ -215,29 +174,10 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     }
   }
 
-  const skipOnboarding = async () => {
-    setState((prev) => ({ ...prev, isLoading: true, error: null }))
-
-    try {
-      await onboardingApi.skip()
-
-      localStorage.removeItem(ONBOARDING_STORAGE_KEY)
-      // Use replace to prevent going back to onboarding via browser back button
-      navigate('/app/dashboard', { replace: true })
-    } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        error: error instanceof Error ? error.message : 'Failed to skip onboarding',
-      }))
-    } finally {
-      setState((prev) => ({ ...prev, isLoading: false }))
-    }
-  }
-
   const resetOnboarding = () => {
     localStorage.removeItem(ONBOARDING_STORAGE_KEY)
     setState({
-      currentStep: 'welcome',
+      currentStep: 'profile',
       userType: null,
       completedSteps: new Set(),
       organizationId: null,
@@ -257,8 +197,6 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     if (stepIndex <= currentIndex) return true
 
     if (stepIndex === currentIndex + 1) {
-      if (state.currentStep === 'user-type' && !state.userType) return false
-      if (state.currentStep === 'organization' && !state.organizationId) return false
       if (state.currentStep === 'project' && !state.projectId) return false
       return true
     }
@@ -268,7 +206,6 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
 
   const value: OnboardingContextType = {
     ...state,
-    setUserType,
     nextStep,
     previousStep,
     goToStep,
@@ -276,7 +213,6 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     setOrganizationId,
     setProjectId,
     completeOnboarding,
-    skipOnboarding,
     resetOnboarding,
     isStepAccessible,
   }

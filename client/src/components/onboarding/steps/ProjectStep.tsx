@@ -5,7 +5,7 @@ import { projectApi, onboardingApi } from '../../../lib/api'
 import { onboardingDataService } from '../../../services/onboardingDataService'
 
 export const ProjectStep: React.FC = () => {
-  const { nextStep, markStepCompleted, setProjectId, organizationId, projectId, goToStep } =
+  const { nextStep, markStepCompleted, setProjectId, organizationId, projectId, setOrganizationId, completeOnboarding } =
     useOnboarding()
 
   const [formData, setFormData] = useState({
@@ -14,11 +14,30 @@ export const ProjectStep: React.FC = () => {
   })
   const [isCreating, setIsCreating] = useState(false)
 
+  const [isCreatingOrg, setIsCreatingOrg] = useState(false)
+
+  // Auto-create organization if missing (simplified flow has no separate org step)
   useEffect(() => {
-    if (!organizationId) {
-      goToStep('organization')
+    const ensureOrganization = async () => {
+      if (organizationId) return
+      setIsCreatingOrg(true)
+      try {
+        const organization = await onboardingApi.autoCreateOrganization()
+        onboardingDataService.saveOrganizationData({
+          name: organization.name,
+          description: '',
+          slug: organization.slug,
+        })
+        setOrganizationId(organization.id)
+      } catch (error) {
+        console.error('Failed to auto-create organization:', error)
+      } finally {
+        setIsCreatingOrg(false)
+      }
     }
-  }, [organizationId, goToStep])
+
+    void ensureOrganization()
+  }, [organizationId, setOrganizationId])
 
   // Populate form data from cached onboarding data at mount
   useEffect(() => {
@@ -31,7 +50,7 @@ export const ProjectStep: React.FC = () => {
     }
   }, [])
 
-  if (!organizationId) {
+  if (!organizationId || isCreatingOrg) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
@@ -103,7 +122,7 @@ export const ProjectStep: React.FC = () => {
       })
 
       markStepCompleted('project')
-      nextStep()
+      await completeOnboarding()
     } catch (error: any) {
       console.error('Failed to create project:', error)
 

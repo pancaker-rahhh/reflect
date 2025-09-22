@@ -3,43 +3,18 @@ import { useOnboarding } from '../../../context/OnboardingContext'
 import { Sparkles } from 'lucide-react'
 import ProgressBarComponent from '@/components/ui/ProgressBar'
 import type { OnboardingStep } from '../../../context/OnboardingContext'
-import { isFeatureEnabled } from '../../../lib/featureFlags'
 
 // Progress Step 16: Integrate ProgressBar with onboarding flow
 export const OnboardingProgressBar: React.FC = () => {
-  const { currentStep, userType, completedSteps } = useOnboarding()
-  const skipUserTypeSelection = isFeatureEnabled('SKIP_USER_TYPE_SELECTION')
+  const { currentStep, completedSteps } = useOnboarding()
 
-  const getSteps = () => {
-    const baseSteps = []
-
-    // Welcome page is not counted as a step - it's just intro UX
-    // Only include actual steps that require user action
-    if (!skipUserTypeSelection) {
-      baseSteps.push({ key: 'user-type', label: 'Account Type' })
-    }
-
-    baseSteps.push(
-      { key: 'profile', label: 'Profile' },
-      { key: 'organization', label: userType === 'solo' ? 'Workspace' : 'Organization' },
-      { key: 'project', label: 'Project' }
-    )
-
-    if (userType === 'team') {
-      baseSteps.push({ key: 'team-setup', label: 'Team Setup' })
-    }
-
-    return baseSteps
-  }
+  const getSteps = () => [{ key: 'profile', label: 'Profile' }, { key: 'project', label: 'Project' }]
 
   const steps = getSteps()
   const currentStepIndex = steps.findIndex((step) => step.key === currentStep)
   const totalSteps = steps.length
 
-  // Don't show progress bar on welcome page
-  if (currentStep === 'welcome') {
-    return null
-  }
+  // Always show for simplified flow
 
   // Only count completed steps that are actually visible to the user
   const completedStepsCount = steps.filter((step) =>

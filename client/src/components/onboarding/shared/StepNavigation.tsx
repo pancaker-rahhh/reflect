@@ -4,20 +4,17 @@ import { useOnboardingKeyboard } from '../../../hooks/useOnboardingKeyboard'
 import { ArrowLeft, Keyboard } from 'lucide-react'
 
 export const StepNavigation: React.FC = () => {
-  const { currentStep, previousStep, isLoading, userType } = useOnboarding()
+  const { currentStep, previousStep, isLoading } = useOnboarding()
 
   // Determine if back button should be shown
-  // Welcome page is always the first, so never show back button there
-  const canGoBack = currentStep !== 'welcome'
+  const canGoBack = currentStep !== 'profile'
 
   useOnboardingKeyboard({
     onPrevious: canGoBack ? previousStep : undefined,
     enabled: !isLoading,
   })
 
-  if (currentStep === 'completion') {
-    return null
-  }
+  // Always show navigation for simplified flow
 
   return (
     <div>
@@ -37,12 +34,8 @@ export const StepNavigation: React.FC = () => {
         </div>
 
         <div className="text-sm text-gray-500">
-          {currentStep === 'user-type' && 'Choose your account type'}
           {currentStep === 'profile' && 'Complete your profile details'}
-          {currentStep === 'organization' &&
-            (userType === 'solo' ? 'Set up your workspace' : 'Create your organization')}
           {currentStep === 'project' && 'Create your first project'}
-          {currentStep === 'team-setup' && 'Invite team members (optional)'}
         </div>
       </div>
 
