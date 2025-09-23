@@ -1,6 +1,5 @@
 import { useLocation } from 'react-router-dom'
-import { Sun, Moon } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { UserMenu } from '../auth/UserMenu'
 import { ProjectDropdown } from './ProjectDropdown'
 
@@ -20,16 +19,10 @@ const pageTitle: Record<string, string> = {
 
 export function Header() {
   const location = useLocation()
-  const [isDark, setIsDark] = useState(false)
-
   useEffect(() => {
     const root = window.document.documentElement
-    if (isDark) {
-      root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
-    }
-  }, [isDark])
+    root.classList.remove('dark')
+  }, [])
 
   const title = pageTitle[location.pathname] || 'reflect'
 
@@ -41,13 +34,6 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-2">
-        <button
-          onClick={() => setIsDark(!isDark)}
-          className="p-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-          aria-label="Toggle theme"
-        >
-          {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-        </button>
         <UserMenu />
       </div>
     </header>
