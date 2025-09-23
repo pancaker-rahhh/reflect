@@ -1,7 +1,30 @@
 import { supabase } from './supabase'
 import { createApiError, handleApiError } from './errors'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+const API_BASE_URL: string = (() => {
+  const configured = import.meta.env.VITE_API_BASE_URL as string | undefined
+  if (configured && typeof configured === 'string' && configured.trim().length > 0) {
+    return configured
+  }
+
+  if (typeof window === 'undefined') {
+    return 'http://localhost:8000/api/v1'
+  }
+
+  const { hostname, protocol } = window.location
+  const isLocalhost =
+    hostname === 'localhost' || hostname.startsWith('127.') || hostname.endsWith('.local')
+
+  if (isLocalhost) {
+    return 'http://localhost:8000/api/v1'
+  }
+
+  // Infer api subdomain for production, e.g. reflectfeedback.com -> api.reflectfeedback.com
+  const parts = hostname.split('.')
+  const baseDomain = parts.length >= 2 ? parts.slice(-2).join('.') : hostname
+  const apiHost = `api.${baseDomain}`
+  return `${protocol}//${apiHost}/api/v1`
+})()
 
 interface RequestConfig {
   timeout?: number
