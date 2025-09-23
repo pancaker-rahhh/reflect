@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react'
 import { useOnboarding } from '../../../context/OnboardingContext'
 import { FolderPlus } from 'lucide-react'
 import { projectApi, onboardingApi } from '../../../lib/api'
+import { useAppContext } from '../../../context/AppContext'
 import { onboardingDataService } from '../../../services/onboardingDataService'
 
 export const ProjectStep: React.FC = () => {
-  const { nextStep, markStepCompleted, setProjectId, organizationId, projectId, goToStep } =
+  const { markStepCompleted, setProjectId, organizationId, projectId, setOrganizationId, completeOnboarding } =
     useOnboarding()
+  const { setCurrentProject } = useAppContext()
 
   const [formData, setFormData] = useState({
     name: '',
@@ -14,11 +16,30 @@ export const ProjectStep: React.FC = () => {
   })
   const [isCreating, setIsCreating] = useState(false)
 
+  const [isCreatingOrg, setIsCreatingOrg] = useState(false)
+
+  // Auto-create organization if missing (simplified flow has no separate org step)
   useEffect(() => {
-    if (!organizationId) {
-      goToStep('organization')
+    const ensureOrganization = async () => {
+      if (organizationId) return
+      setIsCreatingOrg(true)
+      try {
+        const organization = await onboardingApi.autoCreateOrganization()
+        onboardingDataService.saveOrganizationData({
+          name: organization.name,
+          description: '',
+          slug: organization.slug,
+        })
+        setOrganizationId(organization.id)
+      } catch (error) {
+        console.error('Failed to auto-create organization:', error)
+      } finally {
+        setIsCreatingOrg(false)
+      }
     }
-  }, [organizationId, goToStep])
+
+    void ensureOrganization()
+  }, [organizationId, setOrganizationId])
 
   // Populate form data from cached onboarding data at mount
   useEffect(() => {
@@ -31,7 +52,7 @@ export const ProjectStep: React.FC = () => {
     }
   }, [])
 
-  if (!organizationId) {
+  if (!organizationId || isCreatingOrg) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
@@ -68,9 +89,10 @@ export const ProjectStep: React.FC = () => {
               organization_id: organizationId,
             })
             break
-          } catch (error: any) {
+          } catch (error: unknown) {
+            const err = error as { response?: { status?: number } }
             retryCount++
-            if (error?.response?.status === 403 && retryCount < maxRetries) {
+            if (err.response?.status === 403 && retryCount < maxRetries) {
               await new Promise((resolve) => setTimeout(resolve, 1000 * retryCount))
               continue
             }
@@ -83,7 +105,7 @@ export const ProjectStep: React.FC = () => {
         }
 
         setProjectId(project.id)
-        localStorage.setItem('onboarding_project_id', project.id)
+        setCurrentProject(project)
       }
 
       // Save project data for review step
@@ -103,30 +125,34 @@ export const ProjectStep: React.FC = () => {
       })
 
       markStepCompleted('project')
-      nextStep()
-    } catch (error: any) {
+      await completeOnboarding()
+    } catch (error: unknown) {
       console.error('Failed to create project:', error)
 
       // Check if it's a subscription limit error
+      const err = error as {
+        response?: { status?: number; data?: { error?: string; current_usage?: number; limit?: number; message?: string; detail?: string } }
+        message?: string
+      }
       if (
-        error?.response?.status === 403 &&
-        error?.response?.data?.error === 'Project limit exceeded'
+        err.response?.status === 403 &&
+        err.response?.data?.error === 'Project limit exceeded'
       ) {
-        const errorData = error.response.data
+        const errorData = err.response.data!
         alert(
           `Project limit exceeded!\n\nYou have ${errorData.current_usage} projects (limit: ${errorData.limit})\n\n${errorData.message}`
         )
-      } else if (error?.response?.status === 403) {
+      } else if (err.response?.status === 403) {
         // Authorization error - likely organization access issue
         const message =
-          error?.response?.data?.detail || error?.message || 'Not authorized for this organization'
+          err.response?.data?.detail || err.message || 'Not authorized for this organization'
         alert(
           `Authorization Error: ${message}\n\nThis might be a temporary issue. Please try again or contact support if the problem persists.`
         )
       } else {
         // Generic error message
         const message =
-          error?.response?.data?.detail || error?.message || 'Failed to create project'
+          err.response?.data?.detail || err.message || 'Failed to create project'
         alert(`Error: ${message}`)
       }
     } finally {

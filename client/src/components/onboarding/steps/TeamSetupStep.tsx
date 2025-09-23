@@ -14,7 +14,7 @@ interface TeamMember {
 }
 
 export const TeamSetupStep: React.FC = () => {
-  const { nextStep, markStepCompleted, organizationId } = useOnboarding();
+  const { nextStep, organizationId } = useOnboarding();
   const { saveTeamData } = useOnboardingData();
   
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -57,9 +57,8 @@ export const TeamSetupStep: React.FC = () => {
   };
 
   const handleSkip = useCallback(() => {
-    markStepCompleted('team-setup');
     nextStep();
-  }, [markStepCompleted, nextStep]);
+  }, [nextStep]);
 
   const handleSendInvites = useCallback(async () => {
     setIsInviting(true);
@@ -74,7 +73,6 @@ export const TeamSetupStep: React.FC = () => {
         invitesSent: teamMembers.length
       });
 
-      markStepCompleted('team-setup');
       nextStep();
     } catch (error) {
       console.error('Failed to send invitations:', error);
@@ -83,12 +81,11 @@ export const TeamSetupStep: React.FC = () => {
         members: teamMembers,
         invitesSent: 0
       });
-      markStepCompleted('team-setup');
       nextStep();
     } finally {
       setIsInviting(false);
     }
-  }, [teamMembers, saveTeamData, markStepCompleted, nextStep]);
+  }, [teamMembers, saveTeamData, nextStep]);
 
   const handleBulkInviteSuccess = (count: number) => {
     const existingTeamData = onboardingDataService.getTeamData();
@@ -96,7 +93,6 @@ export const TeamSetupStep: React.FC = () => {
       members: existingTeamData?.members || teamMembers,
       invitesSent: count
     });
-    markStepCompleted('team-setup');
     nextStep();
   };
 

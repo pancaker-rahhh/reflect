@@ -35,7 +35,7 @@ export interface OnboardingUpdateRequest {
   has_created_organization?: boolean;
   company_size?: string;
   use_case?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface OnboardingCompleteRequest {

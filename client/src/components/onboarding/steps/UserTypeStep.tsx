@@ -1,13 +1,11 @@
 import React from 'react';
-import { useOnboarding } from '../../../context/OnboardingContext';
+
 import { User, Users } from 'lucide-react';
 
 export const UserTypeStep: React.FC = () => {
-  const { setUserType, nextStep } = useOnboarding();
-
-  const handleSelection = (type: 'solo' | 'team') => {
-    setUserType(type);
-    nextStep();
+  // Deprecated in simplified flow; keep component to satisfy imports if any
+  const handleSelection = (_type: 'solo' | 'team') => {
+    // no-op
   };
 
   return (

@@ -1,39 +1,21 @@
 import React from 'react';
 import { useOnboarding } from '../../context/OnboardingContext';
 import { KeyboardShortcutProvider } from '../../context/KeyboardShortcutContext';
-import { WelcomeStep } from './steps/WelcomeStep';
-import { UserTypeStep } from './steps/UserTypeStep';
 import { ProfileStep } from './steps/ProfileStep';
-import { OrganizationStep } from './steps/OrganizationStep';
 import { ProjectStep } from './steps/ProjectStep';
-import { TeamSetupStep } from './steps/TeamSetupStep';
-import { CompletionStepEnhanced } from './steps/CompletionStepEnhanced';
 import { ProgressBar } from './shared/ProgressBar';
 import { StepNavigation } from './shared/StepNavigation';
-import { isFeatureEnabled } from '../../lib/featureFlags';
 import '../../styles/onboarding.css';
 
 export const OnboardingWizard: React.FC = () => {
-  const { currentStep, userType, isLoading, error } = useOnboarding();
-  const skipUserTypeSelection = isFeatureEnabled('SKIP_USER_TYPE_SELECTION');
+  const { currentStep, isLoading, error } = useOnboarding();
 
   const renderStep = () => {
     switch (currentStep) {
-      case 'welcome':
-        return <WelcomeStep />;
-      case 'user-type':
-        // Skip user type step if feature flag is enabled
-        return skipUserTypeSelection ? null : <UserTypeStep />;
       case 'profile':
         return <ProfileStep />;
-      case 'organization':
-        return <OrganizationStep />;
       case 'project':
         return <ProjectStep />;
-      case 'team-setup':
-        return userType === 'team' ? <TeamSetupStep /> : null;
-      case 'completion':
-        return <CompletionStepEnhanced />;
       default:
         return null;
     }
@@ -48,11 +30,11 @@ export const OnboardingWizard: React.FC = () => {
           <div className="max-w-3xl mx-auto">
             <div className="mb-8 animate-fade-in">
               <br />
-              {currentStep !== 'welcome' && currentStep !== 'completion' && (
+              {
                 <div className="mt-6">
                   <ProgressBar />
                 </div>
-              )}
+              }
             </div>
 
             <div className="glass-effect rounded-2xl shadow-2xl p-8 animate-fade-in">
@@ -78,7 +60,7 @@ export const OnboardingWizard: React.FC = () => {
               ) : (
                 <div className="animate-fade-in">
                   {renderStep()}
-                  {currentStep !== 'welcome' && <StepNavigation />}
+                  <StepNavigation />
                 </div>
               )}
             </div>

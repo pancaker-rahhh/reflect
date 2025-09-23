@@ -1,24 +1,24 @@
 import { useCallback } from 'react';
-import { onboardingDataService } from '../services/onboardingDataService';
+import { onboardingDataService, type OnboardingFormData } from '../services/onboardingDataService';
 
 export const useOnboardingData = () => {
-  const saveProfileData = useCallback((data: any) => {
+  const saveProfileData = useCallback((data: OnboardingFormData['profile']) => {
     onboardingDataService.saveProfileData(data);
   }, []);
 
-  const saveOrganizationData = useCallback((data: any) => {
+  const saveOrganizationData = useCallback((data: OnboardingFormData['organization']) => {
     onboardingDataService.saveOrganizationData(data);
   }, []);
 
-  const saveProjectData = useCallback((data: any) => {
+  const saveProjectData = useCallback((data: OnboardingFormData['project']) => {
     onboardingDataService.saveProjectData(data);
   }, []);
 
-  const saveTeamData = useCallback((data: any) => {
+  const saveTeamData = useCallback((data: OnboardingFormData['team']) => {
     onboardingDataService.saveTeamData(data);
   }, []);
 
-  const getAllData = useCallback(() => {
+  const getAllData = useCallback((): OnboardingFormData => {
     return onboardingDataService.getAllData();
   }, []);
 
