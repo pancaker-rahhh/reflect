@@ -1,14 +1,7 @@
-"""
-Webhook router for handling Dodo Payments webhooks.
-This router processes webhook events without requiring organization_id in the path.
-"""
-
 import json
-from typing import Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
-
 from app.db import get_db
 from app.services.payment_service import payment_service
 from app.core.logging import get_logger
@@ -18,8 +11,6 @@ router = APIRouter()
 
 
 class WebhookResponse(BaseModel):
-    """Response model for webhook processing."""
-
     success: bool
     message: str
 
@@ -90,4 +81,3 @@ async def process_webhook(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='Internal server error',
         )
-
