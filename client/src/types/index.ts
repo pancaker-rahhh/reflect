@@ -289,13 +289,6 @@ export interface RecentActivity {
   is_actionable?: boolean
 }
 
-export interface NotificationSettings {
-  newSurveyResponses: boolean
-  newReviews: boolean
-  newBugReports: boolean
-  newFeatureRequests: boolean
-}
-
 export interface Integration {
   id: string
   project_id: string

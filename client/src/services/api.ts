@@ -1,28 +1,22 @@
-import type {
-  User,
-  Organization,
-  Widget,
-  NotificationSettings,
-} from '@/types'
+import type { User, Organization, Widget } from '@/types'
 import { supabase } from '../lib/supabase'
 
 const API_BASE_URL = 'http://localhost:8000/api/v1'
 
 class ApiService {
-  private async request<T>(
-    endpoint: string,
-    options?: RequestInit
-  ): Promise<T> {
-    const { data: { session } } = await supabase.auth.getSession()
+  private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
     const token = session?.access_token
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` }),
-        ...options?.headers
-      }
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...options?.headers,
+      },
     })
 
     if (response.status === 401) {
@@ -45,7 +39,7 @@ class ApiService {
 
   async syncUser(): Promise<User> {
     return this.request<User>('/users/sync', {
-      method: 'POST'
+      method: 'POST',
     })
   }
 
@@ -60,26 +54,32 @@ class ApiService {
   }
 
   async deleteProject(_id: string): Promise<void> {
-    return new Promise(resolve => setTimeout(() => resolve(), 500))
+    return new Promise((resolve) => setTimeout(() => resolve(), 500))
   }
 
   async createWidget(widget: Omit<Widget, 'id' | 'created_at' | 'updated_at'>): Promise<Widget> {
-    return new Promise(resolve => setTimeout(() => 
-      resolve({ ...widget, id: Date.now().toString(), created_at: new Date().toISOString(), updated_at: new Date().toISOString() }), 500))
+    return new Promise((resolve) =>
+      setTimeout(
+        () =>
+          resolve({
+            ...widget,
+            id: Date.now().toString(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }),
+        500
+      )
+    )
   }
 
   async deleteWidget(_id: string): Promise<void> {
-    return new Promise(resolve => setTimeout(() => resolve(), 500))
-  }
-
-  async updateNotificationSettings(settings: NotificationSettings): Promise<NotificationSettings> {
-    return new Promise(resolve => setTimeout(() => resolve(settings), 500))
+    return new Promise((resolve) => setTimeout(() => resolve(), 500))
   }
 
   async updateUserProfile(data: { name: string }): Promise<User> {
     return this.request<User>('/users/me', {
       method: 'PUT',
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     })
   }
 }

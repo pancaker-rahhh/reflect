@@ -9,7 +9,6 @@ import { useAppContext } from '@/context/AppContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { WidgetCard } from '@/components/widgets/WidgetCard'
-import { LanguageSupportBanner } from '@/components/widgets/LanguageSupportBanner'
 import { FreeTierAlert } from '@/components/widgets/SubscriptionMessagesBanner'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageLoading } from '@/components/common/LoadingSpinner'
@@ -81,10 +80,6 @@ export function Widgets() {
 
   const handleDeleteWidget = (widgetId: string, widgetName: string) => {
     setDeleteModal({ isOpen: true, widgetId, widgetName })
-  }
-
-  const handleEditWidget = (widgetId: string) => {
-    navigate(`/app/widgets/${widgetId}/edit`)
   }
 
   const handleGetCode = (widgetId: string) => {
@@ -160,7 +155,6 @@ export function Widgets() {
         </div>
       </div>
 
-      <LanguageSupportBanner />
       <FreeTierAlert />
 
       <div className="relative">
@@ -208,7 +202,6 @@ export function Widgets() {
                     widget={widget}
                     viewMode={viewMode}
                     onDelete={() => handleDeleteWidget(widget.id, widget.name)}
-                    onEdit={() => handleEditWidget(widget.id)}
                     onGetCode={() => handleGetCode(widget.id)}
                   />
                 ))}

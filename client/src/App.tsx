@@ -44,9 +44,6 @@ const PublicRoadmap = lazy(() =>
 const AccountSettings = lazy(() =>
   import('@/pages/settings/AccountSettings').then((m) => ({ default: m.AccountSettings }))
 )
-const NotificationSettings = lazy(() =>
-  import('@/pages/settings/NotificationSettings').then((m) => ({ default: m.NotificationSettings }))
-)
 const BillingPage = lazy(() =>
   import('@/pages/settings/BillingPage').then((m) => ({ default: m.default }))
 )
@@ -140,7 +137,7 @@ function App() {
                         <Route path="settings/*" element={<AccountSettingsLayout />}>
                           <Route index element={<Navigate to="account" replace />} />
                           <Route path="account" element={<AccountSettings />} />
-                          <Route path="notifications" element={<NotificationSettings />} />
+
                           <Route path="billing" element={<BillingPage />} />
                         </Route>
                         <Route path="settings/project" element={<ProjectSettings />} />
