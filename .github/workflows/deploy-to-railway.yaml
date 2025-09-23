@@ -64,9 +64,9 @@ jobs:
           DODO_TEST_PRODUCT_ID_PRO_MONTHLY: ${{ secrets.DODO_TEST_PRODUCT_ID_PRO_MONTHLY }}
           DODO_TEST_PRODUCT_ID_PRO_YEARLY: ${{ secrets.DODO_TEST_PRODUCT_ID_PRO_YEARLY }}
           DODO_WEBHOOK_SECRET: ${{ secrets.DODO_WEBHOOK_SECRET }}
+          DODO_RETURN_URL: ${{ secrets.DODO_RETURN_URL }}
 
           # Dodo payments production configuration
           # DODO_API_KEY: ${{ secrets.DODO_API_KEY }}
-          # DODO_RETURN_URL: ${{ secrets.DODO_RETURN_URL }}
           # DODO_PRODUCT_ID_PRO_MONTHLY: ${{ secrets.DODO_PRODUCT_ID_PRO_MONTHLY }}
           # DODO_PRODUCT_ID_PRO_YEARLY: ${{ secrets.DODO_PRODUCT_ID_PRO_YEARLY }}
