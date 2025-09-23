@@ -58,3 +58,15 @@ jobs:
           CDN_BASE_URL: ${{ secrets.CDN_BASE_URL }}
           CDN_ZONE_ID: ${{ secrets.CDN_ZONE_ID }}
           CDN_API_TOKEN: ${{ secrets.CDN_API_TOKEN }}
+
+          # Dodo payments test configuration
+          DODO_TEST_API_KEY: ${{ secrets.DODO_TEST_API_KEY }}
+          DODO_TEST_PRODUCT_ID_PRO_MONTHLY: ${{ secrets.DODO_TEST_PRODUCT_ID_PRO_MONTHLY }}
+          DODO_TEST_PRODUCT_ID_PRO_YEARLY: ${{ secrets.DODO_TEST_PRODUCT_ID_PRO_YEARLY }}
+          DODO_WEBHOOK_SECRET: ${{ secrets.DODO_WEBHOOK_SECRET }}
+
+          # Dodo payments production configuration
+          # DODO_API_KEY: ${{ secrets.DODO_API_KEY }}
+          # DODO_RETURN_URL: ${{ secrets.DODO_RETURN_URL }}
+          # DODO_PRODUCT_ID_PRO_MONTHLY: ${{ secrets.DODO_PRODUCT_ID_PRO_MONTHLY }}
+          # DODO_PRODUCT_ID_PRO_YEARLY: ${{ secrets.DODO_PRODUCT_ID_PRO_YEARLY }}
