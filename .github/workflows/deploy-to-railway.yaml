@@ -17,52 +17,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Set Railway service variables
-        run: |
-          railway variables set \
-            # Database Configuration \
-            POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
-            POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
-            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
-            POSTGRES_HOST=${{ secrets.POSTGRES_HOST }} \
-            POSTGRES_PORT=${{ secrets.POSTGRES_PORT }} \
-            \
-            # Supabase Configuration \
-            SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
-            SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
-            SUPABASE_SERVICE_KEY=${{ secrets.SUPABASE_SERVICE_KEY }} \
-            SUPABASE_JWT_SECRET=${{ secrets.SUPABASE_JWT_SECRET }} \
-            \
-            # Application Settings \
-            APP_NAME=${{ vars.APP_NAME }} \
-            APP_VERSION=${{ vars.APP_VERSION }} \
-            API_PREFIX=${{ vars.API_PREFIX }} \
-            DEBUG=${{ vars.DEBUG }} \
-            \
-            # Logging \
-            LOG_LEVEL=${{ secrets.LOG_LEVEL }} \
-            \
-            # Cloudflare R2 Configuration \
-            R2_ACCOUNT_ID=${{ secrets.R2_ACCOUNT_ID }} \
-            R2_ACCESS_KEY_ID=${{ secrets.R2_ACCESS_KEY_ID }} \
-            R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }} \
-            R2_BUCKET_NAME=${{ secrets.R2_BUCKET_NAME }} \
-            CDN_BASE_URL=${{ secrets.CDN_BASE_URL }} \
-            CDN_ZONE_ID=${{ secrets.CDN_ZONE_ID }} \
-            CDN_API_TOKEN=${{ secrets.CDN_API_TOKEN }} \
-            \
-            # Dodo payments test configuration \
-            DODO_TEST_API_KEY=${{ secrets.DODO_TEST_API_KEY }} \
-            DODO_TEST_PRODUCT_ID_PRO_MONTHLY=${{ secrets.DODO_TEST_PRODUCT_ID_PRO_MONTHLY }} \
-            DODO_TEST_PRODUCT_ID_PRO_YEARLY=${{ secrets.DODO_TEST_PRODUCT_ID_PRO_YEARLY }} \
-            DODO_WEBHOOK_SECRET=${{ secrets.DODO_WEBHOOK_SECRET }} \
-            DODO_RETURN_URL=${{ secrets.DODO_RETURN_URL }} \
-            --service ${{ vars.RAILWAY_SERVICE_NAME }}
-        working-directory: ./api
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_DEPLOYMENT_TOKEN }}
-
+        
       - name: Deploy to Railway
         run: railway up --service ${{ vars.RAILWAY_SERVICE_NAME }}
         working-directory: ./api
