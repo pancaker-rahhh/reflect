@@ -12,7 +12,6 @@ import { DirectionProvider } from '@radix-ui/react-direction'
 
 // Eagerly load core components
 import { AppLayout } from '@/components/layout/AppLayout'
-import { AccountSettingsLayout } from '@/components/layout/SettingsLayout'
 import { LandingPage } from '@/pages/LandingPage'
 import { Dashboard } from '@/pages/Dashboard'
 import { Login } from '@/pages/auth/Login'
@@ -134,12 +133,9 @@ function App() {
                         <Route path="feedback/bugs" element={<BugReports />} />
                         <Route path="feedback/features" element={<FeatureRequests />} />
                         <Route path="roadmap" element={<RoadmapPage />} />
-                        <Route path="settings/*" element={<AccountSettingsLayout />}>
-                          <Route index element={<Navigate to="account" replace />} />
-                          <Route path="account" element={<AccountSettings />} />
-
-                          <Route path="billing" element={<BillingPage />} />
-                        </Route>
+                        <Route path="settings" element={<Navigate to="account" replace />} />
+                        <Route path="settings/account" element={<AccountSettings />} />
+                        <Route path="settings/billing" element={<BillingPage />} />
                         <Route path="settings/project" element={<ProjectSettings />} />
                         <Route path="settings/roadmap" element={<RoadmapSettings />} />
                         <Route path="settings/organization" element={<OrganizationSettings />} />
