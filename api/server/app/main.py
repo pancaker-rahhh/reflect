@@ -9,7 +9,7 @@ from app.core.exception_handlers import (
 )
 from app.core.exceptions import AuthenticationError
 from app.core.settings import get_settings
-from app.core.logging import setup_logging, get_logger
+from app.core.logging import setup_logging
 from app.core.middleware import CorrelationIDMiddleware, RequestLoggingMiddleware
 from app.core.rate_limiting import setup_rate_limiting
 from app.db import engine
@@ -23,22 +23,6 @@ from app.services.payment_service import payment_service
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     setup_logging()
-    logger = get_logger(__name__)
-    settings = get_settings()
-    
-    # TODO: Remove this once everything is working
-    # Log Supabase env presence (URL and length-only for keys)
-    try:
-        logger.info(
-            'Supabase configuration snapshot',
-            supabase_url=settings.SUPABASE_URL or '',
-            supabase_anon_key_len=len(settings.SUPABASE_ANON_KEY or ''),
-            supabase_service_key_len=len(settings.SUPABASE_SERVICE_KEY or ''),
-            supabase_jwt_secret_len=len(settings.SUPABASE_JWT_SECRET or ''),
-        )
-    except Exception:
-        pass
-    
     # Import all models to ensure SQLAlchemy relationships are properly configured
     import app.models  # noqa
 
