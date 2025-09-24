@@ -14,11 +14,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { PageLoading } from '@/components/common/LoadingSpinner'
 import { DeleteConfirmationModal } from '@/components/common/ConfirmationModal'
 import { UsageAwareButton } from '@/components/common/UsageAwareButton'
+import { useToastNotifications } from '@/hooks/useToastNotifications'
 import type { Widget } from '@/types'
 
 export function Widgets() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const toast = useToastNotifications()
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [deleteModal, setDeleteModal] = useState<{
@@ -61,7 +63,7 @@ export function Widgets() {
       }
       console.error('Failed to delete widget:', err)
       const message = (err as { message?: string })?.message || 'Failed to delete widget'
-      alert(`Error: ${message}`)
+      toast.showError(message, 'Delete Failed')
     },
 
     onSettled: () => {

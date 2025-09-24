@@ -28,6 +28,7 @@ import { DeleteProjectModal } from './DeleteProjectModal'
 import { DeleteMemberModal } from './DeleteMemberModal'
 import { CreateProjectModal } from './CreateProjectModal'
 import { ProjectTeamSection } from './ProjectTeamSection'
+import { ConfirmationModal } from '../common/ConfirmationModal'
 import { ComingSoon } from '../shared/ComingSoon'
 import { isFeatureEnabled } from '../../lib/featureFlags'
 import { IntegrationsPage } from '@/pages/settings/IntegrationsPage'
@@ -58,6 +59,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showDeleteMemberModal, setShowDeleteMemberModal] = useState(false)
+  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false)
   const [memberToDelete, setMemberToDelete] = useState<{
     id: string
     name: string
@@ -343,13 +345,13 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
   }
 
   const handleRegenerateApiKey = (_keyId: string) => {
-    const confirmed = window.confirm(
-      'Are you sure you want to regenerate this API key? The old key will stop working immediately.'
-    )
-    if (confirmed) {
-      setMessage({ type: 'success', text: 'API key regenerated successfully' })
-      setTimeout(() => setMessage(null), 3000)
-    }
+    setShowRegenerateConfirm(true)
+  }
+
+  const handleConfirmRegenerate = () => {
+    setMessage({ type: 'success', text: 'API key regenerated successfully' })
+    setTimeout(() => setMessage(null), 3000)
+    setShowRegenerateConfirm(false)
   }
 
   const tabs = [
@@ -829,6 +831,18 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
           onCreate={handleCreateProject}
         />
       )}
+
+      <ConfirmationModal
+        isOpen={showRegenerateConfirm}
+        onClose={() => setShowRegenerateConfirm(false)}
+        onConfirm={handleConfirmRegenerate}
+        title="Regenerate API Key"
+        description="Are you sure you want to regenerate this API key? The old key will stop working immediately."
+        confirmText="Regenerate"
+        cancelText="Cancel"
+        variant="default"
+        icon={<RefreshCw className="h-5 w-5" />}
+      />
 
       {showDeleteMemberModal && memberToDelete && (
         <DeleteMemberModal

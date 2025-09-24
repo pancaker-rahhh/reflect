@@ -4,11 +4,19 @@ import { FolderPlus } from 'lucide-react'
 import { projectApi, onboardingApi } from '../../../lib/api'
 import { useAppContext } from '../../../context/AppContext'
 import { onboardingDataService } from '../../../services/onboardingDataService'
+import { useToastNotifications } from '../../../hooks/useToastNotifications'
 
 export const ProjectStep: React.FC = () => {
-  const { markStepCompleted, setProjectId, organizationId, projectId, setOrganizationId, completeOnboarding } =
-    useOnboarding()
+  const {
+    markStepCompleted,
+    setProjectId,
+    organizationId,
+    projectId,
+    setOrganizationId,
+    completeOnboarding,
+  } = useOnboarding()
   const { setCurrentProject } = useAppContext()
+  const toast = useToastNotifications()
 
   const [formData, setFormData] = useState({
     name: '',
@@ -67,7 +75,9 @@ export const ProjectStep: React.FC = () => {
 
     try {
       if (!organizationId) {
-        alert('No organization ID available. Please go back and complete the organization step.')
+        toast.showError(
+          'No organization ID available. Please go back and complete the organization step.'
+        )
         return
       }
 
@@ -131,29 +141,34 @@ export const ProjectStep: React.FC = () => {
 
       // Check if it's a subscription limit error
       const err = error as {
-        response?: { status?: number; data?: { error?: string; current_usage?: number; limit?: number; message?: string; detail?: string } }
+        response?: {
+          status?: number
+          data?: {
+            error?: string
+            current_usage?: number
+            limit?: number
+            message?: string
+            detail?: string
+          }
+        }
         message?: string
       }
-      if (
-        err.response?.status === 403 &&
-        err.response?.data?.error === 'Project limit exceeded'
-      ) {
+      if (err.response?.status === 403 && err.response?.data?.error === 'Project limit exceeded') {
         const errorData = err.response.data!
-        alert(
-          `Project limit exceeded!\n\nYou have ${errorData.current_usage} projects (limit: ${errorData.limit})\n\n${errorData.message}`
+        toast.showError(
+          `Project limit exceeded! You have ${errorData.current_usage} projects (limit: ${errorData.limit}). ${errorData.message}`
         )
       } else if (err.response?.status === 403) {
         // Authorization error - likely organization access issue
         const message =
           err.response?.data?.detail || err.message || 'Not authorized for this organization'
-        alert(
-          `Authorization Error: ${message}\n\nThis might be a temporary issue. Please try again or contact support if the problem persists.`
+        toast.showError(
+          `Authorization Error: ${message}. This might be a temporary issue. Please try again or contact support if the problem persists.`
         )
       } else {
         // Generic error message
-        const message =
-          err.response?.data?.detail || err.message || 'Failed to create project'
-        alert(`Error: ${message}`)
+        const message = err.response?.data?.detail || err.message || 'Failed to create project'
+        toast.showError(`Error: ${message}`)
       }
     } finally {
       setIsCreating(false)

@@ -806,7 +806,12 @@ declare global {
     launcherContainer.id = 'reflect-widget-launcher-fallback'
     launcherContainer.className = 'reflect-widget-launcher'
     launcherContainer.onclick = () => {
-      alert('Widget temporarily unavailable. Please refresh the page or try again later.')
+      console.error('Widget temporarily unavailable. Please refresh the page or try again later.')
+      // Show a temporary visual indicator instead of alert
+      launcherContainer.style.opacity = '0.5'
+      setTimeout(() => {
+        launcherContainer.style.opacity = '1'
+      }, 1000)
     }
 
     Object.assign(launcherContainer.style, {

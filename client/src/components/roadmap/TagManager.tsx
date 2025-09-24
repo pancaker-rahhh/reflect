@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label'
 
 import { Loader2, Plus, Trash2, Tag, Edit2, Check } from 'lucide-react'
 import type { RoadmapTag } from '@/types'
-import { useToast } from '@/components/ui/use-toast'
+import { useToastNotifications } from '@/hooks/useToastNotifications'
+import { ConfirmationModal } from '@/components/common/ConfirmationModal'
 
 interface TagManagerProps {
   roadmapId: string
@@ -30,9 +31,11 @@ export function TagManager({ roadmapId }: TagManagerProps) {
     name: '',
     color: '',
   })
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [tagToDelete, setTagToDelete] = useState<string | null>(null)
 
   const queryClient = useQueryClient()
-  const { toast } = useToast()
+  const toast = useToastNotifications()
 
   const { data: tags = [], isLoading } = useQuery({
     queryKey: ['roadmapTags', roadmapId],
@@ -51,18 +54,14 @@ export function TagManager({ roadmapId }: TagManagerProps) {
       queryClient.invalidateQueries({ queryKey: ['roadmapTags', roadmapId] })
       setFormData({ name: '', color: '#6B7280' })
       setIsAddingTag(false)
-      toast({
-        title: 'Tag created',
-        description: 'New tag has been added successfully.',
-      })
+      toast.showSuccess('New tag has been added successfully.', 'Tag created')
     },
     onError: (error) => {
       console.error('Error creating tag:', error)
-      toast({
-        title: 'Error creating tag',
-        description: error.message || 'Failed to create tag. Please try again.',
-        variant: 'destructive',
-      })
+      toast.showError(
+        error.message || 'Failed to create tag. Please try again.',
+        'Error creating tag'
+      )
     },
   })
 
@@ -71,17 +70,13 @@ export function TagManager({ roadmapId }: TagManagerProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmapTags', roadmapId] })
       setEditingTagId(null)
-      toast({
-        title: 'Tag updated',
-        description: 'Tag has been updated successfully.',
-      })
+      toast.showSuccess('Tag has been updated successfully.', 'Tag updated')
     },
     onError: (error) => {
-      toast({
-        title: 'Error updating tag',
-        description: error.message || 'Failed to update tag. Please try again.',
-        variant: 'destructive',
-      })
+      toast.showError(
+        error.message || 'Failed to update tag. Please try again.',
+        'Error updating tag'
+      )
     },
   })
 
@@ -89,17 +84,13 @@ export function TagManager({ roadmapId }: TagManagerProps) {
     mutationFn: (id: string) => api.deleteRoadmapTag(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmapTags', roadmapId] })
-      toast({
-        title: 'Tag deleted',
-        description: 'Tag has been removed successfully.',
-      })
+      toast.showSuccess('Tag has been removed successfully.', 'Tag deleted')
     },
     onError: (error) => {
-      toast({
-        title: 'Error deleting tag',
-        description: error.message || 'Failed to delete tag. Please try again.',
-        variant: 'destructive',
-      })
+      toast.showError(
+        error.message || 'Failed to delete tag. Please try again.',
+        'Error deleting tag'
+      )
     },
   })
 
@@ -140,8 +131,15 @@ export function TagManager({ roadmapId }: TagManagerProps) {
   }
 
   const handleDeleteTag = (tagId: string) => {
-    if (window.confirm('Are you sure you want to delete this tag? This action cannot be undone.')) {
-      deleteTagMutation.mutate(tagId)
+    setTagToDelete(tagId)
+    setShowDeleteConfirm(true)
+  }
+
+  const handleConfirmDelete = () => {
+    if (tagToDelete) {
+      deleteTagMutation.mutate(tagToDelete)
+      setShowDeleteConfirm(false)
+      setTagToDelete(null)
     }
   }
 
@@ -361,6 +359,22 @@ export function TagManager({ roadmapId }: TagManagerProps) {
           </div>
         )}
       </CardContent>
+
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false)
+          setTagToDelete(null)
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete Tag"
+        description="Are you sure you want to delete this tag? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
+        icon={<Trash2 className="h-5 w-5" />}
+        isLoading={deleteTagMutation.isPending}
+      />
     </Card>
   )
 }
