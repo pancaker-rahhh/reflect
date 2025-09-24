@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { type VariantProps, cva } from 'class-variance-authority'
-import { X } from 'lucide-react'
+import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react'
 import * as ToastPrimitives from '@radix-ui/react-toast'
 
 import { cn } from '@/lib/utils'
@@ -30,6 +30,11 @@ const toastVariants = cva(
         default: 'border bg-background text-foreground',
         destructive:
           'destructive group border-destructive bg-destructive text-destructive-foreground',
+        success:
+          'border-green-200 bg-green-50 text-green-900 group-[.success]:border-green-200 group-[.success]:bg-green-50 group-[.success]:text-green-900',
+        warning:
+          'border-yellow-200 bg-yellow-50 text-yellow-900 group-[.warning]:border-yellow-200 group-[.warning]:bg-yellow-50 group-[.warning]:text-yellow-900',
+        info: 'border-blue-200 bg-blue-50 text-blue-900 group-[.info]:border-blue-200 group-[.info]:bg-blue-50 group-[.info]:text-blue-900',
       },
     },
     defaultVariants: {
@@ -105,6 +110,35 @@ const ToastDescription = React.forwardRef<
 ))
 ToastDescription.displayName = ToastPrimitives.Description.displayName
 
+const ToastIcon = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & {
+    variant?: 'default' | 'destructive' | 'success' | 'warning' | 'info'
+  }
+>(({ className, variant = 'default', ...props }, ref) => {
+  const getIcon = () => {
+    switch (variant) {
+      case 'success':
+        return <CheckCircle className="h-5 w-5 text-green-600" />
+      case 'destructive':
+        return <AlertCircle className="h-5 w-5 text-red-600" />
+      case 'warning':
+        return <AlertTriangle className="h-5 w-5 text-yellow-600" />
+      case 'info':
+        return <Info className="h-5 w-5 text-blue-600" />
+      default:
+        return null
+    }
+  }
+
+  return (
+    <div ref={ref} className={cn('flex-shrink-0', className)} {...props}>
+      {getIcon()}
+    </div>
+  )
+})
+ToastIcon.displayName = 'ToastIcon'
+
 type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
 
 type ToastActionElement = React.ReactElement<typeof ToastAction>
@@ -117,6 +151,7 @@ export {
   ToastClose,
   ToastDescription,
   ToastTitle,
+  ToastIcon,
   ToastViewport,
   ToastProvider,
 }
