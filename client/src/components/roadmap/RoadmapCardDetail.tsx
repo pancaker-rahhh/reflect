@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
-import { useToastNotifications } from '@/hooks/useToastNotifications'
 import { ConfirmationModal } from '@/components/common/ConfirmationModal'
 import {
   Dialog,
@@ -44,7 +43,6 @@ export function RoadmapCardDetail({
   columns,
   onDelete,
 }: RoadmapCardDetailProps) {
-  const toast = useToastNotifications()
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [formData, setFormData] = useState<{

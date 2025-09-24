@@ -1,12 +1,10 @@
 import { useToast as useToastHook } from '@/components/ui/use-toast'
-import { CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react'
 
 export interface ToastNotificationOptions {
   title?: string
   description?: string
   duration?: number
   autoDismiss?: boolean
-  action?: React.ReactNode
 }
 
 export function useToastNotifications() {
@@ -19,7 +17,6 @@ export function useToastNotifications() {
       description: options.description,
       duration: options.duration || 5000,
       autoDismiss: options.autoDismiss,
-      action: options.action,
     })
   }
 
@@ -30,7 +27,6 @@ export function useToastNotifications() {
       description: options.description,
       duration: options.duration || 7000,
       autoDismiss: options.autoDismiss,
-      action: options.action,
     })
   }
 
@@ -41,7 +37,6 @@ export function useToastNotifications() {
       description: options.description,
       duration: options.duration || 6000,
       autoDismiss: options.autoDismiss,
-      action: options.action,
     })
   }
 
@@ -52,7 +47,6 @@ export function useToastNotifications() {
       description: options.description,
       duration: options.duration || 5000,
       autoDismiss: options.autoDismiss,
-      action: options.action,
     })
   }
 
@@ -63,7 +57,6 @@ export function useToastNotifications() {
       description: options.description,
       duration: options.duration || 5000,
       autoDismiss: options.autoDismiss,
-      action: options.action,
     })
   }
 
