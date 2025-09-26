@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Building2, Users, Shield, Save, Trash2, AlertCircle, Check, Plus, X } from 'lucide-react'
+import { Building2, Users, Shield, Save, Trash2, Plus, X } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { organizationApi, type OrganizationMember } from '../../lib/api/organization'
 import { useAppContext } from '../../context/AppContext'
@@ -73,7 +73,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
 
       setFormData({
         name: updatedOrganization.name || '',
-        description: updatedOrganization.description || '',
+        description: formData.description, // Keep existing description since it's not returned from API
       })
 
       queryClient.invalidateQueries({ queryKey: ['organization'] })
