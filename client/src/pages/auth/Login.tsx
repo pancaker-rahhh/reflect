@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { Mail, AlertCircle, CheckCircle, Shield } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useRateLimit } from '../../hooks/useRateLimit'
+import { useToastNotifications } from '../../hooks/useToastNotifications'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Alert, AlertDescription } from '../../components/ui/alert'
@@ -22,7 +23,7 @@ export function Login() {
   const navigate = useNavigate()
   const { user, loading, signInWithEmail, signInWithGoogle } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const toast = useToastNotifications()
 
   const rateLimit = useRateLimit('login', {
     maxAttempts: 3,
@@ -58,16 +59,16 @@ export function Login() {
     }
 
     setIsSubmitting(true)
-    setMessage(null)
 
     const { error } = await signInWithEmail(data.email)
 
     if (error) {
       rateLimit.recordAttempt(false)
-      setMessage({ type: 'error', text: error.message })
+      toast.showError(error.message)
       setIsSubmitting(false)
     } else {
       rateLimit.recordAttempt(true)
+      toast.showSuccess('Login link sent to your email!')
       navigate('/auth/verify-otp', {
         state: {
           email: data.email,
@@ -83,15 +84,15 @@ export function Login() {
     }
 
     setIsSubmitting(true)
-    setMessage(null)
 
     const { error } = await signInWithGoogle()
 
     if (error) {
       rateLimit.recordAttempt(false)
-      setMessage({ type: 'error', text: error.message })
+      toast.showError(error.message)
     } else {
       rateLimit.recordAttempt(true)
+      toast.showSuccess('Successfully signed in with Google!')
     }
 
     setIsSubmitting(false)
@@ -120,17 +121,6 @@ export function Login() {
               <AlertDescription className="text-yellow-800">
                 {rateLimit.getWarningMessage()}
               </AlertDescription>
-            </Alert>
-          )}
-
-          {message && !rateLimit.isBlocked && (
-            <Alert variant={message.type === 'error' ? 'destructive' : 'default'}>
-              {message.type === 'error' ? (
-                <AlertCircle className="h-4 w-4" />
-              ) : (
-                <CheckCircle className="h-4 w-4" />
-              )}
-              <AlertDescription>{message.text}</AlertDescription>
             </Alert>
           )}
 

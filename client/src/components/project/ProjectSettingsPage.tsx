@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 // import { useNavigate } from 'react-router-dom'; // Currently unused
 
 import {
@@ -9,7 +10,6 @@ import {
   Save,
   Trash2,
   AlertCircle,
-  Check,
   Copy,
   RefreshCw,
   Lock,
@@ -21,6 +21,7 @@ import {
 import { projectApi, type ProjectMember } from '../../lib/api/project'
 import { organizationApi, type OrganizationMember } from '../../lib/api/organization'
 import { useAppContext } from '../../context/AppContext'
+import { useToastNotifications } from '../../hooks/useToastNotifications'
 import { AnimatedInput, AnimatedTextarea } from '../onboarding/shared/AnimatedInput'
 import { ProjectMemberModal } from './ProjectMemberModal'
 import { ApiKeyModal } from './ApiKeyModal'
@@ -48,12 +49,13 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
     projects,
     setCurrentProject,
   } = useAppContext()
+  const queryClient = useQueryClient()
+  const toast = useToastNotifications()
   // const navigate = useNavigate() // Currently unused
   const [activeTab, setActiveTab] = useState<Tab>('general')
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [showMemberModal, setShowMemberModal] = useState(false)
   const [showApiKeyModal, setShowApiKeyModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -66,8 +68,6 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
     email: string
     isPending: boolean
   } | null>(null)
-  const [organizationMembers, setOrganizationMembers] = useState<OrganizationMember[]>([])
-  const [projectMembers, setProjectMembers] = useState<ProjectMember[]>([])
   const [allTeamMembers, setAllTeamMembers] = useState<ProjectMember[]>([])
 
   const [formData, setFormData] = useState({
@@ -95,6 +95,22 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
     },
   ])
 
+  // Use React Query for organization members
+  const { data: organizationMembers = [] } = useQuery({
+    queryKey: ['organization', currentOrganization?.id, 'members'],
+    queryFn: () => organizationApi.getMembers(currentOrganization!.id),
+    enabled: !!currentOrganization?.id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
+
+  // Use React Query for project members
+  const { data: projectMembers = [] } = useQuery({
+    queryKey: ['project', currentProject?.id || projectId, 'members'],
+    queryFn: () => projectApi.getMembers(currentProject!.id || projectId!),
+    enabled: !!(currentProject?.id || projectId),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
+
   const loadProjectData = useCallback(async () => {
     try {
       setLoading(true)
@@ -112,7 +128,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
       })
     } catch (error) {
       console.error('Failed to load project:', error)
-      setMessage({ type: 'error', text: 'Failed to load project data' })
+      toast.showError('Failed to load project data')
     } finally {
       setLoading(false)
     }
@@ -143,39 +159,6 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
     [currentProject?.id, projectId]
   )
 
-  const loadOrganizationMembers = useCallback(async () => {
-    try {
-      if (!currentOrganization?.id) return
-
-      const members = await organizationApi.getMembers(currentOrganization.id)
-      setOrganizationMembers(members)
-
-      // Merge with existing project members if they're loaded
-      if (projectMembers.length > 0) {
-        mergeTeamMembers(projectMembers, members)
-      }
-    } catch (error) {
-      console.error('Failed to load organization members:', error)
-      setMessage({ type: 'error', text: 'Failed to load organization members' })
-    }
-  }, [currentOrganization?.id, projectMembers, mergeTeamMembers])
-
-  const loadProjectMembers = useCallback(async () => {
-    try {
-      const id = currentProject?.id || projectId
-      if (!id) return
-
-      const members = await projectApi.getMembers(id)
-      setProjectMembers(members)
-
-      // Merge with organization owners
-      mergeTeamMembers(members, organizationMembers)
-    } catch (error) {
-      console.error('Failed to load project members:', error)
-      setMessage({ type: 'error', text: 'Failed to load project members' })
-    }
-  }, [currentProject?.id, projectId, organizationMembers, mergeTeamMembers])
-
   useEffect(() => {
     if (currentProject || projectId) {
       loadProjectData()
@@ -184,18 +167,12 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
     }
   }, [currentProject, projectId, loadProjectData])
 
+  // Merge team members when both organization and project members are loaded
   useEffect(() => {
-    if (currentOrganization) {
-      loadOrganizationMembers()
+    if (projectMembers.length > 0 && organizationMembers.length > 0) {
+      mergeTeamMembers(projectMembers, organizationMembers)
     }
-  }, [currentOrganization, loadOrganizationMembers])
-
-  useEffect(() => {
-    const id = currentProject?.id || projectId
-    if (id) {
-      loadProjectMembers()
-    }
-  }, [currentProject, projectId, loadProjectMembers])
+  }, [projectMembers, organizationMembers, mergeTeamMembers])
 
   const isOrganizationOwner = (member: unknown): member is { is_organization_owner: boolean } => {
     return (
@@ -217,12 +194,11 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
         description: formData.description,
       })
 
-      setMessage({ type: 'success', text: 'Project settings saved successfully' })
+      toast.showSuccess('Project settings saved successfully!')
       refreshProjects()
-      setTimeout(() => setMessage(null), 3000)
     } catch (error) {
       console.error('Failed to save project:', error)
-      setMessage({ type: 'error', text: 'Failed to save project settings' })
+      toast.showError('Failed to save project settings')
     } finally {
       setSaving(false)
     }
@@ -234,7 +210,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
       if (!id) return
 
       await projectApi.deleteProject(id)
-      setMessage({ type: 'success', text: 'Project deleted successfully' })
+      toast.showSuccess('Project deleted successfully')
       refreshProjects()
 
       // Set current project to null and stay on the same page
@@ -247,7 +223,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
       }
     } catch (error) {
       console.error('Failed to delete project:', error)
-      setMessage({ type: 'error', text: 'Failed to delete project' })
+      toast.showError('Failed to delete project')
       throw error // Re-throw to let modal handle the error state
     }
   }
@@ -264,14 +240,12 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
         organization_id: currentOrganization.id,
       })
 
-      setMessage({ type: 'success', text: 'Project created successfully' })
+      toast.showSuccess('Project created successfully')
       refreshProjects()
       setCurrentProject(newProject)
-      setTimeout(() => setMessage(null), 3000)
     } catch (error) {
       console.error('Failed to create project:', error)
-      setMessage({ type: 'error', text: 'Failed to create project' })
-      setTimeout(() => setMessage(null), 3000)
+      toast.showError('Failed to create project')
       throw error
     }
   }
@@ -291,8 +265,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
   const handleRemoveMember = (member: ProjectMember) => {
     // Prevent removal of organization owners
     if (isOrganizationOwner(member)) {
-      setMessage({ type: 'error', text: 'Cannot remove organization owner from project' })
-      setTimeout(() => setMessage(null), 3000)
+      toast.showError('Cannot remove organization owner from project')
       return
     }
 
@@ -319,29 +292,28 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
       // Find the project member to get user_id
       const member = projectMembers.find((m) => m.id === memberToDelete.id)
       if (!member) {
-        setMessage({ type: 'error', text: 'Member not found' })
+        toast.showError('Member not found')
         return
       }
 
       // Remove active member from project
       await projectApi.removeMember(projectIdToUse, member.user_id)
-      setMessage({ type: 'success', text: 'Member removed from project successfully' })
+      toast.showSuccess('Member removed from project successfully')
 
       // Refresh the member list
-      await loadProjectMembers()
-      setTimeout(() => setMessage(null), 3000)
+      queryClient.invalidateQueries({
+        queryKey: ['project', currentProject?.id || projectId, 'members'],
+      })
     } catch (error) {
       console.error('Failed to remove member:', error)
-      setMessage({ type: 'error', text: 'Failed to remove member' })
-      setTimeout(() => setMessage(null), 3000)
+      toast.showError('Failed to remove member')
       throw error
     }
   }
 
   const handleCopyApiKey = (key: string) => {
     navigator.clipboard.writeText(key)
-    setMessage({ type: 'success', text: 'API key copied to clipboard' })
-    setTimeout(() => setMessage(null), 2000)
+    toast.showSuccess('API key copied to clipboard')
   }
 
   const handleRegenerateApiKey = (_keyId: string) => {
@@ -349,8 +321,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
   }
 
   const handleConfirmRegenerate = () => {
-    setMessage({ type: 'success', text: 'API key regenerated successfully' })
-    setTimeout(() => setMessage(null), 3000)
+    toast.showSuccess('API key regenerated successfully')
     setShowRegenerateConfirm(false)
   }
 
@@ -475,8 +446,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
           try {
             // Prevent role changes for organization owners
             if (isOrganizationOwner(member)) {
-              setMessage({ type: 'error', text: 'Cannot change role of organization owner' })
-              setTimeout(() => setMessage(null), 3000)
+              toast.showError('Cannot change role of organization owner')
               return
             }
 
@@ -484,15 +454,15 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
             if (!projectIdToUse) return
 
             await projectApi.updateMember(projectIdToUse, member.user_id, { role: newRole })
-            setMessage({ type: 'success', text: 'Member role updated successfully' })
+            toast.showSuccess('Member role updated successfully')
 
             // Refresh project members
-            await loadProjectMembers()
-            setTimeout(() => setMessage(null), 3000)
+            queryClient.invalidateQueries({
+              queryKey: ['project', currentProject?.id || projectId, 'members'],
+            })
           } catch (error) {
             console.error('Failed to update member role:', error)
-            setMessage({ type: 'error', text: 'Failed to update member role' })
-            setTimeout(() => setMessage(null), 3000)
+            toast.showError('Failed to update member role')
           }
         }}
       />
@@ -700,21 +670,6 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
         </div>
       </div>
 
-      {message && (
-        <div
-          className={`mb-6 p-4 rounded-lg flex items-center gap-2 ${
-            message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
-          }`}
-        >
-          {message.type === 'success' ? (
-            <Check className="w-5 h-5" />
-          ) : (
-            <AlertCircle className="w-5 h-5" />
-          )}
-          {message.text}
-        </div>
-      )}
-
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         <div className="border-b border-gray-200">
           <nav className="flex">
@@ -750,7 +705,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
             try {
               const projectIdToUse = currentProject?.id || projectId
               if (!projectIdToUse) {
-                setMessage({ type: 'error', text: 'No project selected' })
+                toast.showError('No project selected')
                 return
               }
 
@@ -763,7 +718,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
                   role: role as 'admin' | 'editor' | 'viewer',
                 })
 
-                setMessage({ type: 'success', text: `User ${email} added to project successfully` })
+                toast.showSuccess(`User ${email} added to project successfully`)
               } else {
                 // Handle existing organization member by user ID
                 const orgMember = organizationMembers.find((m) => m.id === memberId)
@@ -772,17 +727,17 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
                     email: orgMember.user_email || '',
                     role: role as 'admin' | 'editor' | 'viewer',
                   })
-                  setMessage({ type: 'success', text: 'Member added to project successfully' })
+                  toast.showSuccess('Member added to project successfully')
                 }
               }
 
               // Refresh project members
-              await loadProjectMembers()
-              setTimeout(() => setMessage(null), 3000)
+              queryClient.invalidateQueries({
+                queryKey: ['project', currentProject?.id || projectId, 'members'],
+              })
             } catch (error) {
               console.error('Failed to add member:', error)
-              setMessage({ type: 'error', text: 'Failed to add member' })
-              setTimeout(() => setMessage(null), 3000)
+              toast.showError('Failed to add member')
             }
           }}
           organizationMembers={organizationMembers.map((member) => ({
@@ -809,8 +764,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
                 lastUsed: 'Never',
               },
             ])
-            setMessage({ type: 'success', text: 'API key generated successfully' })
-            setTimeout(() => setMessage(null), 3000)
+            toast.showSuccess('API key generated successfully')
           }}
         />
       )}

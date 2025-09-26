@@ -1,131 +1,117 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Building2,
-  Users,
-
-  Shield,
-  Save,
-  Trash2,
-  AlertCircle,
-  Check,
-  Plus,
-  X
-} from 'lucide-react';
-import { organizationApi, type OrganizationMember } from '../../lib/api/organization';
-import { useAppContext } from '../../context/AppContext';
-import { AnimatedInput, AnimatedTextarea } from '../onboarding/shared/AnimatedInput';
-import { InviteMemberModal } from './InviteMemberModal';
-
+import React, { useState, useEffect } from 'react'
+import { Building2, Users, Shield, Save, Trash2, AlertCircle, Check, Plus, X } from 'lucide-react'
+import { organizationApi, type OrganizationMember } from '../../lib/api/organization'
+import { useAppContext } from '../../context/AppContext'
+import { useToastNotifications } from '../../hooks/useToastNotifications'
+import { AnimatedInput, AnimatedTextarea } from '../onboarding/shared/AnimatedInput'
+import { InviteMemberModal } from './InviteMemberModal'
 
 interface OrganizationSettingsPageProps {
-  organizationId?: string;
+  organizationId?: string
 }
 
-type Tab = 'general' | 'members';
+type Tab = 'general' | 'members'
 
-export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> = ({ 
-  organizationId 
+export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> = ({
+  organizationId,
 }) => {
-  const { organization: currentOrganization } = useAppContext();
-  const orgId = organizationId || currentOrganization?.id;
-  const [activeTab, setActiveTab] = useState<Tab>('general');
-  const [members, setMembers] = useState<OrganizationMember[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  const [showInviteModal, setShowInviteModal] = useState(false);
+  const { organization: currentOrganization } = useAppContext()
+  const toast = useToastNotifications()
+  const orgId = organizationId || currentOrganization?.id
+  const [activeTab, setActiveTab] = useState<Tab>('general')
+  const [members, setMembers] = useState<OrganizationMember[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [showInviteModal, setShowInviteModal] = useState(false)
 
   const [formData, setFormData] = useState({
     name: '',
-    description: ''
-  });
+    description: '',
+  })
 
   useEffect(() => {
     if (orgId) {
-      loadOrganizationData();
+      loadOrganizationData()
     }
-  }, [orgId]);
+  }, [orgId])
 
   const loadOrganizationData = async () => {
     try {
-      setLoading(true);
-      if (!orgId) return;
-      
+      setLoading(true)
+      if (!orgId) return
+
       const [orgData, membersData] = await Promise.all([
         organizationApi.getById(orgId),
-        organizationApi.getMembers(orgId)
-      ]);
-      
+        organizationApi.getMembers(orgId),
+      ])
+
       // Organization is managed by context
-      setMembers(membersData);
+      setMembers(membersData)
       setFormData({
         name: orgData.name || '',
-        description: (orgData as any).description || ''
-      });
+        description: (orgData as any).description || '',
+      })
     } catch (error) {
-      console.error('Failed to load organization data:', error);
-      setMessage({ type: 'error', text: 'Failed to load organization data' });
+      console.error('Failed to load organization data:', error)
+      toast.showError('Failed to load organization data')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleSaveGeneral = async () => {
     try {
-      setSaving(true);
-      if (!orgId) return;
-      
+      setSaving(true)
+      if (!orgId) return
+
       await organizationApi.update(orgId, {
         name: formData.name,
-        description: formData.description
-      });
-      setMessage({ type: 'success', text: 'Organization settings saved successfully' });
-      setTimeout(() => setMessage(null), 3000);
+        description: formData.description,
+      })
+      toast.showSuccess('Organization settings saved successfully')
     } catch (error) {
-      console.error('Failed to save organization:', error);
-      setMessage({ type: 'error', text: 'Failed to save organization settings' });
+      console.error('Failed to save organization:', error)
+      toast.showError('Failed to save organization settings')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleResendInvite = async (_memberId: string) => {
     try {
       // TODO: Implement resend invite API call
-      setMessage({ type: 'success', text: 'Invitation resent successfully' });
-      setTimeout(() => setMessage(null), 3000);
+      toast.showSuccess('Invitation resent successfully')
     } catch (error) {
-      console.error('Failed to resend invitation:', error);
-      setMessage({ type: 'error', text: 'Failed to resend invitation' });
+      console.error('Failed to resend invitation:', error)
+      toast.showError('Failed to resend invitation')
     }
-  };
+  }
 
   const handleCancelInvite = async (_memberId: string) => {
     try {
       // TODO: Implement cancel invite API call
       // Reload members to reflect changes
       if (orgId) {
-        const membersData = await organizationApi.getMembers(orgId);
-        setMembers(membersData);
+        const membersData = await organizationApi.getMembers(orgId)
+        setMembers(membersData)
       }
-      setMessage({ type: 'success', text: 'Invitation cancelled' });
-      setTimeout(() => setMessage(null), 3000);
+      toast.showSuccess('Invitation cancelled')
     } catch (error) {
-      console.error('Failed to cancel invitation:', error);
-      setMessage({ type: 'error', text: 'Failed to cancel invitation' });
+      console.error('Failed to cancel invitation:', error)
+      toast.showError('Failed to cancel invitation')
     }
-  };
+  }
 
   const tabs = [
     { id: 'general', label: 'General', icon: Building2 },
     { id: 'members', label: 'Members', icon: Users },
-  ];
+  ]
 
   const renderGeneralSettings = () => (
     <div className="p-6 space-y-6">
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Organization Information</h3>
-        
+
         <div className="space-y-4">
           <AnimatedInput
             label="Organization Name"
@@ -165,13 +151,13 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
         </button>
       </div>
     </div>
-  );
+  )
 
   const renderMembersSettings = () => (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-lg font-semibold text-gray-900">Team Members</h3>
-        <button 
+        <button
           onClick={() => setShowInviteModal(true)}
           className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
         >
@@ -189,19 +175,27 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
           <div className="bg-white p-3 rounded-lg border border-blue-100">
             <p className="font-semibold text-yellow-700 mb-1">Owner</p>
-            <p className="text-gray-600 text-xs">Full control including billing, member management, and organization deletion</p>
+            <p className="text-gray-600 text-xs">
+              Full control including billing, member management, and organization deletion
+            </p>
           </div>
           <div className="bg-white p-3 rounded-lg border border-blue-100">
             <p className="font-semibold text-purple-700 mb-1">Admin</p>
-            <p className="text-gray-600 text-xs">Manage projects, invite members, and access all organization settings</p>
+            <p className="text-gray-600 text-xs">
+              Manage projects, invite members, and access all organization settings
+            </p>
           </div>
           <div className="bg-white p-3 rounded-lg border border-blue-100">
             <p className="font-semibold text-blue-700 mb-1">Member</p>
-            <p className="text-gray-600 text-xs">Manage project content, and collaborate with team</p>
+            <p className="text-gray-600 text-xs">
+              Manage project content, and collaborate with team
+            </p>
           </div>
           <div className="bg-white p-3 rounded-lg border border-blue-100">
             <p className="font-semibold text-gray-700 mb-1">Viewer</p>
-            <p className="text-gray-600 text-xs">Read-only access to view projects, dashboards, and reports</p>
+            <p className="text-gray-600 text-xs">
+              Read-only access to view projects, dashboards, and reports
+            </p>
           </div>
         </div>
       </div>
@@ -210,7 +204,9 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
         <div className="text-center py-12 bg-gray-50 rounded-lg">
           <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
           <h4 className="text-gray-900 font-medium mb-2">No team members yet</h4>
-          <p className="text-gray-500 text-sm mb-4">Invite team members to collaborate on your organization</p>
+          <p className="text-gray-500 text-sm mb-4">
+            Invite team members to collaborate on your organization
+          </p>
         </div>
       ) : (
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
@@ -232,12 +228,16 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
                   {/* Member Info */}
                   <div className="col-span-4">
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        member.is_pending ? 'bg-yellow-100' : 'bg-indigo-100'
-                      }`}>
-                        <span className={`font-semibold ${
-                          member.is_pending ? 'text-yellow-600' : 'text-indigo-600'
-                        }`}>
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          member.is_pending ? 'bg-yellow-100' : 'bg-indigo-100'
+                        }`}
+                      >
+                        <span
+                          className={`font-semibold ${
+                            member.is_pending ? 'text-yellow-600' : 'text-indigo-600'
+                          }`}
+                        >
                           {(member as any).name?.[0] || (member as any).email?.[0] || 'U'}
                         </span>
                       </div>
@@ -270,7 +270,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
                     {member.is_pending || member.role === 'owner' ? (
                       <span className="text-sm text-gray-500 capitalize">{member.role}</span>
                     ) : (
-                      <select 
+                      <select
                         value={member.role}
                         className="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                         onChange={() => {}}
@@ -287,13 +287,13 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
                     <div className="flex items-center gap-2 justify-end">
                       {member.is_pending ? (
                         <>
-                          <button 
+                          <button
                             className="px-3 py-1 text-sm bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
                             onClick={() => handleResendInvite(member.id)}
                           >
                             Resend
                           </button>
-                          <button 
+                          <button
                             className="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
                             onClick={() => handleCancelInvite(member.id)}
                           >
@@ -314,7 +314,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
         </div>
       )}
     </div>
-  );
+  )
 
   /*
   const _renderBillingSettings = () => (
@@ -381,20 +381,20 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
   const renderTabContent = () => {
     switch (activeTab) {
       case 'general':
-        return renderGeneralSettings();
+        return renderGeneralSettings()
       case 'members':
-        return renderMembersSettings();
+        return renderMembersSettings()
       default:
-        return null;
+        return null
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -404,24 +404,11 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
         <p className="text-gray-600">Manage your organization settings and preferences</p>
       </div>
 
-      {message && (
-        <div className={`mb-6 p-4 rounded-lg flex items-center gap-2 ${
-          message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
-        }`}>
-          {message.type === 'success' ? (
-            <Check className="w-5 h-5" />
-          ) : (
-            <AlertCircle className="w-5 h-5" />
-          )}
-          {message.text}
-        </div>
-      )}
-
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         <div className="border-b border-gray-200">
           <nav className="flex">
             {tabs.map((tab) => {
-              const Icon = tab.icon;
+              const Icon = tab.icon
               return (
                 <button
                   key={tab.id}
@@ -435,22 +422,17 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
                   <Icon className="w-5 h-5" />
                   <span className="hidden lg:inline">{tab.label}</span>
                 </button>
-              );
+              )
             })}
           </nav>
         </div>
 
-        <div className="min-h-[400px]">
-          {renderTabContent()}
-        </div>
+        <div className="min-h-[400px]">{renderTabContent()}</div>
       </div>
 
       {showInviteModal && orgId && (
-        <InviteMemberModal
-          organizationId={orgId}
-          onClose={() => setShowInviteModal(false)}
-        />
+        <InviteMemberModal organizationId={orgId} onClose={() => setShowInviteModal(false)} />
       )}
     </div>
-  );
-};
+  )
+}
