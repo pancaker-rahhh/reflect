@@ -148,10 +148,13 @@ function toast(props: Toast) {
     })
   const dismiss = () => dispatch({ type: 'DISMISS_TOAST', toastId: id })
 
+  // Filter out autoDismiss from props to prevent it from being passed to DOM
+  const { autoDismiss: _, ...toastProps } = props
+
   dispatch({
     type: 'ADD_TOAST',
     toast: {
-      ...props,
+      ...toastProps,
       id,
       open: true,
       duration,

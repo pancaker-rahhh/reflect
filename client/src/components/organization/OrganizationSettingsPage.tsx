@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Building2, Users, Shield, Save, Trash2, AlertCircle, Check, Plus, X } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 import { organizationApi, type OrganizationMember } from '../../lib/api/organization'
 import { useAppContext } from '../../context/AppContext'
 import { useToastNotifications } from '../../hooks/useToastNotifications'
@@ -17,6 +18,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
 }) => {
   const { organization: currentOrganization } = useAppContext()
   const toast = useToastNotifications()
+  const queryClient = useQueryClient()
   const orgId = organizationId || currentOrganization?.id
   const [activeTab, setActiveTab] = useState<Tab>('general')
   const [members, setMembers] = useState<OrganizationMember[]>([])
@@ -64,10 +66,18 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
       setSaving(true)
       if (!orgId) return
 
-      await organizationApi.update(orgId, {
+      const updatedOrganization = await organizationApi.update(orgId, {
         name: formData.name,
         description: formData.description,
       })
+
+      setFormData({
+        name: updatedOrganization.name || '',
+        description: updatedOrganization.description || '',
+      })
+
+      queryClient.invalidateQueries({ queryKey: ['organization'] })
+
       toast.showSuccess('Organization settings saved successfully')
     } catch (error) {
       console.error('Failed to save organization:', error)

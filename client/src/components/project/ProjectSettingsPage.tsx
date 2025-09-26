@@ -189,9 +189,19 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
       const id = projectId || currentProject?.id
       if (!id) return
 
-      await projectApi.updateProject(id, {
+      const updatedProject = await projectApi.updateProject(id, {
         name: formData.name,
         description: formData.description,
+      })
+
+      setProject(updatedProject)
+      setCurrentProject(updatedProject)
+      setFormData({
+        name: updatedProject.name || '',
+        description: updatedProject.description || '',
+        visibility: 'private',
+        timezone: 'UTC',
+        language: 'en',
       })
 
       toast.showSuccess('Project settings saved successfully!')
