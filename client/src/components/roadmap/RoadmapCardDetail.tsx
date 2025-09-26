@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
+import { ConfirmationModal } from '@/components/common/ConfirmationModal'
 import {
   Dialog,
   DialogContent,
@@ -43,6 +44,7 @@ export function RoadmapCardDetail({
   onDelete,
 }: RoadmapCardDetailProps) {
   const [isEditing, setIsEditing] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [formData, setFormData] = useState<{
     title: string
     description: string
@@ -136,13 +138,14 @@ export function RoadmapCardDetail({
 
   const handleDelete = () => {
     if (feature) {
-      // Enhanced delete confirmation with feature preview
-      const confirmed = window.confirm(
-        `Are you sure you want to delete "${feature.title}"?\n\nThis action cannot be undone and will remove the feature from your roadmap.`
-      )
-      if (confirmed) {
-        deleteFeatureMutation.mutate(feature.id)
-      }
+      setShowDeleteConfirm(true)
+    }
+  }
+
+  const handleConfirmDelete = () => {
+    if (feature) {
+      deleteFeatureMutation.mutate(feature.id)
+      setShowDeleteConfirm(false)
     }
   }
 
@@ -511,6 +514,19 @@ export function RoadmapCardDetail({
           )}
         </DialogFooter>
       </DialogContent>
+
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Feature"
+        description={`Are you sure you want to delete "${feature?.title}"? This action cannot be undone and will remove the feature from your roadmap.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
+        icon={<Trash2 className="h-5 w-5" />}
+        isLoading={deleteFeatureMutation.isPending}
+      />
     </Dialog>
   )
 }

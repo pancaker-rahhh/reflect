@@ -262,14 +262,6 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-gray-700">{connectionTest.data.message}</p>
-                  {connectionTest.data.user_info && (
-                    <div className="mt-3 p-3 bg-white rounded-lg border border-gray-200">
-                      <p className="text-sm font-medium text-gray-900">
-                        Connected as: {connectionTest.data.user_info.display_name}
-                      </p>
-                      <p className="text-xs text-gray-600">{connectionTest.data.user_info.email}</p>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             )}

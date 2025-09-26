@@ -3,6 +3,7 @@ import { ChevronDown, Building2, FolderOpen, Plus, Search, Clock, Info } from 'l
 import { useAppContext } from '../../context/AppContext'
 import { projectApi } from '@/lib/api'
 import { Alert, AlertDescription } from '../ui/alert'
+import { useToastNotifications } from '@/hooks/useToastNotifications'
 import type { Project, Organization } from '@/types'
 
 interface OrgProjectDropdownProps {
@@ -22,6 +23,7 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
     refreshProjects,
     isLoading: loading,
   } = useAppContext()
+  const toast = useToastNotifications()
 
   // For now, we'll work with single organization from AppContext
   const organizations = currentOrganization ? [currentOrganization] : []
@@ -119,14 +121,14 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
         error?.response?.data?.error === 'Project limit exceeded'
       ) {
         const errorData = error.response.data
-        alert(
-          `Project limit exceeded!\n\nYou have ${errorData.current_usage} projects (limit: ${errorData.limit})\n\n${errorData.message}`
+        toast.showError(
+          `Project limit exceeded! You have ${errorData.current_usage} projects (limit: ${errorData.limit}). ${errorData.message}`
         )
       } else {
         // Generic error message
         const message =
           error?.response?.data?.detail || error?.message || 'Failed to create project'
-        alert(`Error: ${message}`)
+        toast.showError(`Error: ${message}`)
       }
     }
   }

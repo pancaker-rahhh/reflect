@@ -2,14 +2,16 @@
 import * as React from 'react'
 import type { ToastActionElement, ToastProps } from '@/components/ui/toast'
 
-const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_LIMIT = 5
+const TOAST_REMOVE_DELAY = 1000
 
 type ToasterToast = ToastProps & {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
+  duration?: number
+  autoDismiss?: boolean
 }
 
 const actionTypes = {
@@ -136,6 +138,8 @@ type Toast = Omit<ToasterToast, 'id'>
 
 function toast(props: Toast) {
   const id = genId()
+  const duration = props.duration || 5000
+  const autoDismiss = props.autoDismiss !== false // Default to true
 
   const update = (props: ToasterToast) =>
     dispatch({
@@ -144,17 +148,29 @@ function toast(props: Toast) {
     })
   const dismiss = () => dispatch({ type: 'DISMISS_TOAST', toastId: id })
 
+  // Filter out autoDismiss from props to prevent it from being passed to DOM
+  const { autoDismiss: _, ...toastProps } = props
+
   dispatch({
     type: 'ADD_TOAST',
     toast: {
-      ...props,
+      ...toastProps,
       id,
       open: true,
+      duration,
+      autoDismiss,
       onOpenChange: (open) => {
         if (!open) dismiss()
       },
     },
   })
+
+  // Auto-dismiss if enabled
+  if (autoDismiss && duration > 0) {
+    setTimeout(() => {
+      dismiss()
+    }, duration)
+  }
 
   return {
     id: id,

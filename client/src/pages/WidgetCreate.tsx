@@ -14,6 +14,7 @@ import { LiveWidgetPreview } from '@/components/widgets/preview/LiveWidgetPrevie
 import { widgetApi } from '@/lib/api/widget'
 import { useAppContext } from '@/context/AppContext'
 import { PageLoading } from '@/components/common/LoadingSpinner'
+import { useToastNotifications } from '@/hooks/useToastNotifications'
 
 // Production-grade widget schema supporting all widget types
 const widgetSchema = z
@@ -141,6 +142,7 @@ const steps = [
 export function WidgetCreate() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const toast = useToastNotifications()
   const { widgetId } = useParams<{ widgetId: string }>()
   const [currentStep, setCurrentStep] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -316,7 +318,7 @@ export function WidgetCreate() {
         })
         .catch((error) => {
           console.error('Failed to load widget:', error)
-          alert('Failed to load widget data')
+          toast.showError('Failed to load widget data')
         })
         .finally(() => {
           setIsLoadingWidget(false)
@@ -326,7 +328,7 @@ export function WidgetCreate() {
 
   const handleSubmit = async () => {
     if (!currentProject) {
-      alert('No project is selected. Please select a project first.')
+      toast.showError('No project is selected. Please select a project first.')
       return
     }
     const data = form.getValues()
@@ -343,7 +345,7 @@ export function WidgetCreate() {
       }
     } catch (error) {
       console.error(`Failed to ${isEditMode ? 'update' : 'create'} widget:`, error)
-      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.showError(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsSubmitting(false)
     }

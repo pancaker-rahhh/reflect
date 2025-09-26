@@ -5,11 +5,12 @@ import { Building, Sparkles } from 'lucide-react'
 import { organizationApi, onboardingApi } from '../../../lib/api'
 import { onboardingDataService } from '../../../services/onboardingDataService'
 import { isFeatureEnabled } from '../../../lib/featureFlags'
+import { useToastNotifications } from '../../../hooks/useToastNotifications'
 
 export const OrganizationStep: React.FC = () => {
-  const { nextStep, setOrganizationId, userType, organizationId } =
-    useOnboarding()
+  const { nextStep, setOrganizationId, userType, organizationId } = useOnboarding()
   const { user } = useAuth()
+  const toast = useToastNotifications()
   const skipUserTypeSelection = isFeatureEnabled('SKIP_USER_TYPE_SELECTION')
 
   const [isAutoCreating, setIsAutoCreating] = useState(false)
@@ -43,7 +44,7 @@ export const OrganizationStep: React.FC = () => {
       nextStep()
     } catch (error) {
       console.error('Failed to auto-create organization:', error)
-      alert(
+      toast.showError(
         `Failed to create organization: ${
           error instanceof Error ? error.message : 'Unknown error'
         }. Please try again.`
@@ -82,13 +83,7 @@ export const OrganizationStep: React.FC = () => {
       // This handles the case where user navigates back after org was already created
       setTimeout(() => nextStep(), 100)
     }
-  }, [
-    skipUserTypeSelection,
-    hasAttemptedAutoCreate,
-    organizationId,
-    handleAutoCreate,
-    nextStep,
-  ])
+  }, [skipUserTypeSelection, hasAttemptedAutoCreate, organizationId, handleAutoCreate, nextStep])
 
   const handleManualCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -126,7 +121,7 @@ export const OrganizationStep: React.FC = () => {
       nextStep()
     } catch (error) {
       console.error('Failed to create/update organization:', error)
-      alert(
+      toast.showError(
         `Failed to ${organizationId ? 'update' : 'create'} organization: ${
           error instanceof Error ? error.message : 'Unknown error'
         }. Please try again.`
