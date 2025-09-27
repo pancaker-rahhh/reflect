@@ -53,15 +53,31 @@ async def run_async_migrations() -> None:
     async_url = str(settings.DATABASE_URL)
     print(f'DEBUG: Original URL from settings: {async_url}')
 
+    # Check what parameters are in the URL
+    import urllib.parse
+
+    parsed = urllib.parse.urlparse(async_url)
+    params = urllib.parse.parse_qs(parsed.query)
+    print(f'DEBUG: URL parameters: {list(params.keys())}')
+
     # Ensure asyncpg gets ssl=true, not sslmode
     if 'sslmode=' in async_url:
         print('DEBUG: Found sslmode in URL, converting to ssl=true')
-        async_url = (
-            async_url.replace('sslmode=require', 'ssl=true')
-            .replace('sslmode=verify-full', 'ssl=true')
-            .replace('sslmode=verify-ca', 'ssl=true')
-        )
+        # Remove all sslmode parameters and add ssl=true
+        import re
+
+        async_url = re.sub(r'[&?]sslmode=[^&]*', '', async_url)
+        if '?' in async_url:
+            async_url += '&ssl=true'
+        else:
+            async_url += '?ssl=true'
         print(f'DEBUG: Converted URL: {async_url}')
+    elif 'ssl=' not in async_url:
+        print('DEBUG: No SSL parameter found, adding ssl=true')
+        if '?' in async_url:
+            async_url += '&ssl=true'
+        else:
+            async_url += '?ssl=true'
 
     print(f'DEBUG: Final URL for asyncpg: {async_url}')
 
