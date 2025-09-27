@@ -50,7 +50,18 @@ def do_run_migrations(connection: Connection) -> None:
 
 async def run_async_migrations() -> None:
     configuration = config.get_section(config.config_ini_section) or {}
-    configuration['sqlalchemy.url'] = str(settings.DATABASE_URL)
+    # Ensure asyncpg gets ssl=true, not sslmode
+    async_url = str(settings.DATABASE_URL)
+    print(f'DEBUG: Original URL from settings: {async_url}')
+    if 'sslmode=' in async_url:
+        print('DEBUG: Found sslmode in URL, converting to ssl=true')
+        async_url = (
+            async_url.replace('sslmode=require', 'ssl=true')
+            .replace('sslmode=verify-full', 'ssl=true')
+            .replace('sslmode=verify-ca', 'ssl=true')
+        )
+        print(f'DEBUG: Converted URL: {async_url}')
+    configuration['sqlalchemy.url'] = async_url
 
     connectable = async_engine_from_config(
         configuration,
