@@ -1,8 +1,6 @@
 import asyncio
 from logging.config import fileConfig
 from sqlalchemy import pool
-from sqlalchemy import engine_from_config
-import os
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
@@ -68,29 +66,7 @@ def run_migrations_online() -> None:
     asyncio.run(run_async_migrations())
 
 
-def run_migrations_online_sync() -> None:
-    configuration = config.get_section(config.config_ini_section) or {}
-    # Ensure we use a sync driver for migrations
-    configuration['sqlalchemy.url'] = str(settings.DATABASE_URL).replace('+asyncpg', '')
-    connectable = engine_from_config(
-        configuration,
-        prefix='sqlalchemy.',
-        poolclass=pool.NullPool,
-    )
-
-    with connectable.connect() as connection:
-        do_run_migrations(connection)
-    connectable.dispose()
-
-
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    use_async = (
-        '+asyncpg' in str(settings.DATABASE_URL)
-        and os.environ.get('ALEMBIC_SYNC') != '1'
-    )
-    if use_async:
-        run_migrations_online()
-    else:
-        run_migrations_online_sync()
+    run_migrations_online()

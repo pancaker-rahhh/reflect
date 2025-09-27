@@ -38,10 +38,9 @@ jobs:
           pip install alembic asyncpg psycopg2-binary pydantic pydantic_settings
           cd api/server
 
-          DB_URL="${{ secrets.DATABASE_URL }}"          
-          # Use sync driver for Alembic to avoid asyncpg param differences
-          DB_URL="$(echo "$DB_URL" | sed -E 's|^postgres(ql)?\+asyncpg://|postgresql://|; s|^postgres(ql)?://|postgresql://|')"
-          # Ensure Neon sslmode=require once
+          DB_URL="${{ secrets.DATABASE_URL }}"
+          # Force async driver for env.py (uses async engine); ensure proper scheme
+          # Ensure Neon sslmode=require once (asyncpg supports it via SQLAlchemy URL)
           DB_URL="$(echo "$DB_URL" | sed -E 's/([?&])ssl=true/\1sslmode=require/g')"
           if [[ "$DB_URL" != *"sslmode="* ]]; then
             if [[ "$DB_URL" == *"?"* ]]; then DB_URL="$DB_URL&sslmode=require"; else DB_URL="$DB_URL?sslmode=require"; fi
@@ -52,13 +51,13 @@ jobs:
           echo "::endgroup::"
 
           echo "::group::Alembic current (before)"
-          (ALEMBIC_SYNC=1 DATABASE_URL="$DB_URL" alembic current || true)
+          (DATABASE_URL="$DB_URL" alembic current || true)
           echo "::endgroup::"
 
-          ALEMBIC_SYNC=1 DATABASE_URL="$DB_URL" alembic upgrade head
+          DATABASE_URL="$DB_URL" alembic upgrade head
 
           echo "::group::Alembic current (after)"
-          ALEMBIC_SYNC=1 DATABASE_URL="$DB_URL" alembic current
+          DATABASE_URL="$DB_URL" alembic current
           echo "::endgroup::"
 
   deploy:
