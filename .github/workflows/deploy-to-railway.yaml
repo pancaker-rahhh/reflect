@@ -35,29 +35,27 @@ jobs:
           trap on_error ERR
 
           python -m pip install --upgrade pip
-          pip install alembic asyncpg psycopg2-binary pydantic pydantic_settings
+          pip install alembic==1.13.2 asyncpg==0.29.0 psycopg2-binary pydantic pydantic_settings sqlalchemy==2.0.23
           cd api/server
 
+          # Convert to standard PostgreSQL URL with sslmode for psycopg2
           DB_URL="${{ secrets.DATABASE_URL }}"
-          # Force async driver for env.py (uses async engine); ensure proper scheme
-          # Ensure Neon sslmode=require once (asyncpg supports it via SQLAlchemy URL)
-          DB_URL="$(echo "$DB_URL" | sed -E 's/([?&])ssl=true/\1sslmode=require/g')"
-          if [[ "$DB_URL" != *"sslmode="* ]]; then
-            if [[ "$DB_URL" == *"?"* ]]; then DB_URL="$DB_URL&sslmode=require"; else DB_URL="$DB_URL?sslmode=require"; fi
-          fi
-
+          # Convert postgresql+asyncpg:// to postgresql:// and ssl=true to sslmode=require
+          DB_URL="$(echo "$DB_URL" | sed -E 's|^postgresql\+asyncpg://|postgresql://|')"
+          DB_URL="$(echo "$DB_URL" | sed -E 's|[?&]ssl=true|?sslmode=require|')"
+          
           echo "::group::DB connection target"
           echo "Using DATABASE_URL: ${DB_URL%%:*}://***@$(echo \"$DB_URL\" | sed -E 's|^[^@]*@([^/:?]+).*|\1|')/$(echo \"$DB_URL\" | sed -E 's|.*/([^/?]+)(\?.*)?$|\1|')"
           echo "::endgroup::"
 
           echo "::group::Alembic current (before)"
-          (DATABASE_URL="$DB_URL" alembic current || true)
+          (DATABASE_URL="$DB_URL" ALEMBIC_MIGRATION=1 alembic current || true)
           echo "::endgroup::"
 
-          DATABASE_URL="$DB_URL" alembic upgrade head
+          DATABASE_URL="$DB_URL" ALEMBIC_MIGRATION=1 alembic upgrade head
 
           echo "::group::Alembic current (after)"
-          DATABASE_URL="$DB_URL" alembic current
+          DATABASE_URL="$DB_URL" ALEMBIC_MIGRATION=1 alembic current
           echo "::endgroup::"
 
   deploy:
