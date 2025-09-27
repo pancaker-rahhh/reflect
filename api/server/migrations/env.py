@@ -81,6 +81,7 @@ async def run_async_migrations() -> None:
 
     print(f'DEBUG: Final URL for asyncpg: {async_url}')
 
+    # Try using the URL as-is first, but if that fails, we'll try without +asyncpg
     connectable = create_async_engine(
         async_url,
         poolclass=pool.NullPool,

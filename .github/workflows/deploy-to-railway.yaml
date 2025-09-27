@@ -37,7 +37,7 @@ jobs:
           trap on_error ERR
 
           python -m pip install --upgrade pip
-          pip install alembic asyncpg psycopg2-binary pydantic pydantic_settings
+          pip install alembic==1.13.2 asyncpg==0.29.0 psycopg2-binary pydantic pydantic_settings sqlalchemy==2.0.23
           cd api/server
 
           # SecretsURL has SSL mode set
