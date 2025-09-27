@@ -39,8 +39,9 @@ jobs:
           cd api/server
 
           DB_URL="${{ secrets.DATABASE_URL }}"          
-          # Normalize driver: postgres:// or postgresql:// -> postgresql+asyncpg://
-          DB_URL="$(echo "$DB_URL" | sed -E 's|^postgres(ql)?://|postgresql+asyncpg://|')"
+          # Use sync driver for Alembic to avoid asyncpg param differences
+          DB_URL="$(echo "$DB_URL" | sed -E 's|^postgres(ql)?\+asyncpg://|postgresql://|; s|^postgres(ql)?://|postgresql://|')"
+          # Ensure Neon sslmode=require once
           DB_URL="$(echo "$DB_URL" | sed -E 's/([?&])ssl=true/\1sslmode=require/g')"
           if [[ "$DB_URL" != *"sslmode="* ]]; then
             if [[ "$DB_URL" == *"?"* ]]; then DB_URL="$DB_URL&sslmode=require"; else DB_URL="$DB_URL?sslmode=require"; fi
@@ -51,13 +52,13 @@ jobs:
           echo "::endgroup::"
 
           echo "::group::Alembic current (before)"
-          (DATABASE_URL="$DB_URL" alembic current || true)
+          (ALEMBIC_SYNC=1 DATABASE_URL="$DB_URL" alembic current || true)
           echo "::endgroup::"
 
-          DATABASE_URL="$DB_URL" alembic upgrade head
+          ALEMBIC_SYNC=1 DATABASE_URL="$DB_URL" alembic upgrade head
 
           echo "::group::Alembic current (after)"
-          DATABASE_URL="$DB_URL" alembic current
+          ALEMBIC_SYNC=1 DATABASE_URL="$DB_URL" alembic current
           echo "::endgroup::"
 
   deploy:
