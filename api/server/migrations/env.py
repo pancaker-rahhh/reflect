@@ -17,7 +17,6 @@ from app.models import *  # noqa
 config = context.config
 settings = get_settings()
 
-# Set the database URL from settings
 database_url = str(settings.DATABASE_URL)
 config.set_main_option('sqlalchemy.url', database_url.replace('+asyncpg', ''))
 
@@ -25,11 +24,6 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
-
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
 
 
 def run_migrations_offline() -> None:
