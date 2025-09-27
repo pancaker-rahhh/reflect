@@ -5,9 +5,8 @@ on:
     # branches: [main]
     paths:
       - 'api/**'
-  on:
-    pull_request:
-      branches: [migrate-on-workflow]
+  pull_request:
+    branches: [migrate-on-workflow]
   workflow_dispatch:
 
 jobs:
