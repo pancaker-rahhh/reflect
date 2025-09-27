@@ -35,7 +35,7 @@ jobs:
           trap on_error ERR
 
           python -m pip install --upgrade pip
-          pip install alembic asyncpg psycopg2-binary
+          pip install alembic asyncpg psycopg2-binary pydantic
           cd api/server
 
           DB_URL="${{ secrets.DATABASE_URL }}"
