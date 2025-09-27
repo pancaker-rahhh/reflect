@@ -40,9 +40,12 @@ jobs:
           pip install alembic==1.13.2 asyncpg==0.29.0 psycopg2-binary pydantic pydantic_settings sqlalchemy==2.0.23
           cd api/server
 
-          # SecretsURL has SSL mode set
+          # Convert to standard PostgreSQL URL with sslmode for psycopg2
           DB_URL="${{ secrets.DATABASE_URL }}"
-
+          # Convert postgresql+asyncpg:// to postgresql:// and ssl=true to sslmode=require
+          DB_URL="$(echo "$DB_URL" | sed -E 's|^postgresql\+asyncpg://|postgresql://|')"
+          DB_URL="$(echo "$DB_URL" | sed -E 's|[?&]ssl=true|?sslmode=require|')"
+          
           echo "::group::DB connection target"
           echo "Using DATABASE_URL: ${DB_URL%%:*}://***@$(echo \"$DB_URL\" | sed -E 's|^[^@]*@([^/:?]+).*|\1|')/$(echo \"$DB_URL\" | sed -E 's|.*/([^/?]+)(\?.*)?$|\1|')"
           echo "::endgroup::"

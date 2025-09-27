@@ -1,10 +1,11 @@
 import asyncio
 from logging.config import fileConfig
-from sqlalchemy import pool
+from sqlalchemy import pool, engine_from_config
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 from alembic import context
 import sys
+import os
 from pathlib import Path
 from app.core.settings import get_settings
 from app.db import Base
@@ -17,9 +18,12 @@ from app.models import *  # noqa
 config = context.config
 settings = get_settings()
 
-database_url = str(settings.DATABASE_URL)
-# For offline mode, convert asyncpg URL to sync format and replace ssl=true with sslmode=require
-sync_url = database_url.replace('+asyncpg', '').replace('ssl=true', 'sslmode=require')
+# Use DATABASE_URL from environment if set (for CI/CD), otherwise from settings
+database_url = os.getenv('DATABASE_URL') or str(settings.DATABASE_URL)
+# Convert asyncpg URL to standard postgresql URL for migrations
+sync_url = database_url.replace('postgresql+asyncpg://', 'postgresql://').replace(
+    'ssl=true', 'sslmode=require'
+)
 config.set_main_option('sqlalchemy.url', sync_url)
 
 if config.config_file_name is not None:
@@ -29,6 +33,7 @@ target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
+    """Run migrations in 'offline' mode."""
     url = config.get_main_option('sqlalchemy.url')
     context.configure(
         url=url,
@@ -49,41 +54,12 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_async_migrations() -> None:
-    # Create async engine directly to avoid any config parsing issues
-    async_url = str(settings.DATABASE_URL)
-    print(f'DEBUG: Original URL from settings: {async_url}')
+    """Run migrations in 'online' mode using async engine."""
+    configuration = config.get_section(config.config_ini_section) or {}
+    configuration['sqlalchemy.url'] = str(settings.DATABASE_URL)
 
-    # Check what parameters are in the URL
-    import urllib.parse
-
-    parsed = urllib.parse.urlparse(async_url)
-    params = urllib.parse.parse_qs(parsed.query)
-    print(f'DEBUG: URL parameters: {list(params.keys())}')
-
-    # Ensure asyncpg gets ssl=true, not sslmode
-    if 'sslmode=' in async_url:
-        print('DEBUG: Found sslmode in URL, converting to ssl=true')
-        # Remove all sslmode parameters and add ssl=true
-        import re
-
-        async_url = re.sub(r'[&?]sslmode=[^&]*', '', async_url)
-        if '?' in async_url:
-            async_url += '&ssl=true'
-        else:
-            async_url += '?ssl=true'
-        print(f'DEBUG: Converted URL: {async_url}')
-    elif 'ssl=' not in async_url:
-        print('DEBUG: No SSL parameter found, adding ssl=true')
-        if '?' in async_url:
-            async_url += '&ssl=true'
-        else:
-            async_url += '?ssl=true'
-
-    print(f'DEBUG: Final URL for asyncpg: {async_url}')
-
-    # Try using the URL as-is first, but if that fails, we'll try without +asyncpg
     connectable = create_async_engine(
-        async_url,
+        configuration['sqlalchemy.url'],
         poolclass=pool.NullPool,
     )
 
@@ -94,7 +70,18 @@ async def run_async_migrations() -> None:
 
 
 def run_migrations_online() -> None:
-    asyncio.run(run_async_migrations())
+    """Run migrations in 'online' mode using sync engine."""
+    connectable = engine_from_config(
+        config.get_section(config.config_ini_section, {}),
+        prefix='sqlalchemy.',
+        poolclass=pool.NullPool,
+    )
+
+    with connectable.connect() as connection:
+        context.configure(connection=connection, target_metadata=target_metadata)
+
+        with context.begin_transaction():
+            context.run_migrations()
 
 
 if context.is_offline_mode():
