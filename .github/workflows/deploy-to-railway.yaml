@@ -39,10 +39,11 @@ jobs:
           cd api/server
 
           DB_URL="${{ secrets.DATABASE_URL }}"          
+          # Normalize driver: postgres:// or postgresql:// -> postgresql+asyncpg://
           DB_URL="$(echo "$DB_URL" | sed -E 's|^postgres(ql)?://|postgresql+asyncpg://|')"
-          DB_URL="$(echo "$DB_URL" | sed -E 's|([?&])sslmode=require|\1ssl=true|')"
-          if [[ "$DB_URL" == postgresql+asyncpg://* && "$DB_URL" != *"ssl="* ]]; then
-            if [[ "$DB_URL" == *"?"* ]]; then DB_URL="$DB_URL&ssl=true"; else DB_URL="$DB_URL?ssl=true"; fi
+          DB_URL="$(echo "$DB_URL" | sed -E 's/([?&])ssl=true/\1sslmode=require/g')"
+          if [[ "$DB_URL" != *"sslmode="* ]]; then
+            if [[ "$DB_URL" == *"?"* ]]; then DB_URL="$DB_URL&sslmode=require"; else DB_URL="$DB_URL?sslmode=require"; fi
           fi
 
           echo "::group::DB connection target"
