@@ -8,22 +8,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
-    name: Deploy to Railway
+  migrate:
+    name: Run DB migrations (Neon)
     runs-on: ubuntu-latest
     environment: prod
-    container: ghcr.io/railwayapp/cli:latest
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Python 3.12 for migration step
+      - name: Setup Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Run DB migrations (Neon) before deploy
+      - name: Alembic upgrade head
         run: |
           set -Eeuo pipefail
           on_error() {
@@ -41,9 +39,7 @@ jobs:
           cd api/server
 
           DB_URL="${{ secrets.DATABASE_URL }}"
-          # Normalize scheme once: postgres:// or postgresql:// -> postgresql+asyncpg://
           DB_URL="$(echo "$DB_URL" | sed -E 's|^postgres(ql)?://|postgresql+asyncpg://|')"
-
           if [[ "$DB_URL" != *"sslmode="* ]]; then
             if [[ "$DB_URL" == *"?"* ]]; then DB_URL="$DB_URL&sslmode=require"; else DB_URL="$DB_URL?sslmode=require"; fi
           fi
@@ -61,6 +57,16 @@ jobs:
           echo "::group::Alembic current (after)"
           DATABASE_URL="$DB_URL" alembic current
           echo "::endgroup::"
+
+  deploy:
+    name: Deploy to Railway
+    runs-on: ubuntu-latest
+    needs: migrate
+    environment: prod
+    container: ghcr.io/railwayapp/cli:latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Deploy to Railway
         run: railway up --service ${{ vars.RAILWAY_SERVICE_NAME }}
