@@ -8,7 +8,7 @@ from app.core.settings import get_settings
 settings = get_settings()
 
 # Only create async engine if not in migration context
-if os.getenv('ALEMBIC_CONFIG'):
+if os.getenv('ALEMBIC_MIGRATION'):
     # In migration context - don't create async engine
     engine = None
 else:

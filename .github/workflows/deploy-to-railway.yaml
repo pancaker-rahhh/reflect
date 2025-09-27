@@ -51,13 +51,13 @@ jobs:
           echo "::endgroup::"
 
           echo "::group::Alembic current (before)"
-          (DATABASE_URL="$DB_URL" ALEMBIC_CONFIG=1 alembic current || true)
+          (DATABASE_URL="$DB_URL" ALEMBIC_MIGRATION=1 alembic current || true)
           echo "::endgroup::"
 
-          DATABASE_URL="$DB_URL" ALEMBIC_CONFIG=1 alembic upgrade head
+          DATABASE_URL="$DB_URL" ALEMBIC_MIGRATION=1 alembic upgrade head
 
           echo "::group::Alembic current (after)"
-          DATABASE_URL="$DB_URL" ALEMBIC_CONFIG=1 alembic current
+          DATABASE_URL="$DB_URL" ALEMBIC_MIGRATION=1 alembic current
           echo "::endgroup::"
 
   deploy:
