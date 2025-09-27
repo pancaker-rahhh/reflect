@@ -38,10 +38,11 @@ jobs:
           pip install alembic asyncpg psycopg2-binary pydantic pydantic_settings
           cd api/server
 
-          DB_URL="${{ secrets.DATABASE_URL }}"
+          DB_URL="${{ secrets.DATABASE_URL }}"          
           DB_URL="$(echo "$DB_URL" | sed -E 's|^postgres(ql)?://|postgresql+asyncpg://|')"
-          if [[ "$DB_URL" != *"sslmode="* ]]; then
-            if [[ "$DB_URL" == *"?"* ]]; then DB_URL="$DB_URL&sslmode=require"; else DB_URL="$DB_URL?sslmode=require"; fi
+          DB_URL="$(echo "$DB_URL" | sed -E 's|([?&])sslmode=require|\1ssl=true|')"
+          if [[ "$DB_URL" == postgresql+asyncpg://* && "$DB_URL" != *"ssl="* ]]; then
+            if [[ "$DB_URL" == *"?"* ]]; then DB_URL="$DB_URL&ssl=true"; else DB_URL="$DB_URL?ssl=true"; fi
           fi
 
           echo "::group::DB connection target"
