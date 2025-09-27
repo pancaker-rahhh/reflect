@@ -20,19 +20,42 @@ jobs:
 
       - name: Run DB migrations (Neon) before deploy
         run: |
+          set -Eeuo pipefail
+          on_error() {
+            echo "::error::Alembic migration failed at $(date -u)"
+            echo "::group::Environment summary"
+            python --version || true
+            pip --version || true
+            (alembic --version || true)
+            echo "::endgroup::"
+          }
+          trap on_error ERR
+
           python -m pip install --upgrade pip
           pip install alembic asyncpg psycopg2-binary
           cd api/server
-          
+
           DB_URL="${{ secrets.DATABASE_URL }}"
           # Normalize scheme once: postgres:// or postgresql:// -> postgresql+asyncpg://
           DB_URL="$(echo "$DB_URL" | sed -E 's|^postgres(ql)?://|postgresql+asyncpg://|')"
-          
+
           if [[ "$DB_URL" != *"sslmode="* ]]; then
             if [[ "$DB_URL" == *"?"* ]]; then DB_URL="$DB_URL&sslmode=require"; else DB_URL="$DB_URL?sslmode=require"; fi
           fi
-          echo "Using DATABASE_URL: ${DB_URL%%:*}://***@$(echo "$DB_URL" | sed -E 's|^[^@]*@([^/:?]+).*|\1|')/*"
+
+          echo "::group::DB connection target"
+          echo "Using DATABASE_URL: ${DB_URL%%:*}://***@$(echo \"$DB_URL\" | sed -E 's|^[^@]*@([^/:?]+).*|\1|')/$(echo \"$DB_URL\" | sed -E 's|.*/([^/?]+)(\?.*)?$|\1|')"
+          echo "::endgroup::"
+
+          echo "::group::Alembic current (before)"
+          (DATABASE_URL="$DB_URL" alembic current || true)
+          echo "::endgroup::"
+
           DATABASE_URL="$DB_URL" alembic upgrade head
+
+          echo "::group::Alembic current (after)"
+          DATABASE_URL="$DB_URL" alembic current
+          echo "::endgroup::"
 
       - name: Deploy to Railway
         run: railway up --service ${{ vars.RAILWAY_SERVICE_NAME }}
