@@ -2,7 +2,7 @@ import asyncio
 from logging.config import fileConfig
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import async_engine_from_config
+from sqlalchemy.ext.asyncio import create_async_engine
 from alembic import context
 import sys
 from pathlib import Path
@@ -49,10 +49,11 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_async_migrations() -> None:
-    configuration = config.get_section(config.config_ini_section) or {}
-    # Ensure asyncpg gets ssl=true, not sslmode
+    # Create async engine directly to avoid any config parsing issues
     async_url = str(settings.DATABASE_URL)
     print(f'DEBUG: Original URL from settings: {async_url}')
+
+    # Ensure asyncpg gets ssl=true, not sslmode
     if 'sslmode=' in async_url:
         print('DEBUG: Found sslmode in URL, converting to ssl=true')
         async_url = (
@@ -61,11 +62,11 @@ async def run_async_migrations() -> None:
             .replace('sslmode=verify-ca', 'ssl=true')
         )
         print(f'DEBUG: Converted URL: {async_url}')
-    configuration['sqlalchemy.url'] = async_url
 
-    connectable = async_engine_from_config(
-        configuration,
-        prefix='sqlalchemy.',
+    print(f'DEBUG: Final URL for asyncpg: {async_url}')
+
+    connectable = create_async_engine(
+        async_url,
         poolclass=pool.NullPool,
     )
 
