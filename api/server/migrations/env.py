@@ -18,7 +18,9 @@ config = context.config
 settings = get_settings()
 
 database_url = str(settings.DATABASE_URL)
-config.set_main_option('sqlalchemy.url', database_url.replace('+asyncpg', ''))
+# For offline mode, convert asyncpg URL to sync format and replace ssl=true with sslmode=require
+sync_url = database_url.replace('+asyncpg', '').replace('ssl=true', 'sslmode=require')
+config.set_main_option('sqlalchemy.url', sync_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
