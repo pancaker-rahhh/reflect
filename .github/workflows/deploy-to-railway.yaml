@@ -2,11 +2,9 @@ name: Deploy to Railway
 
 on:
   push:
-    # branches: [main]
+    branches: [main]
     paths:
       - 'api/**'
-  pull_request:
-    branches: [migrate-on-workflow]
   workflow_dispatch:
 
 jobs:
