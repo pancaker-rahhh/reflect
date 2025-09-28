@@ -4,7 +4,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQueryClient } from '@tanstack/react-query'
-import { WizardProgress } from '@/components/widgets/wizard/WizardProgress'
+import ProgressBarComponent from '@/components/ui/ProgressBar'
+import { Sparkles } from 'lucide-react'
 import { WizardNavigation } from '@/components/widgets/wizard/WizardNavigation'
 import { Step1Basics } from '@/components/widgets/wizard/Step1Basics'
 import { Step2Content } from '@/components/widgets/wizard/Step2Content'
@@ -381,7 +382,33 @@ export function WidgetCreate() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 lg:p-6">
-            <WizardProgress currentStep={currentStep} totalSteps={steps.length} />
+            <div className="w-full max-w-2xl mx-auto mb-6">
+              {/* Step indicator header */}
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Step {currentStep + 1} of {steps.length}
+                </span>
+                <span className="text-sm font-semibold text-gray-600 flex items-center gap-1">
+                  <Sparkles className="w-4 h-4 text-yellow-500" />
+                  {Math.round(((currentStep + 1) / steps.length) * 100)}% Complete ({currentStep + 1}/{steps.length})
+                </span>
+              </div>
+              
+              <ProgressBarComponent
+                percentage={((currentStep + 1) / steps.length) * 100}
+                variant="linear"
+                size="lg"
+                color="primary"
+                showLabel={false}
+                animated={true}
+                totalSteps={steps.length}
+                currentStep={currentStep}
+                showSteps={true}
+                stepLabels={steps.map(step => step.title)}
+                showCompletion={false}
+                className="mb-6"
+              />
+            </div>
             <div className="mt-6 lg:mt-8 mb-6 lg:mb-8">
               <h2 className="text-lg lg:text-xl font-semibold mb-4 lg:mb-6">
                 {steps[currentStep].title}
