@@ -190,7 +190,7 @@ export function FeedbackRenderer({
                   value={additionalFeedback}
                   onChange={(e) => setAdditionalFeedback(e.target.value)}
                   placeholder={getPlaceholderText(feedbackType)}
-                  className="w-full h-28 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all text-sm"
+                  className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
                   style={{
                     borderColor: additionalFeedback.trim() ? colors.primary : '#E5E7EB',
                     backgroundColor: colors.background,
@@ -242,7 +242,7 @@ export function FeedbackRenderer({
                   value={additionalFeedback}
                   onChange={(e) => setAdditionalFeedback(e.target.value)}
                   placeholder={getPlaceholderText(feedbackType)}
-                  className="w-full h-20 p-3 border-2 rounded-lg resize-none focus:outline-none transition-all text-sm"
+                  className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
                   style={{
                     borderColor: additionalFeedback.trim() ? colors.primary : '#E5E7EB',
                     backgroundColor: colors.background,
@@ -294,7 +294,7 @@ export function FeedbackRenderer({
                   value={additionalFeedback}
                   onChange={(e) => setAdditionalFeedback(e.target.value)}
                   placeholder={getPlaceholderText(feedbackType)}
-                  className="w-full h-20 p-3 border-2 rounded-lg resize-none focus:outline-none transition-all text-sm"
+                  className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
                   style={{
                     borderColor: additionalFeedback.trim() ? colors.primary : '#E5E7EB',
                     backgroundColor: colors.background,
@@ -480,11 +480,12 @@ function GeneralFeedbackForm({
         value={feedback}
         onChange={(e) => setFeedback(e.target.value)}
         placeholder={getPlaceholderText('FEEDBACK')}
-        className="w-full h-32 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all"
+        className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
         style={{
           borderColor: feedback.trim() ? colors.primary : '#E5E7EB',
-          backgroundColor: 'rgba(255, 255, 255, 0.8)',
-          boxShadow: feedback.trim() ? `0 0 0 3px ${colors.primary}20` : undefined,
+          backgroundColor: colors.background,
+          color: colors.text,
+          boxShadow: feedback.trim() ? `0 0 0 3px ${colors.primary}20` : 'none',
         }}
         disabled={isSubmitting}
       />

@@ -339,7 +339,7 @@ export function FeatureRequestForm({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Brief, descriptive name for your feature idea (e.g., 'Dark Mode Toggle')"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
+            className="w-full p-4 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
             style={{
               borderColor: '#E5E7EB',
               backgroundColor: colors.background,
@@ -426,7 +426,7 @@ export function FeatureRequestForm({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe what this feature would do and how it would work. What functionality would it provide?"
-            className="w-full h-20 p-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
+            className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
             style={{
               borderColor: '#E5E7EB',
               backgroundColor: colors.background,
@@ -449,7 +449,7 @@ export function FeatureRequestForm({
             value={useCase}
             onChange={(e) => setUseCase(e.target.value)}
             placeholder="How would this feature help you? What problem would it solve? Who would benefit from this feature?"
-            className="w-full h-16 p-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
+            className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
             style={{
               borderColor: '#E5E7EB',
               backgroundColor: colors.background,
