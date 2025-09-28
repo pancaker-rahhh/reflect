@@ -296,11 +296,8 @@ export function WidgetCore({
     })
 
     return (
-      <div className="p-6 space-y-6">
+      <div className="px-6 pt-4 pb-6 space-y-6">
         <div className="text-center">
-          <h3 className="text-xl font-bold mb-2" style={{ color: textColor }}>
-            {content.headerTitle}
-          </h3>
           <p className="text-xs opacity-70" style={{ color: textColor }}>
             Choose what you&apos;d like to share with us
           </p>
@@ -380,7 +377,7 @@ export function WidgetCore({
         return renderMenu()
       case 'active':
         return (
-          <div className="p-4 space-y-4">
+          <div className="px-4 pt-2 pb-4 space-y-4">
             {/* Back button - only show if multiple modules are enabled */}
             {shouldShowBackToMenu() && (
               <div className="flex items-center mb-2">
@@ -408,9 +405,6 @@ export function WidgetCore({
             )}
 
             <div className="text-center">
-              <h3 className="text-lg font-bold mb-1" style={{ color: textColor }}>
-                {content.headerTitle}
-              </h3>
               <p className="text-sm opacity-70" style={{ color: textColor }}>
                 {content.mainQuestion}
               </p>
@@ -444,7 +438,7 @@ export function WidgetCore({
   return (
     <div
       className={cn(
-        'flex flex-col h-full font-sans antialiased relative',
+        'flex flex-col h-full font-sans antialiased relative rounded-2xl overflow-hidden',
         isGlassmorphism && 'backdrop-blur-xl border border-white/20'
       )}
       style={{
@@ -463,7 +457,7 @@ export function WidgetCore({
         }}
       >
         <div className="relative z-10">
-          <h2 className="text-lg font-bold text-white">{content.headerTitle}</h2>
+          <h2 className="text-lg font-bold text-white m-0">{content.headerTitle}</h2>
         </div>
 
         {/* Close button */}
