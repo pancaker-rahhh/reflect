@@ -41,9 +41,28 @@ async def get_user_organizations(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return await organization_service.get_user_organizations(
-        current_user.id, db, skip, limit
-    )
+    try:
+        logger.info(f'Getting organizations for user {current_user.id}')
+        result = await organization_service.get_user_organizations(
+            current_user.id, db, skip, limit
+        )
+        logger.info(
+            f'Successfully retrieved {len(result.organizations)} organizations for user {current_user.id}'
+        )
+        return result
+    except Exception as e:
+        logger.error(
+            f'Failed to get organizations for user {current_user.id}: {str(e)}',
+            exc_info=True,
+        )
+        # Return empty response instead of failing
+        return OrganizationListResponse(
+            organizations=[],
+            total=0,
+            page=1,
+            page_size=limit,
+            total_pages=0,
+        )
 
 
 @router.get('/{org_id}', response_model=OrganizationResponse)

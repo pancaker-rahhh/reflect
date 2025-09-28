@@ -44,16 +44,25 @@ export const OrganizationStep: React.FC = () => {
       nextStep()
     } catch (error) {
       console.error('Failed to auto-create organization:', error)
-      toast.showError(
-        `Failed to create organization: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }. Please try again.`
-      )
+
+      let errorMessage = 'Failed to create organization. Please try again.'
+      if (error instanceof Error) {
+        if (error.message.includes('403')) {
+          errorMessage =
+            'You do not have permission to create an organization. Please contact support.'
+        } else if (error.message.includes('500')) {
+          errorMessage = 'Server error occurred. Please try again in a moment.'
+        } else {
+          errorMessage = error.message
+        }
+      }
+
+      toast.showError(errorMessage)
       setHasAttemptedAutoCreate(false)
     } finally {
       setIsAutoCreating(false)
     }
-  }, [setOrganizationId, nextStep, hasAttemptedAutoCreate])
+  }, [setOrganizationId, nextStep, hasAttemptedAutoCreate, toast])
 
   useEffect(() => {
     const existingData = onboardingDataService.getOrganizationData()

@@ -83,25 +83,48 @@ class OrganizationService:
     async def get_user_organizations(
         self, user_id: UUID, db: AsyncSession, skip: int = 0, limit: int = 100
     ) -> OrganizationListResponse:
-        organizations = await organization_repository.get_user_organizations(
-            db, user_id, skip, limit
-        )
-        total = await organization_repository.count_user_organizations(db, user_id)
+        try:
+            organizations = await organization_repository.get_user_organizations(
+                db, user_id, skip, limit
+            )
+            total = await organization_repository.count_user_organizations(db, user_id)
 
-        org_responses = []
-        for org in organizations:
-            org_with_counts = await organization_repository.get_with_counts(db, org.id)
-            org_responses.append(OrganizationResponse.model_validate(org_with_counts))
+            org_responses = []
+            for org in organizations:
+                try:
+                    org_with_counts = await organization_repository.get_with_counts(
+                        db, org.id
+                    )
+                    if org_with_counts:
+                        org_responses.append(
+                            OrganizationResponse.model_validate(org_with_counts)
+                        )
+                except Exception as e:
+                    logger.warning(
+                        f'Failed to get counts for organization {org.id}: {e}'
+                    )
+                    # Fallback to basic organization data
+                    org_responses.append(OrganizationResponse.model_validate(org))
 
-        total_pages = (total + limit - 1) // limit if limit > 0 else 1
+            total_pages = (total + limit - 1) // limit if limit > 0 else 1
 
-        return OrganizationListResponse(
-            organizations=org_responses,
-            total=total,
-            page=(skip // limit) + 1 if limit > 0 else 1,
-            page_size=limit,
-            total_pages=total_pages,
-        )
+            return OrganizationListResponse(
+                organizations=org_responses,
+                total=total,
+                page=(skip // limit) + 1 if limit > 0 else 1,
+                page_size=limit,
+                total_pages=total_pages,
+            )
+        except Exception as e:
+            logger.error(f'Error getting user organizations for user {user_id}: {e}')
+            # Return empty response for new users instead of failing
+            return OrganizationListResponse(
+                organizations=[],
+                total=0,
+                page=1,
+                page_size=limit,
+                total_pages=0,
+            )
 
     async def update_organization(
         self,

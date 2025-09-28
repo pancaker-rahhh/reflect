@@ -6,9 +6,7 @@ import { onboardingApi } from '../lib/api'
 
 export type UserType = 'solo' | 'team'
 
-export type OnboardingStep =
-  | 'profile'
-  | 'project'
+export type OnboardingStep = 'profile' | 'project'
 
 interface OnboardingState {
   currentStep: OnboardingStep
@@ -152,6 +150,15 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     setState((prev) => ({ ...prev, isLoading: true, error: null }))
 
     try {
+      // Validate that user has required resources before completing
+      if (!state.organizationId) {
+        throw new Error('Organization is required to complete onboarding')
+      }
+
+      if (!state.projectId) {
+        throw new Error('Project is required to complete onboarding')
+      }
+
       await onboardingApi.complete({
         feedback: null,
         skipped_steps: [],
@@ -165,6 +172,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
       // Use replace to prevent going back to onboarding via browser back button
       navigate('/app/dashboard', { replace: true })
     } catch (error) {
+      console.error('Failed to complete onboarding:', error)
       setState((prev) => ({
         ...prev,
         error: error instanceof Error ? error.message : 'Failed to complete onboarding',
