@@ -16,13 +16,7 @@ function transformDataToPayload(data: WidgetFormData) {
       theme_name: data.appearance.theme,
       show_branding: data.appearance.showBranding,
     },
-    targeting_rules: [
-      {
-        type: 'trigger',
-        details: { type: data.behavior.triggerType, delay: data.behavior.triggerDelay },
-      },
-      { type: 'device', details: data.behavior.deviceTypes },
-    ],
+    targeting_rules: [],
   }
 }
 

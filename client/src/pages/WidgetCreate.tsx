@@ -9,7 +9,6 @@ import { WizardNavigation } from '@/components/widgets/wizard/WizardNavigation'
 import { Step1Basics } from '@/components/widgets/wizard/Step1Basics'
 import { Step2Content } from '@/components/widgets/wizard/Step2Content'
 import { Step3Appearance } from '@/components/widgets/wizard/Step3Appearance'
-import { Step4Behavior } from '@/components/widgets/wizard/Step4Behavior'
 import { LiveWidgetPreview } from '@/components/widgets/preview/LiveWidgetPreview'
 import { widgetApi } from '@/lib/api/widget'
 import { useAppContext } from '@/context/AppContext'
@@ -81,15 +80,6 @@ const widgetSchema = z
       showBranding: z.boolean(),
     }),
 
-    behavior: z.object({
-      triggerType: z.enum(['immediate', 'delay', 'exit-intent', 'scroll']),
-      triggerDelay: z.number().optional(),
-      deviceTypes: z.object({
-        desktop: z.boolean(),
-        mobile: z.boolean(),
-        tablet: z.boolean(),
-      }),
-    }),
   })
   .refine(
     (data) => {
@@ -121,22 +111,11 @@ const widgetSchema = z
 
 export type WidgetFormData = z.infer<typeof widgetSchema>
 
-interface TriggerDetails {
-  type: string
-  delay?: number
-}
-
-interface DeviceTargetingDetails {
-  desktop: boolean
-  mobile: boolean
-  tablet: boolean
-}
 
 const steps = [
   { title: 'Functionality & Basics', component: Step1Basics },
   { title: 'Configure Content', component: Step2Content },
   { title: 'Customize Appearance', component: Step3Appearance },
-  { title: 'Behavior & Targeting', component: Step4Behavior },
 ]
 
 export function WidgetCreate() {
@@ -183,10 +162,6 @@ export function WidgetCreate() {
               buttonTextColor: '#FFFFFF',
             },
             showBranding: true,
-          },
-          behavior: {
-            triggerType: 'immediate',
-            deviceTypes: { desktop: true, mobile: true, tablet: true },
           },
         },
   })
@@ -298,19 +273,6 @@ export function WidgetCreate() {
                 buttonTextColor: widget.theme_configuration?.buttonTextColor || '#FFFFFF',
               },
               showBranding: widget.theme_configuration?.show_branding ?? true,
-            },
-            behavior: {
-              triggerType: (['immediate', 'delay', 'exit-intent', 'scroll'].includes(
-                (widget.targeting_rules?.[0]?.details as TriggerDetails)?.type
-              )
-                ? (widget.targeting_rules?.[0]?.details as TriggerDetails)?.type
-                : 'immediate') as 'immediate' | 'delay' | 'exit-intent' | 'scroll',
-              triggerDelay: (widget.targeting_rules?.[0]?.details as TriggerDetails)?.delay,
-              deviceTypes: (widget.targeting_rules?.[1]?.details as DeviceTargetingDetails) || {
-                desktop: true,
-                mobile: true,
-                tablet: true,
-              },
             },
           }
           form.reset(formData)
