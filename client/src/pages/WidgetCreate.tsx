@@ -112,6 +112,75 @@ const widgetSchema = z
 
 export type WidgetFormData = z.infer<typeof widgetSchema>
 
+// Get type-specific default content
+function getTypeSpecificDefaults(primaryType: WidgetFormData['primaryType']) {
+  switch (primaryType) {
+    case 'NPS':
+      return {
+        headerTitle: 'We value your feedback',
+        mainQuestion: 'How likely are you to recommend our product to a friend or colleague?',
+        submitButtonText: 'Submit Rating',
+        thankYouTitle: 'Thank you for your feedback!',
+        thankYouMessage: 'Your rating helps us improve our product and service.',
+      }
+    case 'CSAT':
+      return {
+        headerTitle: 'How satisfied are you?',
+        mainQuestion: 'Please rate your overall satisfaction with our service',
+        submitButtonText: 'Submit Rating',
+        thankYouTitle: 'Thank you!',
+        thankYouMessage: 'Your satisfaction rating helps us serve you better.',
+      }
+    case 'CES':
+      return {
+        headerTitle: 'Help us improve',
+        mainQuestion: 'How easy was it to get the help you needed?',
+        submitButtonText: 'Submit Rating',
+        thankYouTitle: 'Thank you!',
+        thankYouMessage: 'Your feedback helps us make our service easier to use.',
+      }
+    case 'REVIEW':
+      return {
+        headerTitle: 'Share your experience',
+        mainQuestion: 'How would you rate your overall experience with us?',
+        submitButtonText: 'Submit Review',
+        thankYouTitle: 'Thanks for your review!',
+        thankYouMessage: 'Your review helps others make informed decisions.',
+      }
+    case 'BUG_REPORT':
+      return {
+        headerTitle: 'Report an Issue',
+        mainQuestion: 'Please describe the issue you encountered',
+        submitButtonText: 'Report Bug',
+        thankYouTitle: 'Bug report submitted!',
+        thankYouMessage: 'Thank you for helping us improve. We will investigate this issue.',
+      }
+    case 'FEATURE_REQUEST':
+      return {
+        headerTitle: 'Suggest a Feature',
+        mainQuestion: 'What feature would you like to see added?',
+        submitButtonText: 'Submit Request',
+        thankYouTitle: 'Thanks for your suggestion!',
+        thankYouMessage: 'We appreciate your input and will consider this feature for future updates.',
+      }
+    case 'SURVEY':
+      return {
+        headerTitle: 'Quick Survey',
+        mainQuestion: 'Help us understand your needs better',
+        submitButtonText: 'Complete Survey',
+        thankYouTitle: 'Survey completed!',
+        thankYouMessage: 'Thank you for taking the time to complete our survey.',
+      }
+    default:
+      return {
+        headerTitle: 'We value your feedback',
+        mainQuestion: 'How can we improve our service?',
+        submitButtonText: 'Submit Feedback',
+        thankYouTitle: 'Thank you!',
+        thankYouMessage: 'Your feedback helps us improve.',
+      }
+  }
+}
 
 const steps = [
   { title: 'Functionality & Basics', component: Step1Basics },
@@ -141,12 +210,8 @@ export function WidgetCreate() {
           modules: { feedback: true, reviews: false, bugReporting: false, featureRequests: false },
           primaryType: 'FEEDBACK',
           content: {
-            headerTitle: 'We value your feedback',
-            mainQuestion: 'How can we improve?',
-            submitButtonText: 'Submit Feedback',
-            thankYouTitle: 'Thank you!',
-            thankYouMessage: 'Your feedback helps us improve.',
-            reviewPrompt: 'Share your thoughts about your experience',
+            ...getTypeSpecificDefaults('FEEDBACK'),
+            reviewPrompt: 'Share your thoughts about your experience. What did you like or dislike?',
             requireReviewText: false,
             requireStepsToReproduce: false,
             requireUseCase: true,
@@ -195,6 +260,37 @@ export function WidgetCreate() {
     return () => subscription.unsubscribe()
   }, [form])
 
+  // Update content defaults when primaryType changes
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'primaryType' && value.primaryType) {
+        const currentContent = form.getValues('content')
+        const newDefaults = getTypeSpecificDefaults(value.primaryType)
+        
+        // Only update if the current values appear to be defaults (to avoid overriding user changes)
+        const isUsingDefaults = 
+          !currentContent?.headerTitle ||
+          currentContent.headerTitle === 'We value your feedback' ||
+          currentContent.headerTitle === 'How satisfied are you?' ||
+          currentContent.headerTitle === 'Help us improve' ||
+          currentContent.headerTitle === 'Share your experience' ||
+          currentContent.headerTitle === 'Report an Issue' ||
+          currentContent.headerTitle === 'Suggest a Feature' ||
+          currentContent.headerTitle === 'Quick Survey'
+
+        if (isUsingDefaults) {
+          form.setValue('content.headerTitle', newDefaults.headerTitle)
+          form.setValue('content.mainQuestion', newDefaults.mainQuestion)
+          form.setValue('content.submitButtonText', newDefaults.submitButtonText)
+          form.setValue('content.thankYouTitle', newDefaults.thankYouTitle)
+          form.setValue('content.thankYouMessage', newDefaults.thankYouMessage)
+        }
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [form])
+
   // Load widget data for edit mode
   useEffect(() => {
     if (isEditMode && widgetId && currentProject) {
@@ -224,31 +320,43 @@ export function WidgetCreate() {
               }
               return typeMapping[widget.widget_type] || 'FEEDBACK'
             })(),
-            content: {
-              headerTitle: widget.configuration?.content?.headerTitle || 'We value your feedback',
-              mainQuestion: widget.configuration?.content?.mainQuestion || 'How can we improve?',
-              submitButtonText:
-                widget.configuration?.content?.submitButtonText || 'Submit Feedback',
-              thankYouTitle: widget.configuration?.content?.thankYouTitle || 'Thank you!',
-              thankYouMessage:
-                widget.configuration?.content?.thankYouMessage || 'Your feedback helps us improve.',
-              reviewPrompt:
-                widget.configuration?.typeSpecificSettings?.reviewPrompt ||
-                widget.configuration?.content?.reviewPrompt ||
-                'Share your thoughts about your experience',
-              requireReviewText:
-                widget.configuration?.typeSpecificSettings?.requireReviewText ||
-                widget.configuration?.content?.requireReviewText ||
-                false,
-              requireStepsToReproduce:
-                widget.configuration?.typeSpecificSettings?.requireStepsToReproduce ||
-                widget.configuration?.content?.requireStepsToReproduce ||
-                false,
-              requireUseCase:
-                widget.configuration?.typeSpecificSettings?.requireUseCase ||
-                widget.configuration?.content?.requireUseCase ||
-                true,
-            },
+            content: (() => {
+              const typeMapping: Record<string, WidgetFormData['primaryType']> = {
+                FEEDBACK: 'FEEDBACK',
+                SURVEY: 'SURVEY',
+                NPS: 'NPS',
+                CSAT: 'CSAT',
+                CES: 'CES',
+                REVIEW: 'REVIEW',
+                BUG_REPORT: 'BUG_REPORT',
+                FEATURE_REQUEST: 'FEATURE_REQUEST',
+              }
+              const widgetType = typeMapping[widget.widget_type] || 'FEEDBACK'
+              const defaults = getTypeSpecificDefaults(widgetType)
+              return {
+                headerTitle: widget.configuration?.content?.headerTitle || defaults.headerTitle,
+                mainQuestion: widget.configuration?.content?.mainQuestion || defaults.mainQuestion,
+                submitButtonText: widget.configuration?.content?.submitButtonText || defaults.submitButtonText,
+                thankYouTitle: widget.configuration?.content?.thankYouTitle || defaults.thankYouTitle,
+                thankYouMessage: widget.configuration?.content?.thankYouMessage || defaults.thankYouMessage,
+                reviewPrompt:
+                  widget.configuration?.typeSpecificSettings?.reviewPrompt ||
+                  widget.configuration?.content?.reviewPrompt ||
+                  'Share your thoughts about your experience. What did you like or dislike?',
+                requireReviewText:
+                  widget.configuration?.typeSpecificSettings?.requireReviewText ||
+                  widget.configuration?.content?.requireReviewText ||
+                  false,
+                requireStepsToReproduce:
+                  widget.configuration?.typeSpecificSettings?.requireStepsToReproduce ||
+                  widget.configuration?.content?.requireStepsToReproduce ||
+                  false,
+                requireUseCase:
+                  widget.configuration?.typeSpecificSettings?.requireUseCase ||
+                  widget.configuration?.content?.requireUseCase ||
+                  true,
+              }
+            })(),
             appearance: {
               theme: widget.theme_configuration?.theme_name || 'default',
               position: (() => {

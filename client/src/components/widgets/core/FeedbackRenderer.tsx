@@ -50,13 +50,15 @@ function getPlaceholderText(feedbackType: FeedbackType): string {
     case 'CES':
       return 'What specifically made you give this score? What made it easy or difficult to get help?'
     case 'REVIEW':
-      return 'Share your detailed experience with our service...'
+      return 'Share your detailed experience with our service. What did you like or dislike?'
     case 'BUG_REPORT':
-      return 'Describe the bug you encountered. What were you trying to do when it happened?'
+      return 'Describe the bug you encountered. What were you trying to do when it happened? Include steps to reproduce if possible.'
     case 'FEATURE_REQUEST':
-      return "Describe the feature you'd like to see. How would it help you?"
+      return "Describe the feature you'd like to see. How would it help you or improve your experience?"
     case 'FEEDBACK':
+      return 'Share your thoughts, suggestions, or concerns. What can we do better?'
     case 'SURVEY':
+      return 'Please share your thoughts and help us understand your needs better.'
     default:
       return 'Tell us what you think... Share your thoughts, suggestions, or concerns.'
   }

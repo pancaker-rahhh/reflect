@@ -116,7 +116,7 @@ export function WidgetGetCode() {
             </Link>
           </Button>
           <Button asChild>
-            <Link to="/widgets/new">Create Another Widget</Link>
+            <Link to="/app/widgets/new">Create Another Widget</Link>
           </Button>
         </div>
       </div>
