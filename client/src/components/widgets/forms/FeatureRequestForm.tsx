@@ -94,7 +94,7 @@ export function FeatureRequestForm({
   }, [widgetKey])
 
   const loadExistingFeatures = async () => {
-    if (!widgetKey) {
+    if (!widgetKey || widgetKey.trim() === '') {
       setIsLoadingFeatures(false)
       return
     }
@@ -140,7 +140,7 @@ export function FeatureRequestForm({
   }
 
   const handleUpvote = async (featureId: string) => {
-    if (!widgetKey || votingFeatures.has(featureId)) return
+    if (!widgetKey || widgetKey.trim() === '' || votingFeatures.has(featureId)) return
 
     // Add feature to voting set to prevent duplicate clicks
     setVotingFeatures((prev) => new Set([...prev, featureId]))
@@ -188,18 +188,18 @@ export function FeatureRequestForm({
   }
 
   const handleSubmit = async () => {
-    if (!title.trim() || !description.trim() || !category || !priority || !useCase.trim()) return
+    if (!description.trim()) return
 
     await onSubmit({
-      title: title.trim(),
+      title: description.trim().split('\n')[0] || description.trim().substring(0, 50),
       description: description.trim(),
-      category,
-      priority,
-      useCase: useCase.trim(),
+      category: 'other',
+      priority: priority || 'medium',
+      useCase: description.trim(), // Use the description as use case
     })
   }
 
-  const isFormValid = title.trim() && description.trim() && category && priority && useCase.trim()
+  const isFormValid = description.trim()
 
   const getCategoryIcon = (categoryValue: string) => {
     const category = categoryOptions.find((opt) => opt.value === categoryValue)
@@ -312,80 +312,46 @@ export function FeatureRequestForm({
   // Render create form view
   const renderCreateForm = () => (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4">
         <div className="flex items-center gap-2">
           <Lightbulb className="w-5 h-5" style={{ color: colors.primary }} />
           <p className="text-sm font-medium" style={{ color: colors.text }}>
-            {content.mainQuestion}
+            Request a Feature
           </p>
         </div>
-        <button
-          onClick={() => setView('list')}
-          className="text-sm opacity-70 hover:opacity-100 transition-all"
-          style={{ color: colors.text }}
-        >
-          ← Back to list
-        </button>
       </div>
 
       <div className="space-y-4">
-        {/* Feature Title */}
+        {/* Feature Description */}
         <div>
-          <label className="block text-sm font-medium mb-1" style={{ color: colors.text }}>
-            Feature Title *
+          <label className="block text-sm font-semibold mb-2" style={{ color: colors.text }}>
+            <span className="flex items-center gap-2">
+              💡 What feature do you want? <span className="text-red-500">*</span>
+            </span>
           </label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Brief, descriptive name for your feature idea (e.g., 'Dark Mode Toggle')"
-            className="w-full p-4 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Describe the feature you'd like to see. What would it do? How would it help you?"
+            className="w-full h-32 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
             style={{
-              borderColor: '#E5E7EB',
+              borderColor: description.trim() ? colors.primary : '#E5E7EB',
               backgroundColor: colors.background,
               color: colors.text,
+              boxShadow: description.trim() ? `0 0 0 3px ${colors.primary}20` : 'none',
             }}
             disabled={isSubmitting}
-            maxLength={80}
+            maxLength={400}
           />
-        </div>
-
-        {/* Category */}
-        <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
-            Category *
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            {categoryOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setCategory(option.value)}
-                disabled={isSubmitting}
-                className={cn(
-                  'p-2 rounded-lg border text-left transition-all text-xs',
-                  category === option.value ? 'border-2' : 'border hover:border-gray-300'
-                )}
-                style={{
-                  borderColor: category === option.value ? colors.primary : '#E5E7EB',
-                  backgroundColor:
-                    category === option.value ? `${colors.primary}10` : colors.background,
-                  color: colors.text,
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <span>{option.icon}</span>
-                  <span className="font-medium">{option.label}</span>
-                </div>
-              </button>
-            ))}
+          <div className="text-right text-xs mt-1 opacity-60" style={{ color: colors.text }}>
+            {description.length}/400
           </div>
         </div>
 
         {/* Priority */}
         <div>
           <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
-            Priority *
+            Priority (Optional)
           </label>
           <div className="space-y-2">
             {priorityOptions.map((option) => (
@@ -414,52 +380,6 @@ export function FeatureRequestForm({
                 </div>
               </button>
             ))}
-          </div>
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-medium mb-1" style={{ color: colors.text }}>
-            Feature Description *
-          </label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe what this feature would do and how it would work. What functionality would it provide?"
-            className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
-            style={{
-              borderColor: '#E5E7EB',
-              backgroundColor: colors.background,
-              color: colors.text,
-            }}
-            disabled={isSubmitting}
-            maxLength={400}
-          />
-          <div className="text-right text-xs mt-1 opacity-60" style={{ color: colors.text }}>
-            {description.length}/400
-          </div>
-        </div>
-
-        {/* Use Case */}
-        <div>
-          <label className="block text-sm font-medium mb-1" style={{ color: colors.text }}>
-            Use Case & Benefits *
-          </label>
-          <textarea
-            value={useCase}
-            onChange={(e) => setUseCase(e.target.value)}
-            placeholder="How would this feature help you? What problem would it solve? Who would benefit from this feature?"
-            className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
-            style={{
-              borderColor: '#E5E7EB',
-              backgroundColor: colors.background,
-              color: colors.text,
-            }}
-            disabled={isSubmitting}
-            maxLength={300}
-          />
-          <div className="text-right text-xs mt-1 opacity-60" style={{ color: colors.text }}>
-            {useCase.length}/300
           </div>
         </div>
 

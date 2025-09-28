@@ -345,15 +345,6 @@ export function FeedbackRenderer({
     case 'BUG_REPORT':
       return (
         <div className="space-y-6">
-          <div className="text-center">
-            <h3 className="text-xl font-bold mb-2" style={{ color: colors.text }}>
-              Bug Reports
-            </h3>
-            <p className="text-sm opacity-70" style={{ color: colors.text }}>
-              Track known issues and report new ones
-            </p>
-          </div>
-
           <PublicFeedbackDisplay
             feedbackType="BUG_REPORT"
             widgetKey={widgetKey || ''}
@@ -361,9 +352,6 @@ export function FeedbackRenderer({
           />
 
           <div className="border-t pt-6">
-            <h4 className="text-lg font-semibold mb-4 text-center" style={{ color: colors.text }}>
-              Report a Bug
-            </h4>
             <BugReportForm
               onSubmit={handleBugReportSubmit}
               isSubmitting={isSubmitting}
@@ -377,15 +365,6 @@ export function FeedbackRenderer({
     case 'FEATURE_REQUEST':
       return (
         <div className="space-y-6">
-          <div className="text-center">
-            <h3 className="text-xl font-bold mb-2" style={{ color: colors.text }}>
-              Feature Requests
-            </h3>
-            <p className="text-sm opacity-70" style={{ color: colors.text }}>
-              See what features others are requesting and add your own
-            </p>
-          </div>
-
           <PublicFeedbackDisplay
             feedbackType="FEATURE_REQUEST"
             widgetKey={widgetKey || ''}
@@ -393,9 +372,6 @@ export function FeedbackRenderer({
           />
 
           <div className="border-t pt-6">
-            <h4 className="text-lg font-semibold mb-4 text-center" style={{ color: colors.text }}>
-              Request a Feature
-            </h4>
             <FeatureRequestForm
               onSubmit={handleFeatureRequestSubmit}
               onUpvote={async (_featureId) => {

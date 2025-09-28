@@ -51,25 +51,22 @@ const categoryOptions = [
 ]
 
 export function BugReportForm({ onSubmit, isSubmitting, colors, content }: BugReportFormProps) {
-  const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [severity, setSeverity] = useState('')
-  const [category, setCategory] = useState('')
-  const [stepsToReproduce, setStepsToReproduce] = useState('')
 
   const handleSubmit = async () => {
-    if (!title.trim() || !description.trim() || !severity || !category) return
+    if (!description.trim()) return
 
     await onSubmit({
-      title: title.trim(),
+      title: description.trim().split('\n')[0] || description.trim().substring(0, 50),
       description: description.trim(),
-      severity,
-      category,
-      stepsToReproduce: stepsToReproduce.trim() || undefined,
+      severity: severity || 'medium',
+      category: 'other',
+      stepsToReproduce: description.trim(), // Use description as steps to reproduce
     })
   }
 
-  const isFormValid = title.trim() && description.trim() && severity && category
+  const isFormValid = description.trim()
 
   return (
     <div className="space-y-6">
@@ -92,65 +89,6 @@ export function BugReportForm({ onSubmit, isSubmitting, colors, content }: BugRe
       </div>
 
       <div className="space-y-5">
-        {/* Bug Title */}
-        <div>
-          <label className="block text-sm font-semibold mb-2" style={{ color: colors.text }}>
-            <span className="flex items-center gap-2">
-              📝 Issue Title <span className="text-red-500">*</span>
-            </span>
-          </label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Brief, clear description of the bug (e.g., 'Login button not working')..."
-            className="w-full p-4 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
-            style={{
-              borderColor: title.trim() ? colors.primary : '#E5E7EB',
-              backgroundColor: colors.background,
-              color: colors.text,
-              boxShadow: title.trim() ? `0 0 0 3px ${colors.primary}20` : 'none',
-            }}
-            disabled={isSubmitting}
-            maxLength={100}
-          />
-          <div className="text-right text-xs mt-1 opacity-60" style={{ color: colors.text }}>
-            {title.length}/100
-          </div>
-        </div>
-
-        {/* Category */}
-        <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
-            Category *
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            {categoryOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setCategory(option.value)}
-                disabled={isSubmitting}
-                className={cn(
-                  'p-3 rounded-lg border text-left transition-all text-xs',
-                  category === option.value ? 'border-2' : 'border hover:border-gray-300'
-                )}
-                style={{
-                  borderColor: category === option.value ? colors.primary : '#E5E7EB',
-                  backgroundColor:
-                    category === option.value ? `${colors.primary}10` : colors.background,
-                  color: colors.text,
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <span>{option.icon}</span>
-                  <span className="font-medium">{option.label}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Severity */}
         <div>
           <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
@@ -186,20 +124,23 @@ export function BugReportForm({ onSubmit, isSubmitting, colors, content }: BugRe
           </div>
         </div>
 
-        {/* Description */}
+        {/* Bug Description */}
         <div>
-          <label className="block text-sm font-medium mb-1" style={{ color: colors.text }}>
-            Detailed Description *
+          <label className="block text-sm font-semibold mb-2" style={{ color: colors.text }}>
+            <span className="flex items-center gap-2">
+              🐛 What's broken? <span className="text-red-500">*</span>
+            </span>
           </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe what happened when you encountered the bug. What did you expect to happen instead?"
-            className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
+            placeholder="Describe the bug you encountered. What happened? What did you expect to happen instead?"
+            className="w-full h-32 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
             style={{
-              borderColor: '#E5E7EB',
+              borderColor: description.trim() ? colors.primary : '#E5E7EB',
               backgroundColor: colors.background,
               color: colors.text,
+              boxShadow: description.trim() ? `0 0 0 3px ${colors.primary}20` : 'none',
             }}
             disabled={isSubmitting}
             maxLength={500}
@@ -207,26 +148,6 @@ export function BugReportForm({ onSubmit, isSubmitting, colors, content }: BugRe
           <div className="text-right text-xs mt-1 opacity-60" style={{ color: colors.text }}>
             {description.length}/500
           </div>
-        </div>
-
-        {/* Steps to Reproduce */}
-        <div>
-          <label className="block text-sm font-medium mb-1" style={{ color: colors.text }}>
-            Steps to Reproduce (Optional)
-          </label>
-          <textarea
-            value={stepsToReproduce}
-            onChange={(e) => setStepsToReproduce(e.target.value)}
-            placeholder="1. Go to the login page&#10;2. Enter your email and password&#10;3. Click the login button&#10;4. Notice the error message appears"
-            className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
-            style={{
-              borderColor: '#E5E7EB',
-              backgroundColor: colors.background,
-              color: colors.text,
-            }}
-            disabled={isSubmitting}
-            maxLength={300}
-          />
         </div>
 
         <button

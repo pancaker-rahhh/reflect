@@ -14,6 +14,9 @@ widgets_router = APIRouter()
 
 
 @project_widgets_router.post(
+    '', response_model=WidgetRead, status_code=status.HTTP_201_CREATED
+)
+@project_widgets_router.post(
     '/', response_model=WidgetRead, status_code=status.HTTP_201_CREATED
 )
 async def create_widget(
@@ -28,6 +31,7 @@ async def create_widget(
     return await service.create_widget(db, user_id=current_user.id, widget_in=widget_in)
 
 
+@project_widgets_router.get('', response_model=List[WidgetRead])
 @project_widgets_router.get('/', response_model=List[WidgetRead])
 async def list_widgets(
     project_id: UUID,

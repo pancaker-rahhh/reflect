@@ -144,9 +144,6 @@ export function FeedbackCard({
                 <Badge variant="destructive" className="text-xs">
                   {feedback.severity_level || 'MEDIUM'}
                 </Badge>
-                <Badge variant="outline" className="text-xs">
-                  {feedback.status || 'NEW'}
-                </Badge>
               </div>
               {feedback.actual_behavior && (
                 <p className="text-sm text-red-800">
