@@ -38,8 +38,8 @@ export function CSATRating({ value, onChange, disabled = false }: CSATRatingProp
   const displayLevel = satisfactionLevels.find((level) => level.value === displayValue)
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-center gap-4">
+    <div className="space-y-4">
+      <div className="flex justify-center gap-2">
         {satisfactionLevels.map((level) => {
           const isSelected = value === level.value
           const isHovered = hoveredValue === level.value
@@ -53,16 +53,16 @@ export function CSATRating({ value, onChange, disabled = false }: CSATRatingProp
               onMouseEnter={() => handleMouseEnter(level.value)}
               onMouseLeave={handleMouseLeave}
               className={cn(
-                'flex flex-col items-center p-4 rounded-xl border-2 transition-all duration-300',
+                'flex flex-col items-center p-2 rounded-lg border-2 transition-all duration-300',
                 'hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-                'min-w-[80px]',
+                'min-w-[60px] max-w-[70px]',
                 disabled && 'opacity-50 cursor-not-allowed',
                 isSelected || isHovered
                   ? `${level.color} text-white border-transparent shadow-lg`
                   : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-200'
               )}
             >
-              <span className="text-3xl mb-2 transition-transform duration-200 hover:scale-110">
+              <span className="text-2xl mb-1 transition-transform duration-200 hover:scale-110">
                 {level.emoji}
               </span>
               <span className="text-xs font-medium text-center leading-tight">{level.label}</span>
@@ -73,8 +73,8 @@ export function CSATRating({ value, onChange, disabled = false }: CSATRatingProp
 
       {displayLevel && (
         <div className="text-center animate-fade-in">
-          <div className="text-lg font-medium text-gray-800">{displayLevel.label}</div>
-          <div className="text-sm text-gray-600">Score: {displayLevel.value}/5</div>
+          <div className="text-sm font-medium text-gray-800">{displayLevel.label}</div>
+          <div className="text-xs text-gray-600">Score: {displayLevel.value}/5</div>
         </div>
       )}
     </div>

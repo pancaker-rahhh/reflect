@@ -219,19 +219,19 @@ export function FeedbackRenderer({
 
     case 'CSAT':
       return (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <CSATRating value={selectedScore} onChange={onScoreChange} disabled={isSubmitting} />
           {selectedScore !== undefined && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
+                <label className="block text-sm font-medium mb-1" style={{ color: colors.text }}>
                   Share more details (optional)
                 </label>
                 <textarea
                   value={additionalFeedback}
                   onChange={(e) => setAdditionalFeedback(e.target.value)}
                   placeholder={getPlaceholderText(feedbackType)}
-                  className="w-full h-28 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all text-sm"
+                  className="w-full h-20 p-3 border-2 rounded-lg resize-none focus:outline-none transition-all text-sm"
                   style={{
                     borderColor: additionalFeedback.trim() ? colors.primary : '#E5E7EB',
                     backgroundColor: colors.background,
@@ -248,7 +248,7 @@ export function FeedbackRenderer({
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-2 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: colors.buttonColor, color: colors.buttonTextColor }}
               >
                 {isSubmitting ? 'Submitting...' : content.submitButtonText}
@@ -260,19 +260,19 @@ export function FeedbackRenderer({
 
     case 'CES':
       return (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <CESRating value={selectedScore} onChange={onScoreChange} disabled={isSubmitting} />
           {selectedScore !== undefined && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
+                <label className="block text-sm font-medium mb-1" style={{ color: colors.text }}>
                   Share more details (optional)
                 </label>
                 <textarea
                   value={additionalFeedback}
                   onChange={(e) => setAdditionalFeedback(e.target.value)}
                   placeholder={getPlaceholderText(feedbackType)}
-                  className="w-full h-28 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all text-sm"
+                  className="w-full h-20 p-3 border-2 rounded-lg resize-none focus:outline-none transition-all text-sm"
                   style={{
                     borderColor: additionalFeedback.trim() ? colors.primary : '#E5E7EB',
                     backgroundColor: colors.background,
@@ -289,7 +289,7 @@ export function FeedbackRenderer({
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-2 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: colors.buttonColor, color: colors.buttonTextColor }}
               >
                 {isSubmitting ? 'Submitting...' : content.submitButtonText}

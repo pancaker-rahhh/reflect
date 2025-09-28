@@ -380,10 +380,10 @@ export function WidgetCore({
         return renderMenu()
       case 'active':
         return (
-          <div className="p-6 space-y-6">
+          <div className="p-4 space-y-4">
             {/* Back button - only show if multiple modules are enabled */}
             {shouldShowBackToMenu() && (
-              <div className="flex items-center mb-4">
+              <div className="flex items-center mb-2">
                 <button
                   onClick={() =>
                     updateState({ type: 'menu', availableTypes: getAvailableFeedbackTypes() })
@@ -408,7 +408,7 @@ export function WidgetCore({
             )}
 
             <div className="text-center">
-              <h3 className="text-xl font-bold mb-2" style={{ color: textColor }}>
+              <h3 className="text-lg font-bold mb-1" style={{ color: textColor }}>
                 {content.headerTitle}
               </h3>
               <p className="text-sm opacity-70" style={{ color: textColor }}>
