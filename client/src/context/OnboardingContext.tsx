@@ -150,14 +150,12 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     setState((prev) => ({ ...prev, isLoading: true, error: null }))
 
     try {
-      // Validate that user has required resources before completing
-      if (!state.organizationId) {
-        throw new Error('Organization is required to complete onboarding')
-      }
-
-      if (!state.projectId) {
-        throw new Error('Project is required to complete onboarding')
-      }
+      // Log the current state for debugging
+      console.log('Completing onboarding with state:', {
+        organizationId: state.organizationId,
+        projectId: state.projectId,
+        completedSteps: Array.from(state.completedSteps),
+      })
 
       await onboardingApi.complete({
         feedback: null,

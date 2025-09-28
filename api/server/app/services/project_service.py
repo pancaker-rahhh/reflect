@@ -36,12 +36,24 @@ logger = get_logger(__name__)
 async def _check_organization_access(
     db: AsyncSession, user_id: UUID, organization_id: UUID
 ):
-    member = await organization_service.get_user_membership(
-        organization_id, user_id, db
-    )
-    if not member:
-        raise ForbiddenError('Not authorized for this organization')
-    return member
+    try:
+        member = await organization_service.get_user_membership(
+            organization_id, user_id, db
+        )
+        if not member:
+            logger.warning(
+                f'User {user_id} not found as member of organization {organization_id}'
+            )
+            raise ForbiddenError('Not authorized for this organization')
+        logger.info(
+            f'User {user_id} has {member.role} access to organization {organization_id}'
+        )
+        return member
+    except Exception as e:
+        logger.error(
+            f'Error checking organization access for user {user_id} in org {organization_id}: {e}'
+        )
+        raise ForbiddenError('Unable to verify organization access')
 
 
 class ProjectService:
@@ -336,7 +348,7 @@ class ProjectService:
             logger.info(f'Removed member {member_user_id} from project {project_id}')
 
         return success
-    
+
     async def get_project_by_id(self, db: AsyncSession, project_id: UUID) -> Project:
         project = await self.repository.get(db, id=project_id)
         if not project:

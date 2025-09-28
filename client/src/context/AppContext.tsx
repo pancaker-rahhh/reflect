@@ -38,8 +38,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     queryKey: ['organization'],
     queryFn: organizationApi.getMyOrganization,
     enabled: !!user && !authLoading,
-    retry: false,
+    retry: (failureCount, error) => {
+      // Don't retry for expected 404/403 errors (new users without organizations)
+      if (error && typeof error === 'object' && 'message' in error) {
+        const errorMessage = String(error.message).toLowerCase()
+        if (
+          errorMessage.includes('404') ||
+          errorMessage.includes('403') ||
+          errorMessage.includes('not found')
+        ) {
+          return false
+        }
+      }
+      return failureCount < 2
+    },
     staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   })
 
   const organization = currentOrganization
