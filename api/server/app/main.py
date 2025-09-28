@@ -11,7 +11,6 @@ from app.core.exceptions import AuthenticationError
 from app.core.settings import get_settings
 from app.core.logging import setup_logging
 from app.core.middleware import CorrelationIDMiddleware, RequestLoggingMiddleware
-from app.core.trailing_slash_middleware import TrailingSlashMiddleware
 from app.core.rate_limiting import setup_rate_limiting
 from app.db import engine
 from app.router.api_router import api_router
@@ -91,7 +90,6 @@ def create_application() -> FastAPI:
         allow_methods=['*'],
         allow_headers=settings.cors_headers_list,
     )
-    app.add_middleware(TrailingSlashMiddleware, remove_slash=True)
     app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(CorrelationIDMiddleware)
 
