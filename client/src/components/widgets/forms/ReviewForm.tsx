@@ -107,7 +107,7 @@ export function ReviewForm({ onSubmit, isSubmitting, colors, content }: ReviewFo
               value={review}
               onChange={(e) => setReview(e.target.value)}
               placeholder="Share your detailed experience with our service. What did you like or dislike? How can we improve?"
-              className="w-full h-28 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all text-sm"
+              className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
               style={{
                 borderColor: review.trim() ? colors.primary : '#E5E7EB',
                 backgroundColor: colors.background,

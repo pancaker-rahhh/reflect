@@ -104,7 +104,7 @@ export function BugReportForm({ onSubmit, isSubmitting, colors, content }: BugRe
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Brief, clear description of the bug (e.g., 'Login button not working')..."
-            className="w-full p-4 border-2 rounded-xl focus:outline-none transition-all text-sm"
+            className="w-full p-4 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
             style={{
               borderColor: title.trim() ? colors.primary : '#E5E7EB',
               backgroundColor: colors.background,
@@ -195,7 +195,7 @@ export function BugReportForm({ onSubmit, isSubmitting, colors, content }: BugRe
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe what happened when you encountered the bug. What did you expect to happen instead?"
-            className="w-full h-20 p-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
+            className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
             style={{
               borderColor: '#E5E7EB',
               backgroundColor: colors.background,
@@ -218,7 +218,7 @@ export function BugReportForm({ onSubmit, isSubmitting, colors, content }: BugRe
             value={stepsToReproduce}
             onChange={(e) => setStepsToReproduce(e.target.value)}
             placeholder="1. Go to the login page&#10;2. Enter your email and password&#10;3. Click the login button&#10;4. Notice the error message appears"
-            className="w-full h-16 p-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
+            className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
             style={{
               borderColor: '#E5E7EB',
               backgroundColor: colors.background,

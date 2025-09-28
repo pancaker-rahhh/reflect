@@ -190,7 +190,7 @@ export function FeedbackRenderer({
                   value={additionalFeedback}
                   onChange={(e) => setAdditionalFeedback(e.target.value)}
                   placeholder={getPlaceholderText(feedbackType)}
-                  className="w-full h-28 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all text-sm"
+                  className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
                   style={{
                     borderColor: additionalFeedback.trim() ? colors.primary : '#E5E7EB',
                     backgroundColor: colors.background,
@@ -207,10 +207,21 @@ export function FeedbackRenderer({
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: colors.buttonColor, color: colors.buttonTextColor }}
+                className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transform"
+                style={{
+                  backgroundColor: colors.buttonColor,
+                  color: colors.buttonTextColor,
+                  boxShadow: `0 4px 12px ${colors.buttonColor}30`,
+                }}
               >
-                {isSubmitting ? 'Submitting...' : content.submitButtonText}
+                {isSubmitting ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                    <span>Submitting...</span>
+                  </div>
+                ) : (
+                  content.submitButtonText
+                )}
               </button>
             </div>
           )}
@@ -219,19 +230,19 @@ export function FeedbackRenderer({
 
     case 'CSAT':
       return (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <CSATRating value={selectedScore} onChange={onScoreChange} disabled={isSubmitting} />
           {selectedScore !== undefined && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
+                <label className="block text-sm font-medium mb-1" style={{ color: colors.text }}>
                   Share more details (optional)
                 </label>
                 <textarea
                   value={additionalFeedback}
                   onChange={(e) => setAdditionalFeedback(e.target.value)}
                   placeholder={getPlaceholderText(feedbackType)}
-                  className="w-full h-28 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all text-sm"
+                  className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
                   style={{
                     borderColor: additionalFeedback.trim() ? colors.primary : '#E5E7EB',
                     backgroundColor: colors.background,
@@ -248,10 +259,21 @@ export function FeedbackRenderer({
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: colors.buttonColor, color: colors.buttonTextColor }}
+                className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transform"
+                style={{
+                  backgroundColor: colors.buttonColor,
+                  color: colors.buttonTextColor,
+                  boxShadow: `0 4px 12px ${colors.buttonColor}30`,
+                }}
               >
-                {isSubmitting ? 'Submitting...' : content.submitButtonText}
+                {isSubmitting ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                    <span>Submitting...</span>
+                  </div>
+                ) : (
+                  content.submitButtonText
+                )}
               </button>
             </div>
           )}
@@ -260,19 +282,19 @@ export function FeedbackRenderer({
 
     case 'CES':
       return (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <CESRating value={selectedScore} onChange={onScoreChange} disabled={isSubmitting} />
           {selectedScore !== undefined && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
+                <label className="block text-sm font-medium mb-1" style={{ color: colors.text }}>
                   Share more details (optional)
                 </label>
                 <textarea
                   value={additionalFeedback}
                   onChange={(e) => setAdditionalFeedback(e.target.value)}
                   placeholder={getPlaceholderText(feedbackType)}
-                  className="w-full h-28 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all text-sm"
+                  className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
                   style={{
                     borderColor: additionalFeedback.trim() ? colors.primary : '#E5E7EB',
                     backgroundColor: colors.background,
@@ -289,10 +311,21 @@ export function FeedbackRenderer({
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: colors.buttonColor, color: colors.buttonTextColor }}
+                className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transform"
+                style={{
+                  backgroundColor: colors.buttonColor,
+                  color: colors.buttonTextColor,
+                  boxShadow: `0 4px 12px ${colors.buttonColor}30`,
+                }}
               >
-                {isSubmitting ? 'Submitting...' : content.submitButtonText}
+                {isSubmitting ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                    <span>Submitting...</span>
+                  </div>
+                ) : (
+                  content.submitButtonText
+                )}
               </button>
             </div>
           )}
@@ -447,19 +480,24 @@ function GeneralFeedbackForm({
         value={feedback}
         onChange={(e) => setFeedback(e.target.value)}
         placeholder={getPlaceholderText('FEEDBACK')}
-        className="w-full h-32 p-4 border-2 rounded-xl resize-none focus:outline-none transition-all"
+        className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
         style={{
           borderColor: feedback.trim() ? colors.primary : '#E5E7EB',
-          backgroundColor: 'rgba(255, 255, 255, 0.8)',
-          boxShadow: feedback.trim() ? `0 0 0 3px ${colors.primary}20` : undefined,
+          backgroundColor: colors.background,
+          color: colors.text,
+          boxShadow: feedback.trim() ? `0 0 0 3px ${colors.primary}20` : 'none',
         }}
         disabled={isSubmitting}
       />
       <button
         onClick={handleSubmit}
         disabled={!feedback.trim() || isSubmitting}
-        className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{ backgroundColor: colors.buttonColor, color: colors.buttonTextColor }}
+        className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transform"
+        style={{
+          backgroundColor: colors.buttonColor,
+          color: colors.buttonTextColor,
+          boxShadow: `0 4px 12px ${colors.buttonColor}30`,
+        }}
       >
         {isSubmitting ? (
           <span className="inline-flex items-center space-x-2">
