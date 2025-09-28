@@ -41,7 +41,11 @@ jobs:
       - name: Build and push Web image
         id: build-web
         run: |          
-          echo "VITE_API_BASE_URL=https://api.reflectfeedback.com/api/v1" > ./client/.env.production
+          cat > ./client/.env.production << EOF
+          VITE_API_BASE_URL=https://api.reflectfeedback.com/api/v1
+          VITE_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          EOF
           docker build -t $ECR_REGISTRY/reflect-web:latest ./client
           docker push $ECR_REGISTRY/reflect-web:latest
           echo "image=$ECR_REGISTRY/reflect-web:latest" >> $GITHUB_OUTPUT
