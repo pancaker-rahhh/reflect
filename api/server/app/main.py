@@ -79,6 +79,7 @@ def create_application() -> FastAPI:
         docs_url=f'{settings.API_PREFIX}/docs',
         redoc_url=f'{settings.API_PREFIX}/redoc',
         lifespan=lifespan,
+        redirect_slashes=False,
     )
 
     # Add middleware in correct order (bottom to top execution)
