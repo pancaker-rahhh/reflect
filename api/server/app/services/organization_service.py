@@ -264,32 +264,18 @@ class OrganizationService:
     async def get_user_membership(
         self, org_id: UUID, user_id: UUID, db: AsyncSession
     ) -> Optional[OrganizationMemberResponse]:
-        logger.info(f'Looking for membership: user {user_id} in organization {org_id}')
-
-        # First, let's see what organizations this user is actually a member of
-        user_orgs = await organization_member_repository.get_multi(db, user_id=user_id)
-        logger.info(
-            f'User {user_id} is a member of {len(user_orgs)} organizations: {[str(org.organization_id) for org in user_orgs]}'
-        )
-
-        # Also check if the organization exists
-        from app.repositories.organization_repository import organization_repository
-
-        org_exists = await organization_repository.get(db, org_id)
-        logger.info(f'Organization {org_id} exists: {org_exists is not None}')
+        org = await organization_repository.get(db, org_id)
+        if not org:
+            logger.warning(f'Organization {org_id} not found')
+            return None
 
         member = await organization_member_repository.get_by_org_and_user(
             db, org_id, user_id
         )
         if not member:
-            logger.warning(
-                f'No membership found for user {user_id} in organization {org_id}'
-            )
+            logger.warning(f'User {user_id} is not a member of organization {org_id}')
             return None
 
-        logger.info(
-            f'Found membership: user {user_id} has role {member.role} in organization {org_id}'
-        )
         response = OrganizationMemberResponse.model_validate(member)
         if member.user:
             response.user_name = member.user.name

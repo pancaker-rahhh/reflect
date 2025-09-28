@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.subscription_plans import PLAN_LIMITS
 from app.models.project_model import Project
-from app.models.organization_model import ProjectRole
+from app.models.organization_model import ProjectRole, OrganizationRole
 from app.repositories.project_repository import (
     project_repository,
     project_member_repository,
@@ -36,20 +36,11 @@ logger = get_logger(__name__)
 async def _check_organization_access(
     db: AsyncSession, user_id: UUID, organization_id: UUID
 ):
-    logger.info(
-        f'Checking organization access for user {user_id} in organization {organization_id}'
-    )
     member = await organization_service.get_user_membership(
         organization_id, user_id, db
     )
     if not member:
-        logger.error(
-            f'User {user_id} not found as member of organization {organization_id}'
-        )
         raise ForbiddenError('Not authorized for this organization')
-    logger.info(
-        f'User {user_id} has {member.role} access to organization {organization_id}'
-    )
     return member
 
 
@@ -88,7 +79,8 @@ class ProjectService:
         member = await _check_organization_access(
             db, user_id, project_in.organization_id
         )
-        if not member or member.role not in ['owner', 'admin']:
+
+        if member.role not in [OrganizationRole.OWNER, OrganizationRole.ADMIN]:
             raise ForbiddenError('Only owners and admins can create projects')
 
         # Check subscription limits for project creation
