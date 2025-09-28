@@ -52,8 +52,15 @@ export function WidgetCore({
   const primaryColor = theme.colors.primary
   const backgroundColor = theme.colors.background
   const textColor = theme.colors.text
-  const buttonColor = theme.colors.buttonColor
-  const buttonTextColor = theme.colors.buttonTextColor
+  // Always use primary color for buttons, ignore any configured buttonColor
+  const buttonColor = primaryColor
+  const buttonTextColor = '#ffffff'
+
+  const colors = {
+    ...theme.colors,
+    buttonColor,
+    buttonTextColor,
+  }
 
   // Clear selected score when feedback type changes
   const activeFeedbackType = currentState.type === 'active' ? currentState.feedbackType : null
@@ -417,7 +424,7 @@ export function WidgetCore({
               isSubmitting={isSubmitting}
               onSubmit={handleSubmit}
               onScoreChange={handleScoreChange}
-              colors={theme.colors}
+              colors={colors}
               content={content}
               mode={mode}
               widgetKey={config.widgetKey}

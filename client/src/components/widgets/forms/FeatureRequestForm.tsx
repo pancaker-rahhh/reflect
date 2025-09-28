@@ -466,13 +466,21 @@ export function FeatureRequestForm({
         <button
           onClick={handleSubmit}
           disabled={!isFormValid || isSubmitting}
-          className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transform"
           style={{
             backgroundColor: colors.buttonColor,
             color: colors.buttonTextColor,
+            boxShadow: `0 4px 12px ${colors.buttonColor}30`,
           }}
         >
-          {isSubmitting ? 'Submitting...' : content.submitButtonText}
+          {isSubmitting ? (
+            <div className="flex items-center justify-center space-x-2">
+              <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+              <span>Submitting...</span>
+            </div>
+          ) : (
+            content.submitButtonText
+          )}
         </button>
       </div>
     </div>
