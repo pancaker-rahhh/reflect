@@ -5,6 +5,7 @@ import { projectApi, onboardingApi } from '../../../lib/api'
 import { useAppContext } from '../../../context/AppContext'
 import { onboardingDataService } from '../../../services/onboardingDataService'
 import { useToastNotifications } from '../../../hooks/useToastNotifications'
+import type { Project } from '../../../types'
 
 export const ProjectStep: React.FC = () => {
   const {
@@ -73,6 +74,14 @@ export const ProjectStep: React.FC = () => {
     e.preventDefault()
     setIsCreating(true)
 
+    console.log('ProjectStep: Starting project creation with:', {
+      organizationId,
+      projectId,
+      formData,
+    })
+
+    let project: Project | null = null
+
     try {
       if (!organizationId) {
         toast.showError(
@@ -80,8 +89,6 @@ export const ProjectStep: React.FC = () => {
         )
         return
       }
-
-      let project
       if (projectId) {
         project = await projectApi.updateProject(projectId, {
           name: formData.name,
@@ -116,7 +123,14 @@ export const ProjectStep: React.FC = () => {
 
         setProjectId(project.id)
         setCurrentProject(project)
+        console.log('ProjectStep: Successfully created project:', project)
       }
+
+      if (!project) {
+        throw new Error('Project creation failed')
+      }
+
+      console.log('ProjectStep: Final project object:', project)
 
       // Save project data for review step
       onboardingDataService.saveProjectData({
@@ -135,9 +149,28 @@ export const ProjectStep: React.FC = () => {
       })
 
       markStepCompleted('project')
-      await completeOnboarding()
+      console.log('ProjectStep: About to complete onboarding with project:', project.id)
+
+      try {
+        await completeOnboarding()
+        console.log('ProjectStep: Onboarding completed successfully!')
+      } catch (onboardingError) {
+        console.error('ProjectStep: Onboarding completion failed:', onboardingError)
+        // Don't throw here - let the outer catch handle it
+        throw onboardingError
+      }
     } catch (error: unknown) {
-      console.error('Failed to create project:', error)
+      console.error('Failed to create/update project:', error)
+
+      // If onboarding completion failed but project was created, we need special handling
+      if (project && project.id) {
+        console.warn('Project was created successfully, but onboarding completion failed')
+        toast.showError(
+          'Project created successfully, but there was an issue completing setup. Please try clicking the button again.'
+        )
+        // Don't reset projectId here - the project actually exists
+        return
+      }
 
       // Check if it's a subscription limit error
       const err = error as {
@@ -169,6 +202,15 @@ export const ProjectStep: React.FC = () => {
         // Generic error message
         const message = err.response?.data?.detail || err.message || 'Failed to create project'
         toast.showError(`Error: ${message}`)
+
+        // Log detailed error information for debugging
+        console.error('Project creation error details:', {
+          error: err,
+          organizationId,
+          projectId,
+          formData,
+          response: err.response,
+        })
       }
     } finally {
       setIsCreating(false)
@@ -236,10 +278,10 @@ export const ProjectStep: React.FC = () => {
         >
           {isCreating
             ? projectId
-              ? 'Updating Project...'
+              ? 'Completing Setup...'
               : 'Creating Project...'
             : projectId
-              ? 'Update Project'
+              ? 'Complete Setup'
               : 'Create Project'}
         </button>
       </form>

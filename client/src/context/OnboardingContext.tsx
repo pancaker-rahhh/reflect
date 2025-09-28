@@ -6,9 +6,7 @@ import { onboardingApi } from '../lib/api'
 
 export type UserType = 'solo' | 'team'
 
-export type OnboardingStep =
-  | 'profile'
-  | 'project'
+export type OnboardingStep = 'profile' | 'project'
 
 interface OnboardingState {
   currentStep: OnboardingStep
@@ -152,6 +150,13 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     setState((prev) => ({ ...prev, isLoading: true, error: null }))
 
     try {
+      // Log the current state for debugging
+      console.log('Completing onboarding with state:', {
+        organizationId: state.organizationId,
+        projectId: state.projectId,
+        completedSteps: Array.from(state.completedSteps),
+      })
+
       await onboardingApi.complete({
         feedback: null,
         skipped_steps: [],
@@ -165,6 +170,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
       // Use replace to prevent going back to onboarding via browser back button
       navigate('/app/dashboard', { replace: true })
     } catch (error) {
+      console.error('Failed to complete onboarding:', error)
       setState((prev) => ({
         ...prev,
         error: error instanceof Error ? error.message : 'Failed to complete onboarding',

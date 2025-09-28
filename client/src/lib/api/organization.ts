@@ -66,13 +66,17 @@ export const organizationApi = {
    * Get current user's organization (newer method)
    */
   async getMyOrganization(): Promise<Organization | null> {
-    const response = await apiClient.get<OrganizationListResponse>('/organizations/?limit=1')
+    try {
+      const response = await apiClient.get<OrganizationListResponse>('/organizations/?limit=1')
 
-    if (response && response.organizations && response.organizations.length > 0) {
-      return response.organizations[0]
+      if (response && response.organizations && response.organizations.length > 0) {
+        return response.organizations[0]
+      }
+
+      return null
+    } catch (error) {
+      return null
     }
-
-    return null
   },
 
   /**

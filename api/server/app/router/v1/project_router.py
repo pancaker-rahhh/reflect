@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends, status, Query, Response, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from app.core.auth import get_current_user
+from app.core.exceptions import ForbiddenError
+from app.core.logging import get_logger
 from app.models.user_model import User
 from app.schemas.project_schema import (
     ProjectCreate,
@@ -21,6 +23,7 @@ from app.services.project_service import project_service, ProjectService
 from app.schemas.roadmap_schema import RoadmapRead
 from app.services.roadmap_service import roadmap_service, RoadmapService
 
+logger = get_logger(__name__)
 router = APIRouter(prefix='/projects', tags=['Projects'])
 
 
@@ -35,10 +38,28 @@ async def create_project(
     current_user: User = Depends(get_current_user),
     service: ProjectService = Depends(lambda: project_service),
 ) -> Any:
-    project = await service.create_project(
-        db, user_id=current_user.id, project_in=project_in
-    )
-    return ProjectRead.model_validate(project)
+    try:
+        logger.info(
+            f'Creating project for user {current_user.id} in organization {project_in.organization_id}'
+        )
+        project = await service.create_project(
+            db, user_id=current_user.id, project_in=project_in
+        )
+        logger.info(
+            f'Successfully created project {project.id} for user {current_user.id}'
+        )
+        return ProjectRead.model_validate(project)
+    except ForbiddenError as e:
+        logger.warning(
+            f'Forbidden: User {current_user.id} cannot create project in org {project_in.organization_id}: {e}'
+        )
+        raise
+    except Exception as e:
+        logger.error(
+            f'Failed to create project for user {current_user.id}: {str(e)}',
+            exc_info=True,
+        )
+        raise
 
 
 @router.get(
