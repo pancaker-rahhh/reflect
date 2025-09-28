@@ -94,14 +94,9 @@ async function request<T>(endpoint: string, options: RequestInit & RequestConfig
       } = await supabase.auth.getSession()
       const token = session?.access_token
 
-      const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
-      const normalizedEndpointNoTrailingSlash = normalizedEndpoint.endsWith('/') && normalizedEndpoint !== '/' 
-        ? normalizedEndpoint.slice(0, -1) 
-        : normalizedEndpoint
-      
       // TODO - Remove this once we have a proper logging system
       if (import.meta.env.DEV) {
-        console.log(`🌐 API Request: ${fetchOptions.method || 'GET'} ${API_BASE_URL}${normalizedEndpointNoTrailingSlash}`)
+        console.log(`🌐 API Request: ${fetchOptions.method || 'GET'} ${API_BASE_URL}${endpoint}`)
         console.log(`🎫 Token present: ${token ? 'Yes' : 'No'}`)
       }
 
@@ -117,7 +112,7 @@ async function request<T>(endpoint: string, options: RequestInit & RequestConfig
         ? combineSignals(timeoutSignal, requestSignal)
         : timeoutSignal
 
-      const response = await fetch(`${API_BASE_URL}${normalizedEndpointNoTrailingSlash}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...fetchOptions,
         headers,
         signal: combinedSignal,
