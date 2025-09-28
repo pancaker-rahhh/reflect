@@ -92,16 +92,19 @@ export function WidgetGetCode() {
         <h3 className="text-xl font-semibold mb-4">What&apos;s Next?</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="border rounded-lg p-4">
-            <h4 className="text-lg font-semibold mb-1">Step 1: Add to Website</h4>
-            <p className="text-sm text-muted-foreground">Copy and paste the embed code.</p>
+            <h4 className="text-lg font-semibold mb-2">Deploy Your Widget</h4>
+            <p className="text-sm text-muted-foreground mb-3">Add the embed code to your website. Works with any platform.</p>
+            <p className="text-xs text-blue-600">💡 Place before &lt;/body&gt; tag for best performance</p>
           </div>
           <div className="border rounded-lg p-4">
-            <h4 className="text-lg font-semibold mb-1">Step 2: Test Widget</h4>
-            <p className="text-sm text-muted-foreground">Preview and test your widget in action.</p>
+            <h4 className="text-lg font-semibold mb-2">Create More Widgets</h4>
+            <p className="text-sm text-muted-foreground mb-3">Build different widgets for different purposes - feedback, reviews, bug reports, or feature requests.</p>
+            <p className="text-xs text-green-600">🎯 Each widget can target specific pages or user segments</p>
           </div>
           <div className="border rounded-lg p-4">
-            <h4 className="text-lg font-semibold mb-1">Step 3: Reconfigure</h4>
-            <p className="text-sm text-muted-foreground">Reconfigure the widget as needed.</p>
+            <h4 className="text-lg font-semibold mb-2">Monitor & Improve</h4>
+            <p className="text-sm text-muted-foreground mb-3">Track responses in your dashboard and adjust your widgets based on user feedback.</p>
+            <p className="text-xs text-purple-600">📊 A/B test different questions and styles</p>
           </div>
         </div>
 
