@@ -251,7 +251,7 @@ export function Step2Content({ form }: Step2ContentProps) {
         </div>
         <FormField
           control={form.control}
-          name={fieldName('headerTitle')}
+          name={fieldName('headerTitle') as any}
           render={({ field }) => {
             const currentValues = getCurrentValues()
             return (
@@ -276,7 +276,7 @@ export function Step2Content({ form }: Step2ContentProps) {
 
         <FormField
           control={form.control}
-          name={fieldName('mainQuestion')}
+          name={fieldName('mainQuestion') as any}
           render={({ field }) => {
             const currentValues = getCurrentValues()
             return (
@@ -302,7 +302,7 @@ export function Step2Content({ form }: Step2ContentProps) {
 
         <FormField
           control={form.control}
-          name={fieldName('submitButtonText')}
+          name={fieldName('submitButtonText') as any}
           render={({ field }) => {
             const currentValues = getCurrentValues()
             return (
@@ -330,7 +330,7 @@ export function Step2Content({ form }: Step2ContentProps) {
 
           <FormField
             control={form.control}
-            name={fieldName('thankYouTitle')}
+            name={fieldName('thankYouTitle') as any}
             render={({ field }) => {
               const currentValues = getCurrentValues()
               return (
@@ -355,7 +355,7 @@ export function Step2Content({ form }: Step2ContentProps) {
 
           <FormField
             control={form.control}
-            name={fieldName('thankYouMessage')}
+            name={fieldName('thankYouMessage') as any}
             render={({ field }) => {
               const currentValues = getCurrentValues()
               return (
