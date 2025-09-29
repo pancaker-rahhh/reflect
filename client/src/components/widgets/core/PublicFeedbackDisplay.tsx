@@ -43,7 +43,7 @@ export function PublicFeedbackDisplay({
 }: PublicFeedbackDisplayProps) {
   const [data, setData] = useState<PublicFeedbackData[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [, setError] = useState<string | null>(null)
   const [votingItems, setVotingItems] = useState<Set<string>>(new Set())
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState<'upvotes' | 'newest' | 'oldest'>('upvotes')
@@ -72,10 +72,10 @@ export function PublicFeedbackDisplay({
           endpoint = `${apiBaseUrl}/public/widgets/${widgetKey}/reviews`
           break
         case 'BUG_REPORT':
-          endpoint = `${apiBaseUrl}/public/widgets/${widgetKey}/bug-reports`
+          endpoint = `${apiBaseUrl}/public/widgets/bug-reports/${widgetKey}`
           break
         case 'FEATURE_REQUEST':
-          endpoint = `${apiBaseUrl}/public/widgets/${widgetKey}/features`
+          endpoint = `${apiBaseUrl}/public/widgets/features/${widgetKey}`
           break
         case 'FEEDBACK':
         default:

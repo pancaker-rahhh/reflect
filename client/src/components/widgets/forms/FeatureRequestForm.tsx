@@ -102,7 +102,7 @@ export function FeatureRequestForm({
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
 
-      const response = await fetch(`${apiBaseUrl}/public/widgets/${widgetKey}/features`)
+      const response = await fetch(`${apiBaseUrl}/public/widgets/features/${widgetKey}`)
 
       if (response.ok) {
         const features = await response.json()
