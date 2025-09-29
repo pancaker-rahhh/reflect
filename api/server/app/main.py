@@ -79,6 +79,7 @@ def create_application() -> FastAPI:
         docs_url=f'{settings.API_PREFIX}/docs',
         redoc_url=f'{settings.API_PREFIX}/redoc',
         lifespan=lifespan,
+        redirect_slashes=False,
     )
 
     # Add middleware in correct order (bottom to top execution)
@@ -88,6 +89,7 @@ def create_application() -> FastAPI:
         allow_credentials=True,
         allow_methods=['*'],
         allow_headers=settings.cors_headers_list,
+        expose_headers=['X-Correlation-ID', 'X-Process-Time'],
     )
     app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(CorrelationIDMiddleware)

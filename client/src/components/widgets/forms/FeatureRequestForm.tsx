@@ -339,7 +339,7 @@ export function FeatureRequestForm({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Brief, descriptive name for your feature idea (e.g., 'Dark Mode Toggle')"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
+            className="w-full p-4 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
             style={{
               borderColor: '#E5E7EB',
               backgroundColor: colors.background,
@@ -426,7 +426,7 @@ export function FeatureRequestForm({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe what this feature would do and how it would work. What functionality would it provide?"
-            className="w-full h-20 p-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
+            className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
             style={{
               borderColor: '#E5E7EB',
               backgroundColor: colors.background,
@@ -449,7 +449,7 @@ export function FeatureRequestForm({
             value={useCase}
             onChange={(e) => setUseCase(e.target.value)}
             placeholder="How would this feature help you? What problem would it solve? Who would benefit from this feature?"
-            className="w-full h-16 p-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
+            className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
             style={{
               borderColor: '#E5E7EB',
               backgroundColor: colors.background,
@@ -466,13 +466,21 @@ export function FeatureRequestForm({
         <button
           onClick={handleSubmit}
           disabled={!isFormValid || isSubmitting}
-          className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transform"
           style={{
             backgroundColor: colors.buttonColor,
             color: colors.buttonTextColor,
+            boxShadow: `0 4px 12px ${colors.buttonColor}30`,
           }}
         >
-          {isSubmitting ? 'Submitting...' : content.submitButtonText}
+          {isSubmitting ? (
+            <div className="flex items-center justify-center space-x-2">
+              <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+              <span>Submitting...</span>
+            </div>
+          ) : (
+            content.submitButtonText
+          )}
         </button>
       </div>
     </div>

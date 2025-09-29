@@ -83,25 +83,48 @@ class OrganizationService:
     async def get_user_organizations(
         self, user_id: UUID, db: AsyncSession, skip: int = 0, limit: int = 100
     ) -> OrganizationListResponse:
-        organizations = await organization_repository.get_user_organizations(
-            db, user_id, skip, limit
-        )
-        total = await organization_repository.count_user_organizations(db, user_id)
+        try:
+            organizations = await organization_repository.get_user_organizations(
+                db, user_id, skip, limit
+            )
+            total = await organization_repository.count_user_organizations(db, user_id)
 
-        org_responses = []
-        for org in organizations:
-            org_with_counts = await organization_repository.get_with_counts(db, org.id)
-            org_responses.append(OrganizationResponse.model_validate(org_with_counts))
+            org_responses = []
+            for org in organizations:
+                try:
+                    org_with_counts = await organization_repository.get_with_counts(
+                        db, org.id
+                    )
+                    if org_with_counts:
+                        org_responses.append(
+                            OrganizationResponse.model_validate(org_with_counts)
+                        )
+                except Exception as e:
+                    logger.warning(
+                        f'Failed to get counts for organization {org.id}: {e}'
+                    )
+                    # Fallback to basic organization data
+                    org_responses.append(OrganizationResponse.model_validate(org))
 
-        total_pages = (total + limit - 1) // limit if limit > 0 else 1
+            total_pages = (total + limit - 1) // limit if limit > 0 else 1
 
-        return OrganizationListResponse(
-            organizations=org_responses,
-            total=total,
-            page=(skip // limit) + 1 if limit > 0 else 1,
-            page_size=limit,
-            total_pages=total_pages,
-        )
+            return OrganizationListResponse(
+                organizations=org_responses,
+                total=total,
+                page=(skip // limit) + 1 if limit > 0 else 1,
+                page_size=limit,
+                total_pages=total_pages,
+            )
+        except Exception as e:
+            logger.error(f'Error getting user organizations for user {user_id}: {e}')
+            # Return empty response for new users instead of failing
+            return OrganizationListResponse(
+                organizations=[],
+                total=0,
+                page=1,
+                page_size=limit,
+                total_pages=0,
+            )
 
     async def update_organization(
         self,
@@ -264,32 +287,18 @@ class OrganizationService:
     async def get_user_membership(
         self, org_id: UUID, user_id: UUID, db: AsyncSession
     ) -> Optional[OrganizationMemberResponse]:
-        logger.info(f'Looking for membership: user {user_id} in organization {org_id}')
-
-        # First, let's see what organizations this user is actually a member of
-        user_orgs = await organization_member_repository.get_multi(db, user_id=user_id)
-        logger.info(
-            f'User {user_id} is a member of {len(user_orgs)} organizations: {[str(org.organization_id) for org in user_orgs]}'
-        )
-
-        # Also check if the organization exists
-        from app.repositories.organization_repository import organization_repository
-
-        org_exists = await organization_repository.get(db, org_id)
-        logger.info(f'Organization {org_id} exists: {org_exists is not None}')
+        org = await organization_repository.get(db, org_id)
+        if not org:
+            logger.warning(f'Organization {org_id} not found')
+            return None
 
         member = await organization_member_repository.get_by_org_and_user(
             db, org_id, user_id
         )
         if not member:
-            logger.warning(
-                f'No membership found for user {user_id} in organization {org_id}'
-            )
+            logger.warning(f'User {user_id} is not a member of organization {org_id}')
             return None
 
-        logger.info(
-            f'Found membership: user {user_id} has role {member.role} in organization {org_id}'
-        )
         response = OrganizationMemberResponse.model_validate(member)
         if member.user:
             response.user_name = member.user.name

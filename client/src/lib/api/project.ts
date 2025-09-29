@@ -41,7 +41,7 @@ export interface ProjectMemberUpdateRequest {
 
 export const projectApi = {
   getByOrganization(organizationId: string): Promise<PaginatedProjects> {
-    return apiClient.get<PaginatedProjects>(`/projects?organization_id=${organizationId}`)
+    return apiClient.get<PaginatedProjects>(`/projects/?organization_id=${organizationId}`)
   },
 
   getProject(id: string): Promise<Project> {
@@ -49,7 +49,7 @@ export const projectApi = {
   },
 
   createProject(data: ProjectCreateRequest): Promise<Project> {
-    return apiClient.post<Project>('/projects', data)
+    return apiClient.post<Project>('/projects/', data)
   },
 
   updateProject(id: string, data: ProjectUpdateRequest): Promise<Project> {

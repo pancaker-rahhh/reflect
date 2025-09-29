@@ -154,26 +154,16 @@ export function useFeedbackSubmission({
         setIsSubmitting(true)
         setTimeout(() => {
           setIsSubmitting(false)
-          // Check if widget has multiple modules to show menu or go to success
-          const availableTypes = getAvailableFeedbackTypes()
-          if (availableTypes.length > 1) {
-            onStateChange?.({ type: 'menu', availableTypes })
-          } else {
-            onStateChange?.({ type: 'success' })
-          }
+          // Always show success screen first, then user can choose to provide more feedback
+          onStateChange?.({ type: 'success' })
         }, 1000)
       } else {
         if (onSubmit) {
           try {
             setIsSubmitting(true)
             await onSubmit(data)
-            // Check if widget has multiple modules to show menu or go to success
-            const availableTypes = getAvailableFeedbackTypes()
-            if (availableTypes.length > 1) {
-              onStateChange?.({ type: 'menu', availableTypes })
-            } else {
-              onStateChange?.({ type: 'success' })
-            }
+            // Always show success screen first, then user can choose to provide more feedback
+            onStateChange?.({ type: 'success' })
           } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Submission failed'
             const errorInfo = parseError(errorMessage)

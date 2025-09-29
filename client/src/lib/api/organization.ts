@@ -46,13 +46,13 @@ export const organizationApi = {
    * Get all organizations for current user
    */
   getAll: (skip = 0, limit = 50): Promise<OrganizationListResponse> =>
-    apiClient.get<OrganizationListResponse>(`/organizations?skip=${skip}&limit=${limit}`),
+    apiClient.get<OrganizationListResponse>(`/organizations/?skip=${skip}&limit=${limit}`),
 
   /**
    * Get simplified list of user's organizations
    */
   async getMy(): Promise<Organization[]> {
-    const response = await apiClient.get<OrganizationListResponse>('/organizations')
+    const response = await apiClient.get<OrganizationListResponse>('/organizations/')
     return response?.organizations || []
   },
 
@@ -66,13 +66,17 @@ export const organizationApi = {
    * Get current user's organization (newer method)
    */
   async getMyOrganization(): Promise<Organization | null> {
-    const response = await apiClient.get<OrganizationListResponse>('/organizations?limit=1')
+    try {
+      const response = await apiClient.get<OrganizationListResponse>('/organizations/?limit=1')
 
-    if (response && response.organizations && response.organizations.length > 0) {
-      return response.organizations[0]
+      if (response && response.organizations && response.organizations.length > 0) {
+        return response.organizations[0]
+      }
+
+      return null
+    } catch (error) {
+      return null
     }
-
-    return null
   },
 
   /**
@@ -85,7 +89,7 @@ export const organizationApi = {
    * Create new organization
    */
   create: (data: OrganizationCreateRequest): Promise<Organization> =>
-    apiClient.post<Organization>('/organizations', data),
+    apiClient.post<Organization>('/organizations/', data),
 
   /**
    * Update organization

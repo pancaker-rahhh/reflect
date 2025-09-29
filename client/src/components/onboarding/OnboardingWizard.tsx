@@ -1,31 +1,35 @@
-import React from 'react';
-import { useOnboarding } from '../../context/OnboardingContext';
-import { KeyboardShortcutProvider } from '../../context/KeyboardShortcutContext';
-import { ProfileStep } from './steps/ProfileStep';
-import { ProjectStep } from './steps/ProjectStep';
-import { ProgressBar } from './shared/ProgressBar';
-import { StepNavigation } from './shared/StepNavigation';
-import '../../styles/onboarding.css';
+import React from 'react'
+import { useOnboarding } from '../../context/OnboardingContext'
+import { KeyboardShortcutProvider } from '../../context/KeyboardShortcutContext'
+import { ProfileStep } from './steps/ProfileStep'
+import { ProjectStep } from './steps/ProjectStep'
+import { ProgressBar } from './shared/ProgressBar'
+import { StepNavigation } from './shared/StepNavigation'
+import { usePreventNavigation } from '../../hooks/usePreventNavigation'
+import '../../styles/onboarding.css'
 
 export const OnboardingWizard: React.FC = () => {
-  const { currentStep, isLoading, error } = useOnboarding();
+  const { currentStep, isLoading, error } = useOnboarding()
+
+  // Use the custom hook to prevent all navigation during onboarding
+  usePreventNavigation(true)
 
   const renderStep = () => {
     switch (currentStep) {
       case 'profile':
-        return <ProfileStep />;
+        return <ProfileStep />
       case 'project':
-        return <ProjectStep />;
+        return <ProjectStep />
       default:
-        return null;
+        return null
     }
-  };
+  }
 
   return (
     <KeyboardShortcutProvider>
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 relative overflow-hidden">
         <div className="absolute inset-0 bg-grid-slate-100 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)] opacity-10"></div>
-        
+
         <div className="container mx-auto px-4 py-8 relative z-10">
           <div className="max-w-3xl mx-auto">
             <div className="mb-8 animate-fade-in">
@@ -42,7 +46,11 @@ export const OnboardingWizard: React.FC = () => {
                 <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg text-red-700 animate-slide-in">
                   <div className="flex items-start">
                     <svg className="w-5 h-5 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     <span>{error}</span>
                   </div>
@@ -68,5 +76,5 @@ export const OnboardingWizard: React.FC = () => {
         </div>
       </div>
     </KeyboardShortcutProvider>
-  );
-};
+  )
+}

@@ -1,7 +1,11 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = 'https://wrwyqrxczlkjgprinfwd.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indyd3lxcnhjemxramdwcmluZndkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMjM2MDAsImV4cCI6MjA2MzU5OTYwMH0.mbAKxivSmUs_n14bBs1fA6QRTSFZpvCGmCoydczeZio';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables. Please check your .env file.')
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
@@ -10,4 +14,4 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: true,
     flowType: 'pkce',
   },
-});
+})
