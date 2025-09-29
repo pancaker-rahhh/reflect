@@ -16,6 +16,8 @@ function transformDataToPayload(data: WidgetFormData) {
         requireReviewText: data.content?.requireReviewText,
         requireStepsToReproduce: data.content?.requireStepsToReproduce,
         requireUseCase: data.content?.requireUseCase,
+      // Persist per-type content overrides from Step 2
+      perTypeContent: data.contentByType || {},
       },
     },
     theme_configuration: {
