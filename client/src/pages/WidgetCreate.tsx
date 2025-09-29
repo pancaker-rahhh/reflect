@@ -67,6 +67,20 @@ const widgetSchema = z
       requireUseCase: z.boolean().optional(),
     }),
 
+    // Optional per-type content. Only fields provided will override base content for that type
+    contentByType: z
+      .record(
+        z.enum(['FEEDBACK', 'SURVEY', 'NPS', 'CSAT', 'CES', 'REVIEW', 'BUG_REPORT', 'FEATURE_REQUEST']),
+        z.object({
+          headerTitle: z.string().optional(),
+          mainQuestion: z.string().optional(),
+          submitButtonText: z.string().optional(),
+          thankYouTitle: z.string().optional(),
+          thankYouMessage: z.string().optional(),
+        })
+      )
+      .optional(),
+
     appearance: z.object({
       theme: z.enum(['default', 'midnight', 'minimal-light', 'minimal-dark']),
       position: z.enum(['bottom_right', 'bottom_left', 'mid_right', 'mid_left']),
@@ -216,6 +230,7 @@ export function WidgetCreate() {
             requireStepsToReproduce: false,
             requireUseCase: true,
           },
+          contentByType: {},
           appearance: {
             theme: 'default',
             position: 'bottom_right',
