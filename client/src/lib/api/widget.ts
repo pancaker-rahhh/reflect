@@ -50,7 +50,7 @@ export interface WidgetUpdateRequest {
 
 export const widgetApi = {
   getByProject(projectId: string): Promise<Widget[]> {
-    return apiClient.get<Widget[]>(`/projects/${projectId}/widgets`)
+    return apiClient.get<Widget[]>(`/projects/${projectId}/widgets/`)
   },
 
   getWidget(id: string): Promise<Widget> {
@@ -59,14 +59,14 @@ export const widgetApi = {
 
   create(projectId: string, formData: WidgetFormData): Promise<Widget> {
     const payload = transformDataToPayload(formData)
-    return apiClient.post<Widget>(`/projects/${projectId}/widgets`, {
+    return apiClient.post<Widget>(`/projects/${projectId}/widgets/`, {
       ...payload,
       project_id: projectId,
     })
   },
 
   createWidget(data: WidgetCreateRequest): Promise<Widget> {
-    return apiClient.post<Widget>(`/projects/${data.project_id}/widgets`, data)
+    return apiClient.post<Widget>(`/projects/${data.project_id}/widgets/`, data)
   },
 
   update(widgetId: string, data: Partial<Widget>): Promise<Widget> {
