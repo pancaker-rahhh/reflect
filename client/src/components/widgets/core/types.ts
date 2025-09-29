@@ -75,6 +75,10 @@ export interface WidgetConfiguration {
   behavior: BehaviorConfig
   publicKey?: string
   widgetKey?: string
+  // Optional per-type content overrides. When present, the widget should use
+  // these values for the corresponding active feedback type, falling back to
+  // the base `content` fields when an override is missing.
+  contentByType?: Partial<Record<FeedbackType, Partial<ContentConfig>>>
 }
 
 // Type-specific data interfaces
