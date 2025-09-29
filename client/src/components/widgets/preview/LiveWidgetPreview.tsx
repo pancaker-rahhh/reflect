@@ -46,13 +46,15 @@ function transformFormDataToConfig(formData: WidgetFormData): WidgetConfiguratio
       thankYouTitle: 'Thank you!',
       thankYouMessage: 'Your feedback helps us improve.',
     },
+    // Include optional per-type overrides if present in the form
+    contentByType: (formData as any).contentByType || {},
     appearance: {
       theme: formData.appearance?.theme || 'default',
       position: formData.appearance?.position || 'bottom_right',
       colors: getFormColors(formData.appearance?.colors),
       showBranding: formData.appearance?.showBranding ?? true,
     },
-    behavior: formData.behavior || {
+    behavior: {
       triggerType: 'immediate',
       urlTargeting: { includeUrls: [], excludeUrls: [] },
       deviceTypes: { desktop: true, mobile: true, tablet: true },
@@ -131,20 +133,22 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
   const [_widgetState, setWidgetState] = useState<WidgetState>({ type: 'closed' })
   const [selectedFeedbackType, setSelectedFeedbackType] = useState<FeedbackType | null>(null)
 
-  // Watch specific form fields to minimize re-renders
-  const formData = form.watch(['appearance', 'content', 'primaryType', 'modules', 'behavior'])
+  // Watch specific form fields to minimize re-renders (limit to schema-known keys)
+  const formData = form.watch(['appearance', 'content', 'primaryType', 'modules'])
 
   // Convert watched array to object structure
   const structuredFormData = useMemo(() => {
-    if (!Array.isArray(formData) || formData.length < 5) return null
+    if (!Array.isArray(formData) || formData.length < 4) return null
+    // Read optional per-type content without adding it to the watch list
+    const contentByType = form.getValues('contentByType' as any)
     return {
       appearance: formData[0],
       content: formData[1],
       primaryType: formData[2],
       modules: formData[3],
-      behavior: formData[4],
-    } as Pick<WidgetFormData, 'appearance' | 'content' | 'primaryType' | 'modules' | 'behavior'>
-  }, [formData])
+      contentByType,
+    } as any
+  }, [formData, form])
 
   // Debounce form changes to prevent excessive re-renders
   const debouncedFormData = useDebounce(structuredFormData, 300)
@@ -154,7 +158,7 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
     if (!debouncedFormData || typeof debouncedFormData !== 'object') return null
     // Ensure all required properties exist before transformation
     if (!Array.isArray(debouncedFormData) && typeof debouncedFormData === 'object') {
-      return transformFormDataToConfig(debouncedFormData as WidgetFormData)
+      return transformFormDataToConfig(debouncedFormData as unknown as WidgetFormData)
     }
     return null
   }, [debouncedFormData])
