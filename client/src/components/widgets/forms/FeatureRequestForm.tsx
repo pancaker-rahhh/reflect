@@ -145,12 +145,13 @@ export function FeatureRequestForm({
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
 
-      const response = await fetch(`${apiBaseUrl}/public/features/upvote`, {
+      const response = await fetch(`${apiBaseUrl}/public/vote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          itemId: featureId,
+          itemType: 'feature_request',
           widgetKey,
-          featureId,
         }),
       })
 

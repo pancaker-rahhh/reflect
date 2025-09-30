@@ -112,22 +112,21 @@ export function PublicFeedbackDisplay({
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
 
-      let endpoint = ''
-      let payload: any = { widgetKey, feedbackId }
-
+      let itemType = 'general_feedback'
       if (feedbackType === 'FEATURE_REQUEST') {
-        endpoint = `${apiBaseUrl}/public/features/upvote`
-        payload = { widgetKey, featureId: feedbackId }
-      } else {
-        endpoint = `${apiBaseUrl}/public/feedback/upvote`
+        itemType = 'feature_request'
       }
 
-      const response = await fetch(endpoint, {
+      const response = await fetch(`${apiBaseUrl}/public/vote`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          itemId: feedbackId,
+          itemType: itemType,
+          widgetKey,
+        }),
       })
 
       if (!response.ok) {

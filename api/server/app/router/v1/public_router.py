@@ -6,6 +6,8 @@ from app.schemas.widget_schema import WidgetReadPublic
 from app.schemas.feedback_schema import FeedbackResponsePayload
 from app.services.widget_service import widget_service, WidgetService
 from app.services.feedback_service import feedback_service
+from app.services.voting_service import voting_service
+from app.services.roadmap_vote_service import vote_service
 from app.models.widget_model import WidgetType
 from app.models.feedback_model import FeedbackType
 from pydantic import BaseModel
@@ -14,6 +16,7 @@ from app.repositories.feedback_repository import feedback_repository
 from app.core.rate_limiting import create_rate_limit_decorator
 from app.core.sanitization import InputSanitizer
 from app.core.logging import get_logger
+from uuid import UUID
 
 logger = get_logger(__name__)
 public_router = APIRouter()
@@ -341,14 +344,10 @@ class FeatureRequestPublic(BaseModel):
     hasUserUpvoted: bool = False
 
 
-class UpvoteRequest(BaseModel):
-    widgetKey: str
-    featureId: str
-
-
-class GeneralUpvoteRequest(BaseModel):
-    widgetKey: str
-    feedbackId: str
+class VoteRequest(BaseModel):
+    itemId: str
+    itemType: str
+    widgetKey: Optional[str] = None
 
 
 @public_router.get(
@@ -409,90 +408,6 @@ async def get_widget_feature_requests(
     return feature_requests
 
 
-@public_router.post('/features/upvote')
-@create_rate_limit_decorator('voting', is_anonymous=True)
-async def upvote_feature_request(
-    request: Request,
-    payload: UpvoteRequest,
-    db: AsyncSession = Depends(get_db),
-    widget_service: WidgetService = Depends(lambda: widget_service),
-):
-    from app.services.voting_service import voting_service
-
-    sanitized_widget_key = InputSanitizer.sanitize_widget_key(payload.widgetKey)
-    if not sanitized_widget_key:
-        raise HTTPException(status_code=400, detail='Invalid widget key')
-
-    try:
-        from uuid import UUID
-
-        feature_id = UUID(payload.featureId)
-    except ValueError:
-        raise HTTPException(status_code=400, detail='Invalid feature ID format')
-
-    widget = await widget_service.get_public_widget_by_key(db, sanitized_widget_key)
-    feature = await feedback_repository.get(db, feature_id)
-
-    if not feature or feature.widget_id != widget.id:
-        raise HTTPException(status_code=404, detail='Feature request not found')
-
-    voter_ip = request.client.host if request.client else '127.0.0.1'
-    voter_user_agent = request.headers.get('user-agent', '')
-
-    vote_result = await voting_service.vote_for_feature(
-        db, feature.id, voter_ip, voter_user_agent
-    )
-
-    return {
-        'success': True,
-        'newVoteCount': vote_result['newVoteCount'],
-        'hasUserVoted': vote_result['hasUserVoted'],
-        'action': vote_result['action'],
-    }
-
-
-@public_router.post('/feedback/upvote')
-@create_rate_limit_decorator('voting', is_anonymous=True)
-async def upvote_general_feedback(
-    request: Request,
-    payload: GeneralUpvoteRequest,
-    db: AsyncSession = Depends(get_db),
-    widget_service: WidgetService = Depends(lambda: widget_service),
-):
-    from app.services.voting_service import voting_service
-
-    sanitized_widget_key = InputSanitizer.sanitize_widget_key(payload.widgetKey)
-    if not sanitized_widget_key:
-        raise HTTPException(status_code=400, detail='Invalid widget key')
-
-    try:
-        from uuid import UUID
-
-        feedback_id = UUID(payload.feedbackId)
-    except ValueError:
-        raise HTTPException(status_code=400, detail='Invalid feedback ID format')
-
-    widget = await widget_service.get_public_widget_by_key(db, sanitized_widget_key)
-    feedback = await feedback_repository.get(db, feedback_id)
-
-    if not feedback or feedback.widget_id != widget.id:
-        raise HTTPException(status_code=404, detail='Feedback not found')
-
-    voter_ip = request.client.host if request.client else '127.0.0.1'
-    voter_user_agent = request.headers.get('user-agent', '')
-
-    vote_result = await voting_service.vote_for_feature(
-        db, feedback.id, voter_ip, voter_user_agent
-    )
-
-    return {
-        'success': True,
-        'newVoteCount': vote_result['newVoteCount'],
-        'hasUserVoted': vote_result['hasUserVoted'],
-        'action': vote_result['action'],
-    }
-
-
 @public_router.get('/widgets/{public_key}', response_model=WidgetReadPublic)
 @create_rate_limit_decorator('widget_access', is_anonymous=True)
 async def get_public_widget_config(
@@ -506,3 +421,86 @@ async def get_public_widget_config(
         raise HTTPException(status_code=400, detail='Invalid widget key')
 
     return await service.get_public_widget_config(db, public_key=sanitized_public_key)
+
+
+@public_router.post('/vote')
+@create_rate_limit_decorator('voting', is_anonymous=True)
+async def vote(
+    request: Request,
+    payload: VoteRequest,
+    db: AsyncSession = Depends(get_db),
+    widget_service: WidgetService = Depends(lambda: widget_service),
+):
+    try:
+        item_id = UUID(payload.itemId)
+    except ValueError:
+        raise HTTPException(status_code=400, detail='Invalid item ID format')
+
+    voter_ip = request.client.host if request.client else '127.0.0.1'
+    voter_user_agent = request.headers.get('user-agent', '')
+
+    valid_item_types = ['feature_request', 'general_feedback', 'roadmap_feature']
+    if payload.itemType not in valid_item_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f'Invalid item type: {payload.itemType}. Must be one of: {", ".join(valid_item_types)}',
+        )
+
+    try:
+        if payload.itemType == 'roadmap_feature':
+            if not payload.widgetKey:
+                raise HTTPException(
+                    status_code=400, detail='Widget key required for roadmap features'
+                )
+
+            sanitized_widget_key = InputSanitizer.sanitize_widget_key(payload.widgetKey)
+            if not sanitized_widget_key:
+                raise HTTPException(status_code=400, detail='Invalid widget key')
+
+            widget = await widget_service.get_public_widget_by_key(
+                db, sanitized_widget_key
+            )
+            updated_feature = await vote_service.upvote_feature_anonymous(
+                db, item_id, request
+            )
+
+            return {
+                'success': True,
+                'newVoteCount': updated_feature.vote_count,
+                'hasUserVoted': True,
+                'action': 'added',
+            }
+
+        elif payload.itemType in ['feature_request', 'general_feedback']:
+            if not payload.widgetKey:
+                raise HTTPException(
+                    status_code=400, detail='Widget key required for feedback voting'
+                )
+
+            sanitized_widget_key = InputSanitizer.sanitize_widget_key(payload.widgetKey)
+            if not sanitized_widget_key:
+                raise HTTPException(status_code=400, detail='Invalid widget key')
+
+            widget = await widget_service.get_public_widget_by_key(
+                db, sanitized_widget_key
+            )
+            feedback = await feedback_repository.get(db, item_id)
+
+            if not feedback or feedback.widget_id != widget.id:
+                raise HTTPException(status_code=404, detail='Item not found')
+
+            vote_result = await voting_service.vote_for_feature(
+                db, item_id, voter_ip, voter_user_agent
+            )
+
+            return {
+                'success': True,
+                'newVoteCount': vote_result['newVoteCount'],
+                'hasUserVoted': vote_result['hasUserVoted'],
+                'action': vote_result['action'],
+            }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f'Error in unified vote endpoint: {str(e)}')
+        raise HTTPException(status_code=500, detail=f'Internal server error: {str(e)}')
