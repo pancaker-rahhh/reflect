@@ -79,7 +79,9 @@ export function PublicFeedbackDisplay({
           break
         case 'FEEDBACK':
         default:
-          endpoint = `${apiBaseUrl}/public/widgets/${widgetKey}/feedback?feedback_type=${feedbackType.toLowerCase()}`
+          endpoint = `${apiBaseUrl}/public/widgets/${widgetKey}/feedback?feedback_type=${
+            feedbackType?.toLowerCase() || 'general'
+          }`
           break
       }
 

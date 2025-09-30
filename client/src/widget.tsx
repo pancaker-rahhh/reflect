@@ -533,7 +533,7 @@ declare global {
             widgetKey: publicKey,
             response: data.response,
             rating: data.rating,
-            feedbackType: data.feedbackType.toLowerCase(), // Convert to lowercase for backend
+            feedbackType: data.feedbackType?.toLowerCase() || 'general', // Convert to lowercase for backend
             // Include type-specific data
             ...(data.typeSpecificData || {}),
             // For REVIEW feedback, ensure overall_rating is set
