@@ -344,14 +344,21 @@ export function FeedbackRenderer({
 
     case 'BUG_REPORT':
       return (
-        <div className="space-y-6">
-          <PublicFeedbackDisplay
-            feedbackType="BUG_REPORT"
-            widgetKey={widgetKey || ''}
-            colors={colors}
-          />
+        <div className="flex flex-col h-full">
+          {/* Scrollable existing feedback section */}
+          <div className="flex-1 overflow-y-auto max-h-80">
+            <PublicFeedbackDisplay
+              feedbackType="BUG_REPORT"
+              widgetKey={widgetKey || ''}
+              colors={colors}
+            />
+          </div>
 
-          <div className="border-t pt-6">
+          {/* Fixed form at bottom */}
+          <div
+            className="border-t pt-4 backdrop-blur-sm"
+            style={{ backgroundColor: `${colors.background}95` }}
+          >
             <BugReportForm
               onSubmit={handleBugReportSubmit}
               isSubmitting={isSubmitting}
@@ -364,14 +371,19 @@ export function FeedbackRenderer({
 
     case 'FEATURE_REQUEST':
       return (
-        <div className="space-y-6">
-          <PublicFeedbackDisplay
-            feedbackType="FEATURE_REQUEST"
-            widgetKey={widgetKey || ''}
-            colors={colors}
-          />
+        <div className="flex flex-col h-full">
+          <div className="flex-1 overflow-y-auto max-h-80">
+            <PublicFeedbackDisplay
+              feedbackType="FEATURE_REQUEST"
+              widgetKey={widgetKey || ''}
+              colors={colors}
+            />
+          </div>
 
-          <div className="border-t pt-6">
+          <div
+            className="border-t pt-4 backdrop-blur-sm"
+            style={{ backgroundColor: `${colors.background}95` }}
+          >
             <FeatureRequestForm
               onSubmit={handleFeatureRequestSubmit}
               onUpvote={async (_featureId) => {

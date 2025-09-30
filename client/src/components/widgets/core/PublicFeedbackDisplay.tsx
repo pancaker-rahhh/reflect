@@ -276,7 +276,7 @@ export function PublicFeedbackDisplay({
     }
   })
 
-  const displayData = showAll ? sortedData : sortedData.slice(0, 10)
+  const displayData = showAll ? sortedData : sortedData.slice(0, 3)
 
   return (
     <div className="space-y-4">
@@ -323,7 +323,7 @@ export function PublicFeedbackDisplay({
         </div>
       </div>
 
-      <div className="space-y-4 max-h-96 overflow-y-auto">
+      <div className="space-y-4">
         {shouldShowPlaceholders ? (
           [1, 2, 3].map((i) => <PlaceholderCard key={i} />)
         ) : displayData.length === 0 ? (
@@ -370,27 +370,29 @@ export function PublicFeedbackDisplay({
           displayData.map((item) => (
             <div
               key={item.id}
-              className="p-4 rounded-lg border border-gray-200 bg-white/50 backdrop-blur-sm"
-              style={{ borderColor: `${colors.primary}20` }}
+              className="p-3 rounded-lg border backdrop-blur-sm"
+              style={{
+                borderColor: `${colors.primary}30`,
+                backgroundColor: `${colors.background}80`,
+              }}
             >
-              {/* Header with rating and date */}
-              <div className="flex items-center justify-between mb-3">
+              {/* Header with rating only */}
+              <div className="flex items-center justify-between mb-2">
                 {item.rating && (
                   <div className="flex items-center space-x-2">{renderStars(item.rating)}</div>
-                )}
-                {item.created_at && (
-                  <span className="text-xs text-gray-500">{formatDate(item.created_at)}</span>
                 )}
               </div>
 
               {/* Content */}
               {item.title && (
-                <h4 className="font-medium mb-2" style={{ color: colors.text }}>
+                <h4 className="font-medium mb-1 text-sm" style={{ color: colors.text }}>
                   {item.title}
                 </h4>
               )}
 
-              {item.message && <p className="text-sm text-gray-700 mb-2">{item.message}</p>}
+              {item.message && (
+                <p className="text-xs text-gray-700 mb-2 line-clamp-2">{item.message}</p>
+              )}
 
               {/* Type-specific fields */}
               {feedbackType === 'REVIEW' && (
@@ -408,72 +410,17 @@ export function PublicFeedbackDisplay({
                 </div>
               )}
 
-              {feedbackType === 'BUG_REPORT' && (
-                <div className="space-y-2">
-                  {(item.severity_level || item.severity) && (
-                    <div className="text-sm">
-                      <span className="font-medium">Severity:</span>{' '}
-                      <span
-                        className={`px-2 py-1 rounded text-xs ${
-                          (item.severity_level || item.severity) === 'critical'
-                            ? 'bg-red-100 text-red-800'
-                            : (item.severity_level || item.severity) === 'high'
-                              ? 'bg-orange-100 text-orange-800'
-                              : (item.severity_level || item.severity) === 'medium'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-blue-100 text-blue-800'
-                        }`}
-                      >
-                        {item.severity_level || item.severity}
-                      </span>
-                    </div>
-                  )}
-                  {item.actual_result && (
-                    <div className="text-sm">
-                      <span className="font-medium">Issue:</span> {item.actual_result}
-                    </div>
-                  )}
-                  {item.steps_to_reproduce && (
-                    <div className="text-sm">
-                      <span className="font-medium">Steps:</span> {item.steps_to_reproduce}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {feedbackType === 'FEATURE_REQUEST' && (
-                <div className="space-y-2">
-                  {item.priority && (
-                    <div className="text-sm">
-                      <span className="font-medium">Priority:</span>{' '}
-                      <span
-                        className={`px-2 py-1 rounded text-xs ${
-                          item.priority === 'high'
-                            ? 'bg-red-100 text-red-800'
-                            : item.priority === 'medium'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-blue-100 text-blue-800'
-                        }`}
-                      >
-                        {item.priority}
-                      </span>
-                    </div>
-                  )}
-                  {item.category && (
-                    <div className="text-sm">
-                      <span className="font-medium">Category:</span> {item.category}
-                    </div>
-                  )}
-                  {item.description && (
-                    <div className="text-sm">
-                      <span className="font-medium">Description:</span> {item.description}
-                    </div>
-                  )}
-                </div>
-              )}
+              <div className="space-y-1">
+                {feedbackType === 'BUG_REPORT' && item.actual_result && (
+                  <div className="text-xs text-gray-600">{item.actual_result}</div>
+                )}
+                {feedbackType === 'FEATURE_REQUEST' && item.description && (
+                  <div className="text-xs text-gray-600">{item.description}</div>
+                )}
+              </div>
 
               {/* Footer with votes and quick actions */}
-              <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+              <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
                 <div className="flex items-center space-x-1 text-gray-500">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -496,23 +443,22 @@ export function PublicFeedbackDisplay({
                   <button
                     onClick={() => handleVote(item.id)}
                     disabled={votingItems.has(item.id)}
-                    className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 ${
-                      item.hasUserUpvoted
-                        ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    } ${
+                    className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105 ${
                       votingItems.has(item.id) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                     }`}
                     style={{
-                      backgroundColor: item.hasUserUpvoted ? `${colors.primary}20` : undefined,
-                      color: item.hasUserUpvoted ? colors.primary : undefined,
+                      backgroundColor: item.hasUserUpvoted
+                        ? `${colors.primary}20`
+                        : `${colors.background}80`,
+                      color: item.hasUserUpvoted ? colors.primary : colors.text,
+                      borderColor: `${colors.primary}30`,
                     }}
                   >
                     {votingItems.has(item.id) ? (
                       <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <svg
-                        className="w-4 h-4"
+                        className="w-3 h-3"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -529,25 +475,6 @@ export function PublicFeedbackDisplay({
                       {item.hasUserUpvoted ? '👍 Voted' : '👍 Vote'}
                     </span>
                   </button>
-
-                  {/* Quick View Button */}
-                  <button className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all duration-200">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                      />
-                    </svg>
-                    <span>View</span>
-                  </button>
                 </div>
               </div>
             </div>
@@ -555,25 +482,17 @@ export function PublicFeedbackDisplay({
         )}
       </div>
 
-      {/* Load More / Refresh buttons */}
-      <div className="flex justify-center gap-2 pt-4">
-        {!showAll && sortedData.length > 10 && (
+      {!showAll && sortedData.length > 3 && (
+        <div className="flex justify-center pt-4">
           <button
             onClick={() => setShowAll(true)}
             className="px-4 py-2 rounded-lg text-sm border border-gray-300 hover:bg-gray-50 transition-colors"
             style={{ color: colors.text }}
           >
-            Load More ({sortedData.length - 10} more)
+            Load More ({sortedData.length - 3} more)
           </button>
-        )}
-        <button
-          onClick={fetchPublicData}
-          className="px-4 py-2 rounded-lg text-sm border border-gray-300 hover:bg-gray-50 transition-colors"
-          style={{ color: colors.text }}
-        >
-          🔄 Refresh
-        </button>
-      </div>
+        </div>
+      )}
     </div>
   )
 }
