@@ -112,7 +112,7 @@ async def get_public_widget_reviews(
 
 
 @public_router.get(
-    '/widgets/{public_key}/bug-reports', response_model=List[Dict[str, Any]]
+    '/widgets/bug-reports/{public_key}', response_model=List[Dict[str, Any]]
 )
 @create_rate_limit_decorator('widget_access', is_anonymous=True)
 async def get_public_widget_bug_reports(
@@ -352,7 +352,7 @@ class GeneralUpvoteRequest(BaseModel):
 
 
 @public_router.get(
-    '/widgets/{public_key}/features', response_model=List[FeatureRequestPublic]
+    '/widgets/features/{public_key}', response_model=List[FeatureRequestPublic]
 )
 @create_rate_limit_decorator('widget_access', is_anonymous=True)
 async def get_widget_feature_requests(
