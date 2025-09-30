@@ -199,18 +199,6 @@ export function PublicFeedbackDisplay({
     }
   }
 
-  const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      })
-    } catch {
-      return 'Unknown date'
-    }
-  }
-
   const renderStars = (rating: number) => {
     return (
       <div className="flex items-center space-x-1">
