@@ -79,11 +79,8 @@ export function FeatureRequestForm({
   colors,
   content,
 }: FeatureRequestFormProps) {
-  const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [category, setCategory] = useState('')
   const [priority, setPriority] = useState('')
-  const [useCase, setUseCase] = useState('')
   const [view, setView] = useState<'list' | 'create'>('list')
   const [existingFeatures, setExistingFeatures] = useState<ExistingFeature[]>([])
   const [isLoadingFeatures, setIsLoadingFeatures] = useState(true)

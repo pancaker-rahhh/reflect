@@ -41,15 +41,6 @@ const severityOptions = [
   },
 ]
 
-const categoryOptions = [
-  { value: 'ui', label: 'User Interface', icon: '🎨' },
-  { value: 'functionality', label: 'Functionality', icon: '⚙️' },
-  { value: 'performance', label: 'Performance', icon: '⚡' },
-  { value: 'data', label: 'Data/Content', icon: '📊' },
-  { value: 'security', label: 'Security', icon: '🔒' },
-  { value: 'other', label: 'Other', icon: '❓' },
-]
-
 export function BugReportForm({ onSubmit, isSubmitting, colors, content }: BugReportFormProps) {
   const [description, setDescription] = useState('')
   const [severity, setSeverity] = useState('')

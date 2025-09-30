@@ -43,7 +43,6 @@ export function PublicFeedbackDisplay({
 }: PublicFeedbackDisplayProps) {
   const [data, setData] = useState<PublicFeedbackData[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [votingItems, setVotingItems] = useState<Set<string>>(new Set())
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState<'upvotes' | 'newest' | 'oldest'>('upvotes')
@@ -54,11 +53,12 @@ export function PublicFeedbackDisplay({
   }, [feedbackType, widgetKey])
 
   const fetchPublicData = async () => {
+    console.log('🐛 PublicFeedbackDisplay: fetchPublicData called', { feedbackType, widgetKey })
     try {
       setLoading(true)
-      setError(null)
 
       if (!widgetKey || widgetKey.trim() === '') {
+        console.log('🐛 PublicFeedbackDisplay: No widgetKey, setting empty data')
         setData([])
         setLoading(false)
         return
@@ -83,9 +83,11 @@ export function PublicFeedbackDisplay({
           break
       }
 
+      console.log('🐛 PublicFeedbackDisplay: Making API call to', endpoint)
       const response = await fetch(endpoint)
 
       if (!response.ok) {
+        console.log('🐛 PublicFeedbackDisplay: API call failed', response.status)
         // If 404 or empty, just set empty array instead of error
         if (response.status === 404) {
           setData([])
@@ -95,8 +97,10 @@ export function PublicFeedbackDisplay({
       }
 
       const result = await response.json()
+      console.log('🐛 PublicFeedbackDisplay: API response', result)
       setData(Array.isArray(result) ? result : [])
     } catch (err) {
+      console.log('🐛 PublicFeedbackDisplay: API call error', err)
       // Don't set error for network issues, just show empty state
       setData([])
     } finally {
