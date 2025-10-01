@@ -408,6 +408,7 @@ export function FeedbackRenderer({
           onSubmit={handleGeneralFeedbackSubmit}
           isSubmitting={isSubmitting}
           submitButtonText={content.submitButtonText}
+          mainQuestion={content.mainQuestion}
           colors={colors}
         />
       )
@@ -430,6 +431,7 @@ export function FeedbackRenderer({
             onSubmit={handleGeneralFeedbackSubmit}
             isSubmitting={isSubmitting}
             submitButtonText={content.submitButtonText}
+            mainQuestion={content.mainQuestion}
             colors={colors}
           />
         </div>
@@ -442,6 +444,7 @@ interface GeneralFeedbackFormProps {
   onSubmit: (feedback: string) => Promise<void>
   isSubmitting: boolean
   submitButtonText: string
+  mainQuestion?: string
   colors: {
     primary: string
     background: string
@@ -455,6 +458,7 @@ function GeneralFeedbackForm({
   onSubmit,
   isSubmitting,
   submitButtonText,
+  mainQuestion,
   colors,
 }: GeneralFeedbackFormProps) {
   const [feedback, setFeedback] = React.useState('')
@@ -469,7 +473,7 @@ function GeneralFeedbackForm({
       <textarea
         value={feedback}
         onChange={(e) => setFeedback(e.target.value)}
-        placeholder={getPlaceholderText('FEEDBACK')}
+        placeholder={mainQuestion || getPlaceholderText('FEEDBACK')}
         className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
         style={{
           borderColor: feedback.trim() ? colors.primary : '#E5E7EB',

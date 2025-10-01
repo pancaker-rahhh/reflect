@@ -7,6 +7,7 @@ import { ArrowRight, CheckCircle, Loader2, Calendar, User, MessageSquare } from 
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { FeedbackConversionModal } from './FeedbackConversionModal'
+import { FeedbackDetailModal } from './FeedbackDetailModal'
 
 interface FeedbackCardProps {
   feedback: any
@@ -26,6 +27,7 @@ export function FeedbackCard({
   isConverting = false,
 }: FeedbackCardProps) {
   const [isConversionModalOpen, setIsConversionModalOpen] = useState(false)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
 
   const handleConvert = async (conversionData: any) => {
     await onConvert(feedback.id, conversionData)
@@ -35,6 +37,11 @@ export function FeedbackCard({
   const handleCardClick = () => {
     if (isSelectionMode) {
       onToggleSelection(feedback.id)
+    } else {
+      const surveyTypes = ['CES', 'NPS', 'CSAT', 'SURVEY']
+      if (surveyTypes.includes(feedback.feedback_type)) {
+        setIsDetailModalOpen(true)
+      }
     }
   }
 
@@ -49,6 +56,9 @@ export function FeedbackCard({
   }
 
   const isConverted = feedback.converted_to_action_item_id
+
+  const nonConvertibleTypes = ['CES', 'NPS', 'CSAT', 'SURVEY']
+  const shouldShowConvert = !isConverted && !nonConvertibleTypes.includes(feedback.feedback_type)
 
   return (
     <>
@@ -115,7 +125,7 @@ export function FeedbackCard({
                   className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                 />
               ) : (
-                !isConverted && (
+                shouldShowConvert && (
                   <Button
                     size="sm"
                     variant="outline"
@@ -229,6 +239,12 @@ export function FeedbackCard({
           title: feedback.title || 'No title',
           message: feedback.message,
         }}
+      />
+
+      <FeedbackDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        feedback={feedback}
       />
     </>
   )
