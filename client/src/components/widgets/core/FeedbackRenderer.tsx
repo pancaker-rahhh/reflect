@@ -346,26 +346,21 @@ export function FeedbackRenderer({
 
     case 'BUG_REPORT':
       return (
-        <div className="space-y-6">
-          <div className="text-center">
-            <h3 className="text-xl font-bold mb-2" style={{ color: colors.text }}>
-              Bug Reports
-            </h3>
-            <p className="text-sm opacity-70" style={{ color: colors.text }}>
-              Track known issues and report new ones
-            </p>
+        <div className="flex flex-col h-full">
+          {/* Scrollable existing feedback section */}
+          <div className="flex-1 overflow-y-auto max-h-80">
+            <PublicFeedbackDisplay
+              feedbackType="BUG_REPORT"
+              widgetKey={widgetKey || ''}
+              colors={colors}
+            />
           </div>
 
-          <PublicFeedbackDisplay
-            feedbackType="BUG_REPORT"
-            widgetKey={widgetKey || ''}
-            colors={colors}
-          />
-
-          <div className="border-t pt-6">
-            <h4 className="text-lg font-semibold mb-4 text-center" style={{ color: colors.text }}>
-              Report a Bug
-            </h4>
+          {/* Fixed form at bottom */}
+          <div
+            className="border-t pt-4 backdrop-blur-sm"
+            style={{ backgroundColor: `${colors.background}95` }}
+          >
             <BugReportForm
               onSubmit={handleBugReportSubmit}
               isSubmitting={isSubmitting}
@@ -378,26 +373,19 @@ export function FeedbackRenderer({
 
     case 'FEATURE_REQUEST':
       return (
-        <div className="space-y-6">
-          <div className="text-center">
-            <h3 className="text-xl font-bold mb-2" style={{ color: colors.text }}>
-              Feature Requests
-            </h3>
-            <p className="text-sm opacity-70" style={{ color: colors.text }}>
-              See what features others are requesting and add your own
-            </p>
+        <div className="flex flex-col h-full">
+          <div className="flex-1 overflow-y-auto max-h-80">
+            <PublicFeedbackDisplay
+              feedbackType="FEATURE_REQUEST"
+              widgetKey={widgetKey || ''}
+              colors={colors}
+            />
           </div>
 
-          <PublicFeedbackDisplay
-            feedbackType="FEATURE_REQUEST"
-            widgetKey={widgetKey || ''}
-            colors={colors}
-          />
-
-          <div className="border-t pt-6">
-            <h4 className="text-lg font-semibold mb-4 text-center" style={{ color: colors.text }}>
-              Request a Feature
-            </h4>
+          <div
+            className="border-t pt-4 backdrop-blur-sm"
+            style={{ backgroundColor: `${colors.background}95` }}
+          >
             <FeatureRequestForm
               onSubmit={handleFeatureRequestSubmit}
               onUpvote={async (_featureId) => {
