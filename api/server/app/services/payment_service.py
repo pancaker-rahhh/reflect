@@ -182,9 +182,11 @@ class PaymentService:
             return False
 
         provided_sig = signature or ''
+        if ',' in provided_sig:
+            provided_sig = provided_sig.split(',', 1)[1]
         if provided_sig.lower().startswith('sha256='):
             provided_sig = provided_sig.split('=', 1)[1]
-        provided_sig = provided_sig.strip().lower()
+        provided_sig = provided_sig.strip()
 
         payload_str = json.dumps(payload, separators=(',', ':'))
 
@@ -195,10 +197,11 @@ class PaymentService:
 
         # Compute and compare against all candidates in constant time
         for base in bases:
-            expected = hmac.new(
+            digest = hmac.new(
                 secret.encode('utf-8'), base.encode('utf-8'), hashlib.sha256
-            ).hexdigest()
-            if hmac.compare_digest(provided_sig, expected.lower()):
+            ).digest()
+            expected = base64.b64encode(digest).decode('ascii')
+            if hmac.compare_digest(provided_sig, expected):
                 return True
         return False
 
