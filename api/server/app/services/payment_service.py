@@ -113,9 +113,10 @@ class PaymentService:
         signature: str,
         timestamp: str,
         webhook_id: Optional[str] = None,
+        raw_body: Optional[str] = None,
     ) -> bool:
         if not self._verify_webhook_signature(
-            payload, signature, timestamp, webhook_id
+            payload, signature, timestamp, webhook_id, raw_body
         ):
             logger.warning('Invalid webhook signature')
             return False
@@ -165,6 +166,7 @@ class PaymentService:
         signature: str,
         timestamp: str,
         webhook_id: Optional[str] = None,
+        raw_body: Optional[str] = None,
     ) -> bool:
         secret: Optional[str] = None
         if (
@@ -188,7 +190,12 @@ class PaymentService:
             provided_sig = provided_sig.split('=', 1)[1]
         provided_sig = provided_sig.strip()
 
-        payload_str = json.dumps(payload, separators=(',', ':'))
+        # Use exact raw body if provided (required for HMAC to match)
+        payload_str = (
+            raw_body
+            if isinstance(raw_body, str) and raw_body != ''
+            else json.dumps(payload, separators=(',', ':'))
+        )
 
         if not webhook_id:
             # If missing, do not accept fallback bases to avoid weak verification

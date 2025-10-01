@@ -44,7 +44,7 @@ async def process_webhook(
             },
         )
 
-        # Parse payload
+        # Parse payload (also pass raw body for HMAC)
         try:
             payload = json.loads(body_str)
         except json.JSONDecodeError as e:
@@ -60,6 +60,7 @@ async def process_webhook(
             signature=webhook_signature,
             timestamp=webhook_timestamp,
             webhook_id=webhook_id,
+            raw_body=body_str,
         )
 
         if success:
