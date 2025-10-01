@@ -66,11 +66,10 @@ api_router.include_router(
 api_router.include_router(
     widget_router.widgets_router, prefix='/widgets', tags=['Widgets']
 )
+api_router.include_router(roadmap_router.router, prefix='/roadmap', tags=['Roadmap'])
 api_router.include_router(
     public_router.public_router, prefix='/public', tags=['Public']
 )
-api_router.include_router(roadmap_router.router, prefix='/roadmap', tags=['Roadmap'])
-
 api_router.include_router(
     roadmap_router.public_router, prefix='/public', tags=['Public']
 )

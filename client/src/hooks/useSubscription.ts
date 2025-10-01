@@ -5,6 +5,8 @@ import {
   type SubscriptionLimits,
   type SubscriptionFeatures,
 } from '@/lib/api/subscription'
+import { widgetApi } from '@/lib/api/widget'
+import { projectApi } from '@/lib/api/project'
 
 export function useSubscription() {
   const { currentOrganization } = useAppContext()
@@ -57,6 +59,43 @@ export function useSubscription() {
     retry: false,
   })
 
+  const { data: projects, isLoading: projectsLoading } = useQuery({
+    queryKey: ['projects', currentOrganization?.id],
+    queryFn: () => projectApi.getByOrganization(currentOrganization?.id || ''),
+    enabled: !!currentOrganization?.id,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+    retry: false,
+  })
+
+  const { data: widgetCount, isLoading: widgetsLoading } = useQuery({
+    queryKey: ['widget-count', currentOrganization?.id],
+    queryFn: async () => {
+      if (!projects?.items) return 0
+
+      let totalWidgets = 0
+      for (const project of projects.items) {
+        try {
+          const widgets = await widgetApi.getByProject(project.id)
+          totalWidgets += widgets.length
+        } catch (error) {
+          console.error(`Failed to fetch widgets for project ${project.id}:`, error)
+        }
+      }
+      return totalWidgets
+    },
+    enabled: !!currentOrganization?.id && !!projects?.items,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+    retry: false,
+  })
+
   const subscription =
     plan && limits && features
       ? {
@@ -67,14 +106,15 @@ export function useSubscription() {
           limits,
           features,
           usage: {
-            projects: 0, // This would need to be fetched separately
-            widgets: 0, // This would need to be fetched separately
+            projects: projects?.items?.length || 0,
+            widgets: widgetCount || 0,
             responses: 0, // This would need to be fetched separately
           },
         }
       : undefined
 
-  const isLoading = planLoading || limitsLoading || featuresLoading
+  const isLoading =
+    planLoading || limitsLoading || featuresLoading || projectsLoading || widgetsLoading
   const error = planError || limitsError || featuresError
 
   const isFeatureEnabled = (feature: string): boolean => {

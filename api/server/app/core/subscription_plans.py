@@ -19,6 +19,16 @@ PLAN_LIMITS = {
         'widgets': 999999,
         'responses': 999999,
     },
+    'pro_monthly': {
+        'projects': 999999,
+        'widgets': 999999,
+        'responses': 999999,
+    },
+    'pro_yearly': {
+        'projects': 999999,
+        'widgets': 999999,
+        'responses': 999999,
+    },
 }
 
 FEATURE_FLAGS = {
@@ -30,6 +40,20 @@ FEATURE_FLAGS = {
         'jira_integration': False,
     },
     'pro': {
+        'advanced_targeting': True,
+        'branding_removal': True,
+        'priority_support': True,
+        'dofollow_backlink': True,
+        'jira_integration': True,
+    },
+    'pro_monthly': {
+        'advanced_targeting': True,
+        'branding_removal': True,
+        'priority_support': True,
+        'dofollow_backlink': True,
+        'jira_integration': True,
+    },
+    'pro_yearly': {
         'advanced_targeting': True,
         'branding_removal': True,
         'priority_support': True,
