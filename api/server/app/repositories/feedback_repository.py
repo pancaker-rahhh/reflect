@@ -298,13 +298,9 @@ class FeedbackRepository(BaseRepository[Feedback]):
 
         return {
             'totalFeedback': total_feedback_count,
-            'feedbackChange': 0,
             'averageRating': round(average_rating, 1),
-            'ratingChange': 0,
             'newBugReports': new_bug_reports,
-            'bugReportsChange': 0,
             'newFeatureRequests': new_feature_requests,
-            'featureRequestsChange': 0,
             'pendingFeedbackReview': pending_feedback_review,
         }
 

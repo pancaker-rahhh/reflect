@@ -5,13 +5,9 @@ from datetime import datetime
 
 class DashboardMetricsResponse(BaseModel):
     totalFeedback: int
-    feedbackChange: int
     averageRating: float
-    ratingChange: int
     newBugReports: int
-    bugReportsChange: int
     newFeatureRequests: int
-    featureRequestsChange: int
     pendingFeedbackReview: int
 
 

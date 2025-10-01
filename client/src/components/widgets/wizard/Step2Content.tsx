@@ -80,75 +80,78 @@ export function Step2Content({ form }: Step2ContentProps) {
     }
   }, [enabledTypes, primaryType, activeType])
 
-  const getTypeDefaults = React.useCallback((type: WidgetFormData['primaryType'] = primaryType) => {
-    switch (type) {
-      case 'NPS':
-        return {
-          headerTitle: 'We value your feedback',
-          mainQuestion: 'How likely are you to recommend our product to a friend or colleague?',
-          submitButtonText: 'Submit Rating',
-          thankYouTitle: 'Thank you for your feedback!',
-          thankYouMessage: 'Your rating helps us improve our product and service.',
-        }
-      case 'CSAT':
-        return {
-          headerTitle: 'How satisfied are you?',
-          mainQuestion: 'Please rate your overall satisfaction with our service',
-          submitButtonText: 'Submit Rating',
-          thankYouTitle: 'Thank you!',
-          thankYouMessage: 'Your satisfaction rating helps us serve you better.',
-        }
-      case 'CES':
-        return {
-          headerTitle: 'Help us improve',
-          mainQuestion: 'How easy was it to get the help you needed?',
-          submitButtonText: 'Submit Rating',
-          thankYouTitle: 'Thank you!',
-          thankYouMessage: 'Your feedback helps us make our service easier to use.',
-        }
-      case 'REVIEW':
-        return {
-          headerTitle: 'Share your experience',
-          mainQuestion: 'How would you rate your overall experience with us?',
-          submitButtonText: 'Submit Review',
-          thankYouTitle: 'Thanks for your review!',
-          thankYouMessage: 'Your review helps others make informed decisions.',
-        }
-      case 'BUG_REPORT':
-        return {
-          headerTitle: 'Report an Issue',
-          mainQuestion: 'Please describe the issue you encountered',
-          submitButtonText: 'Report Bug',
-          thankYouTitle: 'Bug report submitted!',
-          thankYouMessage: 'Thank you for helping us improve. We will investigate this issue.',
-        }
-      case 'FEATURE_REQUEST':
-        return {
-          headerTitle: 'Suggest a Feature',
-          mainQuestion: 'What feature would you like to see added?',
-          submitButtonText: 'Submit Request',
-          thankYouTitle: 'Thanks for your suggestion!',
-          thankYouMessage:
-            'We appreciate your input and will consider this feature for future updates.',
-        }
-      case 'SURVEY':
-        return {
-          headerTitle: 'Quick Survey',
-          mainQuestion: 'Help us understand your needs better',
-          submitButtonText: 'Complete Survey',
-          thankYouTitle: 'Survey completed!',
-          thankYouMessage: 'Thank you for taking the time to complete our survey.',
-        }
-      default:
-        return {
-          headerTitle: 'We value your feedback',
-          mainQuestion: 'How can we improve?',
-          submitButtonText: 'Submit Feedback',
-          thankYouTitle: 'Thank you!',
-          thankYouMessage: 'Your feedback helps us improve.',
-        }
-    }
-  }, [primaryType])
+  const getTypeDefaults = React.useCallback(
+    (type: WidgetFormData['primaryType'] = primaryType) => {
+      switch (type) {
+        case 'NPS':
+          return {
+            headerTitle: 'We value your feedback',
+            mainQuestion: 'How likely are you to recommend our product to a friend or colleague?',
+            submitButtonText: 'Submit Rating',
+            thankYouTitle: 'Thank you for your feedback!',
+            thankYouMessage: 'Your rating helps us improve our product and service.',
+          }
+        case 'CSAT':
+          return {
+            headerTitle: 'How satisfied are you?',
+            mainQuestion: 'Please rate your overall satisfaction with our service',
+            submitButtonText: 'Submit Rating',
+            thankYouTitle: 'Thank you!',
+            thankYouMessage: 'Your satisfaction rating helps us serve you better.',
+          }
+        case 'CES':
+          return {
+            headerTitle: 'Help us improve',
+            mainQuestion: 'How easy was it to get the help you needed?',
+            submitButtonText: 'Submit Rating',
+            thankYouTitle: 'Thank you!',
+            thankYouMessage: 'Your feedback helps us make our service easier to use.',
+          }
+        case 'REVIEW':
+          return {
+            headerTitle: 'Share your experience',
+            mainQuestion: 'How would you rate your overall experience with us?',
+            submitButtonText: 'Submit Review',
+            thankYouTitle: 'Thanks for your review!',
+            thankYouMessage: 'Your review helps others make informed decisions.',
+          }
+        case 'BUG_REPORT':
+          return {
+            headerTitle: 'Report an Issue',
+            mainQuestion: 'Please describe the issue you encountered',
+            submitButtonText: 'Report Bug',
+            thankYouTitle: 'Bug report submitted!',
+            thankYouMessage: 'Thank you for helping us improve. We will investigate this issue.',
+          }
+        case 'FEATURE_REQUEST':
+          return {
+            headerTitle: 'Suggest a Feature',
+            mainQuestion: 'What feature would you like to see added?',
+            submitButtonText: 'Submit Request',
+            thankYouTitle: 'Thanks for your suggestion!',
+            thankYouMessage:
+              'We appreciate your input and will consider this feature for future updates.',
+          }
+        case 'SURVEY':
+          return {
+            headerTitle: 'Quick Survey',
+            mainQuestion: 'Help us understand your needs better',
+            submitButtonText: 'Complete Survey',
+            thankYouTitle: 'Survey completed!',
+            thankYouMessage: 'Thank you for taking the time to complete our survey.',
+          }
+        default:
+          return {
+            headerTitle: 'We value your feedback',
+            mainQuestion: 'How can we improve?',
+            submitButtonText: 'Submit Feedback',
+            thankYouTitle: 'Thank you!',
+            thankYouMessage: 'Your feedback helps us improve.',
+          }
+      }
+    },
+    [primaryType]
+  )
 
   // Update base content defaults when primaryType changes
   React.useEffect(() => {
@@ -179,16 +182,16 @@ export function Step2Content({ form }: Step2ContentProps) {
   React.useEffect(() => {
     const pathBase = activeType === primaryType ? 'content' : `contentByType.${activeType}`
     const cur = form.getValues(pathBase as any) as any
-    
+
     // Check if this type has any content configured
-    const hasContent = cur && (
-      cur.headerTitle || 
-      cur.mainQuestion || 
-      cur.submitButtonText || 
-      cur.thankYouTitle || 
-      cur.thankYouMessage
-    )
-    
+    const hasContent =
+      cur &&
+      (cur.headerTitle ||
+        cur.mainQuestion ||
+        cur.submitButtonText ||
+        cur.thankYouTitle ||
+        cur.thankYouMessage)
+
     // If no content exists, seed with defaults for this type
     if (!hasContent) {
       const d = getTypeDefaults(activeType)
@@ -259,8 +262,8 @@ export function Step2Content({ form }: Step2ContentProps) {
                 <FormLabel className="text-lg font-semibold mb-4">Widget Header Title</FormLabel>
                 <FormDescription>The main title shown at the top of your widget</FormDescription>
                 <FormControl>
-                  <Input 
-                    placeholder="We value your feedback" 
+                  <Input
+                    placeholder="We value your feedback"
                     value={field.value || currentValues.headerTitle || ''}
                     onChange={field.onChange}
                     onBlur={field.onBlur}
@@ -310,8 +313,8 @@ export function Step2Content({ form }: Step2ContentProps) {
                 <FormLabel className="text-lg font-semibold mb-4">Submit Button Text</FormLabel>
                 <FormDescription>Text displayed on the submit button</FormDescription>
                 <FormControl>
-                  <Input 
-                    placeholder={getTypeDefaults(activeType).submitButtonText} 
+                  <Input
+                    placeholder={getTypeDefaults(activeType).submitButtonText}
                     value={field.value || currentValues.submitButtonText || ''}
                     onChange={field.onChange}
                     onBlur={field.onBlur}
@@ -336,10 +339,12 @@ export function Step2Content({ form }: Step2ContentProps) {
               return (
                 <FormItem>
                   <FormLabel>Thank You Title</FormLabel>
-                  <FormDescription className="text-sm">Title shown after submission</FormDescription>
+                  <FormDescription className="text-sm">
+                    Title shown after submission
+                  </FormDescription>
                   <FormControl>
-                    <Input 
-                      placeholder="Thank you!" 
+                    <Input
+                      placeholder="Thank you!"
                       value={field.value || currentValues.thankYouTitle || ''}
                       onChange={field.onChange}
                       onBlur={field.onBlur}
@@ -381,119 +386,6 @@ export function Step2Content({ form }: Step2ContentProps) {
             }}
           />
         </div>
-
-        {/* Type-specific configuration sections */}
-        {activeType === 'REVIEW' && (
-          <div className="space-y-4 rounded-lg border p-4">
-            <h4 className="font-medium flex items-center gap-2">
-              <span>⭐</span>
-              Review Settings
-            </h4>
-
-            <FormField
-              control={form.control}
-              name="content.reviewPrompt"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Review Prompt (Optional)</FormLabel>
-                  <FormDescription className="text-sm">
-                    Additional text to encourage detailed reviews
-                  </FormDescription>
-                  <FormControl>
-                    <Input placeholder="Share your thoughts about your experience" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="content.requireReviewText"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">Require written review</FormLabel>
-                    <FormDescription>
-                      Force users to write a text review along with star rating
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch checked={field.value} onCheckedChange={field.onChange} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          </div>
-        )}
-
-        {activeType === 'BUG_REPORT' && (
-          <div className="space-y-4 rounded-lg border p-4">
-            <h4 className="font-medium flex items-center gap-2">
-              <span>🐛</span>
-              Bug Report Settings
-            </h4>
-
-            <FormField
-              control={form.control}
-              name="content.requireStepsToReproduce"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">Require reproduction steps</FormLabel>
-                    <FormDescription>
-                      Make the &quot;Steps to Reproduce&quot; field mandatory
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch checked={field.value} onCheckedChange={field.onChange} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <div className="bg-blue-50 p-3 rounded-lg">
-              <p className="text-sm text-blue-700">
-                <strong>Note:</strong> Bug reports automatically include category selection,
-                severity rating, title, and description fields.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {activeType === 'FEATURE_REQUEST' && (
-          <div className="space-y-4 rounded-lg border p-4">
-            <h4 className="font-medium flex items-center gap-2">
-              <span>✨</span>
-              Feature Request Settings
-            </h4>
-
-            <FormField
-              control={form.control}
-              name="content.requireUseCase"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">Require use case description</FormLabel>
-                    <FormDescription>
-                      Make the &quot;Use Case & Benefits&quot; field mandatory
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch checked={field.value} onCheckedChange={field.onChange} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <div className="bg-green-50 p-3 rounded-lg">
-              <p className="text-sm text-green-700">
-                <strong>Note:</strong> Feature requests automatically include title, category,
-                priority, description, and use case fields.
-              </p>
-            </div>
-          </div>
-        )}
       </div>
     </Form>
   )

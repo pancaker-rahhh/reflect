@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, MessageSquare, Star, Bug, Lightbulb, Clock } from 'lucide-react'
+import { MessageSquare, Star, Bug, Lightbulb, Clock } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import type { DashboardMetrics } from '@/types'
@@ -56,7 +56,6 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
     {
       title: 'Total Feedback',
       value: metrics.totalFeedback,
-      change: metrics.feedbackChange,
       icon: MessageSquare,
       color: 'text-blue-600',
       suffix: '',
@@ -64,7 +63,6 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
     {
       title: 'Average Rating',
       value: metrics.averageRating,
-      change: metrics.ratingChange,
       icon: Star,
       color: 'text-yellow-600',
       decimals: 1,
@@ -73,7 +71,6 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
     {
       title: 'New Bug Reports',
       value: metrics.newBugReports,
-      change: metrics.bugReportsChange,
       icon: Bug,
       color: 'text-red-600',
       suffix: '',
@@ -81,7 +78,6 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
     {
       title: 'New Feature Requests',
       value: metrics.newFeatureRequests,
-      change: metrics.featureRequestsChange,
       icon: Lightbulb,
       color: 'text-purple-600',
       suffix: '',
@@ -89,7 +85,6 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
     {
       title: 'Pending Feedback Review',
       value: metrics.pendingFeedbackReview || 0,
-      change: 0,
       icon: Clock,
       color: 'text-orange-600',
       suffix: '',
@@ -110,26 +105,6 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
             <div className="text-3xl font-bold tracking-tight">
               <AnimatedNumber value={card.value} decimals={card.decimals} suffix={card.suffix} />
             </div>
-            <p className="text-sm text-muted-foreground mt-2">
-              <span
-                className={cn(
-                  'inline-flex items-center',
-                  card.change > 0
-                    ? 'text-green-600'
-                    : card.change < 0
-                      ? 'text-red-600'
-                      : 'text-gray-600'
-                )}
-              >
-                {card.change > 0 ? (
-                  <TrendingUp className="mr-1 h-3 w-3" />
-                ) : card.change < 0 ? (
-                  <TrendingDown className="mr-1 h-3 w-3" />
-                ) : null}
-                {Math.abs(card.change)}%
-              </span>
-              {' from last period'}
-            </p>
           </CardContent>
         </Card>
       ))}
