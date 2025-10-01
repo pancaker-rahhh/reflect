@@ -82,3 +82,30 @@ async def process_webhook(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='Internal server error',
         )
+
+# HEAD Check - No body returned but status code 200 (for Load Balancers)
+@router.head('/webhook')
+async def webhook_head() -> None:
+    return None
+
+# OPTIONS Check - No body returned but status code 200 (for CORS)
+@router.options('/webhook')
+async def webhook_options() -> None:
+    return None
+
+
+@router.post('/webhook/')
+async def process_webhook_trailing_slash(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    webhook_id: str = Header(..., alias='webhook-id'),
+    webhook_signature: str = Header(..., alias='webhook-signature'),
+    webhook_timestamp: str = Header(..., alias='webhook-timestamp'),
+):
+    return await process_webhook(
+        request=request,
+        db=db,
+        webhook_id=webhook_id,
+        webhook_signature=webhook_signature,
+        webhook_timestamp=webhook_timestamp,
+    )
