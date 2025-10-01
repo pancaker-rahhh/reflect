@@ -66,6 +66,13 @@ export function RecentActivityTable({
                     <span className="text-sm font-medium text-gray-600 uppercase tracking-wide">
                       {typeConfigItem.label}
                     </span>
+
+                    {activity.widget_name && (
+                      <>
+                        <span className="text-gray-400">•</span>
+                        <span className="text-xs text-gray-500">{activity.widget_name}</span>
+                      </>
+                    )}
                   </div>
 
                   <h3 className="text-base font-medium text-gray-900 mb-2 leading-relaxed">
@@ -78,6 +85,15 @@ export function RecentActivityTable({
                     <span>
                       {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
                     </span>
+
+                    {activity.rating && (
+                      <>
+                        <span>•</span>
+                        <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+                          Rating: {activity.rating}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

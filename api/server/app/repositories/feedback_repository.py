@@ -311,7 +311,12 @@ class FeedbackRepository(BaseRepository[Feedback]):
     async def get_recent_activities(
         self, db: AsyncSession, project_id: Optional[UUID] = None, limit: int = 10
     ) -> List[Dict[str, Any]]:
-        query = select(Feedback).order_by(Feedback.created_at.desc()).limit(limit)
+        query = (
+            select(Feedback)
+            .options(selectinload(Feedback.widget))
+            .order_by(Feedback.created_at.desc())
+            .limit(limit)
+        )
 
         if project_id:
             query = query.where(Feedback.project_id == project_id)
@@ -321,14 +326,9 @@ class FeedbackRepository(BaseRepository[Feedback]):
 
         activities = []
         for item in feedback_items:
-            if item.title:
-                summary = item.title
-            elif item.message and len(item.message) > 50:
-                summary = f'{item.message[:50]}...'
-            elif item.message:
-                summary = item.message
-            else:
-                summary = f'Feedback: {item.feedback_type.replace("_", " ").title()}'
+            summary = self._create_display_title(item)
+
+            widget_name = item.widget.name if item.widget else None
 
             activities.append(
                 {
@@ -343,10 +343,20 @@ class FeedbackRepository(BaseRepository[Feedback]):
                     'is_actionable': item.is_actionable
                     if item.is_actionable is not None
                     else True,
+                    'widget_name': widget_name,
+                    'rating': item.rating,
                 }
             )
 
         return activities
+
+    def _create_display_title(self, item: Feedback) -> str:
+        if item.feedback_type in ['bug_report', 'feature_request']:
+            content = item.message or item.title
+        else:
+            content = item.message
+
+        return f'"{content}"'
 
     async def get_public_feedback_for_widget(
         self,
@@ -393,11 +403,13 @@ class FeedbackRepository(BaseRepository[Feedback]):
 
         feedback_data = []
         for item in feedback_items:
+            display_title = self._create_display_title(item)
+
             feedback_dict = {
                 'id': str(item.id),
                 'type': item.feedback_type,
                 'feedback_type': item.feedback_type,
-                'title': item.title,
+                'title': display_title,
                 'message': item.message,
                 'rating': item.rating,
                 'created_at': item.created_at,

@@ -185,7 +185,23 @@ export function FeedbackDetailModal({ isOpen, onClose, feedback }: FeedbackDetai
                     </span>
                   </div>
                 )}
+                {feedback.message && (
+                  <div className="mt-3">
+                    <span className="text-purple-700 block mb-1">Message:</span>
+                    <span className="text-purple-900">{feedback.message}</span>
+                  </div>
+                )}
               </div>
+            </div>
+          )}
+
+          {feedback.message && (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+              <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                Message
+              </h4>
+              <p className="text-gray-700 whitespace-pre-wrap">{feedback.message}</p>
             </div>
           )}
 

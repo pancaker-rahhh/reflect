@@ -312,12 +312,14 @@ class FeedbackService:
     def _create_general_feedback(
         self, base_data: Dict[str, Any], data: Dict[str, Any]
     ) -> GeneralFeedbackCreate:
-        """Create general feedback as fallback"""
+        user_message = data.get('message', '')
+        title = user_message
+
         return GeneralFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.GENERAL,
-            title=data.get('title', 'General Feedback'),
-            message=data.get('message', ''),
+            title=title,
+            message=user_message,
             rating=data.get('rating'),
         )
 

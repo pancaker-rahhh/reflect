@@ -100,6 +100,7 @@ export interface Widget {
       requireReviewText?: boolean
       requireStepsToReproduce?: boolean
       requireUseCase?: boolean
+      perTypeContent?: Record<string, any>
     }
   }
   theme_configuration: {
@@ -287,6 +288,8 @@ export interface RecentActivity {
   timestamp: Date
   converted_to_action_item_id?: string | null
   is_actionable?: boolean
+  widget_name?: string
+  rating?: number
 }
 
 export interface Integration {

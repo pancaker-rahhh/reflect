@@ -33,6 +33,7 @@ function transformWidgetConfig(backendConfig: Record<string, any>): WidgetConfig
   const theme = backendConfig.theme_configuration || {}
   const content = backendConfig.configuration?.content || {}
   const modules = backendConfig.configuration?.modules || {}
+  const typeSpecificSettings = backendConfig.configuration?.typeSpecificSettings || {}
 
   return {
     modules: {
@@ -49,6 +50,7 @@ function transformWidgetConfig(backendConfig: Record<string, any>): WidgetConfig
       thankYouTitle: content.thankYouTitle || 'Thank you!',
       thankYouMessage: content.thankYouMessage || 'Your feedback helps us improve.',
     },
+    contentByType: typeSpecificSettings.perTypeContent || {},
     appearance: {
       theme: theme.theme_name || 'default',
       position: backendConfig.position || 'bottom_right',

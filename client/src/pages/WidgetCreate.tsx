@@ -70,7 +70,16 @@ const widgetSchema = z
     // Optional per-type content. Only fields provided will override base content for that type
     contentByType: z
       .record(
-        z.enum(['FEEDBACK', 'SURVEY', 'NPS', 'CSAT', 'CES', 'REVIEW', 'BUG_REPORT', 'FEATURE_REQUEST']),
+        z.enum([
+          'FEEDBACK',
+          'SURVEY',
+          'NPS',
+          'CSAT',
+          'CES',
+          'REVIEW',
+          'BUG_REPORT',
+          'FEATURE_REQUEST',
+        ]),
         z.object({
           headerTitle: z.string().optional(),
           mainQuestion: z.string().optional(),
@@ -94,7 +103,6 @@ const widgetSchema = z
       }),
       showBranding: z.boolean(),
     }),
-
   })
   .refine(
     (data) => {
@@ -175,7 +183,8 @@ function getTypeSpecificDefaults(primaryType: WidgetFormData['primaryType']) {
         mainQuestion: 'What feature would you like to see added?',
         submitButtonText: 'Submit Request',
         thankYouTitle: 'Thanks for your suggestion!',
-        thankYouMessage: 'We appreciate your input and will consider this feature for future updates.',
+        thankYouMessage:
+          'We appreciate your input and will consider this feature for future updates.',
       }
     case 'SURVEY':
       return {
@@ -225,7 +234,8 @@ export function WidgetCreate() {
           primaryType: 'FEEDBACK',
           content: {
             ...getTypeSpecificDefaults('FEEDBACK'),
-            reviewPrompt: 'Share your thoughts about your experience. What did you like or dislike?',
+            reviewPrompt:
+              'Share your thoughts about your experience. What did you like or dislike?',
             requireReviewText: false,
             requireStepsToReproduce: false,
             requireUseCase: true,
@@ -281,9 +291,9 @@ export function WidgetCreate() {
       if (name === 'primaryType' && value.primaryType) {
         const currentContent = form.getValues('content')
         const newDefaults = getTypeSpecificDefaults(value.primaryType)
-        
+
         // Only update if the current values appear to be defaults (to avoid overriding user changes)
-        const isUsingDefaults = 
+        const isUsingDefaults =
           !currentContent?.headerTitle ||
           currentContent.headerTitle === 'We value your feedback' ||
           currentContent.headerTitle === 'How satisfied are you?' ||
@@ -351,9 +361,12 @@ export function WidgetCreate() {
               return {
                 headerTitle: widget.configuration?.content?.headerTitle || defaults.headerTitle,
                 mainQuestion: widget.configuration?.content?.mainQuestion || defaults.mainQuestion,
-                submitButtonText: widget.configuration?.content?.submitButtonText || defaults.submitButtonText,
-                thankYouTitle: widget.configuration?.content?.thankYouTitle || defaults.thankYouTitle,
-                thankYouMessage: widget.configuration?.content?.thankYouMessage || defaults.thankYouMessage,
+                submitButtonText:
+                  widget.configuration?.content?.submitButtonText || defaults.submitButtonText,
+                thankYouTitle:
+                  widget.configuration?.content?.thankYouTitle || defaults.thankYouTitle,
+                thankYouMessage:
+                  widget.configuration?.content?.thankYouMessage || defaults.thankYouMessage,
                 reviewPrompt:
                   widget.configuration?.typeSpecificSettings?.reviewPrompt ||
                   widget.configuration?.content?.reviewPrompt ||
@@ -372,6 +385,8 @@ export function WidgetCreate() {
                   true,
               }
             })(),
+            contentByType:
+              (widget.configuration?.typeSpecificSettings as any)?.perTypeContent || {},
             appearance: {
               theme: widget.theme_configuration?.theme_name || 'default',
               position: (() => {
@@ -513,10 +528,11 @@ export function WidgetCreate() {
                 </span>
                 <span className="text-sm font-semibold text-gray-600 flex items-center gap-1">
                   <Sparkles className="w-4 h-4 text-yellow-500" />
-                  {Math.round(((currentStep + 1) / steps.length) * 100)}% Complete ({currentStep + 1}/{steps.length})
+                  {Math.round(((currentStep + 1) / steps.length) * 100)}% Complete (
+                  {currentStep + 1}/{steps.length})
                 </span>
               </div>
-              
+
               <ProgressBarComponent
                 percentage={((currentStep + 1) / steps.length) * 100}
                 variant="linear"
@@ -527,7 +543,7 @@ export function WidgetCreate() {
                 totalSteps={steps.length}
                 currentStep={currentStep}
                 showSteps={true}
-                stepLabels={steps.map(step => step.title)}
+                stepLabels={steps.map((step) => step.title)}
                 showCompletion={false}
                 className="mb-6"
               />

@@ -89,7 +89,7 @@ export function FeedbackRenderer({
       rating: selectedScore,
       feedbackType,
       typeSpecificData: {
-        title: `${feedbackType} Feedback`,
+        title: feedbackType === 'FEEDBACK' ? 'General Feedback' : `${feedbackType} Feedback`,
         message: additionalFeedback.trim() || '',
       } as GeneralFeedbackData,
     })
@@ -115,18 +115,8 @@ export function FeedbackRenderer({
     description: string
     stepsToReproduce?: string
   }) => {
-    const response = [
-      `Title: ${data.title}`,
-      `Category: ${data.category}`,
-      `Severity: ${data.severity}`,
-      `Description: ${data.description}`,
-      data.stepsToReproduce ? `Steps: ${data.stepsToReproduce}` : null,
-    ]
-      .filter(Boolean)
-      .join('\n')
-
     await onSubmit({
-      response,
+      response: data.description,
       feedbackType,
       typeSpecificData: {
         title: data.title,
@@ -146,16 +136,8 @@ export function FeedbackRenderer({
     description: string
     useCase: string
   }) => {
-    const response = [
-      `Title: ${data.title}`,
-      `Category: ${data.category}`,
-      `Priority: ${data.priority}`,
-      `Description: ${data.description}`,
-      `Use Case: ${data.useCase}`,
-    ].join('\n')
-
     await onSubmit({
-      response,
+      response: data.description,
       feedbackType,
       typeSpecificData: {
         title: data.title,
@@ -171,7 +153,7 @@ export function FeedbackRenderer({
       response: feedback,
       feedbackType,
       typeSpecificData: {
-        title: `${feedbackType} Feedback`,
+        title: feedbackType === 'FEEDBACK' ? 'General Feedback' : `${feedbackType} Feedback`,
         message: feedback,
       } as GeneralFeedbackData,
     })

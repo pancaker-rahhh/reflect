@@ -39,7 +39,7 @@ export function Responses() {
     enabled: !!currentProject?.id,
   })
 
-  const surveyTypes = ['NPS', 'CSAT', 'CES', 'SURVEY']
+  const surveyTypes = ['NPS', 'CSAT', 'CES', 'SURVEY', 'FEEDBACK', 'general']
   const feedback = allFeedback.filter((item: any) => surveyTypes.includes(item.feedback_type))
 
   const resetFilters = () => {
@@ -176,7 +176,7 @@ export function Responses() {
         <div>
           <h1 className="text-3xl font-bold">Survey Responses</h1>
           <p className="text-muted-foreground mt-2">
-            Manage and analyze NPS, CSAT, CES, and custom survey responses from your users
+            Manage and analyze NPS, CSAT, CES, and general feedback responses from your users
           </p>
         </div>
 
@@ -242,6 +242,7 @@ export function Responses() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="general">General</SelectItem>
                 <SelectItem value="NPS">NPS</SelectItem>
                 <SelectItem value="CSAT">CSAT</SelectItem>
                 <SelectItem value="CES">CES</SelectItem>
@@ -315,8 +316,8 @@ export function Responses() {
             <MessageCircle className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No survey responses found</h3>
             <p className="text-muted-foreground text-center max-w-sm">
-              Survey responses will appear here once users complete your NPS, CSAT, CES, or custom
-              surveys
+              Survey responses will appear here once users complete your NPS, CSAT, CES, or general
+              feedback surveys
             </p>
             <Button variant="outline" onClick={resetFilters} className="mt-4">
               <RotateCcw className="mr-2 h-4 w-4" />
