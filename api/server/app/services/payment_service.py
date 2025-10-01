@@ -107,9 +107,16 @@ class PaymentService:
             raise
 
     async def process_webhook(
-        self, db: AsyncSession, payload: Dict[str, Any], signature: str, timestamp: str
+        self,
+        db: AsyncSession,
+        payload: Dict[str, Any],
+        signature: str,
+        timestamp: str,
+        webhook_id: Optional[str] = None,
     ) -> bool:
-        if not self._verify_webhook_signature(payload, signature, timestamp):
+        if not self._verify_webhook_signature(
+            payload, signature, timestamp, webhook_id
+        ):
             logger.warning('Invalid webhook signature')
             return False
 
@@ -127,6 +134,10 @@ class PaymentService:
                 await self._handle_payment_cancelled(db, data)
             elif event_type == 'payment.processing':
                 await self._handle_payment_processing(db, data)
+            elif event_type == 'subscription.created':
+                await self._handle_subscription_created(db, data)
+            elif event_type == 'subscription.updated':
+                await self._handle_subscription_updated(db, data)
             elif event_type == 'subscription.active':
                 await self._handle_subscription_active(db, data)
             elif event_type == 'subscription.cancelled':
@@ -149,32 +160,52 @@ class PaymentService:
             return False
 
     def _verify_webhook_signature(
-        self, payload: Dict[str, Any], signature: str, timestamp: str
+        self,
+        payload: Dict[str, Any],
+        signature: str,
+        timestamp: str,
+        webhook_id: Optional[str] = None,
     ) -> bool:
-        """Verify webhook signature using HMAC."""
-        if not settings.DODO_WEBHOOK_SECRET:
+        secret: Optional[str] = None
+        if (
+            getattr(settings, 'DODO_TEST_API_KEY', None)
+            and getattr(settings, 'DODO_TEST_API_KEY').strip()
+        ):
+            test_secret = getattr(settings, 'DODO_TEST_WEBHOOK_SECRET', '')
+            if isinstance(test_secret, str) and test_secret.strip():
+                secret = test_secret
+        if not secret:
+            secret = settings.DODO_WEBHOOK_SECRET
+
+        if not secret or not str(secret).strip():
             logger.warning('Webhook secret not configured')
             return False
 
-        # Create the payload string
+        provided_sig = signature or ''
+        if provided_sig.lower().startswith('sha256='):
+            provided_sig = provided_sig.split('=', 1)[1]
+        provided_sig = provided_sig.strip().lower()
+
         payload_str = json.dumps(payload, separators=(',', ':'))
 
-        # Create the signature string
-        signed_payload = f'{timestamp}.{payload_str}'
+        if not webhook_id:
+            # If missing, do not accept fallback bases to avoid weak verification
+            return False
+        bases = [f'{webhook_id}.{timestamp}.{payload_str}']
 
-        # Calculate expected signature
-        expected_signature = hmac.new(
-            settings.DODO_WEBHOOK_SECRET.encode('utf-8'),
-            signed_payload.encode('utf-8'),
-            hashlib.sha256,
-        ).hexdigest()
-
-        return hmac.compare_digest(signature, expected_signature)
+        # Compute and compare against all candidates in constant time
+        for base in bases:
+            expected = hmac.new(
+                secret.encode('utf-8'), base.encode('utf-8'), hashlib.sha256
+            ).hexdigest()
+            if hmac.compare_digest(provided_sig, expected.lower()):
+                return True
+        return False
 
     async def _handle_payment_succeeded(
         self, db: AsyncSession, data: Dict[str, Any]
     ) -> None:
-        payment_id = data.get('id')
+        payment_id = data.get('payment_id') or data.get('id')
         subscription_id = data.get('subscription_id')
         customer_email = data.get('customer', {}).get('email')
         metadata = data.get('metadata', {})
@@ -227,7 +258,7 @@ class PaymentService:
     async def _handle_payment_failed(
         self, db: AsyncSession, data: Dict[str, Any]
     ) -> None:
-        payment_id = data.get('id')
+        payment_id = data.get('payment_id') or data.get('id')
         metadata = data.get('metadata', {})
         organization_id = metadata.get('organization_id')
 

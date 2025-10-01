@@ -72,6 +72,7 @@ class Settings(BaseSettings):
     DODO_TEST_API_KEY: str = ''
     DODO_TEST_PRODUCT_ID_PRO_MONTHLY: str = ''
     DODO_TEST_PRODUCT_ID_PRO_YEARLY: str = ''
+    DODO_TEST_WEBHOOK_SECRET: str = ''
     # Dodo Payments Configuration
     DODO_API_KEY: str = ''
     DODO_WEBHOOK_SECRET: str = ''
