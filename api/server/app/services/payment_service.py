@@ -267,8 +267,29 @@ class PaymentService:
         organization_id = metadata.get('organization_id')
         plan_id = metadata.get('plan_id')
 
+        # If metadata is empty, try to find organization by customer email
+        if not organization_id and customer_email:
+            logger.info(
+                f'Metadata empty, looking up organization by email: {customer_email}'
+            )
+            from app.repositories.organization_repository import organization_repository
+            from app.repositories.user_repository import user_repository
+
+            user = await user_repository.get_by_email(db, customer_email)
+            if user:
+                organizations = await organization_repository.get_user_organizations(
+                    db, user.id, limit=1
+                )
+                if organizations:
+                    organization_id = str(organizations[0].id)
+                    logger.info(
+                        f'Found organization {organization_id} for user {customer_email}'
+                    )
+
         if not organization_id:
-            logger.warning(f'No organization_id in payment metadata: {payment_id}')
+            logger.warning(
+                f'No organization_id found for payment: {payment_id}, email: {customer_email}'
+            )
             return
 
         logger.info(
@@ -283,13 +304,13 @@ class PaymentService:
             logger.warning(f'Organization not found: {organization_id}')
             return
 
-        # Update subscription details
-        if plan_id == 'pro_monthly':
-            organization.subscription_plan = SubscriptionPlanEnum.PRO_MONTHLY
-        elif plan_id == 'pro_yearly':
+        # Update subscription details based on product
+        # Default to monthly if no plan_id specified
+        if plan_id == 'pro_yearly':
             organization.subscription_plan = SubscriptionPlanEnum.PRO_YEARLY
         else:
             organization.subscription_plan = SubscriptionPlanEnum.PRO_MONTHLY
+
         organization.subscription_status = SUBSCRIPTION_STATUS['ACTIVE']
         organization.dodo_subscription_id = subscription_id
         organization.payment_status = PAYMENT_STATUS['SUCCEEDED']
@@ -305,7 +326,7 @@ class PaymentService:
                 'subscription_id': subscription_id,
                 'organization_id': organization_id,
                 'customer_email': customer_email,
-                'plan_id': plan_id,
+                'plan_id': plan_id or 'pro_monthly',
             },
         )
 
@@ -418,9 +439,30 @@ class PaymentService:
         metadata = data.get('metadata', {})
         organization_id = metadata.get('organization_id')
 
+        # If metadata is empty, try to find organization by customer email
+        if not organization_id and customer_email:
+            logger.info(
+                f'Metadata empty, looking up organization by email: {customer_email}'
+            )
+            from app.repositories.organization_repository import organization_repository
+            from app.repositories.user_repository import user_repository
+
+            # Find user by email
+            user = await user_repository.get_by_email(db, customer_email)
+            if user:
+                # Get user's organizations
+                organizations = await organization_repository.get_user_organizations(
+                    db, user.id, limit=1
+                )
+                if organizations:
+                    organization_id = str(organizations[0].id)
+                    logger.info(
+                        f'Found organization {organization_id} for user {customer_email}'
+                    )
+
         if not organization_id:
             logger.warning(
-                f'No organization_id in subscription metadata: {subscription_id}'
+                f'No organization_id found for subscription: {subscription_id}, email: {customer_email}'
             )
             return
 
@@ -626,11 +668,33 @@ class PaymentService:
     ) -> None:
         subscription_id = data.get('id')
         metadata = data.get('metadata', {})
+        customer_email = data.get('customer', {}).get('email')
         organization_id = metadata.get('organization_id')
+
+        # If metadata is empty, try to find organization by customer email
+        if not organization_id and customer_email:
+            logger.info(
+                f'Metadata empty, looking up organization by email: {customer_email}'
+            )
+            from app.repositories.organization_repository import organization_repository
+            from app.repositories.user_repository import user_repository
+
+            # Find user by email
+            user = await user_repository.get_by_email(db, customer_email)
+            if user:
+                # Get user's organizations
+                organizations = await organization_repository.get_user_organizations(
+                    db, user.id, limit=1
+                )
+                if organizations:
+                    organization_id = str(organizations[0].id)
+                    logger.info(
+                        f'Found organization {organization_id} for user {customer_email}'
+                    )
 
         if not organization_id:
             logger.warning(
-                f'No organization_id in subscription metadata: {subscription_id}'
+                f'No organization_id found for subscription: {subscription_id}, email: {customer_email}'
             )
             return
 
