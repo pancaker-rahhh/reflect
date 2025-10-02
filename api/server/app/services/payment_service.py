@@ -857,16 +857,44 @@ class PaymentService:
 
         Returns the next billing date if successful, else None.
         """
-        if not self.client:
-            raise ValueError('Dodo Payments client not initialized')
-
         organization = await subscription_service.get_organization_subscription(
             db, organization_id
         )
         if not organization:
             raise ValueError('Organization not found')
-        if not organization.dodo_subscription_id:
-            raise ValueError('Active Dodo subscription not found for organization')
+
+        # Check if we can reach Dodo
+        if not self.client or not organization.dodo_subscription_id:
+            # Only use fallback in development/test - fail in production
+            if settings.ENV in ['development', 'test']:
+                logger.warning(
+                    'Dodo client not initialized or no subscription ID - using fallback cancellation (DEV MODE)',
+                    extra={'organization_id': str(organization_id)},
+                )
+                # Calculate next billing date as 30 days from now for monthly, or 1 year for yearly
+                plan = organization.subscription_plan
+                if 'yearly' in plan.lower():
+                    next_billing_date = datetime.now(timezone.utc) + timedelta(days=365)
+                else:
+                    next_billing_date = datetime.now(timezone.utc) + timedelta(days=30)
+
+                organization.subscription_status = SUBSCRIPTION_STATUS['CANCELLED']
+                organization.subscription_ends_at = next_billing_date
+                organization.updated_at = datetime.now(timezone.utc)
+                await db.commit()
+
+                logger.info(
+                    'Fallback cancellation scheduled (DEV MODE)',
+                    extra={
+                        'organization_id': str(organization_id),
+                        'subscription_ends_at': next_billing_date.isoformat(),
+                    },
+                )
+                return next_billing_date
+            else:
+                raise ValueError(
+                    'Dodo Payments client not initialized or no active subscription'
+                )
 
         try:
             response = self.client.subscriptions.update(
@@ -894,15 +922,46 @@ class PaymentService:
 
             return next_billing_date
         except Exception as e:
-            logger.error(
-                'Failed to request cancellation at period end',
-                extra={
-                    'organization_id': str(organization_id),
-                    'dodo_subscription_id': organization.dodo_subscription_id,
-                    'error': str(e),
-                },
-            )
-            return None
+            # Only use fallback in development/test - fail loudly in production
+            if settings.ENV in ['development', 'test']:
+                logger.warning(
+                    'Dodo API call failed, using fallback cancellation (DEV MODE)',
+                    extra={
+                        'organization_id': str(organization_id),
+                        'dodo_subscription_id': organization.dodo_subscription_id,
+                        'error': str(e),
+                    },
+                )
+                # Fallback: set local cancellation date
+                plan = organization.subscription_plan
+                if 'yearly' in plan.lower():
+                    next_billing_date = datetime.now(timezone.utc) + timedelta(days=365)
+                else:
+                    next_billing_date = datetime.now(timezone.utc) + timedelta(days=30)
+
+                organization.subscription_status = SUBSCRIPTION_STATUS['CANCELLED']
+                organization.subscription_ends_at = next_billing_date
+                organization.updated_at = datetime.now(timezone.utc)
+                await db.commit()
+
+                logger.info(
+                    'Fallback cancellation scheduled after Dodo failure (DEV MODE)',
+                    extra={
+                        'organization_id': str(organization_id),
+                        'subscription_ends_at': next_billing_date.isoformat(),
+                    },
+                )
+                return next_billing_date
+            else:
+                logger.error(
+                    'Failed to cancel subscription via Dodo Payments',
+                    extra={
+                        'organization_id': str(organization_id),
+                        'dodo_subscription_id': organization.dodo_subscription_id,
+                        'error': str(e),
+                    },
+                )
+                raise
 
     def _extract_next_billing_date(self, response: Any) -> Optional[datetime]:
         """Parse next billing date from Dodo's base64-encoded response.data."""

@@ -31,7 +31,7 @@ export function FreeTierAlert() {
   const { getUsageInfo } = useSubscription()
 
   const handleUpgrade = () => {
-    navigate('/app/settings/account?tab=billing')    
+    navigate('/app/settings/account?tab=billing')
   }
 
   const handleUndoCancellation = async () => {
@@ -51,15 +51,14 @@ export function FreeTierAlert() {
   const responseUsage = getUsageInfo('responses')
 
   // Check if still in grace period (subscription hasn't ended yet)
-  const isInGracePeriod = subscription?.subscription_ends_at
-    ? new Date(subscription.subscription_ends_at) > new Date()
-    : false
+  // Use org.subscription_ends_at for consistency with org.subscription_status
+  const subscriptionEndsAt = org.subscription_ends_at || subscription?.subscription_ends_at
+  const isInGracePeriod = subscriptionEndsAt ? new Date(subscriptionEndsAt) > new Date() : false
 
   // Calculate days remaining
-  const daysRemaining = subscription?.subscription_ends_at
+  const daysRemaining = subscriptionEndsAt
     ? Math.ceil(
-        (new Date(subscription.subscription_ends_at).getTime() - new Date().getTime()) /
-          (1000 * 60 * 60 * 24)
+        (new Date(subscriptionEndsAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
       )
     : 0
 
