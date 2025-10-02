@@ -85,7 +85,6 @@ export interface WidgetConfiguration {
 export interface NPSFeedbackData {
   nps_score: number
   promoter_category: 'promoter' | 'passive' | 'detractor'
-  follow_up_comment: string
 }
 
 export interface CSATFeedbackData {
@@ -96,35 +95,24 @@ export interface CSATFeedbackData {
     | 'neutral'
     | 'satisfied'
     | 'very_satisfied'
-  follow_up_comment: string
 }
 
 export interface CESFeedbackData {
   ces_score: number
   ease_level: 'very_difficult' | 'difficult' | 'neutral' | 'easy' | 'very_easy'
-  follow_up_comment: string
 }
 
 export interface ReviewFeedbackData {
   overall_rating: number
-  pros: string
-  cons: string
 }
 
 export interface BugReportFeedbackData {
   title: string
   severity: string
-  steps_to_reproduce: string
-  expected_result: string
-  actual_result: string
-  visual_proof: Record<string, unknown>
 }
 
 export interface FeatureRequestFeedbackData {
   title: string
-  suggested_solution: string
-  benefits: string
-  use_case: string
 }
 
 export interface GeneralFeedbackData {

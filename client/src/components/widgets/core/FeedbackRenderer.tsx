@@ -102,8 +102,6 @@ export function FeedbackRenderer({
       feedbackType,
       typeSpecificData: {
         overall_rating: data.rating,
-        pros: data.review || '',
-        cons: '',
       } as ReviewFeedbackData,
     })
   }
@@ -121,10 +119,6 @@ export function FeedbackRenderer({
       typeSpecificData: {
         title: data.title,
         severity: data.severity,
-        steps_to_reproduce: data.stepsToReproduce || '',
-        expected_result: '',
-        actual_result: data.description,
-        visual_proof: {},
       } as BugReportFeedbackData,
     })
   }
@@ -141,9 +135,6 @@ export function FeedbackRenderer({
       feedbackType,
       typeSpecificData: {
         title: data.title,
-        suggested_solution: data.description,
-        benefits: `Priority: ${data.priority}, Category: ${data.category}`,
-        use_case: data.useCase,
       } as FeatureRequestFeedbackData,
     })
   }

@@ -39,16 +39,9 @@ class FeedbackDataResponse(BaseModel):
     widget_name: Optional[str] = None
 
     overall_rating: Optional[int] = None
-    is_published: Optional[bool] = None
 
     severity_level: Optional[str] = None
-    steps_to_reproduce: Optional[str] = None
-    expected_behavior: Optional[str] = None
-    actual_behavior: Optional[str] = None
 
-    use_case: Optional[str] = None
-    suggested_solution: Optional[str] = None
-    benefits: Optional[str] = None
     implementation_status: Optional[str] = None
 
     nps_score: Optional[int] = None

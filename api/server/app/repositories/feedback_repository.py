@@ -16,6 +16,7 @@ from app.models.feedback_model import (
     CSATFeedback,
     CESFeedback,
 )
+from app.utils.feedback_formatter import FeedbackFormatter
 from app.repositories.base_repository import BaseRepository
 
 logger = get_logger(__name__)
@@ -322,7 +323,7 @@ class FeedbackRepository(BaseRepository[Feedback]):
 
         activities = []
         for item in feedback_items:
-            summary = self._create_display_title(item)
+            summary = FeedbackFormatter.format_display_title(item)
 
             widget_name = item.widget.name if item.widget else None
 
@@ -345,14 +346,6 @@ class FeedbackRepository(BaseRepository[Feedback]):
             )
 
         return activities
-
-    def _create_display_title(self, item: Feedback) -> str:
-        if item.feedback_type in ['bug_report', 'feature_request']:
-            content = item.message or item.title
-        else:
-            content = item.message
-
-        return f'"{content}"'
 
     async def get_public_feedback_for_widget(
         self,
@@ -399,7 +392,7 @@ class FeedbackRepository(BaseRepository[Feedback]):
 
         feedback_data = []
         for item in feedback_items:
-            display_title = self._create_display_title(item)
+            display_title = FeedbackFormatter.format_display_title(item)
 
             feedback_dict = {
                 'id': str(item.id),
@@ -432,7 +425,6 @@ class FeedbackRepository(BaseRepository[Feedback]):
                     feedback_dict.update(
                         {
                             'overall_rating': review_data.overall_rating,
-                            'is_published': review_data.is_published,
                         }
                     )
 
@@ -446,9 +438,6 @@ class FeedbackRepository(BaseRepository[Feedback]):
                     feedback_dict.update(
                         {
                             'severity_level': bug_data.severity_level,
-                            'steps_to_reproduce': bug_data.steps_to_reproduce,
-                            'expected_behavior': bug_data.expected_behavior,
-                            'actual_behavior': bug_data.actual_behavior,
                         }
                     )
 
@@ -461,9 +450,6 @@ class FeedbackRepository(BaseRepository[Feedback]):
                 if feature_data:
                     feedback_dict.update(
                         {
-                            'use_case': feature_data.use_case,
-                            'suggested_solution': feature_data.suggested_solution,
-                            'benefits': feature_data.benefits,
                             'implementation_status': feature_data.implementation_status,
                         }
                     )
