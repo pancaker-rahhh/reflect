@@ -31,7 +31,7 @@ export function FreeTierAlert() {
   const { getUsageInfo } = useSubscription()
 
   const handleUpgrade = () => {
-    navigate('/app/settings/billing')
+    navigate('/app/settings/account?tab=billing')    
   }
 
   const handleUndoCancellation = async () => {
