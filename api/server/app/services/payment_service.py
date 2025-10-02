@@ -118,7 +118,7 @@ class PaymentService:
         if not self._verify_webhook_signature(
             payload, signature, timestamp, webhook_id, raw_body
         ):
-            logger.warning('Invalid webhook signature')
+            logger.error('Invalid webhook signature')
             return False
 
         try:
@@ -183,6 +183,16 @@ class PaymentService:
             logger.warning('Webhook secret not configured')
             return False
 
+        secret_key = secret
+        if secret.startswith('whsec_'):
+            try:
+                secret_key = base64.b64decode(secret[6:])
+            except Exception as e:
+                logger.error(f'Failed to decode webhook secret: {str(e)}')
+                return False
+        else:
+            secret_key = secret.encode('utf-8')
+
         provided_sig = signature or ''
         if ',' in provided_sig:
             provided_sig = provided_sig.split(',', 1)[1]
@@ -206,7 +216,7 @@ class PaymentService:
 
         # Compute HMAC SHA256
         digest = hmac.new(
-            secret.encode('utf-8'), signed_payload.encode('utf-8'), hashlib.sha256
+            secret_key, signed_payload.encode('utf-8'), hashlib.sha256
         ).digest()
 
         expected_b64 = base64.b64encode(digest).decode('ascii')
@@ -229,11 +239,15 @@ class PaymentService:
                 'provided_sig': provided_sig,
                 'expected_b64': expected_b64,
                 'expected_hex': expected_hex[:16] + '...',
-                'signed_payload_preview': signed_payload[:100] + '...'
-                if len(signed_payload) > 100
+                'signed_payload_preview': signed_payload[:200] + '...'
+                if len(signed_payload) > 200
                 else signed_payload,
                 'payload_length': len(payload_str),
+                'payload_first_50_chars': payload_str[:50],
                 'secret_configured': 'yes' if secret else 'no',
+                'secret_has_whsec_prefix': secret.startswith('whsec_')
+                if secret
+                else False,
                 'using_test_secret': bool(
                     getattr(settings, 'DODO_TEST_API_KEY', None)
                     and getattr(settings, 'DODO_TEST_API_KEY').strip()

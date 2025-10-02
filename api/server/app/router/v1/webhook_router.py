@@ -71,7 +71,7 @@ async def process_webhook(
                 success=True, message='Webhook processed successfully'
             )
         else:
-            logger.warning(f'Webhook processing failed: {webhook_id}')
+            logger.error(f'Webhook processing failed: {webhook_id}')
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='Webhook processing failed',
