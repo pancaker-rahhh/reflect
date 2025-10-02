@@ -1,4 +1,4 @@
-import { AlertCircle, Zap, RotateCcw } from 'lucide-react'
+import { AlertCircle, Zap, RotateCcw, Undo2 } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
@@ -7,10 +7,13 @@ import { useAppContext } from '@/context/AppContext'
 import { useSubscription } from '@/hooks/useSubscription'
 import { UsageBar } from '@/components/common/UsageBar'
 import { useNavigate } from 'react-router-dom'
+import { usePayment } from '@/hooks/usePayment'
 
 export function FreeTierAlert() {
   const navigate = useNavigate()
   const { currentOrganization } = useAppContext()
+  const { subscription } = useSubscription()
+  const { undoCancelSubscription, isUndoingCancellation } = usePayment()
   const { data: organizations } = useQuery({
     queryKey: ['organizations', 'my'],
     queryFn: () => organizationApi.getMy(),
@@ -31,6 +34,14 @@ export function FreeTierAlert() {
     navigate('/app/settings/billing')
   }
 
+  const handleUndoCancellation = async () => {
+    try {
+      await undoCancelSubscription()
+    } catch (error) {
+      console.error('Failed to undo cancellation:', error)
+    }
+  }
+
   if (!org) return null
   const isFreeTier = org.subscription_plan === 'free'
   const isCancelled = org.subscription_status === 'cancelled'
@@ -39,25 +50,68 @@ export function FreeTierAlert() {
   const widgetUsage = getUsageInfo('widgets')
   const responseUsage = getUsageInfo('responses')
 
+  // Check if still in grace period (subscription hasn't ended yet)
+  const isInGracePeriod = subscription?.subscription_ends_at
+    ? new Date(subscription.subscription_ends_at) > new Date()
+    : false
+
+  // Calculate days remaining
+  const daysRemaining = subscription?.subscription_ends_at
+    ? Math.ceil(
+        (new Date(subscription.subscription_ends_at).getTime() - new Date().getTime()) /
+          (1000 * 60 * 60 * 24)
+      )
+    : 0
+
   if (isCancelled) {
-    return (
-      <Alert className="border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/30">
-        <AlertCircle className="h-4 w-4 text-red-700" />
-        <AlertTitle className="text-red-900 dark:text-red-100">Subscription Cancelled</AlertTitle>
-        <AlertDescription className="mt-2">
-          <div className="flex items-center gap-3">
-            <Button size="sm" variant="destructive" className="gap-2" onClick={handleUpgrade}>
-              <RotateCcw className="h-4 w-4" />
-              Renew subscription
-            </Button>
-            <span className="text-sm text-red-800 dark:text-red-300">
-              {/* TODO - Fetch remaining days in subscription and show it here */}
-              You only have a few days left before you lose access to all your Pro features.
-            </span>
-          </div>
-        </AlertDescription>
-      </Alert>
-    )
+    if (isInGracePeriod) {
+      // Still in grace period - show undo cancellation option
+      return (
+        <Alert className="border-orange-300 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/30">
+          <AlertCircle className="h-4 w-4 text-orange-700" />
+          <AlertTitle className="text-orange-900 dark:text-orange-100">
+            Cancellation Scheduled
+          </AlertTitle>
+          <AlertDescription className="mt-2">
+            <div className="flex items-center gap-3">
+              <Button
+                size="sm"
+                variant="default"
+                className="gap-2"
+                onClick={handleUndoCancellation}
+                disabled={isUndoingCancellation}
+              >
+                <Undo2 className="h-4 w-4" />
+                {isUndoingCancellation ? 'Processing...' : 'Undo Cancellation'}
+              </Button>
+              <span className="text-sm text-orange-800 dark:text-orange-300">
+                Your subscription will end in {daysRemaining} {daysRemaining === 1 ? 'day' : 'days'}
+                . You can undo this cancellation to keep your Pro features.
+              </span>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )
+    } else {
+      // Grace period expired - show renew option
+      return (
+        <Alert className="border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/30">
+          <AlertCircle className="h-4 w-4 text-red-700" />
+          <AlertTitle className="text-red-900 dark:text-red-100">Subscription Expired</AlertTitle>
+          <AlertDescription className="mt-2">
+            <div className="flex items-center gap-3">
+              <Button size="sm" variant="destructive" className="gap-2" onClick={handleUpgrade}>
+                <RotateCcw className="h-4 w-4" />
+                Renew subscription
+              </Button>
+              <span className="text-sm text-red-800 dark:text-red-300">
+                Your subscription has ended. Renew now to regain access to all Pro features.
+              </span>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )
+    }
   }
 
   return (

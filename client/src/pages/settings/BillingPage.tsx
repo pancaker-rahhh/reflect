@@ -34,7 +34,6 @@ export default function BillingPage() {
   const [cancellationError, setCancellationError] = useState<string | null>(null)
   const [changeError, setChangeError] = useState<string | null>(null)
   const [infoMessage, setInfoMessage] = useState<string | null>(null)
-  const [isCancellationScheduled, setIsCancellationScheduled] = useState(false)
   const [isOrgOwner, setIsOrgOwner] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [isLoadingPayments, setIsLoadingPayments] = useState(false)
@@ -141,7 +140,6 @@ export default function BillingPage() {
           ? `Cancellation scheduled. Your subscription will end on ${when}.`
           : 'Cancellation scheduled at the next billing date.'
       )
-      setIsCancellationScheduled(true)
     } catch (error) {
       setCancellationError(error instanceof Error ? error.message : 'Failed to cancel subscription')
     }
@@ -153,7 +151,6 @@ export default function BillingPage() {
       setInfoMessage(null)
       await undoCancelSubscription()
       setInfoMessage('Cancellation has been undone.')
-      setIsCancellationScheduled(false)
     } catch (error) {
       setCancellationError(error instanceof Error ? error.message : 'Failed to undo cancellation')
     }
@@ -330,9 +327,22 @@ export default function BillingPage() {
 
                   <div className="flex flex-col md:flex-row gap-2">
                     {subscription.status === 'cancelled' || subscription.status === 'expired' ? (
-                      <Button onClick={() => setShowUpgrade(true)} className="w-full md:w-auto">
-                        Renew Subscription
-                      </Button>
+                      <>
+                        {subscription.subscription_ends_at &&
+                        new Date(subscription.subscription_ends_at) > new Date() ? (
+                          <Button
+                            onClick={handleUndoCancellation}
+                            disabled={isUndoingCancellation}
+                            className="w-full md:w-auto"
+                          >
+                            {isUndoingCancellation ? 'Processing...' : 'Undo Cancellation'}
+                          </Button>
+                        ) : (
+                          <Button onClick={() => setShowUpgrade(true)} className="w-full md:w-auto">
+                            Renew Subscription
+                          </Button>
+                        )}
+                      </>
                     ) : subscription.plan === 'free' ? (
                       <Button onClick={() => setShowUpgrade(true)}>Upgrade Plan</Button>
                     ) : (
@@ -388,21 +398,41 @@ export default function BillingPage() {
                   </Alert>
                 )}
 
-                {/* Undo cancellation banner during grace window */}
-                {subscription.status !== 'cancelled' && isCancellationScheduled && (
-                  <Alert>
-                    <AlertDescription className="flex items-center justify-between">
-                      <span>
-                        Cancellation scheduled. Your subscription will end soon. You can undo within
-                        the grace period.
-                      </span>
-                      <Button
-                        variant="outline"
-                        onClick={handleUndoCancellation}
-                        disabled={isUndoingCancellation}
-                      >
-                        {isUndoingCancellation ? 'Undoing…' : 'Undo Cancellation'}
-                      </Button>
+                {/* Billing Period Information */}
+                {subscription.status === 'cancelled' &&
+                  subscription.subscription_ends_at &&
+                  (new Date(subscription.subscription_ends_at) > new Date() ? (
+                    <Alert className="border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30">
+                      <AlertCircle className="h-4 w-4 text-blue-600" />
+                      <AlertDescription className="text-blue-900 dark:text-blue-100">
+                        <strong>
+                          Your subscription is already paid until{' '}
+                          {new Date(subscription.subscription_ends_at).toLocaleDateString()}.
+                        </strong>{' '}
+                        Clicking &quot;Undo Cancellation&quot; will simply reactivate your
+                        subscription—you won&apos;t be charged again until your current billing
+                        period ends.
+                      </AlertDescription>
+                    </Alert>
+                  ) : (
+                    <Alert className="border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30">
+                      <AlertCircle className="h-4 w-4 text-blue-600" />
+                      <AlertDescription className="text-blue-900 dark:text-blue-100">
+                        <strong>Renewing will start a new billing period.</strong> You&apos;ll be
+                        charged for a {subscription.plan === 'pro_monthly' ? 'monthly' : 'yearly'}{' '}
+                        subscription starting today, and your subscription will renew automatically
+                        at the end of each billing cycle.
+                      </AlertDescription>
+                    </Alert>
+                  ))}
+
+                {subscription.status === 'active' && subscription.plan !== 'free' && (
+                  <Alert className="border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900/30">
+                    <AlertCircle className="h-4 w-4 text-gray-600" />
+                    <AlertDescription className="text-gray-700 dark:text-gray-300">
+                      <strong>About Cancellations:</strong> If you cancel your subscription,
+                      you&apos;ll continue to have access to Pro features until the end of your
+                      current billing period. You can undo the cancellation anytime before then.
                     </AlertDescription>
                   </Alert>
                 )}
