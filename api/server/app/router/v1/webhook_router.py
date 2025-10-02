@@ -41,6 +41,8 @@ async def process_webhook(
             extra={
                 'webhook_id': webhook_id,
                 'timestamp': webhook_timestamp,
+                'signature_length': len(webhook_signature),
+                'body_length': len(body_str),
             },
         )
 

@@ -198,18 +198,40 @@ class PaymentService:
         )
 
         if not webhook_id:
-            # If missing, do not accept fallback bases to avoid weak verification
+            logger.warning('Webhook ID missing, cannot verify signature')
             return False
-        bases = [f'{webhook_id}.{timestamp}.{payload_str}']
 
-        # Compute and compare against all candidates in constant time
-        for base in bases:
-            digest = hmac.new(
-                secret.encode('utf-8'), base.encode('utf-8'), hashlib.sha256
-            ).digest()
-            expected = base64.b64encode(digest).decode('ascii')
-            if hmac.compare_digest(provided_sig, expected):
-                return True
+        # According to Dodo docs: concatenate webhook-id, webhook-timestamp, and payload with periods
+        signed_payload = f'{webhook_id}.{timestamp}.{payload_str}'
+
+        # Compute HMAC SHA256
+        digest = hmac.new(
+            secret.encode('utf-8'), signed_payload.encode('utf-8'), hashlib.sha256
+        ).digest()
+
+        # Try hex format first (standard for most webhook implementations including Dodo)
+        expected_hex = digest.hex()
+        if hmac.compare_digest(provided_sig.lower(), expected_hex.lower()):
+            logger.debug('Webhook signature verified (hex format)')
+            return True
+
+        # Try base64 format for backward compatibility
+        expected_b64 = base64.b64encode(digest).decode('ascii')
+        if hmac.compare_digest(provided_sig, expected_b64):
+            logger.debug('Webhook signature verified (base64 format)')
+            return True
+
+        # Log signature mismatch details (without exposing the secret)
+        logger.warning(
+            'Webhook signature mismatch',
+            extra={
+                'webhook_id': webhook_id,
+                'timestamp': timestamp,
+                'provided_sig_length': len(provided_sig),
+                'expected_hex_length': len(expected_hex),
+                'payload_length': len(payload_str),
+            },
+        )
         return False
 
     async def _handle_payment_succeeded(
