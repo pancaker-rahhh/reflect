@@ -185,12 +185,6 @@ export function FeedbackDetailModal({ isOpen, onClose, feedback }: FeedbackDetai
                     </span>
                   </div>
                 )}
-                {feedback.message && (
-                  <div className="mt-3">
-                    <span className="text-purple-700 block mb-1">Message:</span>
-                    <span className="text-purple-900">{feedback.message}</span>
-                  </div>
-                )}
               </div>
             </div>
           )}
