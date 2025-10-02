@@ -837,6 +837,7 @@ class PaymentService:
             raise ValueError('Organization not found')
 
         organization.subscription_ends_at = None
+        organization.subscription_status = 'active'
         organization.updated_at = datetime.now(timezone.utc)
         await db.commit()
         logger.info(

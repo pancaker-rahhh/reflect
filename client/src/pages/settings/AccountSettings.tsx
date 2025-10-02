@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api, type UserProfileUpdateRequest } from '@/lib/api'
 import { Input } from '@/components/ui/input'
@@ -11,9 +12,17 @@ import { BillingPageContent } from './BillingPageContent'
 type Tab = 'account' | 'billing'
 
 export function AccountSettings() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [name, setName] = useState('')
   const [isEdited, setIsEdited] = useState(false)
-  const [activeTab, setActiveTab] = useState<Tab>('account')
+
+  const tabParam = searchParams.get('tab')
+  const isValidTab = (tab: string | null): tab is Tab => tab === 'account' || tab === 'billing'
+  const activeTab: Tab = isValidTab(tabParam) ? tabParam : 'account'
+
+  const handleTabChange = (tab: Tab) => {
+    setSearchParams({ tab })
+  }
 
   const queryClient = useQueryClient()
 
@@ -187,7 +196,7 @@ export function AccountSettings() {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as Tab)}
+                  onClick={() => handleTabChange(tab.id as Tab)}
                   className={`flex-1 lg:flex-initial flex items-center justify-center lg:justify-start gap-2 px-6 py-4 border-b-2 font-medium text-sm transition-colors relative ${
                     activeTab === tab.id
                       ? 'border-indigo-500 text-indigo-600 bg-indigo-50/50'

@@ -14,6 +14,7 @@ import { apiClient } from '@/lib/client'
 import { useSubscription } from '@/hooks/useSubscription'
 import { ConfirmationModal } from '@/components/common/ConfirmationModal'
 import { paymentApi, type PaymentItem } from '@/lib/api/payment'
+import { FreeTierAlert } from '@/components/widgets/SubscriptionMessagesBanner'
 
 export function BillingPageContent() {
   const { subscription, isLoading: subscriptionLoading } = useSubscription()
@@ -218,6 +219,9 @@ export function BillingPageContent() {
 
   return (
     <div className="space-y-6">
+      {/* Subscription Status Banner */}
+      <FreeTierAlert />
+
       {/* Current Subscription */}
       <Card>
         <CardHeader>
@@ -305,9 +309,22 @@ export function BillingPageContent() {
 
                 <div className="flex flex-col md:flex-row gap-2">
                   {subscription.status === 'cancelled' || subscription.status === 'expired' ? (
-                    <Button onClick={() => setShowUpgrade(true)} className="w-full md:w-auto">
-                      Renew Subscription
-                    </Button>
+                    <>
+                      {subscription.subscription_ends_at &&
+                      new Date(subscription.subscription_ends_at) > new Date() ? (
+                        <Button
+                          onClick={handleUndoCancellation}
+                          disabled={isUndoingCancellation}
+                          className="w-full md:w-auto"
+                        >
+                          {isUndoingCancellation ? 'Processing...' : 'Undo Cancellation'}
+                        </Button>
+                      ) : (
+                        <Button onClick={() => setShowUpgrade(true)} className="w-full md:w-auto">
+                          Renew Subscription
+                        </Button>
+                      )}
+                    </>
                   ) : subscription.plan === 'free' ? (
                     <Button onClick={() => setShowUpgrade(true)}>Upgrade Plan</Button>
                   ) : (

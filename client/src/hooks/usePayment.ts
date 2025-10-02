@@ -42,6 +42,7 @@ export function usePayment() {
       queryClient.invalidateQueries({ queryKey: ['subscription-plan'] })
       queryClient.invalidateQueries({ queryKey: ['subscription-limits'] })
       queryClient.invalidateQueries({ queryKey: ['subscription-features'] })
+      queryClient.invalidateQueries({ queryKey: ['organizations'] })
     },
   })
 
@@ -52,6 +53,7 @@ export function usePayment() {
       queryClient.invalidateQueries({ queryKey: ['subscription-plan'] })
       queryClient.invalidateQueries({ queryKey: ['subscription-limits'] })
       queryClient.invalidateQueries({ queryKey: ['subscription-features'] })
+      queryClient.invalidateQueries({ queryKey: ['organizations'] })
     },
   })
 
@@ -70,6 +72,7 @@ export function usePayment() {
       queryClient.invalidateQueries({ queryKey: ['subscription-plan'] })
       queryClient.invalidateQueries({ queryKey: ['subscription-limits'] })
       queryClient.invalidateQueries({ queryKey: ['subscription-features'] })
+      queryClient.invalidateQueries({ queryKey: ['organizations'] })
     },
   })
 
