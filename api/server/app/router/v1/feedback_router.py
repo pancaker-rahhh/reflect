@@ -65,72 +65,6 @@ async def list_feedback(
     )
 
 
-def _convert_feedback_to_dict(item) -> Dict[str, Any]:
-    if item.feedback_type.value == 'general':
-        if item.message and len(item.message.strip()) > 0:
-            title = (
-                item.message[:50] + '...' if len(item.message) > 50 else item.message
-            )
-        else:
-            title = 'General Feedback'
-    elif item.feedback_type.value == 'REVIEW':
-        title = (
-            item.title
-            or (
-                item.message[:50] + '...'
-                if item.message and len(item.message) > 50
-                else item.message
-            )
-            or 'Product Review'
-        )
-    elif item.feedback_type.value in ['NPS', 'CSAT', 'CES']:
-        score_attr = (
-            f'{item.feedback_type.value.lower()}_score'
-            if hasattr(item, f'{item.feedback_type.value.lower()}_score')
-            else 'rating'
-        )
-        score = getattr(item, score_attr, None) if hasattr(item, score_attr) else None
-        if score is not None:
-            title = f'Score: {score}'
-            if item.message:
-                title += f' - {(item.message[:30] + "..." if len(item.message) > 30 else item.message)}'
-        else:
-            title = (
-                item.title
-                or (
-                    item.message[:50] + '...'
-                    if item.message and len(item.message) > 50
-                    else item.message
-                )
-                or f'{item.feedback_type.value} Response'
-            )
-    else:
-        title = (
-            item.title
-            or (
-                item.message[:50] + '...'
-                if item.message and len(item.message) > 50
-                else item.message
-            )
-            or f'{item.feedback_type.value} Response'
-        )
-    if title.startswith('New '):
-        title = title[4:]
-
-    return {
-        'id': str(item.id),
-        'type': item.feedback_type.value
-        if hasattr(item.feedback_type, 'value')
-        else str(item.feedback_type),
-        'summary': title,
-        'message': item.message,
-        'submittedBy': item.submitter_name or 'Anonymous',
-        'timestamp': item.created_at.isoformat() if item.created_at else None,
-        'feedback_votes': item.feedback_votes,
-        'is_actionable': item.is_actionable,
-    }
-
-
 @feedback_router.get('/actionable', response_model=List[Dict[str, Any]])
 @create_rate_limit_decorator('general_public', is_anonymous=True)
 async def get_actionable_feedback(
@@ -149,7 +83,10 @@ async def get_actionable_feedback(
         db, project_id, skip, limit
     )
 
-    return [_convert_feedback_to_dict(item) for item in actionable_feedback]
+    return [
+        feedback_service.format_feedback_for_display(item)
+        for item in actionable_feedback
+    ]
 
 
 @feedback_router.get('/chart-data', response_model=List[Dict[str, Any]])
