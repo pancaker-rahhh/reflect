@@ -86,10 +86,12 @@ async def process_webhook(
             detail='Internal server error',
         )
 
+
 # HEAD Check - No body returned but status code 200 (for Load Balancers)
 @router.head('/webhook')
 async def webhook_head() -> None:
     return None
+
 
 # OPTIONS Check - No body returned but status code 200 (for CORS)
 @router.options('/webhook')

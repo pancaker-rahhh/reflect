@@ -209,27 +209,35 @@ class PaymentService:
             secret.encode('utf-8'), signed_payload.encode('utf-8'), hashlib.sha256
         ).digest()
 
-        # Try hex format first (standard for most webhook implementations including Dodo)
-        expected_hex = digest.hex()
-        if hmac.compare_digest(provided_sig.lower(), expected_hex.lower()):
-            logger.debug('Webhook signature verified (hex format)')
-            return True
-
-        # Try base64 format for backward compatibility
         expected_b64 = base64.b64encode(digest).decode('ascii')
         if hmac.compare_digest(provided_sig, expected_b64):
-            logger.debug('Webhook signature verified (base64 format)')
+            logger.info('Webhook signature verified successfully')
             return True
 
-        # Log signature mismatch details (without exposing the secret)
-        logger.warning(
-            'Webhook signature mismatch',
+        # Try hex format for compatibility
+        expected_hex = digest.hex()
+        if hmac.compare_digest(provided_sig.lower(), expected_hex.lower()):
+            logger.info('Webhook signature verified (hex format)')
+            return True
+
+        # Log signature mismatch details for debugging
+        logger.error(
+            'Webhook signature mismatch - debugging info',
             extra={
                 'webhook_id': webhook_id,
                 'timestamp': timestamp,
-                'provided_sig_length': len(provided_sig),
-                'expected_hex_length': len(expected_hex),
+                'provided_sig': provided_sig,
+                'expected_b64': expected_b64,
+                'expected_hex': expected_hex[:16] + '...',
+                'signed_payload_preview': signed_payload[:100] + '...'
+                if len(signed_payload) > 100
+                else signed_payload,
                 'payload_length': len(payload_str),
+                'secret_configured': 'yes' if secret else 'no',
+                'using_test_secret': bool(
+                    getattr(settings, 'DODO_TEST_API_KEY', None)
+                    and getattr(settings, 'DODO_TEST_API_KEY').strip()
+                ),
             },
         )
         return False
