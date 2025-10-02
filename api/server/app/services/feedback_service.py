@@ -52,6 +52,7 @@ from app.models.feedback_model import (
     FeedbackComment,
 )
 from app.models.widget_model import WidgetType
+from app.utils.feedback_formatter import FeedbackFormatter
 
 logger = get_logger(__name__)
 
@@ -183,9 +184,6 @@ class FeedbackService:
             overall_rating=rating_value,  # Set overall_rating field for review-specific data
             title=data.get('title', 'Product Review'),
             message=data.get('message', ''),
-            pros=data.get('pros', ''),
-            cons=data.get('cons', ''),
-            is_published=data.get('is_published', False),
         )
 
     def _create_bug_report_feedback(
@@ -200,30 +198,27 @@ class FeedbackService:
             # Default to medium if invalid severity provided
             severity_level = FeedbackPriority.MEDIUM
 
+        user_description = data.get('message', '') or data.get('description', '')
+        title_value = data.get('title', '')
+
         return BugReportFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.BUG_REPORT,
-            title=data.get('title', 'Bug Report'),
-            message=data.get('description', ''),
+            title=title_value or 'Bug Report',
+            message=user_description,
             severity_level=severity_level,
-            steps_to_reproduce=data.get('steps_to_reproduce', ''),
-            expected_behavior=data.get('expected_result', ''),
-            actual_behavior=data.get('actual_result', ''),
-            visual_proof=data.get('visual_proof') or {},
         )
 
     def _create_feature_request_feedback(
         self, base_data: Dict[str, Any], data: Dict[str, Any]
     ) -> FeatureRequestFeedbackCreate:
-        """Create feature request feedback with solution and benefits"""
+        """Create feature request feedback"""
+        user_description = data.get('message', '') or data.get('description', '')
         return FeatureRequestFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.FEATURE_REQUEST,
-            title=data.get('title', 'Feature Request'),
-            message=data.get('description', ''),
-            suggested_solution=data.get('suggested_solution', ''),
-            benefits=data.get('benefits', ''),
-            use_case=data.get('use_case', ''),
+            title=data.get('title') or 'Feature Request',
+            message=user_description,
         )
 
     def _create_nps_feedback(
@@ -248,7 +243,6 @@ class FeedbackService:
             rating=nps_score,  # Set base rating field
             nps_score=nps_score,
             promoter_category=promoter_category,
-            follow_up_comment=data.get('comment', ''),
             title='NPS Survey Response',
             message=data.get('comment', ''),
         )
@@ -276,7 +270,6 @@ class FeedbackService:
             rating=csat_score,  # Set base rating field
             csat_score=csat_score,
             satisfaction_level=satisfaction_levels.get(csat_score, 'neutral'),
-            follow_up_comment=data.get('comment', ''),
             title='CSAT Survey Response',
             message=data.get('comment', ''),
         )
@@ -304,7 +297,6 @@ class FeedbackService:
             rating=ces_score,  # Set base rating field
             ces_score=ces_score,
             ease_level=ease_levels.get(ces_score, 'neutral'),
-            follow_up_comment=data.get('comment', ''),
             title='CES Survey Response',
             message=data.get('comment', ''),
         )
@@ -312,12 +304,14 @@ class FeedbackService:
     def _create_general_feedback(
         self, base_data: Dict[str, Any], data: Dict[str, Any]
     ) -> GeneralFeedbackCreate:
-        """Create general feedback as fallback"""
+        user_message = data.get('message', '')
+        title = user_message
+
         return GeneralFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.GENERAL,
-            title=data.get('title', 'General Feedback'),
-            message=data.get('message', ''),
+            title=title,
+            message=user_message,
             rating=data.get('rating'),
         )
 
@@ -492,10 +486,6 @@ class FeedbackService:
             'message',
             'rating',
             'severity',
-            'steps_to_reproduce',
-            'expected_result',
-            'actual_result',
-            'visual_proof',
             'priority',
             'status',
             'feedback_metadata',
@@ -540,6 +530,9 @@ class FeedbackService:
 
         logger.info(f'Converting feedback {feedback_id} to response')
         return self._convert_to_response(existing_feedback)
+
+    def format_feedback_for_display(self, item: Feedback) -> Dict[str, Any]:
+        return FeedbackFormatter.format_for_display(item)
 
     def _convert_to_response(self, obj: Feedback) -> FeedbackResponsePayload:
         if isinstance(obj, BugReportFeedback):

@@ -31,6 +31,20 @@ interface WidgetConfig {
       thankYouTitle?: string
       thankYouMessage?: string
     }
+    typeSpecificSettings?: {
+      perTypeContent?: Partial<
+        Record<
+          FeedbackType,
+          Partial<{
+            headerTitle: string
+            mainQuestion: string
+            submitButtonText: string
+            thankYouTitle: string
+            thankYouMessage: string
+          }>
+        >
+      >
+    }
     modules?: {
       feedback?: boolean
       reviews?: boolean
@@ -291,6 +305,7 @@ declare global {
     const theme = backendConfig.theme_configuration || {}
     const content = backendConfig.configuration?.content || {}
     const modules = backendConfig.configuration?.modules || {}
+    const perTypeContent = backendConfig.configuration?.typeSpecificSettings?.perTypeContent || {}
     // Extract the actual type from enum format (e.g., "WidgetType.CSAT" -> "CSAT")
     const widgetType = backendConfig.widget_type?.split('.')?.pop()?.toUpperCase()
 
@@ -319,6 +334,7 @@ declare global {
         thankYouTitle: content.thankYouTitle || 'Thank you!',
         thankYouMessage: content.thankYouMessage || 'Your feedback helps us improve.',
       },
+      contentByType: perTypeContent as WidgetConfiguration['contentByType'],
       appearance: {
         theme: (configTheme === 'dark'
           ? 'minimal-dark'

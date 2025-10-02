@@ -5,7 +5,7 @@ import { SkeletonPulse } from './SkeletonPulse'
 import { FeedbackRenderer } from './FeedbackRenderer'
 import { useWidgetState } from './useWidgetState'
 import { useFeedbackSubmission } from './useFeedbackSubmission'
-import type { WidgetCoreProps } from './types'
+import type { WidgetCoreProps, FeedbackType } from './types'
 import { FEEDBACK_TYPE_INFO } from './types'
 
 // Helper function to convert hex to RGB
@@ -48,6 +48,18 @@ export function WidgetCore({
 
   const theme = config.appearance
   const content = config.content
+
+  // Resolve content for a feedback type using per-type overrides when available
+  function resolveContentFor(type: FeedbackType) {
+    const overrides = config.contentByType?.[type] || {}
+    return {
+      headerTitle: overrides.headerTitle || content.headerTitle,
+      mainQuestion: overrides.mainQuestion || content.mainQuestion,
+      submitButtonText: overrides.submitButtonText || content.submitButtonText,
+      thankYouTitle: overrides.thankYouTitle || content.thankYouTitle,
+      thankYouMessage: overrides.thankYouMessage || content.thankYouMessage,
+    }
+  }
 
   const primaryColor = theme.colors.primary
   const backgroundColor = theme.colors.background
@@ -241,10 +253,10 @@ export function WidgetCore({
       </div>
       <div>
         <h3 className="text-lg font-semibold" style={{ color: textColor }}>
-          {content.thankYouTitle}
+          {resolveContentFor(config.primaryType).thankYouTitle}
         </h3>
         <p className="text-sm opacity-70 mt-1" style={{ color: textColor }}>
-          {content.thankYouMessage}
+          {resolveContentFor(config.primaryType).thankYouMessage}
         </p>
       </div>
       <div className="flex flex-col sm:flex-row gap-2">
@@ -413,7 +425,7 @@ export function WidgetCore({
 
             <div className="text-center">
               <p className="text-sm opacity-70" style={{ color: textColor }}>
-                {content.mainQuestion}
+                {resolveContentFor(currentState.feedbackType).mainQuestion}
               </p>
             </div>
 
@@ -425,7 +437,7 @@ export function WidgetCore({
               onSubmit={handleSubmit}
               onScoreChange={handleScoreChange}
               colors={colors}
-              content={content}
+              content={resolveContentFor(currentState.feedbackType)}
               mode={mode}
               widgetKey={config.widgetKey}
             />
@@ -464,7 +476,11 @@ export function WidgetCore({
         }}
       >
         <div className="relative z-10">
-          <h2 className="text-lg font-bold text-white m-0">{content.headerTitle}</h2>
+          <h2 className="text-lg font-bold text-white m-0">
+            {resolveContentFor(
+              currentState.type === 'active' ? currentState.feedbackType : config.primaryType
+            ).headerTitle}
+          </h2>
         </div>
 
         {/* Close button */}

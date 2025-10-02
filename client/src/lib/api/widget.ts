@@ -16,6 +16,8 @@ function transformDataToPayload(data: WidgetFormData) {
         requireReviewText: data.content?.requireReviewText,
         requireStepsToReproduce: data.content?.requireStepsToReproduce,
         requireUseCase: data.content?.requireUseCase,
+      // Persist per-type content overrides from Step 2
+      perTypeContent: data.contentByType || {},
       },
     },
     theme_configuration: {
@@ -23,13 +25,7 @@ function transformDataToPayload(data: WidgetFormData) {
       theme_name: data.appearance.theme,
       show_branding: data.appearance.showBranding,
     },
-    targeting_rules: [
-      {
-        type: 'trigger',
-        details: { type: data.behavior.triggerType, delay: data.behavior.triggerDelay },
-      },
-      { type: 'device', details: data.behavior.deviceTypes },
-    ],
+    targeting_rules: [],
   }
 }
 
@@ -54,7 +50,7 @@ export interface WidgetUpdateRequest {
 
 export const widgetApi = {
   getByProject(projectId: string): Promise<Widget[]> {
-    return apiClient.get<Widget[]>(`/projects/${projectId}/widgets`)
+    return apiClient.get<Widget[]>(`/projects/${projectId}/widgets/`)
   },
 
   getWidget(id: string): Promise<Widget> {
@@ -63,14 +59,14 @@ export const widgetApi = {
 
   create(projectId: string, formData: WidgetFormData): Promise<Widget> {
     const payload = transformDataToPayload(formData)
-    return apiClient.post<Widget>(`/projects/${projectId}/widgets`, {
+    return apiClient.post<Widget>(`/projects/${projectId}/widgets/`, {
       ...payload,
       project_id: projectId,
     })
   },
 
   createWidget(data: WidgetCreateRequest): Promise<Widget> {
-    return apiClient.post<Widget>(`/projects/${data.project_id}/widgets`, data)
+    return apiClient.post<Widget>(`/projects/${data.project_id}/widgets/`, data)
   },
 
   update(widgetId: string, data: Partial<Widget>): Promise<Widget> {

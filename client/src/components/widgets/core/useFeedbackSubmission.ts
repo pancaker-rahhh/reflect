@@ -189,7 +189,6 @@ export function useFeedbackSubmission({
         const npsData: NPSFeedbackData = {
           nps_score: score,
           promoter_category: score >= 9 ? 'promoter' : score >= 7 ? 'passive' : 'detractor',
-          follow_up_comment: '',
         }
         typeSpecificData = npsData
       } else if (feedbackType === 'CSAT') {
@@ -204,7 +203,6 @@ export function useFeedbackSubmission({
         const csatData: CSATFeedbackData = {
           csat_score: score,
           satisfaction_level: satisfactionLevels[score] || 'neutral',
-          follow_up_comment: '',
         }
         typeSpecificData = csatData
       } else if (feedbackType === 'CES') {
@@ -219,7 +217,6 @@ export function useFeedbackSubmission({
         const cesData: CESFeedbackData = {
           ces_score: score,
           ease_level: easeLevels[score] || 'neutral',
-          follow_up_comment: '',
         }
         typeSpecificData = cesData
       } else {
@@ -227,7 +224,6 @@ export function useFeedbackSubmission({
         const fallbackData: NPSFeedbackData = {
           nps_score: score,
           promoter_category: 'passive',
-          follow_up_comment: '',
         }
         typeSpecificData = fallbackData
       }

@@ -4,12 +4,12 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQueryClient } from '@tanstack/react-query'
-import { WizardProgress } from '@/components/widgets/wizard/WizardProgress'
+import ProgressBarComponent from '@/components/ui/ProgressBar'
+import { Sparkles } from 'lucide-react'
 import { WizardNavigation } from '@/components/widgets/wizard/WizardNavigation'
 import { Step1Basics } from '@/components/widgets/wizard/Step1Basics'
 import { Step2Content } from '@/components/widgets/wizard/Step2Content'
 import { Step3Appearance } from '@/components/widgets/wizard/Step3Appearance'
-import { Step4Behavior } from '@/components/widgets/wizard/Step4Behavior'
 import { LiveWidgetPreview } from '@/components/widgets/preview/LiveWidgetPreview'
 import { widgetApi } from '@/lib/api/widget'
 import { useAppContext } from '@/context/AppContext'
@@ -67,6 +67,29 @@ const widgetSchema = z
       requireUseCase: z.boolean().optional(),
     }),
 
+    // Optional per-type content. Only fields provided will override base content for that type
+    contentByType: z
+      .record(
+        z.enum([
+          'FEEDBACK',
+          'SURVEY',
+          'NPS',
+          'CSAT',
+          'CES',
+          'REVIEW',
+          'BUG_REPORT',
+          'FEATURE_REQUEST',
+        ]),
+        z.object({
+          headerTitle: z.string().optional(),
+          mainQuestion: z.string().optional(),
+          submitButtonText: z.string().optional(),
+          thankYouTitle: z.string().optional(),
+          thankYouMessage: z.string().optional(),
+        })
+      )
+      .optional(),
+
     appearance: z.object({
       theme: z.enum(['default', 'midnight', 'minimal-light', 'minimal-dark']),
       position: z.enum(['bottom_right', 'bottom_left', 'mid_right', 'mid_left']),
@@ -79,16 +102,6 @@ const widgetSchema = z
         buttonTextColor: z.string(),
       }),
       showBranding: z.boolean(),
-    }),
-
-    behavior: z.object({
-      triggerType: z.enum(['immediate', 'delay', 'exit-intent', 'scroll']),
-      triggerDelay: z.number().optional(),
-      deviceTypes: z.object({
-        desktop: z.boolean(),
-        mobile: z.boolean(),
-        tablet: z.boolean(),
-      }),
     }),
   })
   .refine(
@@ -121,22 +134,81 @@ const widgetSchema = z
 
 export type WidgetFormData = z.infer<typeof widgetSchema>
 
-interface TriggerDetails {
-  type: string
-  delay?: number
-}
-
-interface DeviceTargetingDetails {
-  desktop: boolean
-  mobile: boolean
-  tablet: boolean
+// Get type-specific default content
+function getTypeSpecificDefaults(primaryType: WidgetFormData['primaryType']) {
+  switch (primaryType) {
+    case 'NPS':
+      return {
+        headerTitle: 'We value your feedback',
+        mainQuestion: 'How likely are you to recommend our product to a friend or colleague?',
+        submitButtonText: 'Submit Rating',
+        thankYouTitle: 'Thank you for your feedback!',
+        thankYouMessage: 'Your rating helps us improve our product and service.',
+      }
+    case 'CSAT':
+      return {
+        headerTitle: 'How satisfied are you?',
+        mainQuestion: 'Please rate your overall satisfaction with our service',
+        submitButtonText: 'Submit Rating',
+        thankYouTitle: 'Thank you!',
+        thankYouMessage: 'Your satisfaction rating helps us serve you better.',
+      }
+    case 'CES':
+      return {
+        headerTitle: 'Help us improve',
+        mainQuestion: 'How easy was it to get the help you needed?',
+        submitButtonText: 'Submit Rating',
+        thankYouTitle: 'Thank you!',
+        thankYouMessage: 'Your feedback helps us make our service easier to use.',
+      }
+    case 'REVIEW':
+      return {
+        headerTitle: 'Share your experience',
+        mainQuestion: 'How would you rate your overall experience with us?',
+        submitButtonText: 'Submit Review',
+        thankYouTitle: 'Thanks for your review!',
+        thankYouMessage: 'Your review helps others make informed decisions.',
+      }
+    case 'BUG_REPORT':
+      return {
+        headerTitle: 'Report an Issue',
+        mainQuestion: 'Please describe the issue you encountered',
+        submitButtonText: 'Report Bug',
+        thankYouTitle: 'Bug report submitted!',
+        thankYouMessage: 'Thank you for helping us improve. We will investigate this issue.',
+      }
+    case 'FEATURE_REQUEST':
+      return {
+        headerTitle: 'Suggest a Feature',
+        mainQuestion: 'What feature would you like to see added?',
+        submitButtonText: 'Submit Request',
+        thankYouTitle: 'Thanks for your suggestion!',
+        thankYouMessage:
+          'We appreciate your input and will consider this feature for future updates.',
+      }
+    case 'SURVEY':
+      return {
+        headerTitle: 'Quick Survey',
+        mainQuestion: 'Help us understand your needs better',
+        submitButtonText: 'Complete Survey',
+        thankYouTitle: 'Survey completed!',
+        thankYouMessage: 'Thank you for taking the time to complete our survey.',
+      }
+    default:
+      return {
+        headerTitle: 'We value your feedback',
+        mainQuestion: 'How can we improve our service?',
+        submitButtonText: 'Submit Feedback',
+        thankYouTitle: 'Thank you!',
+        thankYouMessage: 'Your feedback helps us improve.',
+      }
+  }
 }
 
 const steps = [
   { title: 'Functionality & Basics', component: Step1Basics },
   { title: 'Configure Content', component: Step2Content },
   { title: 'Customize Appearance', component: Step3Appearance },
-  { title: 'Behavior & Targeting', component: Step4Behavior },
 ]
 
 export function WidgetCreate() {
@@ -161,16 +233,14 @@ export function WidgetCreate() {
           modules: { feedback: true, reviews: false, bugReporting: false, featureRequests: false },
           primaryType: 'FEEDBACK',
           content: {
-            headerTitle: 'We value your feedback',
-            mainQuestion: 'How can we improve?',
-            submitButtonText: 'Submit Feedback',
-            thankYouTitle: 'Thank you!',
-            thankYouMessage: 'Your feedback helps us improve.',
-            reviewPrompt: 'Share your thoughts about your experience',
+            ...getTypeSpecificDefaults('FEEDBACK'),
+            reviewPrompt:
+              'Share your thoughts about your experience. What did you like or dislike?',
             requireReviewText: false,
             requireStepsToReproduce: false,
             requireUseCase: true,
           },
+          contentByType: {},
           appearance: {
             theme: 'default',
             position: 'bottom_right',
@@ -183,10 +253,6 @@ export function WidgetCreate() {
               buttonTextColor: '#FFFFFF',
             },
             showBranding: true,
-          },
-          behavior: {
-            triggerType: 'immediate',
-            deviceTypes: { desktop: true, mobile: true, tablet: true },
           },
         },
   })
@@ -212,6 +278,37 @@ export function WidgetCreate() {
           if (newPrimaryType && newPrimaryType !== value.primaryType) {
             form.setValue('primaryType', newPrimaryType)
           }
+        }
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [form])
+
+  // Update content defaults when primaryType changes
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'primaryType' && value.primaryType) {
+        const currentContent = form.getValues('content')
+        const newDefaults = getTypeSpecificDefaults(value.primaryType)
+
+        // Only update if the current values appear to be defaults (to avoid overriding user changes)
+        const isUsingDefaults =
+          !currentContent?.headerTitle ||
+          currentContent.headerTitle === 'We value your feedback' ||
+          currentContent.headerTitle === 'How satisfied are you?' ||
+          currentContent.headerTitle === 'Help us improve' ||
+          currentContent.headerTitle === 'Share your experience' ||
+          currentContent.headerTitle === 'Report an Issue' ||
+          currentContent.headerTitle === 'Suggest a Feature' ||
+          currentContent.headerTitle === 'Quick Survey'
+
+        if (isUsingDefaults) {
+          form.setValue('content.headerTitle', newDefaults.headerTitle)
+          form.setValue('content.mainQuestion', newDefaults.mainQuestion)
+          form.setValue('content.submitButtonText', newDefaults.submitButtonText)
+          form.setValue('content.thankYouTitle', newDefaults.thankYouTitle)
+          form.setValue('content.thankYouMessage', newDefaults.thankYouMessage)
         }
       }
     })
@@ -248,31 +345,48 @@ export function WidgetCreate() {
               }
               return typeMapping[widget.widget_type] || 'FEEDBACK'
             })(),
-            content: {
-              headerTitle: widget.configuration?.content?.headerTitle || 'We value your feedback',
-              mainQuestion: widget.configuration?.content?.mainQuestion || 'How can we improve?',
-              submitButtonText:
-                widget.configuration?.content?.submitButtonText || 'Submit Feedback',
-              thankYouTitle: widget.configuration?.content?.thankYouTitle || 'Thank you!',
-              thankYouMessage:
-                widget.configuration?.content?.thankYouMessage || 'Your feedback helps us improve.',
-              reviewPrompt:
-                widget.configuration?.typeSpecificSettings?.reviewPrompt ||
-                widget.configuration?.content?.reviewPrompt ||
-                'Share your thoughts about your experience',
-              requireReviewText:
-                widget.configuration?.typeSpecificSettings?.requireReviewText ||
-                widget.configuration?.content?.requireReviewText ||
-                false,
-              requireStepsToReproduce:
-                widget.configuration?.typeSpecificSettings?.requireStepsToReproduce ||
-                widget.configuration?.content?.requireStepsToReproduce ||
-                false,
-              requireUseCase:
-                widget.configuration?.typeSpecificSettings?.requireUseCase ||
-                widget.configuration?.content?.requireUseCase ||
-                true,
-            },
+            content: (() => {
+              const typeMapping: Record<string, WidgetFormData['primaryType']> = {
+                FEEDBACK: 'FEEDBACK',
+                SURVEY: 'SURVEY',
+                NPS: 'NPS',
+                CSAT: 'CSAT',
+                CES: 'CES',
+                REVIEW: 'REVIEW',
+                BUG_REPORT: 'BUG_REPORT',
+                FEATURE_REQUEST: 'FEATURE_REQUEST',
+              }
+              const widgetType = typeMapping[widget.widget_type] || 'FEEDBACK'
+              const defaults = getTypeSpecificDefaults(widgetType)
+              return {
+                headerTitle: widget.configuration?.content?.headerTitle || defaults.headerTitle,
+                mainQuestion: widget.configuration?.content?.mainQuestion || defaults.mainQuestion,
+                submitButtonText:
+                  widget.configuration?.content?.submitButtonText || defaults.submitButtonText,
+                thankYouTitle:
+                  widget.configuration?.content?.thankYouTitle || defaults.thankYouTitle,
+                thankYouMessage:
+                  widget.configuration?.content?.thankYouMessage || defaults.thankYouMessage,
+                reviewPrompt:
+                  widget.configuration?.typeSpecificSettings?.reviewPrompt ||
+                  widget.configuration?.content?.reviewPrompt ||
+                  'Share your thoughts about your experience. What did you like or dislike?',
+                requireReviewText:
+                  widget.configuration?.typeSpecificSettings?.requireReviewText ||
+                  widget.configuration?.content?.requireReviewText ||
+                  false,
+                requireStepsToReproduce:
+                  widget.configuration?.typeSpecificSettings?.requireStepsToReproduce ||
+                  widget.configuration?.content?.requireStepsToReproduce ||
+                  false,
+                requireUseCase:
+                  widget.configuration?.typeSpecificSettings?.requireUseCase ||
+                  widget.configuration?.content?.requireUseCase ||
+                  true,
+              }
+            })(),
+            contentByType:
+              (widget.configuration?.typeSpecificSettings as any)?.perTypeContent || {},
             appearance: {
               theme: widget.theme_configuration?.theme_name || 'default',
               position: (() => {
@@ -298,19 +412,6 @@ export function WidgetCreate() {
                 buttonTextColor: widget.theme_configuration?.buttonTextColor || '#FFFFFF',
               },
               showBranding: widget.theme_configuration?.show_branding ?? true,
-            },
-            behavior: {
-              triggerType: (['immediate', 'delay', 'exit-intent', 'scroll'].includes(
-                (widget.targeting_rules?.[0]?.details as TriggerDetails)?.type
-              )
-                ? (widget.targeting_rules?.[0]?.details as TriggerDetails)?.type
-                : 'immediate') as 'immediate' | 'delay' | 'exit-intent' | 'scroll',
-              triggerDelay: (widget.targeting_rules?.[0]?.details as TriggerDetails)?.delay,
-              deviceTypes: (widget.targeting_rules?.[1]?.details as DeviceTargetingDetails) || {
-                desktop: true,
-                mobile: true,
-                tablet: true,
-              },
             },
           }
           form.reset(formData)
@@ -419,7 +520,34 @@ export function WidgetCreate() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 lg:p-6">
-            <WizardProgress currentStep={currentStep} totalSteps={steps.length} />
+            <div className="w-full max-w-2xl mx-auto mb-6">
+              {/* Step indicator header */}
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Step {currentStep + 1} of {steps.length}
+                </span>
+                <span className="text-sm font-semibold text-gray-600 flex items-center gap-1">
+                  <Sparkles className="w-4 h-4 text-yellow-500" />
+                  {Math.round(((currentStep + 1) / steps.length) * 100)}% Complete (
+                  {currentStep + 1}/{steps.length})
+                </span>
+              </div>
+
+              <ProgressBarComponent
+                percentage={((currentStep + 1) / steps.length) * 100}
+                variant="linear"
+                size="lg"
+                color="primary"
+                showLabel={false}
+                animated={true}
+                totalSteps={steps.length}
+                currentStep={currentStep}
+                showSteps={true}
+                stepLabels={steps.map((step) => step.title)}
+                showCompletion={false}
+                className="mb-6"
+              />
+            </div>
             <div className="mt-6 lg:mt-8 mb-6 lg:mb-8">
               <h2 className="text-lg lg:text-xl font-semibold mb-4 lg:mb-6">
                 {steps[currentStep].title}

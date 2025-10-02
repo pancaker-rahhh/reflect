@@ -32,12 +32,15 @@ export function Responses() {
   const { currentProject } = useAppContext()
   const queryClient = useQueryClient()
 
-  const { data: feedback = [], isLoading } = useQuery({
+  const { data: allFeedback = [], isLoading } = useQuery({
     queryKey: ['feedback', currentProject?.id],
     queryFn: () => api.getFeedbackData(undefined, currentProject?.id, 'all'),
     refetchInterval: 30000,
     enabled: !!currentProject?.id,
   })
+
+  const surveyTypes = ['NPS', 'CSAT', 'CES', 'SURVEY', 'FEEDBACK', 'general']
+  const feedback = allFeedback.filter((item: any) => surveyTypes.includes(item.feedback_type))
 
   const resetFilters = () => {
     setStartDate(undefined)
@@ -171,9 +174,9 @@ export function Responses() {
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold">Responses</h1>
+          <h1 className="text-3xl font-bold">Survey Responses</h1>
           <p className="text-muted-foreground mt-2">
-            Manage and analyze survey responses from your users
+            Manage and analyze NPS, CSAT, CES, and general feedback responses from your users
           </p>
         </div>
 
@@ -239,6 +242,7 @@ export function Responses() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="general">General</SelectItem>
                 <SelectItem value="NPS">NPS</SelectItem>
                 <SelectItem value="CSAT">CSAT</SelectItem>
                 <SelectItem value="CES">CES</SelectItem>
@@ -310,9 +314,10 @@ export function Responses() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <MessageCircle className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No responses found</h3>
+            <h3 className="text-lg font-semibold mb-2">No survey responses found</h3>
             <p className="text-muted-foreground text-center max-w-sm">
-              Responses will appear here once users complete your surveys
+              Survey responses will appear here once users complete your NPS, CSAT, CES, or general
+              feedback surveys
             </p>
             <Button variant="outline" onClick={resetFilters} className="mt-4">
               <RotateCcw className="mr-2 h-4 w-4" />

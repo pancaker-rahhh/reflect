@@ -33,6 +33,7 @@ function transformWidgetConfig(backendConfig: Record<string, any>): WidgetConfig
   const theme = backendConfig.theme_configuration || {}
   const content = backendConfig.configuration?.content || {}
   const modules = backendConfig.configuration?.modules || {}
+  const typeSpecificSettings = backendConfig.configuration?.typeSpecificSettings || {}
 
   return {
     modules: {
@@ -49,6 +50,7 @@ function transformWidgetConfig(backendConfig: Record<string, any>): WidgetConfig
       thankYouTitle: content.thankYouTitle || 'Thank you!',
       thankYouMessage: content.thankYouMessage || 'Your feedback helps us improve.',
     },
+    contentByType: typeSpecificSettings.perTypeContent || {},
     appearance: {
       theme: theme.theme_name || 'default',
       position: backendConfig.position || 'bottom_right',
@@ -64,15 +66,23 @@ function transformWidgetConfig(backendConfig: Record<string, any>): WidgetConfig
 }
 
 function getDefaultQuestionForType(type: string) {
-  switch (type) {
-    case 'nps':
-      return 'How likely are you to recommend us to a friend or colleague?'
-    case 'csat':
-      return 'How satisfied are you with our service?'
-    case 'ces':
-      return 'How easy was it to use our service?'
+  switch (type?.toUpperCase()) {
+    case 'NPS':
+      return 'How likely are you to recommend our product to a friend or colleague?'
+    case 'CSAT':
+      return 'Please rate your overall satisfaction with our service'
+    case 'CES':
+      return 'How easy was it to get the help you needed?'
+    case 'REVIEW':
+      return 'How would you rate your overall experience with us?'
+    case 'BUG_REPORT':
+      return 'Please describe the issue you encountered'
+    case 'FEATURE_REQUEST':
+      return 'What feature would you like to see added?'
+    case 'SURVEY':
+      return 'Help us understand your needs better'
     default:
-      return 'How can we improve?'
+      return 'How can we improve our service?'
   }
 }
 

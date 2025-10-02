@@ -65,24 +65,6 @@ async def list_feedback(
     )
 
 
-def _convert_feedback_to_dict(item) -> Dict[str, Any]:
-    title = item.title or item.message or f'Feedback: {item.feedback_type.value}'
-    if title.startswith('New '):
-        title = title[4:]
-
-    return {
-        'id': str(item.id),
-        'type': item.feedback_type.value
-        if hasattr(item.feedback_type, 'value')
-        else str(item.feedback_type),
-        'summary': title,
-        'submittedBy': item.submitter_name or 'Anonymous',
-        'timestamp': item.created_at.isoformat() if item.created_at else None,
-        'feedback_votes': item.feedback_votes,
-        'is_actionable': item.is_actionable,
-    }
-
-
 @feedback_router.get('/actionable', response_model=List[Dict[str, Any]])
 @create_rate_limit_decorator('general_public', is_anonymous=True)
 async def get_actionable_feedback(
@@ -101,7 +83,10 @@ async def get_actionable_feedback(
         db, project_id, skip, limit
     )
 
-    return [_convert_feedback_to_dict(item) for item in actionable_feedback]
+    return [
+        feedback_service.format_feedback_for_display(item)
+        for item in actionable_feedback
+    ]
 
 
 @feedback_router.get('/chart-data', response_model=List[Dict[str, Any]])

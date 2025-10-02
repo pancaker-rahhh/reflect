@@ -60,24 +60,15 @@ class FeedbackUpdate(BaseModel):
 
     # BugReportFeedback fields
     severity_level: Optional[str] = None
-    steps_to_reproduce: Optional[str] = None
-    expected_behavior: Optional[str] = None
-    actual_behavior: Optional[str] = None
-    attachments: Optional[list] = None
-    visual_proof: Optional[Dict[str, Any]] = None
 
     # FeatureRequestFeedback fields
-    use_case: Optional[str] = None
     upvotes_count: Optional[int] = None
     downvotes_count: Optional[int] = None
     implementation_status: Optional[str] = None
-    suggested_solution: Optional[str] = None
-    benefits: Optional[str] = None
 
     # NPSFeedback fields
     nps_score: Optional[int] = None
     promoter_category: Optional[str] = None
-    follow_up_comment: Optional[str] = None
 
     # CSATFeedback fields
     csat_score: Optional[int] = None
@@ -131,25 +122,15 @@ class SurveyFeedbackCreate(FeedbackBase):
 class ReviewFeedbackCreate(FeedbackBase):
     feedback_type: Literal[FeedbackType.REVIEW] = FeedbackType.REVIEW  # type: ignore[assignment]
     overall_rating: Optional[int] = None
-    pros: Optional[str] = None
-    cons: Optional[str] = None
-    is_published: bool = False
 
 
 class BugReportFeedbackCreate(FeedbackBase):
     feedback_type: Literal[FeedbackType.BUG_REPORT] = FeedbackType.BUG_REPORT  # type: ignore[assignment]
     severity_level: Optional[FeedbackPriority] = None
-    steps_to_reproduce: Optional[str] = None
-    expected_behavior: Optional[str] = None
-    actual_behavior: Optional[str] = None
-    visual_proof: Dict[str, Any] = Field(default_factory=dict)
 
 
 class FeatureRequestFeedbackCreate(FeedbackBase):
     feedback_type: Literal[FeedbackType.FEATURE_REQUEST] = FeedbackType.FEATURE_REQUEST  # type: ignore[assignment]
-    use_case: Optional[str] = None
-    suggested_solution: Optional[str] = None
-    benefits: Optional[str] = None
     implementation_status: str = 'backlog'
 
 
@@ -157,21 +138,18 @@ class NPSFeedbackCreate(FeedbackBase):
     feedback_type: Literal[FeedbackType.NPS] = FeedbackType.NPS  # type: ignore[assignment]
     nps_score: int = Field(..., ge=0, le=10)
     promoter_category: Optional[str] = None
-    follow_up_comment: Optional[str] = None
 
 
 class CSATFeedbackCreate(FeedbackBase):
     feedback_type: Literal[FeedbackType.CSAT] = FeedbackType.CSAT  # type: ignore[assignment]
     csat_score: int = Field(..., ge=1, le=5)
     satisfaction_level: Optional[str] = None
-    follow_up_comment: Optional[str] = None
 
 
 class CESFeedbackCreate(FeedbackBase):
     feedback_type: Literal[FeedbackType.CES] = FeedbackType.CES  # type: ignore[assignment]
     ces_score: int = Field(..., ge=1, le=5)
     ease_level: Optional[str] = None
-    follow_up_comment: Optional[str] = None
 
 
 FeedbackCreatePayload = Annotated[
@@ -204,25 +182,15 @@ class SurveyFeedbackResponse(FeedbackResponse):
 class ReviewFeedbackResponse(FeedbackResponse):
     feedback_type: Literal[FeedbackType.REVIEW] = FeedbackType.REVIEW  # type: ignore[assignment]
     overall_rating: Optional[int] = None
-    pros: Optional[str] = None
-    cons: Optional[str] = None
-    is_published: bool = False
 
 
 class BugReportFeedbackResponse(FeedbackResponse):
     feedback_type: Literal[FeedbackType.BUG_REPORT] = FeedbackType.BUG_REPORT  # type: ignore[assignment]
     severity_level: Optional[FeedbackPriority] = None
-    steps_to_reproduce: Optional[str] = None
-    expected_behavior: Optional[str] = None
-    actual_behavior: Optional[str] = None
-    visual_proof: Dict[str, Any] = Field(default_factory=dict)
 
 
 class FeatureRequestFeedbackResponse(FeedbackResponse):
     feedback_type: Literal[FeedbackType.FEATURE_REQUEST] = FeedbackType.FEATURE_REQUEST  # type: ignore[assignment]
-    use_case: Optional[str] = None
-    suggested_solution: Optional[str] = None
-    benefits: Optional[str] = None
     implementation_status: str = 'backlog'
 
 
@@ -230,21 +198,18 @@ class NPSFeedbackResponse(FeedbackResponse):
     feedback_type: Literal[FeedbackType.NPS] = FeedbackType.NPS  # type: ignore[assignment]
     nps_score: int
     promoter_category: Optional[str] = None
-    follow_up_comment: Optional[str] = None
 
 
 class CSATFeedbackResponse(FeedbackResponse):
     feedback_type: Literal[FeedbackType.CSAT] = FeedbackType.CSAT  # type: ignore[assignment]
     csat_score: int
     satisfaction_level: Optional[str] = None
-    follow_up_comment: Optional[str] = None
 
 
 class CESFeedbackResponse(FeedbackResponse):
     feedback_type: Literal[FeedbackType.CES] = FeedbackType.CES  # type: ignore[assignment]
     ces_score: int
     ease_level: Optional[str] = None
-    follow_up_comment: Optional[str] = None
 
 
 FeedbackResponsePayload = Annotated[

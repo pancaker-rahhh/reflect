@@ -50,13 +50,15 @@ function getPlaceholderText(feedbackType: FeedbackType): string {
     case 'CES':
       return 'What specifically made you give this score? What made it easy or difficult to get help?'
     case 'REVIEW':
-      return 'Share your detailed experience with our service...'
+      return 'Share your detailed experience with our service. What did you like or dislike?'
     case 'BUG_REPORT':
-      return 'Describe the bug you encountered. What were you trying to do when it happened?'
+      return 'Describe the bug you encountered. What were you trying to do when it happened? Include steps to reproduce if possible.'
     case 'FEATURE_REQUEST':
-      return "Describe the feature you'd like to see. How would it help you?"
+      return "Describe the feature you'd like to see. How would it help you or improve your experience?"
     case 'FEEDBACK':
+      return 'Share your thoughts, suggestions, or concerns. What can we do better?'
     case 'SURVEY':
+      return 'Please share your thoughts and help us understand your needs better.'
     default:
       return 'Tell us what you think... Share your thoughts, suggestions, or concerns.'
   }
@@ -87,7 +89,7 @@ export function FeedbackRenderer({
       rating: selectedScore,
       feedbackType,
       typeSpecificData: {
-        title: `${feedbackType} Feedback`,
+        title: feedbackType === 'FEEDBACK' ? 'General Feedback' : `${feedbackType} Feedback`,
         message: additionalFeedback.trim() || '',
       } as GeneralFeedbackData,
     })
@@ -100,8 +102,6 @@ export function FeedbackRenderer({
       feedbackType,
       typeSpecificData: {
         overall_rating: data.rating,
-        pros: data.review || '',
-        cons: '',
       } as ReviewFeedbackData,
     })
   }
@@ -113,26 +113,12 @@ export function FeedbackRenderer({
     description: string
     stepsToReproduce?: string
   }) => {
-    const response = [
-      `Title: ${data.title}`,
-      `Category: ${data.category}`,
-      `Severity: ${data.severity}`,
-      `Description: ${data.description}`,
-      data.stepsToReproduce ? `Steps: ${data.stepsToReproduce}` : null,
-    ]
-      .filter(Boolean)
-      .join('\n')
-
     await onSubmit({
-      response,
+      response: data.description,
       feedbackType,
       typeSpecificData: {
         title: data.title,
         severity: data.severity,
-        steps_to_reproduce: data.stepsToReproduce || '',
-        expected_result: '',
-        actual_result: data.description,
-        visual_proof: {},
       } as BugReportFeedbackData,
     })
   }
@@ -144,22 +130,11 @@ export function FeedbackRenderer({
     description: string
     useCase: string
   }) => {
-    const response = [
-      `Title: ${data.title}`,
-      `Category: ${data.category}`,
-      `Priority: ${data.priority}`,
-      `Description: ${data.description}`,
-      `Use Case: ${data.useCase}`,
-    ].join('\n')
-
     await onSubmit({
-      response,
+      response: data.description,
       feedbackType,
       typeSpecificData: {
         title: data.title,
-        suggested_solution: data.description,
-        benefits: `Priority: ${data.priority}, Category: ${data.category}`,
-        use_case: data.useCase,
       } as FeatureRequestFeedbackData,
     })
   }
@@ -169,7 +144,7 @@ export function FeedbackRenderer({
       response: feedback,
       feedbackType,
       typeSpecificData: {
-        title: `${feedbackType} Feedback`,
+        title: feedbackType === 'FEEDBACK' ? 'General Feedback' : `${feedbackType} Feedback`,
         message: feedback,
       } as GeneralFeedbackData,
     })
@@ -406,6 +381,7 @@ export function FeedbackRenderer({
           onSubmit={handleGeneralFeedbackSubmit}
           isSubmitting={isSubmitting}
           submitButtonText={content.submitButtonText}
+          mainQuestion={content.mainQuestion}
           colors={colors}
         />
       )
@@ -428,6 +404,7 @@ export function FeedbackRenderer({
             onSubmit={handleGeneralFeedbackSubmit}
             isSubmitting={isSubmitting}
             submitButtonText={content.submitButtonText}
+            mainQuestion={content.mainQuestion}
             colors={colors}
           />
         </div>
@@ -440,6 +417,7 @@ interface GeneralFeedbackFormProps {
   onSubmit: (feedback: string) => Promise<void>
   isSubmitting: boolean
   submitButtonText: string
+  mainQuestion?: string
   colors: {
     primary: string
     background: string
@@ -453,6 +431,7 @@ function GeneralFeedbackForm({
   onSubmit,
   isSubmitting,
   submitButtonText,
+  mainQuestion,
   colors,
 }: GeneralFeedbackFormProps) {
   const [feedback, setFeedback] = React.useState('')
@@ -467,7 +446,7 @@ function GeneralFeedbackForm({
       <textarea
         value={feedback}
         onChange={(e) => setFeedback(e.target.value)}
-        placeholder={getPlaceholderText('FEEDBACK')}
+        placeholder={mainQuestion || getPlaceholderText('FEEDBACK')}
         className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
         style={{
           borderColor: feedback.trim() ? colors.primary : '#E5E7EB',

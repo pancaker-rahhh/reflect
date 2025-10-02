@@ -8,14 +8,9 @@ interface PublicFeedbackData {
   created_at?: string
   feedback_votes?: number
   overall_rating?: number
-  pros?: string
-  cons?: string
   title?: string
   severity?: string
   severity_level?: string // Add missing property
-  steps_to_reproduce?: string
-  expected_result?: string
-  actual_result?: string
   // Feature request specific fields (from FeatureRequestPublic)
   description?: string
   category?: string
@@ -114,21 +109,22 @@ export function PublicFeedbackDisplay({
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
 
-      let itemType = 'general_feedback'
+      let endpoint = ''
+      let payload: any = { widgetKey, feedbackId }
+
       if (feedbackType === 'FEATURE_REQUEST') {
-        itemType = 'feature_request'
+        endpoint = `${apiBaseUrl}/public/features/upvote`
+        payload = { widgetKey, featureId: feedbackId }
+      } else {
+        endpoint = `${apiBaseUrl}/public/feedback/upvote`
       }
 
-      const response = await fetch(`${apiBaseUrl}/public/vote`, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          itemId: feedbackId,
-          itemType: itemType,
-          widgetKey,
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
@@ -384,29 +380,11 @@ export function PublicFeedbackDisplay({
               )}
 
               {/* Type-specific fields */}
-              {feedbackType === 'REVIEW' && (
-                <div className="space-y-2">
-                  {item.pros && (
-                    <div className="text-sm">
-                      <span className="font-medium text-green-600">👍 Pros:</span> {item.pros}
-                    </div>
-                  )}
-                  {item.cons && (
-                    <div className="text-sm">
-                      <span className="font-medium text-red-600">👎 Cons:</span> {item.cons}
-                    </div>
-                  )}
+              {feedbackType === 'FEATURE_REQUEST' && item.description && (
+                <div className="space-y-1">
+                  <div className="text-xs text-gray-600">{item.description}</div>
                 </div>
               )}
-
-              <div className="space-y-1">
-                {feedbackType === 'BUG_REPORT' && item.actual_result && (
-                  <div className="text-xs text-gray-600">{item.actual_result}</div>
-                )}
-                {feedbackType === 'FEATURE_REQUEST' && item.description && (
-                  <div className="text-xs text-gray-600">{item.description}</div>
-                )}
-              </div>
 
               {/* Footer with votes and quick actions */}
               <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">

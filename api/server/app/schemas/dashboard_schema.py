@@ -5,13 +5,9 @@ from datetime import datetime
 
 class DashboardMetricsResponse(BaseModel):
     totalFeedback: int
-    feedbackChange: int
     averageRating: float
-    ratingChange: int
     newBugReports: int
-    bugReportsChange: int
     newFeatureRequests: int
-    featureRequestsChange: int
     pendingFeedbackReview: int
 
 
@@ -23,6 +19,8 @@ class RecentActivityResponse(BaseModel):
     timestamp: datetime
     converted_to_action_item_id: Optional[str] = None
     is_actionable: bool
+    widget_name: Optional[str] = None
+    rating: Optional[int] = None
 
 
 class FeedbackDataResponse(BaseModel):
@@ -41,16 +39,9 @@ class FeedbackDataResponse(BaseModel):
     widget_name: Optional[str] = None
 
     overall_rating: Optional[int] = None
-    is_published: Optional[bool] = None
 
     severity_level: Optional[str] = None
-    steps_to_reproduce: Optional[str] = None
-    expected_behavior: Optional[str] = None
-    actual_behavior: Optional[str] = None
 
-    use_case: Optional[str] = None
-    suggested_solution: Optional[str] = None
-    benefits: Optional[str] = None
     implementation_status: Optional[str] = None
 
     nps_score: Optional[int] = None

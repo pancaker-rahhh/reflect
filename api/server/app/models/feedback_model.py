@@ -121,9 +121,6 @@ class ReviewFeedback(Feedback):
         UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
     )
     overall_rating = Column(Integer)  # 1-5 star rating
-    pros = Column(Text)
-    cons = Column(Text)
-    is_published = Column(Boolean, default=False)
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.REVIEW}
 
@@ -135,10 +132,6 @@ class BugReportFeedback(Feedback):
         UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
     )
     severity_level = Column(SQLEnum(FeedbackPriority), default=FeedbackPriority.MEDIUM)
-    steps_to_reproduce = Column(Text)
-    expected_behavior = Column(Text)
-    actual_behavior = Column(Text)
-    visual_proof = Column(JSONB, default=dict)  # Store image URLs or file references
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.BUG_REPORT}
 
@@ -149,9 +142,6 @@ class FeatureRequestFeedback(Feedback):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
     )
-    use_case = Column(Text)
-    suggested_solution = Column(Text)
-    benefits = Column(Text)
     implementation_status = Column(String(50), default='backlog')
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.FEATURE_REQUEST}
@@ -165,7 +155,6 @@ class NPSFeedback(Feedback):
     )
     nps_score = Column(Integer)  # 0-10 scale
     promoter_category = Column(String(20))  # 'detractor', 'passive', 'promoter'
-    follow_up_comment = Column(Text)
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.NPS}
 
@@ -180,7 +169,6 @@ class CSATFeedback(Feedback):
     satisfaction_level = Column(
         String(20)
     )  # 'very_dissatisfied', 'dissatisfied', 'neutral', 'satisfied', 'very_satisfied'
-    follow_up_comment = Column(Text)
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.CSAT}
 
@@ -195,7 +183,6 @@ class CESFeedback(Feedback):
     ease_level = Column(
         String(20)
     )  # 'very_difficult', 'difficult', 'neutral', 'easy', 'very_easy'
-    follow_up_comment = Column(Text)
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.CES}
 

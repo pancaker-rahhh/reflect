@@ -16,6 +16,7 @@ from app.models.feedback_model import (
     CSATFeedback,
     CESFeedback,
 )
+from app.utils.feedback_formatter import FeedbackFormatter
 from app.repositories.base_repository import BaseRepository
 
 logger = get_logger(__name__)
@@ -298,20 +299,21 @@ class FeedbackRepository(BaseRepository[Feedback]):
 
         return {
             'totalFeedback': total_feedback_count,
-            'feedbackChange': 0,
             'averageRating': round(average_rating, 1),
-            'ratingChange': 0,
             'newBugReports': new_bug_reports,
-            'bugReportsChange': 0,
             'newFeatureRequests': new_feature_requests,
-            'featureRequestsChange': 0,
             'pendingFeedbackReview': pending_feedback_review,
         }
 
     async def get_recent_activities(
         self, db: AsyncSession, project_id: Optional[UUID] = None, limit: int = 10
     ) -> List[Dict[str, Any]]:
-        query = select(Feedback).order_by(Feedback.created_at.desc()).limit(limit)
+        query = (
+            select(Feedback)
+            .options(selectinload(Feedback.widget))
+            .order_by(Feedback.created_at.desc())
+            .limit(limit)
+        )
 
         if project_id:
             query = query.where(Feedback.project_id == project_id)
@@ -321,14 +323,9 @@ class FeedbackRepository(BaseRepository[Feedback]):
 
         activities = []
         for item in feedback_items:
-            if item.title:
-                summary = item.title
-            elif item.message and len(item.message) > 50:
-                summary = f'{item.message[:50]}...'
-            elif item.message:
-                summary = item.message
-            else:
-                summary = f'Feedback: {item.feedback_type.replace("_", " ").title()}'
+            summary = FeedbackFormatter.format_display_title(item)
+
+            widget_name = item.widget.name if item.widget else None
 
             activities.append(
                 {
@@ -343,6 +340,8 @@ class FeedbackRepository(BaseRepository[Feedback]):
                     'is_actionable': item.is_actionable
                     if item.is_actionable is not None
                     else True,
+                    'widget_name': widget_name,
+                    'rating': item.rating,
                 }
             )
 
@@ -393,11 +392,13 @@ class FeedbackRepository(BaseRepository[Feedback]):
 
         feedback_data = []
         for item in feedback_items:
+            display_title = FeedbackFormatter.format_display_title(item)
+
             feedback_dict = {
                 'id': str(item.id),
                 'type': item.feedback_type,
                 'feedback_type': item.feedback_type,
-                'title': item.title,
+                'title': display_title,
                 'message': item.message,
                 'rating': item.rating,
                 'created_at': item.created_at,
@@ -424,7 +425,6 @@ class FeedbackRepository(BaseRepository[Feedback]):
                     feedback_dict.update(
                         {
                             'overall_rating': review_data.overall_rating,
-                            'is_published': review_data.is_published,
                         }
                     )
 
@@ -438,9 +438,6 @@ class FeedbackRepository(BaseRepository[Feedback]):
                     feedback_dict.update(
                         {
                             'severity_level': bug_data.severity_level,
-                            'steps_to_reproduce': bug_data.steps_to_reproduce,
-                            'expected_behavior': bug_data.expected_behavior,
-                            'actual_behavior': bug_data.actual_behavior,
                         }
                     )
 
@@ -453,9 +450,6 @@ class FeedbackRepository(BaseRepository[Feedback]):
                 if feature_data:
                     feedback_dict.update(
                         {
-                            'use_case': feature_data.use_case,
-                            'suggested_solution': feature_data.suggested_solution,
-                            'benefits': feature_data.benefits,
                             'implementation_status': feature_data.implementation_status,
                         }
                     )

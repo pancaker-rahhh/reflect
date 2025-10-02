@@ -3,10 +3,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ArrowRight, CheckCircle, Loader2, Calendar, User, MessageSquare } from 'lucide-react'
+import { ArrowRight, CheckCircle, Loader2, Calendar, User } from 'lucide-react'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { FeedbackConversionModal } from './FeedbackConversionModal'
+import { FeedbackDetailModal } from './FeedbackDetailModal'
 
 interface FeedbackCardProps {
   feedback: any
@@ -26,6 +27,7 @@ export function FeedbackCard({
   isConverting = false,
 }: FeedbackCardProps) {
   const [isConversionModalOpen, setIsConversionModalOpen] = useState(false)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
 
   const handleConvert = async (conversionData: any) => {
     await onConvert(feedback.id, conversionData)
@@ -35,6 +37,11 @@ export function FeedbackCard({
   const handleCardClick = () => {
     if (isSelectionMode) {
       onToggleSelection(feedback.id)
+    } else {
+      const surveyTypes = ['CES', 'NPS', 'CSAT', 'SURVEY']
+      if (surveyTypes.includes(feedback.feedback_type)) {
+        setIsDetailModalOpen(true)
+      }
     }
   }
 
@@ -49,6 +56,9 @@ export function FeedbackCard({
   }
 
   const isConverted = feedback.converted_to_action_item_id
+
+  const nonConvertibleTypes = ['CES', 'NPS', 'CSAT', 'SURVEY']
+  const shouldShowConvert = !isConverted && !nonConvertibleTypes.includes(feedback.feedback_type)
 
   return (
     <>
@@ -76,16 +86,7 @@ export function FeedbackCard({
                 )}
               </div>
 
-              <h3 className="font-semibold text-lg mb-2 line-clamp-2">
-                {feedback.title || 'No title'}
-              </h3>
-
-              {/* Content preview */}
-              {feedback.message && (
-                <p className="text-sm text-muted-foreground mb-3 line-clamp-3">
-                  {feedback.message}
-                </p>
-              )}
+              <h3 className="font-semibold text-lg mb-2">{feedback.title || 'No title'}</h3>
 
               {/* Metadata */}
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -97,12 +98,6 @@ export function FeedbackCard({
                   <Calendar className="h-3 w-3" />
                   <span>{format(new Date(feedback.created_at), 'MMM d, yyyy')}</span>
                 </div>
-                {feedback.message && (
-                  <div className="flex items-center gap-1">
-                    <MessageSquare className="h-3 w-3" />
-                    <span>{feedback.message.length > 100 ? 'Long message' : 'Short message'}</span>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -115,7 +110,7 @@ export function FeedbackCard({
                   className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                 />
               ) : (
-                !isConverted && (
+                shouldShowConvert && (
                   <Button
                     size="sm"
                     variant="outline"
@@ -137,83 +132,30 @@ export function FeedbackCard({
             </div>
           </div>
 
-          {/* Type-specific content */}
-          {feedback.feedback_type === 'bug_report' && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Badge variant="destructive" className="text-xs">
-                  {feedback.severity_level || 'MEDIUM'}
-                </Badge>
-              </div>
-              {feedback.actual_behavior && (
-                <p className="text-sm text-red-800">
-                  <strong>Issue:</strong> {feedback.actual_behavior}
-                </p>
-              )}
+          {feedback.feedback_type === 'bug_report' && feedback.severity_level && (
+            <div className="flex items-center gap-2 mt-2">
+              <Badge variant="destructive" className="text-xs">
+                {feedback.severity_level}
+              </Badge>
             </div>
           )}
 
-          {feedback.feedback_type === 'feature_request' && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-              {feedback.use_case && (
-                <p className="text-sm text-blue-800 mb-1">
-                  <strong>Use Case:</strong> {feedback.use_case}
-                </p>
-              )}
-              {feedback.suggested_solution && (
-                <p className="text-sm text-blue-800">
-                  <strong>Solution:</strong> {feedback.suggested_solution}
-                </p>
-              )}
-            </div>
-          )}
-
-          {feedback.feedback_type === 'review' && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="flex">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <span
-                      key={i}
-                      className={cn(
-                        'text-sm',
-                        i < (feedback.overall_rating || 0) ? 'text-yellow-500' : 'text-gray-300'
-                      )}
-                    >
-                      ★
-                    </span>
-                  ))}
-                </div>
-                <span className="text-sm text-yellow-800">{feedback.overall_rating || 0}/5</span>
+          {feedback.feedback_type === 'review' && feedback.overall_rating && (
+            <div className="flex items-center gap-2 mt-2">
+              <div className="flex">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <span
+                    key={i}
+                    className={cn(
+                      'text-sm',
+                      i < feedback.overall_rating ? 'text-yellow-500' : 'text-gray-300'
+                    )}
+                  >
+                    ★
+                  </span>
+                ))}
               </div>
-              {feedback.pros && (
-                <p className="text-sm text-yellow-800 mb-1">
-                  <strong>Pros:</strong> {feedback.pros}
-                </p>
-              )}
-              {feedback.cons && (
-                <p className="text-sm text-yellow-800">
-                  <strong>Cons:</strong> {feedback.cons}
-                </p>
-              )}
-            </div>
-          )}
-
-          {feedback.feedback_type === 'survey' && (
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Badge variant="outline" className="text-xs bg-purple-100 text-purple-800">
-                  {feedback.survey_type || 'SURVEY'}
-                </Badge>
-                <span className="text-sm text-purple-800 font-medium">
-                  Score: {feedback.score || feedback.rating || 0}/10
-                </span>
-              </div>
-              {feedback.comment && (
-                <p className="text-sm text-purple-800">
-                  <strong>Comment:</strong> {feedback.comment}
-                </p>
-              )}
+              <span className="text-sm text-yellow-800">{feedback.overall_rating}/5</span>
             </div>
           )}
         </CardContent>
@@ -229,6 +171,12 @@ export function FeedbackCard({
           title: feedback.title || 'No title',
           message: feedback.message,
         }}
+      />
+
+      <FeedbackDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        feedback={feedback}
       />
     </>
   )
