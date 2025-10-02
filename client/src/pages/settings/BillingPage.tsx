@@ -15,6 +15,7 @@ import { apiClient } from '@/lib/client'
 import { useSubscription } from '@/hooks/useSubscription'
 import { ConfirmationModal } from '@/components/common/ConfirmationModal'
 import { paymentApi, type PaymentItem } from '@/lib/api/payment'
+import { FreeTierAlert } from '@/components/widgets/SubscriptionMessagesBanner'
 
 export default function BillingPage() {
   const navigate = useNavigate()
@@ -236,6 +237,9 @@ export default function BillingPage() {
             Back to Settings
           </Button>
         </div>
+
+        {/* Subscription Status Banner */}
+        <FreeTierAlert />
 
         {/* Current Subscription */}
         <Card>

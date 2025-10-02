@@ -51,6 +51,7 @@ export function FreeTierAlert() {
               Renew subscription
             </Button>
             <span className="text-sm text-red-800 dark:text-red-300">
+              {/* TODO - Fetch remaining days in subscription and show it here */}
               You only have a few days left before you lose access to all your Pro features.
             </span>
           </div>
