@@ -385,7 +385,6 @@ export function FeedbackRenderer({
           onSubmit={handleGeneralFeedbackSubmit}
           isSubmitting={isSubmitting}
           submitButtonText={content.submitButtonText}
-          mainQuestion={content.mainQuestion}
           colors={colors}
         />
       )
@@ -408,7 +407,6 @@ export function FeedbackRenderer({
             onSubmit={handleGeneralFeedbackSubmit}
             isSubmitting={isSubmitting}
             submitButtonText={content.submitButtonText}
-            mainQuestion={content.mainQuestion}
             colors={colors}
           />
         </div>
@@ -421,7 +419,6 @@ interface GeneralFeedbackFormProps {
   onSubmit: (feedback: string) => Promise<void>
   isSubmitting: boolean
   submitButtonText: string
-  mainQuestion?: string
   colors: {
     primary: string
     background: string
@@ -435,7 +432,6 @@ function GeneralFeedbackForm({
   onSubmit,
   isSubmitting,
   submitButtonText,
-  mainQuestion,
   colors,
 }: GeneralFeedbackFormProps) {
   const [feedback, setFeedback] = React.useState('')
