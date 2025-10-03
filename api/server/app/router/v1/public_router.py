@@ -51,9 +51,6 @@ class PublicFeedbackPayload(BaseModel):
     context: Optional[Dict[str, Any]] = None
 
 
-# Moved to end of file to avoid route conflicts with specific routes
-
-
 @public_router.get(
     '/widgets/{public_key}/feedback', response_model=List[Dict[str, Any]]
 )

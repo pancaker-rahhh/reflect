@@ -538,16 +538,47 @@ class FeedbackService:
             'feedback_metadata',
         }
 
+        rating_value = None
         for key, value in data.items():
             if key in safe_fields and value is not None:
                 logger.info(f'Setting {key} = {value}')
                 try:
                     setattr(existing_feedback, key, value)
+                    if key == 'rating':
+                        rating_value = value
                 except Exception as e:
                     logger.error(f'Error setting {key}: {str(e)}')
                     raise
             else:
                 logger.info(f'Skipping {key} (not in safe fields or None)')
+
+        # Update specialized rating columns based on feedback type
+        if rating_value is not None:
+            feedback_type = existing_feedback.feedback_type
+            logger.info(
+                f'🔄 Updating specialized rating field for type: {feedback_type.value}'
+            )
+
+            if feedback_type == FeedbackType.CSAT and isinstance(
+                existing_feedback, CSATFeedback
+            ):
+                existing_feedback.csat_score = rating_value
+                logger.info(f'✅ Updated csat_score to {rating_value}')
+            elif feedback_type == FeedbackType.CES and isinstance(
+                existing_feedback, CESFeedback
+            ):
+                existing_feedback.ces_score = rating_value
+                logger.info(f'✅ Updated ces_score to {rating_value}')
+            elif feedback_type == FeedbackType.NPS and isinstance(
+                existing_feedback, NPSFeedback
+            ):
+                existing_feedback.nps_score = rating_value
+                logger.info(f'✅ Updated nps_score to {rating_value}')
+            elif feedback_type == FeedbackType.REVIEW and isinstance(
+                existing_feedback, ReviewFeedback
+            ):
+                existing_feedback.overall_rating = rating_value
+                logger.info(f'✅ Updated overall_rating to {rating_value}')
 
         # Update context - handle this carefully to avoid lazy loading issues
         if context:
