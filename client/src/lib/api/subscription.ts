@@ -41,6 +41,12 @@ export interface SubscriptionCancelResponse {
   organization_id: string
 }
 
+export interface SubscriptionUsage {
+  projects: number
+  widgets: number
+  responses: number
+}
+
 export const subscriptionApi = {
   getPlan: (organizationId: string): Promise<SubscriptionPlan> =>
     apiClient.get(`/organizations/${organizationId}/subscription/plan`),
@@ -59,4 +65,7 @@ export const subscriptionApi = {
 
   cancelSubscription: (organizationId: string): Promise<SubscriptionCancelResponse> =>
     apiClient.post(`/organizations/${organizationId}/subscription/cancel`),
+
+  getUsage: (organizationId: string): Promise<SubscriptionUsage> =>
+    apiClient.get(`/organizations/${organizationId}/usage/current`),
 }
