@@ -2,6 +2,8 @@ from typing import Optional, List
 from fastapi import APIRouter, Depends, Query, HTTPException
 from app.db import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.auth import get_current_token_data
+from app.schemas.auth_schema import TokenData
 from app.core.logging import get_logger
 from app.services.dashboard_service import dashboard_service
 from app.schemas.dashboard_schema import (
@@ -25,6 +27,7 @@ async def get_dashboard_metrics(
     project_id: Optional[str] = Query(
         default=None, description='Project ID for filtering', alias='projectId'
     ),
+    current_user: TokenData = Depends(get_current_token_data),
     db: AsyncSession = Depends(get_db),
 ) -> DashboardMetricsResponse:
     try:
@@ -47,7 +50,7 @@ async def get_dashboard_metrics(
                 )
 
         metrics = await dashboard_service.get_dashboard_metrics(
-            db, time_range, project_id
+            db, current_user.user_id, time_range, project_id
         )
         return DashboardMetricsResponse(**metrics)
     except HTTPException:
@@ -68,6 +71,7 @@ async def get_recent_activity(
     limit: int = Query(
         default=10, description='Number of recent activities', ge=1, le=100
     ),
+    current_user: TokenData = Depends(get_current_token_data),
     db: AsyncSession = Depends(get_db),
 ) -> List[RecentActivityResponse]:
     try:
@@ -82,7 +86,9 @@ async def get_recent_activity(
                     detail='Invalid project_id format. Must be a valid UUID.',
                 )
 
-        activities = await dashboard_service.get_recent_activity(db, project_id, limit)
+        activities = await dashboard_service.get_recent_activity(
+            db, current_user.user_id, project_id, limit
+        )
         return [RecentActivityResponse(**activity) for activity in activities]
     except HTTPException:
         raise
@@ -112,6 +118,7 @@ async def get_feedback_data(
         default=100, description='Number of feedback items', ge=1, le=1000
     ),
     offset: int = Query(default=0, description='Offset for pagination', ge=0),
+    current_user: TokenData = Depends(get_current_token_data),
     db: AsyncSession = Depends(get_db),
 ) -> List[FeedbackDataResponse]:
     try:
@@ -151,7 +158,13 @@ async def get_feedback_data(
                 )
 
         feedback_data = await dashboard_service.get_feedback_data(
-            db, feedback_type, project_id, time_range, limit, offset
+            db,
+            current_user.user_id,
+            feedback_type,
+            project_id,
+            time_range,
+            limit,
+            offset,
         )
         return [FeedbackDataResponse(**item) for item in feedback_data]
     except HTTPException:

@@ -324,17 +324,48 @@ class FeedbackService:
     async def list_feedback(
         self,
         db: AsyncSession,
+        user_id: UUID,
         project_id: Optional[UUID] = None,
         widget_id: Optional[UUID] = None,
         skip: int = 0,
         limit: int = 100,
     ) -> List[FeedbackResponsePayload]:
+        from app.services.permission_service import permission_service
+
+        logger.info(
+            f'🔍 list_feedback called: user_id={user_id}, project_id={project_id}, widget_id={widget_id}'
+        )
+
+        if project_id:
+            role = await permission_service.get_user_role_in_project(
+                user_id, project_id, db
+            )
+            logger.info(f'🔐 User {user_id} role in project {project_id}: {role}')
+            if not role:
+                logger.warning(
+                    f'❌ User {user_id} has NO access to project {project_id}'
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail='You do not have access to this project',
+                )
+
         if widget_id:
             objs = await feedback_repository.get_by_widget(db, widget_id, skip, limit)
+            if objs and project_id:
+                objs = [o for o in objs if o.project_id == project_id]
         elif project_id:
             objs = await feedback_repository.get_by_project(db, project_id, skip, limit)
         else:
+            accessible_projects = await permission_service.get_accessible_projects(
+                user_id, None, db
+            )
+            project_ids = [p.id for p in accessible_projects]
+            logger.info(f'📋 User {user_id} has access to projects: {project_ids}')
             objs = await feedback_repository.get_multi(db, skip=skip, limit=limit)
+            objs = [o for o in objs if o.project_id in project_ids]
+
+        logger.info(f'✅ Returning {len(objs)} feedback items for user {user_id}')
         return [self._convert_to_response(o) for o in objs]
 
     async def update_feedback(
@@ -412,8 +443,24 @@ class FeedbackService:
         return True
 
     async def get_actionable_feedback(
-        self, db: AsyncSession, project_id: UUID, skip: int = 0, limit: int = 100
+        self,
+        db: AsyncSession,
+        user_id: UUID,
+        project_id: UUID,
+        skip: int = 0,
+        limit: int = 100,
     ) -> List[FeedbackResponsePayload]:
+        from app.services.permission_service import permission_service
+
+        role = await permission_service.get_user_role_in_project(
+            user_id, project_id, db
+        )
+        if not role:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail='You do not have access to this project',
+            )
+
         actionable_feedback = await action_item_service.get_actionable_feedback(
             db, project_id, skip, limit
         )
