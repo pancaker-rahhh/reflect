@@ -96,6 +96,22 @@ export function useSubscription() {
     retry: false,
   })
 
+  const {
+    data: usage,
+    isLoading: usageLoading,
+    error: usageError,
+  } = useQuery({
+    queryKey: ['subscription-usage', currentOrganization?.id],
+    queryFn: () => subscriptionApi.getUsage(currentOrganization!.id),
+    enabled: !!currentOrganization?.id,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+    retry: false,
+  })
+
   const subscription =
     plan && limits && features
       ? {
@@ -106,16 +122,21 @@ export function useSubscription() {
           limits,
           features,
           usage: {
-            projects: projects?.items?.length || 0,
-            widgets: widgetCount || 0,
-            responses: 0, // This would need to be fetched separately
+            projects: usage?.projects || projects?.items?.length || 0,
+            widgets: usage?.widgets || widgetCount || 0,
+            responses: usage?.responses || 0,
           },
         }
       : undefined
 
   const isLoading =
-    planLoading || limitsLoading || featuresLoading || projectsLoading || widgetsLoading
-  const error = planError || limitsError || featuresError
+    planLoading ||
+    limitsLoading ||
+    featuresLoading ||
+    projectsLoading ||
+    widgetsLoading ||
+    usageLoading
+  const error = planError || limitsError || featuresError || usageError
 
   const isFeatureEnabled = (feature: string): boolean => {
     return subscription?.features[feature as keyof SubscriptionFeatures] ?? false

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { widgetApi } from '@/lib/api'
 
 interface WidgetMetrics {
   total_responses: number
@@ -10,13 +11,7 @@ interface WidgetMetrics {
 export function useWidgetMetrics(widgetId: string, timeRange: string = 'all') {
   return useQuery<WidgetMetrics>({
     queryKey: ['widget-metrics', widgetId, timeRange],
-    queryFn: () =>
-      Promise.resolve({
-        total_responses: 0,
-        unique_users: 0,
-        last_activity: null,
-        time_range: timeRange,
-      } as WidgetMetrics),
+    queryFn: () => widgetApi.getMetrics(widgetId, timeRange),
     refetchInterval: 30000,
     enabled: !!widgetId,
   })
