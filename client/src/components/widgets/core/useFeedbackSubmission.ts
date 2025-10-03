@@ -83,12 +83,14 @@ export function useFeedbackSubmission({
   }, [])
 
   const validateFeedbackData = useCallback((data: FeedbackData): string | null => {
-    // Basic validation
-    if (!data.response || !data.response.trim()) {
+    const messageOptionalTypes = ['NPS', 'CSAT', 'CES']
+    const isMessageOptional = messageOptionalTypes.includes(data.feedbackType)
+
+    if (!isMessageOptional && (!data.response || !data.response.trim())) {
       return 'Feedback message is required'
     }
 
-    if (data.response.length > 5000) {
+    if (data.response && data.response.length > 500) {
       return 'Feedback message is too long (maximum 5000 characters)'
     }
 

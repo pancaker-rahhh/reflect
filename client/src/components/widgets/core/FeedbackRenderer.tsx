@@ -80,9 +80,10 @@ export function FeedbackRenderer({
   const handleSubmit = async () => {
     if (selectedScore === undefined) return
 
-    const response = `Rating: ${selectedScore}${
-      additionalFeedback.trim() ? ` - ${additionalFeedback.trim()}` : ''
-    }`
+    // Only include rating in response if no additional feedback provided
+    const response = additionalFeedback.trim()
+      ? additionalFeedback.trim()
+      : `Rating: ${selectedScore}`
 
     await onSubmit({
       response,
@@ -96,8 +97,11 @@ export function FeedbackRenderer({
   }
 
   const handleReviewSubmit = async (data: { rating: number; review?: string }) => {
+    const response =
+      data.review && data.review.trim() ? data.review.trim() : `Rating: ${data.rating}/5`
+
     await onSubmit({
-      response: `Rating: ${data.rating}/5${data.review ? ` - ${data.review}` : ''}`,
+      response,
       rating: data.rating,
       feedbackType,
       typeSpecificData: {
@@ -446,7 +450,7 @@ function GeneralFeedbackForm({
       <textarea
         value={feedback}
         onChange={(e) => setFeedback(e.target.value)}
-        placeholder={mainQuestion || getPlaceholderText('FEEDBACK')}
+        placeholder=""
         className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
         style={{
           borderColor: feedback.trim() ? colors.primary : '#E5E7EB',
