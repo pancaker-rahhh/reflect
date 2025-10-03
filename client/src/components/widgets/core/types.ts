@@ -121,7 +121,7 @@ export interface GeneralFeedbackData {
 }
 
 export interface FeedbackData {
-  response: string
+  response?: string
   rating?: number
   feedbackType: FeedbackType
   typeSpecificData?:

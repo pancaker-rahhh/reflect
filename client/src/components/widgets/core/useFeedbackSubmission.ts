@@ -229,7 +229,6 @@ export function useFeedbackSubmission({
       }
 
       await handleSubmit({
-        response: `Rating: ${score}`, // Cleaner response format
         rating: score,
         feedbackType,
         typeSpecificData,
@@ -241,7 +240,6 @@ export function useFeedbackSubmission({
   const clearError = useCallback(() => {
     setError(null)
     setErrorInfo(null)
-    // Transition back to active state to show the form again
     onStateChange?.({ type: 'active' })
   }, [onStateChange])
 

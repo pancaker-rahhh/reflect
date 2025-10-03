@@ -197,9 +197,13 @@ async def submit_public_feedback(
 
     feedback_data = {
         'title': payload.title,
-        'message': payload.response or payload.message,
         'rating': payload.rating,
     }
+
+    # Only include message if user actually provided one
+    user_message = payload.response or payload.message
+    if user_message and user_message.strip():
+        feedback_data['message'] = user_message
 
     if widget_type == WidgetType.REVIEW:
         logger.debug(
