@@ -80,34 +80,38 @@ export function FeedbackRenderer({
   const handleSubmit = async () => {
     if (selectedScore === undefined) return
 
-    // Only include rating in response if no additional feedback provided
-    const response = additionalFeedback.trim()
-      ? additionalFeedback.trim()
-      : `Rating: ${selectedScore}`
-
-    await onSubmit({
-      response,
+    const submitData: any = {
       rating: selectedScore,
       feedbackType,
       typeSpecificData: {
         title: feedbackType === 'FEEDBACK' ? 'General Feedback' : `${feedbackType} Feedback`,
         message: additionalFeedback.trim() || '',
       } as GeneralFeedbackData,
-    })
+    }
+
+    // Only include response/message if user provided additional feedback
+    if (additionalFeedback.trim()) {
+      submitData.response = additionalFeedback.trim()
+    }
+
+    await onSubmit(submitData)
   }
 
   const handleReviewSubmit = async (data: { rating: number; review?: string }) => {
-    const response =
-      data.review && data.review.trim() ? data.review.trim() : `Rating: ${data.rating}/5`
-
-    await onSubmit({
-      response,
+    const submitData: any = {
       rating: data.rating,
       feedbackType,
       typeSpecificData: {
         overall_rating: data.rating,
       } as ReviewFeedbackData,
-    })
+    }
+
+    // Only include response/message if user provided a review
+    if (data.review?.trim()) {
+      submitData.response = data.review.trim()
+    }
+
+    await onSubmit(submitData)
   }
 
   const handleBugReportSubmit = async (data: {

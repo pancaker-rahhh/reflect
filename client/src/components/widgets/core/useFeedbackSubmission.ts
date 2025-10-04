@@ -83,14 +83,16 @@ export function useFeedbackSubmission({
   }, [])
 
   const validateFeedbackData = useCallback((data: FeedbackData): string | null => {
-    const messageOptionalTypes = ['NPS', 'CSAT', 'CES']
-    const isMessageOptional = messageOptionalTypes.includes(data.feedbackType)
+    // For rating-based feedback (NPS, CSAT, CES, REVIEW), response is optional
+    const ratingBasedTypes: FeedbackType[] = ['NPS', 'CSAT', 'CES', 'REVIEW']
+    const isRatingBased = ratingBasedTypes.includes(data.feedbackType)
 
-    if (!isMessageOptional && (!data.response || !data.response.trim())) {
+    // Basic validation - response only required for non-rating types
+    if (!isRatingBased && (!data.response || !data.response.trim())) {
       return 'Feedback message is required'
     }
 
-    if (data.response && data.response.length > 500) {
+    if (data.response && data.response.length > 5000) {
       return 'Feedback message is too long (maximum 5000 characters)'
     }
 
@@ -231,7 +233,6 @@ export function useFeedbackSubmission({
       }
 
       await handleSubmit({
-        response: `Rating: ${score}`, // Cleaner response format
         rating: score,
         feedbackType,
         typeSpecificData,
@@ -243,7 +244,6 @@ export function useFeedbackSubmission({
   const clearError = useCallback(() => {
     setError(null)
     setErrorInfo(null)
-    // Transition back to active state to show the form again
     onStateChange?.({ type: 'active' })
   }, [onStateChange])
 

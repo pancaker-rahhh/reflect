@@ -78,12 +78,20 @@ class ProjectService:
         page: int,
         size: int,
     ) -> Tuple[List[Project], int]:
+        from app.services.permission_service import permission_service
+
         await _check_organization_access(db, user_id, organization_id)
 
-        skip = (page - 1) * size
-        return await self.repository.get_all_by_organization(
-            db, organization_id=organization_id, skip=skip, limit=size
+        accessible_projects = await permission_service.get_accessible_projects(
+            user_id, organization_id, db
         )
+
+        total = len(accessible_projects)
+
+        skip = (page - 1) * size
+        paginated_projects = accessible_projects[skip : skip + size]
+
+        return paginated_projects, total
 
     async def create_project(
         self, db: AsyncSession, user_id: UUID, project_in: ProjectCreate
