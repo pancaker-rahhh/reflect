@@ -17,16 +17,16 @@ class BaseRepository(Generic[ModelType]):
 
         logger = get_logger(__name__)
 
-        logger.info(f'BaseRepository.get called with id: {id}')
+        logger.debug(f'BaseRepository.get called with id: {id}')
         stmt = select(self.model).where(self.model.id == id)
 
         # Automatically filter out soft-deleted records
         if hasattr(self.model, 'deleted_at'):
             stmt = stmt.where(self.model.deleted_at.is_(None))
 
-        logger.info(f'Executing query for {self.model.__name__}')
+        logger.debug(f'Executing query for {self.model.__name__}')
         result = await db.execute(stmt)
-        logger.info(f'Query executed, getting result')
+        logger.debug(f'Query executed, getting result')
         return result.scalar_one_or_none()
 
     async def get_multi(
