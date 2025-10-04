@@ -432,12 +432,24 @@ class ActionItemService:
         return feedback
 
     async def get_conversion_preview(
-        self, db: AsyncSession, feedback_id: UUID
+        self, db: AsyncSession, feedback_id: UUID, user_id: UUID
     ) -> Dict[str, Any]:
+        from app.services.permission_service import permission_service
+        from fastapi import HTTPException, status
+
         feedback = await self._get_and_validate_feedback(db, feedback_id)
+
+        role = await permission_service.get_user_role_in_project(
+            user_id, feedback.project_id, db
+        )
+        if not role:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail='You do not have access to this feedback',
+            )
+
         typed_feedback = await self._get_typed_feedback(db, feedback)
 
-        # No automatic tag suggestions - let users choose from existing roadmap tags
         suggested_tags = []
 
         preview = {

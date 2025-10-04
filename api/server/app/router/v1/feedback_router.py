@@ -51,22 +51,28 @@ async def create_feedback(
 
 
 @feedback_router.get('', response_model=List[FeedbackResponsePayload])
-@create_rate_limit_decorator('general_public', is_anonymous=True)
+@create_rate_limit_decorator('general_public')
 async def list_feedback(
     request: Request,
     project_id: Optional[UUID] = Query(default=None),
     widget_id: Optional[UUID] = Query(default=None),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=1000),
+    current_user: TokenData = Depends(get_current_token_data),
     db: AsyncSession = Depends(get_db),
 ) -> List[FeedbackResponsePayload]:
     return await feedback_service.list_feedback(
-        db, project_id=project_id, widget_id=widget_id, skip=skip, limit=limit
+        db,
+        user_id=current_user.user_id,
+        project_id=project_id,
+        widget_id=widget_id,
+        skip=skip,
+        limit=limit,
     )
 
 
 @feedback_router.get('/actionable', response_model=List[Dict[str, Any]])
-@create_rate_limit_decorator('general_public', is_anonymous=True)
+@create_rate_limit_decorator('general_public')
 async def get_actionable_feedback(
     request: Request,
     project_id: Optional[UUID] = Query(
@@ -74,13 +80,14 @@ async def get_actionable_feedback(
     ),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=1000),
+    current_user: TokenData = Depends(get_current_token_data),
     db: AsyncSession = Depends(get_db),
 ) -> List[Dict[str, Any]]:
     if not project_id:
         return []
 
     actionable_feedback = await feedback_service.get_actionable_feedback(
-        db, project_id, skip, limit
+        db, user_id=current_user.user_id, project_id=project_id, skip=skip, limit=limit
     )
 
     return [
@@ -90,12 +97,13 @@ async def get_actionable_feedback(
 
 
 @feedback_router.get('/chart-data', response_model=List[Dict[str, Any]])
-@create_rate_limit_decorator('general_public', is_anonymous=True)
+@create_rate_limit_decorator('general_public')
 async def get_feedback_for_charts(
     request: Request,
     time_range: Optional[str] = Query(default='all'),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=1000),
+    current_user: TokenData = Depends(get_current_token_data),
     db: AsyncSession = Depends(get_db),
 ) -> List[Dict[str, Any]]:
     """Get feedback data for charts and analytics."""
@@ -108,21 +116,29 @@ async def get_feedback_for_charts(
 
 
 @feedback_router.get('/{feedback_id}/conversion-preview', response_model=Dict[str, Any])
-@create_rate_limit_decorator('general_public', is_anonymous=True)
+@create_rate_limit_decorator('general_public')
 async def get_conversion_preview(
-    request: Request, feedback_id: UUID, db: AsyncSession = Depends(get_db)
+    request: Request,
+    feedback_id: UUID,
+    current_user: TokenData = Depends(get_current_token_data),
+    db: AsyncSession = Depends(get_db),
 ) -> Dict[str, Any]:
     try:
-        preview = await action_item_service.get_conversion_preview(db, feedback_id)
+        preview = await action_item_service.get_conversion_preview(
+            db, feedback_id, current_user.user_id
+        )
         return preview
     except (NotFoundError, ValidationError) as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
 @feedback_router.get('/{feedback_id}', response_model=FeedbackResponsePayload)
-@create_rate_limit_decorator('general_public', is_anonymous=True)
+@create_rate_limit_decorator('general_public')
 async def get_feedback(
-    request: Request, feedback_id: UUID, db: AsyncSession = Depends(get_db)
+    request: Request,
+    feedback_id: UUID,
+    current_user: TokenData = Depends(get_current_token_data),
+    db: AsyncSession = Depends(get_db),
 ) -> FeedbackResponsePayload:
     result = await feedback_service.get_feedback(db, feedback_id)
     if not result:
@@ -131,11 +147,12 @@ async def get_feedback(
 
 
 @feedback_router.patch('/{feedback_id}', response_model=FeedbackResponsePayload)
-@create_rate_limit_decorator('feedback_submission', is_anonymous=True)
+@create_rate_limit_decorator('feedback_submission')
 async def update_feedback(
     request: Request,
     feedback_id: UUID,
     payload: FeedbackUpdate,
+    current_user: TokenData = Depends(get_current_token_data),
     db: AsyncSession = Depends(get_db),
 ) -> FeedbackResponsePayload:
     sanitized_data = InputSanitizer.sanitize_feedback_data(

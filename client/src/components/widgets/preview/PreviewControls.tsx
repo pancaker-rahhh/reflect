@@ -59,7 +59,7 @@ export function PreviewControls({
       {/* State Selection */}
       <div className="flex items-center space-x-2">
         <span className="text-sm font-medium text-gray-700">State:</span>
-        <div className="flex space-x-1 flex-wrap">
+        <div className="flex gap-1 flex-wrap">
           {stateButtons.map(({ state, label, description }) => (
             <Button
               key={state}
