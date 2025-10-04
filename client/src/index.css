@@ -42,8 +42,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 13% 18%;
     
-    /* Primary colors - Soft pastel blue */
-    --primary: 199 89% 70%;
+    /* Primary colors - High contrast navy that works with purple */
+    --primary: 220 50% 40%;
     --primary-foreground: 0 0% 100%;
     
     /* Secondary colors - Very light pastel gray */
@@ -65,7 +65,7 @@
     /* Border and input colors - Very light pastel gray */
     --border: 214 32% 88%;
     --input: 214 32% 88%;
-    --ring: 199 89% 70%;
+    --ring: 220 50% 40%;
     
     /* Border radius - More rounded for modern look */
     --radius: 0.75rem;
