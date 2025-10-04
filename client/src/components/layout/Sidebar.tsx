@@ -188,7 +188,7 @@ export function Sidebar() {
       {isExpanded && (
         <div className="p-3 border-t border-border">
           <button
-            onClick={() => navigate('/app/settings/billing')}
+            onClick={() => navigate('/app/settings/account?tab=billing')}
             className="w-full bg-primary/90 text-primary-foreground rounded-md px-4 py-2 text-sm font-medium hover:bg-primary transition-colors"
           >
             Upgrade Now
