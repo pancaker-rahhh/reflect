@@ -43,11 +43,27 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Buffer-inspired metric card colors
+        metric: {
+          amber: "hsl(var(--metric-amber))",
+          blue: "hsl(var(--metric-blue))",
+          red: "hsl(var(--metric-red))",
+          green: "hsl(var(--metric-green))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      boxShadow: {
+        'soft': 'var(--shadow)',
+        'soft-md': 'var(--shadow-md)',
+        'soft-lg': 'var(--shadow-lg)',
+        'soft-sm': 'var(--shadow-sm)',
+      },
+      fontFamily: {
+        'sans': ['Stolzl', 'ui-sans-serif', 'system-ui', 'sans-serif', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'],
       },
       keyframes: {
         "accordion-down": {
