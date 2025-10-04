@@ -177,13 +177,17 @@ class FeedbackService:
             f'🔍 _create_review_feedback - rating from data: {data.get("rating")}'
         )
         rating_value = data.get('rating')
+
+        # Only include message if provided and not empty
+        message_value = data.get('message') or data.get('comment') or ''
+
         return ReviewFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.REVIEW,
             rating=rating_value,  # Set base rating field
             overall_rating=rating_value,  # Set overall_rating field for review-specific data
             title=data.get('title', 'Product Review'),
-            message=data.get('message', ''),
+            message=message_value if message_value.strip() else None,
         )
 
     def _create_bug_report_feedback(
@@ -237,6 +241,9 @@ class FeedbackService:
         else:
             promoter_category = 'detractor'
 
+        # Only include message if provided and not empty
+        message_value = data.get('message') or data.get('comment') or ''
+
         return NPSFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.NPS,
@@ -244,7 +251,7 @@ class FeedbackService:
             nps_score=nps_score,
             promoter_category=promoter_category,
             title='NPS Survey Response',
-            message=data.get('comment', ''),
+            message=message_value if message_value.strip() else None,
         )
 
     def _create_csat_feedback(
@@ -264,6 +271,9 @@ class FeedbackService:
             5: 'very_satisfied',
         }
 
+        # Only include message if provided and not empty
+        message_value = data.get('message') or data.get('comment') or ''
+
         return CSATFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.CSAT,
@@ -271,7 +281,7 @@ class FeedbackService:
             csat_score=csat_score,
             satisfaction_level=satisfaction_levels.get(csat_score, 'neutral'),
             title='CSAT Survey Response',
-            message=data.get('comment', ''),
+            message=message_value if message_value.strip() else None,
         )
 
     def _create_ces_feedback(
@@ -291,6 +301,9 @@ class FeedbackService:
             5: 'very_easy',
         }
 
+        # Only include message if provided and not empty
+        message_value = data.get('message') or data.get('comment') or ''
+
         return CESFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.CES,
@@ -298,7 +311,7 @@ class FeedbackService:
             ces_score=ces_score,
             ease_level=ease_levels.get(ces_score, 'neutral'),
             title='CES Survey Response',
-            message=data.get('comment', ''),
+            message=message_value if message_value.strip() else None,
         )
 
     def _create_general_feedback(
