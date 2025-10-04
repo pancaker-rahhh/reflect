@@ -233,6 +233,7 @@ async def submit_public_feedback(
                 'rating': payload.overall_rating or payload.rating,
                 'pros': payload.pros,
                 'cons': payload.cons,
+                'response': payload.response or '',
             }
         )
         logger.debug(f'🔍 REVIEW feedback_data after update: {feedback_data}')

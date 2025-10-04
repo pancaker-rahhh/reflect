@@ -80,38 +80,32 @@ export function FeedbackRenderer({
   const handleSubmit = async () => {
     if (selectedScore === undefined) return
 
-    const submitData: any = {
+    const response = additionalFeedback.trim()
+      ? additionalFeedback.trim()
+      : `Rating: ${selectedScore}`
+
+    await onSubmit({
+      response,
       rating: selectedScore,
       feedbackType,
       typeSpecificData: {
         title: feedbackType === 'FEEDBACK' ? 'General Feedback' : `${feedbackType} Feedback`,
         message: additionalFeedback.trim() || '',
       } as GeneralFeedbackData,
-    }
-
-    // Only include response/message if user provided additional feedback
-    if (additionalFeedback.trim()) {
-      submitData.response = additionalFeedback.trim()
-    }
-
-    await onSubmit(submitData)
+    })
   }
 
   const handleReviewSubmit = async (data: { rating: number; review?: string }) => {
-    const submitData: any = {
+    const response = data.review?.trim() ? data.review.trim() : `Rating: ${data.rating}/5`
+
+    await onSubmit({
+      response,
       rating: data.rating,
       feedbackType,
       typeSpecificData: {
         overall_rating: data.rating,
       } as ReviewFeedbackData,
-    }
-
-    // Only include response/message if user provided a review
-    if (data.review?.trim()) {
-      submitData.response = data.review.trim()
-    }
-
-    await onSubmit(submitData)
+    })
   }
 
   const handleBugReportSubmit = async (data: {
@@ -389,7 +383,6 @@ export function FeedbackRenderer({
           onSubmit={handleGeneralFeedbackSubmit}
           isSubmitting={isSubmitting}
           submitButtonText={content.submitButtonText}
-          mainQuestion={content.mainQuestion}
           colors={colors}
         />
       )
@@ -412,7 +405,6 @@ export function FeedbackRenderer({
             onSubmit={handleGeneralFeedbackSubmit}
             isSubmitting={isSubmitting}
             submitButtonText={content.submitButtonText}
-            mainQuestion={content.mainQuestion}
             colors={colors}
           />
         </div>
@@ -425,7 +417,6 @@ interface GeneralFeedbackFormProps {
   onSubmit: (feedback: string) => Promise<void>
   isSubmitting: boolean
   submitButtonText: string
-  mainQuestion?: string
   colors: {
     primary: string
     background: string
@@ -439,7 +430,6 @@ function GeneralFeedbackForm({
   onSubmit,
   isSubmitting,
   submitButtonText,
-  mainQuestion,
   colors,
 }: GeneralFeedbackFormProps) {
   const [feedback, setFeedback] = React.useState('')
@@ -454,7 +444,7 @@ function GeneralFeedbackForm({
       <textarea
         value={feedback}
         onChange={(e) => setFeedback(e.target.value)}
-        placeholder={mainQuestion || getPlaceholderText('FEEDBACK')}
+        placeholder=""
         className="w-full h-24 p-4 border-2 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all text-sm"
         style={{
           borderColor: feedback.trim() ? colors.primary : '#E5E7EB',
