@@ -55,7 +55,7 @@ class PublicFeedbackPayload(BaseModel):
     '/widgets/{public_key}/feedback', response_model=List[Dict[str, Any]]
 )
 @create_rate_limit_decorator('widget_access', is_anonymous=True)
-async def get_public_widget_feedback(
+async def list_widget_feedback_with_votes(
     request: Request,
     public_key: str,
     feedback_type: Optional[str] = None,
@@ -90,7 +90,7 @@ async def get_public_widget_feedback(
 
 @public_router.get('/widgets/{public_key}/reviews', response_model=List[Dict[str, Any]])
 @create_rate_limit_decorator('widget_access', is_anonymous=True)
-async def get_public_widget_reviews(
+async def list_widget_reviews(
     request: Request,
     public_key: str,
     limit: int = 50,
@@ -115,7 +115,7 @@ async def get_public_widget_reviews(
     '/widgets/bug-reports/{public_key}', response_model=List[Dict[str, Any]]
 )
 @create_rate_limit_decorator('widget_access', is_anonymous=True)
-async def get_public_widget_bug_reports(
+async def list_widget_bug_reports_with_votes(
     request: Request,
     public_key: str,
     limit: int = 50,
@@ -153,7 +153,7 @@ async def get_public_widget_bug_reports(
     status_code=status.HTTP_201_CREATED,
 )
 @create_rate_limit_decorator('feedback_submission', is_anonymous=True)
-async def submit_public_feedback(
+async def create_or_update_widget_feedback(
     request: Request,
     payload: PublicFeedbackPayload,
     db: AsyncSession = Depends(get_db),
@@ -377,7 +377,7 @@ class VoteRequest(BaseModel):
     '/widgets/features/{public_key}', response_model=List[FeatureRequestPublic]
 )
 @create_rate_limit_decorator('widget_access', is_anonymous=True)
-async def get_widget_feature_requests(
+async def list_widget_feature_requests_with_votes(
     request: Request,
     public_key: str,
     db: AsyncSession = Depends(get_db),
@@ -433,7 +433,7 @@ async def get_widget_feature_requests(
 
 @public_router.get('/widgets/{public_key}', response_model=WidgetReadPublic)
 @create_rate_limit_decorator('widget_access', is_anonymous=True)
-async def get_public_widget_config(
+async def retrieve_widget_configuration(
     request: Request,
     public_key: str,
     db: AsyncSession = Depends(get_db),
@@ -448,7 +448,7 @@ async def get_public_widget_config(
 
 @public_router.post('/vote')
 @create_rate_limit_decorator('voting', is_anonymous=True)
-async def vote(
+async def toggle_item_vote(
     request: Request,
     payload: VoteRequest,
     db: AsyncSession = Depends(get_db),
