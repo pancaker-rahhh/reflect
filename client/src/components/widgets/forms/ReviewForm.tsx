@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ReviewFormProps {
   onSubmit: (data: { rating: number; review: string }) => Promise<void>
   isSubmitting?: boolean
+  resetKey?: number
   colors: {
     primary: string
     background: string
@@ -18,14 +19,23 @@ interface ReviewFormProps {
   }
 }
 
-export function ReviewForm({ onSubmit, isSubmitting, colors, content }: ReviewFormProps) {
+export function ReviewForm({ onSubmit, isSubmitting, resetKey, colors, content }: ReviewFormProps) {
   const [rating, setRating] = useState<number>(0)
   const [hoveredRating, setHoveredRating] = useState<number>(0)
   const [review, setReview] = useState('')
 
+  React.useEffect(() => {
+    if (resetKey !== undefined) {
+      setRating(0)
+      setReview('')
+      setHoveredRating(0)
+    }
+  }, [resetKey])
+
   const handleSubmit = async () => {
     if (rating === 0) return
-    await onSubmit({ rating, review })
+    const reviewMessage = review.trim() || ''
+    await onSubmit({ rating, review: reviewMessage })
   }
 
   const renderStars = () => {

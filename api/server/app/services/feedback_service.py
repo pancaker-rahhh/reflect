@@ -172,20 +172,14 @@ class FeedbackService:
         self, base_data: Dict[str, Any], data: Dict[str, Any]
     ) -> ReviewFeedbackCreate:
         """Create review feedback with 5-star rating system"""
-        logger.info(f'🔍 _create_review_feedback - data: {data}')
-        logger.info(
-            f'🔍 _create_review_feedback - rating from data: {data.get("rating")}'
-        )
         rating_value = data.get('rating')
 
-        # Extract comment from response field - if it starts with "Rating:" then no message
         response_text = data.get('response', '')
         if response_text.startswith('Rating:'):
-            comment = ''  # No message provided
+            comment = ''
         else:
-            comment = response_text  # Message provided
+            comment = response_text
 
-        # Simple logic: if there's a message, use it as title. Otherwise, show rating.
         if comment and comment.strip():
             title = comment.strip()
         else:
@@ -194,8 +188,8 @@ class FeedbackService:
         return ReviewFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.REVIEW,
-            rating=rating_value,  # Set base rating field
-            overall_rating=rating_value,  # Set overall_rating field for review-specific data
+            rating=rating_value,
+            overall_rating=rating_value,
             title=title,
             message=comment,
         )

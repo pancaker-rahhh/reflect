@@ -76,6 +76,7 @@ export function FeedbackRenderer({
   widgetKey,
 }: FeedbackRendererProps) {
   const [additionalFeedback, setAdditionalFeedback] = React.useState('')
+  const [reviewFormKey, setReviewFormKey] = React.useState(0)
 
   const handleSubmit = async () => {
     if (selectedScore === undefined) return
@@ -106,6 +107,8 @@ export function FeedbackRenderer({
         overall_rating: data.rating,
       } as ReviewFeedbackData,
     })
+
+    setReviewFormKey((prev) => prev + 1)
   }
 
   const handleBugReportSubmit = async (data: {
@@ -312,6 +315,8 @@ export function FeedbackRenderer({
     case 'REVIEW':
       return (
         <ReviewForm
+          key={reviewFormKey}
+          resetKey={reviewFormKey}
           onSubmit={handleReviewSubmit}
           isSubmitting={isSubmitting}
           colors={colors}

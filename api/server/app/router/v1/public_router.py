@@ -225,18 +225,16 @@ async def submit_public_feedback(
                     logger.info(f'🔍 STRIPPED rating prefix from: {user_message}')
 
     if widget_type == WidgetType.REVIEW:
-        logger.debug(
-            f'🔍 REVIEW feedback - payload.rating: {payload.rating}, payload.overall_rating: {payload.overall_rating}'
-        )
+        review_message = payload.response or ''
         feedback_data.update(
             {
                 'rating': payload.overall_rating or payload.rating,
                 'pros': payload.pros,
                 'cons': payload.cons,
-                'response': payload.response or '',
+                'response': review_message,
+                'message': review_message,
             }
         )
-        logger.debug(f'🔍 REVIEW feedback_data after update: {feedback_data}')
     elif widget_type == WidgetType.BUG_REPORT:
         feedback_data.update(
             {

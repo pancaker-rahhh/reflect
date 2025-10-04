@@ -156,6 +156,22 @@ class ActionItemService:
         is_actionable = (
             feedback.is_actionable if feedback.is_actionable is not None else True
         )
+
+        rating_based_types = [
+            FeedbackType.NPS,
+            FeedbackType.CSAT,
+            FeedbackType.CES,
+            FeedbackType.SURVEY,
+            FeedbackType.REVIEW,
+        ]
+        if feedback.feedback_type in rating_based_types:
+            has_meaningful_message = (
+                feedback.message
+                and feedback.message.strip()
+                and not feedback.message.startswith('Rating:')
+            )
+            return is_actionable and has_meaningful_message
+
         return is_actionable
 
     async def _ensure_backlog_column_exists(
@@ -167,8 +183,6 @@ class ActionItemService:
         if not roadmap:
             raise ValidationError(f'Could not create roadmap for project {project_id}')
 
-        # Get all columns and use the first one (order = 0) regardless of name
-        # This works even if users rename or reorder columns
         columns = await roadmap_column_repository.get_by_roadmap(db, roadmap.id)
 
         if not columns:
@@ -285,10 +299,10 @@ class ActionItemService:
                 pros = getattr(feedback, 'pros', None)
                 cons = getattr(feedback, 'cons', None)
                 if feedback.message and feedback.message not in [pros, cons]:
-                    description_parts.append(f'Additional Feedback\n{feedback.message}')
+                    description_parts.append(feedback.message)
             except Exception:
                 if feedback.message:
-                    description_parts.append(f'Additional Feedback\n{feedback.message}')
+                    description_parts.append(feedback.message)
 
         elif feedback.feedback_type in [
             FeedbackType.NPS,
@@ -309,7 +323,7 @@ class ActionItemService:
                 description_parts.append(f'Comment\n{follow_up_comment}')
 
             if feedback.message and feedback.message != follow_up_comment:
-                description_parts.append(f'Additional Feedback\n{feedback.message}')
+                description_parts.append(feedback.message)
 
         else:
             if feedback.message:
