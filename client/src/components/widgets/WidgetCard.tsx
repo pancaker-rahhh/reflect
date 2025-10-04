@@ -27,15 +27,15 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
 
   if (viewMode === 'list') {
     return (
-      <Card className="group relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg border-l-4 border-l-transparent hover:border-l-blue-500">
-        <div className="absolute top-0 left-0 h-full w-1 bg-gradient-to-b from-green-400 to-teal-500" />
+      <Card className="group relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg border-l-4 border-l-transparent hover:border-l-primary/60 hover:border-b-4 hover:border-b-foreground/20">
+        <div className="absolute top-0 left-0 h-full w-1 bg-gradient-to-b from-primary/60 to-accent/60" />
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6 flex-1">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="font-bold text-lg text-gray-900 truncate">{widget.name}</h3>
-                  <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
+                  <Badge variant="default" className="bg-primary/10 text-primary border-primary/20">
                     Active
                   </Badge>
                   <Badge variant="outline" className="text-xs">
@@ -62,12 +62,12 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
 
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-4 text-sm">
-                  <div className="flex items-center gap-1 text-blue-600">
+                  <div className="flex items-center gap-1 text-primary">
                     <TrendUp className="h-4 w-4" />
                     <span className="font-medium">
                       {metricsLoading ? '...' : metrics?.total_responses || 0}
                     </span>
-                    <span className="text-gray-500">responses</span>
+                    <span className="text-muted-foreground">responses</span>
                   </div>
                 </div>
 
@@ -107,13 +107,13 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
 
   // Grid view (default)
   return (
-    <Card className="group relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 border-0 shadow-md">
-      <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-green-400 to-teal-500" />
+    <Card className="group relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 border-0 shadow-md hover:border-b-4 hover:border-b-foreground/20">
+      <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-primary/60 to-accent/60" />
 
       {/* Status indicator badge */}
-      <div className="absolute top-4 left-4 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+      <div className="absolute top-4 left-4 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
         <div className="flex items-center gap-1">
-          <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
+          <div className="h-1.5 w-1.5 rounded-full bg-primary"></div>
           Active
         </div>
       </div>
@@ -165,15 +165,15 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
 
       <CardContent className="space-y-4">
         {/* Quick stats */}
-        <div className="flex justify-center p-3 bg-gray-50 rounded-lg">
+        <div className="flex justify-center p-3 bg-muted/50 rounded-lg">
           <div className="text-center">
-            <div className="flex items-center justify-center gap-1 text-blue-600 mb-1">
+            <div className="flex items-center justify-center gap-1 text-primary mb-1">
               <TrendUp className="h-4 w-4" />
               <span className="font-bold text-lg">
                 {metricsLoading ? '...' : metrics?.total_responses || 0}
               </span>
             </div>
-            <p className="text-xs text-gray-600">Responses</p>
+            <p className="text-xs text-muted-foreground">Responses</p>
           </div>
         </div>
 
@@ -181,20 +181,20 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Palette className="h-4 w-4 text-gray-400" />
-              <span className="text-sm text-gray-600">Theme</span>
+              <Palette className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Theme</span>
             </div>
-            <span className="text-sm font-medium text-gray-900 capitalize">
+            <span className="text-sm font-medium text-foreground capitalize">
               {(widget.theme_configuration?.theme_name || 'default').replace('-', ' ')}
             </span>
           </div>
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-gray-400" />
-              <span className="text-sm text-gray-600">Created</span>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Created</span>
             </div>
-            <span className="text-sm font-medium text-gray-900">
+            <span className="text-sm font-medium text-foreground">
               {new Date(widget.created_at).toLocaleDateString()}
             </span>
           </div>

@@ -125,21 +125,21 @@ export function FeedbackTypeSelector({
   const getTypeColor = (type: FeedbackType): { color: string; bgColor: string } => {
     switch (type) {
       case 'BUG_REPORT':
-        return { color: '#EF4444', bgColor: '#FEF2F2' }
+        return { color: 'hsl(var(--metric-pink))', bgColor: 'hsl(var(--metric-pink))' }
       case 'FEATURE_REQUEST':
-        return { color: '#F59E0B', bgColor: '#FFFBEB' }
+        return { color: 'hsl(var(--metric-orange))', bgColor: 'hsl(var(--metric-orange))' }
       case 'REVIEW':
-        return { color: '#10B981', bgColor: '#F0FDF4' }
+        return { color: 'hsl(var(--metric-green))', bgColor: 'hsl(var(--metric-green))' }
       case 'NPS':
-        return { color: '#8B5CF6', bgColor: '#F3E8FF' }
+        return { color: 'hsl(var(--metric-purple))', bgColor: 'hsl(var(--metric-purple))' }
       case 'CSAT':
-        return { color: '#06B6D4', bgColor: '#ECFEFF' }
+        return { color: 'hsl(var(--metric-blue))', bgColor: 'hsl(var(--metric-blue))' }
       case 'CES':
-        return { color: '#84CC16', bgColor: '#F7FEE7' }
+        return { color: 'hsl(var(--metric-amber))', bgColor: 'hsl(var(--metric-amber))' }
       case 'FEEDBACK':
       case 'SURVEY':
       default:
-        return { color: theme.colors.primary, bgColor: '#F3F4F6' }
+        return { color: theme.colors.primary, bgColor: 'hsl(var(--secondary))' }
     }
   }
 

@@ -51,21 +51,21 @@ export function NPSRating({ value, onChange, disabled = false }: NPSRatingProps)
               onMouseLeave={handleMouseLeave}
               className={cn(
                 'w-12 h-12 rounded-full border-2 transition-all duration-200 font-semibold flex items-center justify-center',
-                'hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+                'hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
                 disabled && 'opacity-50 cursor-not-allowed',
                 isSelected || isHovered
-                  ? 'text-white border-transparent'
-                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-300'
+                  ? 'text-foreground border-transparent'
+                  : 'bg-muted hover:bg-muted/80 text-muted-foreground border-border'
               )}
               style={
                 isSelected || isHovered
                   ? {
                       backgroundColor:
                         score <= 6
-                          ? '#fca5a5' // Matte pastel red
+                          ? 'hsl(var(--metric-pink))' // Pastel pink for detractors
                           : score <= 8
-                            ? '#fde68a' // Matte pastel yellow
-                            : '#86efac', // Matte pastel green
+                            ? 'hsl(var(--metric-amber))' // Pastel amber for passives
+                            : 'hsl(var(--metric-green))', // Pastel green for promoters
                     }
                   : undefined
               }
@@ -78,7 +78,7 @@ export function NPSRating({ value, onChange, disabled = false }: NPSRatingProps)
 
       {displayValue !== undefined && (
         <div className="text-center">
-          <div className="text-lg font-medium text-gray-800">Score: {displayValue}</div>
+          <div className="text-lg font-medium text-foreground">Score: {displayValue}</div>
         </div>
       )}
     </div>
