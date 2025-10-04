@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [],
   css: {
     postcss: './postcss.config.js',
@@ -53,8 +53,7 @@ export default defineConfig({
     assetsInlineLimit: 100000000
   },
   define: {
-    'process.env.NODE_ENV': '"production"',
-    'import.meta.env.VITE_API_BASE_URL': '"https://api.reflectfeedback.com/api/v1"',
+    'process.env.NODE_ENV': JSON.stringify(mode === 'production' ? 'production' : 'development'),
     global: 'globalThis',
   },
   esbuild: {
@@ -66,4 +65,4 @@ export default defineConfig({
   optimizeDeps: {
     include: ['preact', 'preact/compat']
   }
-})
+}))
