@@ -89,7 +89,7 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={onDelete}
-                        className="gap-2 text-destructive focus:text-destructive cursor-pointer"
+                        className="gap-2 text-red-600 hover:text-red-700 focus:text-red-700 cursor-pointer"
                       >
                         <Trash className="h-4 w-4" />
                         <span>Delete</span>
@@ -152,7 +152,7 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={onDelete}
-                  className="gap-2 text-destructive focus:text-destructive cursor-pointer"
+                  className="gap-2 text-red-600 hover:text-red-700 focus:text-red-700 cursor-pointer"
                 >
                   <Trash className="h-4 w-4" />
                   <span>Delete</span>

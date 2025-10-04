@@ -56,7 +56,7 @@ export function ConfirmationModal({
           <DialogTitle className="flex items-center gap-2">
             {icon ||
               (variant === 'destructive' ? (
-                <AlertTriangle className="h-5 w-5 text-destructive" />
+                <AlertTriangle className="h-5 w-5 text-red-600" />
               ) : null)}
             {title}
           </DialogTitle>
@@ -122,7 +122,7 @@ export function DeleteConfirmationModal({
       confirmText="Delete"
       cancelText="Cancel"
       variant="destructive"
-      icon={<Trash2 className="h-5 w-5 text-destructive" />}
+      icon={<Trash2 className="h-5 w-5 text-red-600" />}
       isLoading={isLoading}
     />
   )
