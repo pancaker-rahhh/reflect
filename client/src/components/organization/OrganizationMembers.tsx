@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../lib/client';
-import { UserPlus, Mail, MoreHorizontal, Shield, User, Eye, Crown } from 'lucide-react';
+import { UserPlus, Envelope, DotsThree, Shield, User, Eye, Crown } from 'phosphor-react';
 import { InviteMemberModal } from './InviteMemberModal';
 import type { OrganizationMember } from '../../lib/api/organization';
 
@@ -151,7 +151,7 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = ({ organi
                         onClick={() => setMemberMenuOpen(memberMenuOpen === member.id ? null : member.id)}
                         className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
                       >
-                        <MoreHorizontal className="w-4 h-4" />
+                        <DotsThree className="w-4 h-4" />
                       </button>
 
                       {memberMenuOpen === member.id && (
@@ -198,7 +198,7 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = ({ organi
 
         {members.length === 0 && (
           <div className="px-6 py-12 text-center">
-            <Mail className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <Envelope className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No members yet</h3>
             <p className="text-gray-500 mb-4">Invite team members to start collaborating</p>
             <button

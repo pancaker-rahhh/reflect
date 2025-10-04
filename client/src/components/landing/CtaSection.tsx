@@ -1,4 +1,4 @@
-import { CheckCircle, Rocket } from 'lucide-react'
+import { CheckCircle, Rocket } from 'phosphor-react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 

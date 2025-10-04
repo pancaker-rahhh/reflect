@@ -1,5 +1,5 @@
 import React from 'react'
-import { MessageSquare } from 'lucide-react'
+import { ChatCircle } from 'phosphor-react'
 import { useNavigate } from 'react-router-dom'
 
 export const Footer = () => {
@@ -21,7 +21,7 @@ export const Footer = () => {
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2">
               <div className="bg-purple-600 p-2 rounded-lg">
-                <MessageSquare className="text-white" size={20} />
+                <ChatCircle className="text-white" size={20} />
               </div>
               <h3 className="text-xl font-bold text-gray-900">
                 Reflect<span className="text-purple-600">.</span>

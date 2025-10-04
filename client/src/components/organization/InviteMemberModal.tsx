@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../lib/client';
-import { X, Mail, UserPlus } from 'lucide-react';
+import { X, Envelope, UserPlus } from 'phosphor-react';
 import { AnimatedInput } from '../onboarding/shared/AnimatedInput';
 
 interface InviteMemberModalProps {
@@ -66,7 +66,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ organizati
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="colleague@company.com"
-            icon={<Mail className="w-4 h-4" />}
+            icon={<Envelope className="w-4 h-4" />}
             required
           />
           {email && !isValidEmail(email) && (
@@ -125,7 +125,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ organizati
               disabled={!canSubmit || inviteMutation.isPending}
               className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Mail className="w-4 h-4" />
+              <Envelope className="w-4 h-4" />
               {inviteMutation.isPending ? 'Sending...' : 'Send Invitation'}
             </button>
           </div>

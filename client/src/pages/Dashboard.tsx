@@ -8,7 +8,7 @@ import { NPSDistributionChart } from '@/components/dashboard/NPSDistributionChar
 import { FeedbackDistributionChart } from '@/components/dashboard/FeedbackDistributionChart'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAppContext } from '@/context/AppContext'
-import { AlertCircle, RefreshCw, AlertTriangle } from 'lucide-react'
+import { WarningCircle, ArrowClockwise, Warning } from 'phosphor-react'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -79,11 +79,11 @@ export function Dashboard() {
 
   const renderErrorState = (_error: any, refetch: () => void, title: string) => (
     <Alert variant="destructive" className="mb-4">
-      <AlertCircle className="h-4 w-4" />
+      <WarningCircle className="h-4 w-4" />
       <AlertDescription className="flex items-center justify-between">
         <span>Failed to load {title}. Please try again.</span>
         <Button variant="outline" size="sm" onClick={refetch} className="ml-2">
-          <RefreshCw className="h-4 w-4 mr-2" />
+          <ArrowClockwise className="h-4 w-4 mr-2" />
           Retry
         </Button>
       </AlertDescription>
@@ -115,7 +115,7 @@ export function Dashboard() {
             <Alert
               className={`border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/30`}
             >
-              <AlertTriangle className="h-4 w-4 text-orange-600" />
+              <Warning className="h-4 w-4 text-orange-600" />
               <AlertDescription className="text-orange-800 dark:text-orange-200 flex items-center justify-between">
                 <span>
                   {responseUsage.percentage >= 100

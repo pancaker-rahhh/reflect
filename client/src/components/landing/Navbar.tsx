@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { MessageSquare, X, Menu } from 'lucide-react';
+import { ChatCircle, X, List } from 'phosphor-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const Navbar = () => {
@@ -73,7 +73,7 @@ export const Navbar = () => {
               animate={{ rotate: isScrolled ? 360 : 0 }}
               transition={{ duration: 0.5 }}
             >
-                <MessageSquare className={`transition-colors ${isScrolled ? 'text-white' : isDocsPage ? 'text-white' : 'text-white'}`} size={20} />
+                <ChatCircle className={`transition-colors ${isScrolled ? 'text-white' : isDocsPage ? 'text-white' : 'text-white'}`} size={20} />
             </motion.div>
             <h3 className={`text-xl font-bold transition-colors ${isScrolled ? 'text-gray-900' : isDocsPage ? 'text-gray-900' : 'text-white'}`}>
               Reflect.
@@ -154,7 +154,7 @@ export const Navbar = () => {
                     exit={{ rotate: -90, opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Menu size={24} />
+                    <List size={24} />
                   </motion.div>
                 )}
               </AnimatePresence>

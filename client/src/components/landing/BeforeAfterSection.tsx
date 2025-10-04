@@ -1,4 +1,4 @@
-import { XCircle, CheckCircle } from 'lucide-react';
+import { XCircle, CheckCircle } from 'phosphor-react';
 import { motion } from 'framer-motion';
 
 const beforeItems = [

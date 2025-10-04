@@ -3,7 +3,7 @@ import { useLocation, Navigate, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Mail, AlertCircle, Shield } from 'lucide-react'
+import { Envelope, WarningCircle, Shield } from 'phosphor-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useRateLimit } from '../../hooks/useRateLimit'
 import { useToastNotifications } from '../../hooks/useToastNotifications'
@@ -117,7 +117,7 @@ export function Login() {
 
           {!rateLimit.isBlocked && rateLimit.getWarningMessage() && (
             <Alert variant="default" className="border-yellow-200 bg-yellow-50">
-              <AlertCircle className="h-4 w-4 text-yellow-600" />
+              <WarningCircle className="h-4 w-4 text-yellow-600" />
               <AlertDescription className="text-yellow-800">
                 {rateLimit.getWarningMessage()}
               </AlertDescription>
@@ -147,7 +147,7 @@ export function Login() {
                 </span>
               ) : (
                 <span className="flex items-center">
-                  <Mail className="mr-2 h-4 w-4" />
+                  <Envelope className="mr-2 h-4 w-4" />
                   Continue with Email
                 </span>
               )}

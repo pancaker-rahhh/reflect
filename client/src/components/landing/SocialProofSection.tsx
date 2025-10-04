@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Star, Users, Zap, TrendingUp } from 'lucide-react'
+import { Star, Users, Lightning, TrendUp } from 'phosphor-react'
 
 // TODO: Add real testimonials when you have actual customers
 // const testimonials = [
@@ -17,8 +17,8 @@ import { Star, Users, Zap, TrendingUp } from 'lucide-react'
 const stats = [
   { number: 'Growing', label: 'User Base', icon: Users, color: 'text-blue-600' },
   { number: 'Free', label: 'Plan Available', icon: Star, color: 'text-yellow-600' },
-  { number: '3 min', label: 'Setup Time', icon: Zap, color: 'text-green-600' },
-  { number: 'Easy', label: 'Integration', icon: TrendingUp, color: 'text-purple-600' },
+  { number: '3 min', label: 'Setup Time', icon: Lightning, color: 'text-green-600' },
+  { number: 'Easy', label: 'Integration', icon: TrendUp, color: 'text-purple-600' },
 ]
 
 export const SocialProofSection = () => {

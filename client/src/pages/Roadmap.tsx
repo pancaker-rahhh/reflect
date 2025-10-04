@@ -7,14 +7,14 @@ import { Badge } from '@/components/ui/badge'
 import {
   MapPin,
   Plus,
-  ChevronLeft,
-  ChevronRight,
-  ExternalLink,
-  Loader2,
-  Settings,
+  CaretLeft,
+  CaretRight,
+  ArrowSquareOut,
+  Spinner,
+  Gear,
   CheckSquare,
-  GripVertical,
-} from 'lucide-react'
+  DotsSixVertical,
+} from 'phosphor-react'
 import { cn } from '@/lib/utils'
 import { RoadmapCard } from '@/components/roadmap/RoadmapCard'
 import { AddFeatureModal } from '@/components/roadmap/AddFeatureModal'
@@ -581,7 +581,7 @@ function RoadmapPageContent() {
         </p>
         <Button className="mt-6" size="lg" asChild>
           <a href="/settings/roadmap">
-            <Settings className="mr-2 h-4 w-4" />
+            <Gear className="mr-2 h-4 w-4" />
             Configure Roadmap
           </a>
         </Button>
@@ -651,14 +651,14 @@ function RoadmapPageContent() {
             {publicUrl && (
               <Button variant="outline" asChild className="hover:bg-gray-50">
                 <a href={publicUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="mr-2 h-4 w-4" />
+                  <ArrowSquareOut className="mr-2 h-4 w-4" />
                   View Public Roadmap
                 </a>
               </Button>
             )}
             <Button variant="outline" size="icon" asChild className="hover:bg-gray-50">
               <Link to="/app/settings/roadmap">
-                <Settings className="h-4 w-4" />
+                <Gear className="h-4 w-4" />
               </Link>
             </Button>
           </div>
@@ -727,7 +727,7 @@ function RoadmapPageContent() {
                       <div className="flex items-center justify-between p-4 border-b border-gray-200">
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-2">
-                            <GripVertical className="h-5 w-5 text-gray-400 cursor-grab" />
+                            <DotsSixVertical className="h-5 w-5 text-gray-400 cursor-grab" />
                             <div
                               className="w-3 h-3 rounded-full"
                               style={{ backgroundColor: column.color }}
@@ -756,7 +756,7 @@ function RoadmapPageContent() {
                         {/* Loading indicator when moving features */}
                         {isMovingFeature && (
                           <div className="flex items-center justify-center py-4 text-gray-500">
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            <Spinner className="h-4 w-4 animate-spin mr-2" />
                             <span className="text-xs">Moving feature...</span>
                           </div>
                         )}
@@ -806,7 +806,7 @@ function RoadmapPageContent() {
               onClick={() => scrollToColumn('left')}
               className="h-8 w-8 p-0 hover:bg-gray-200"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <CaretLeft className="h-4 w-4" />
             </Button>
 
             <div className="flex items-center space-x-1">
@@ -835,7 +835,7 @@ function RoadmapPageContent() {
               onClick={() => scrollToColumn('right')}
               className="h-8 w-8 p-0 hover:bg-gray-200"
             >
-              <ChevronRight className="h-4 w-4" />
+              <CaretRight className="h-4 w-4" />
             </Button>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Building2, Users, Shield, Save, Trash2, Plus, X } from 'lucide-react'
+import { Buildings, Users, Shield, FloppyDisk, Trash, Plus, X } from 'phosphor-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { organizationApi, type OrganizationMember } from '../../lib/api/organization'
 import { useAppContext } from '../../context/AppContext'
@@ -113,7 +113,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
   }
 
   const tabs = [
-    { id: 'general', label: 'General', icon: Building2 },
+    { id: 'general', label: 'General', icon: Buildings },
     { id: 'members', label: 'Members', icon: Users },
   ]
 
@@ -128,7 +128,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder="Enter organization name"
-            icon={<Building2 className="w-4 h-4" />}
+            icon={<Buildings className="w-4 h-4" />}
           />
 
           <AnimatedTextarea
@@ -154,7 +154,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
             </>
           ) : (
             <>
-              <Save className="w-4 h-4" />
+              <FloppyDisk className="w-4 h-4" />
               Save Changes
             </>
           )}
@@ -312,7 +312,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
                         </>
                       ) : member.role !== 'owner' ? (
                         <button className="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
-                          <Trash2 className="w-4 h-4" />
+                          <Trash className="w-4 h-4" />
                         </button>
                       ) : null}
                     </div>

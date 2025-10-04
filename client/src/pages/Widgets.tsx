@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Search, Grid3X3, List, BarChart3 } from 'lucide-react'
+import { Plus, MagnifyingGlass, GridFour, List, ChartBar } from 'phosphor-react'
 import { widgetApi } from '@/lib/api/widget'
 import { useAppContext } from '@/context/AppContext'
 import { Button } from '@/components/ui/button'
@@ -131,7 +131,7 @@ export function Widgets() {
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <BarChart3 className="h-4 w-4" />
+            <ChartBar className="h-4 w-4" />
             <span>{activeWidgets.length} active</span>
           </div>
           <div className="flex rounded-lg border border-gray-200 overflow-hidden">
@@ -142,7 +142,7 @@ export function Widgets() {
               onClick={() => setViewMode('grid')}
               aria-label="Grid view"
             >
-              <Grid3X3 className="h-4 w-4" />
+              <GridFour className="h-4 w-4" />
             </Button>
             <Button
               variant={viewMode === 'list' ? 'default' : 'ghost'}
@@ -160,7 +160,7 @@ export function Widgets() {
       <FreeTierAlert />
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           type="search"
           placeholder="Search widgets..."

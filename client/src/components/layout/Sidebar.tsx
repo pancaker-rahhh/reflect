@@ -1,19 +1,19 @@
 import { useState, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard,
-  Puzzle,
-  MessageSquare,
+  House,
+  PuzzlePiece,
+  ChatCircle,
   Bug,
   Lightbulb,
-  Map,
-  Settings,
-  ChevronDown,
-  ChevronRight,
+  MapPin,
+  Gear,
+  CaretDown,
+  CaretRight,
   Star,
   FileText,
   Users,
-} from 'lucide-react'
+} from 'phosphor-react'
 import { cn } from '@/lib/utils'
 import { OrganizationDropdown } from './OrganizationDropdown'
 import { isFeatureEnabled } from '@/lib/featureFlags'
@@ -30,36 +30,36 @@ const navigation: NavItem[] = [
   {
     label: 'Dashboard',
     href: '/app/dashboard',
-    icon: LayoutDashboard,
+    icon: House,
   },
   {
     label: 'Widgets',
     href: '/app/widgets',
-    icon: Puzzle,
+    icon: PuzzlePiece,
   },
   {
     label: 'Feedback & Roadmap',
     href: '/app/feedback',
-    icon: MessageSquare,
+    icon: ChatCircle,
     children: [
       { label: 'Responses', href: '/app/feedback/responses', icon: FileText },
       { label: 'Reviews', href: '/app/feedback/reviews', icon: Star },
       { label: 'Bug Reports', href: '/app/feedback/bugs', icon: Bug },
       { label: 'Feature Requests', href: '/app/feedback/features', icon: Lightbulb },
-      { label: 'Roadmap', href: '/app/roadmap', icon: Map },
+      { label: 'Roadmap', href: '/app/roadmap', icon: MapPin },
     ],
   },
   {
     label: 'Settings',
     href: '/app/settings',
-    icon: Settings,
+    icon: Gear,
     children: [
       { label: 'Account Settings', href: '/app/settings/account', icon: Users },
       ...(isFeatureEnabled('SHOW_ORG_SETTINGS_IN_SIDEBAR')
         ? [{ label: 'Organization Settings', href: '/app/settings/organization', icon: Users }]
         : []),
-      { label: 'Project Settings', href: '/app/settings/project', icon: Settings },
-      { label: 'Roadmap Settings', href: '/app/settings/roadmap', icon: Map },
+      { label: 'Project Settings', href: '/app/settings/project', icon: Gear },
+      { label: 'Roadmap Settings', href: '/app/settings/roadmap', icon: MapPin },
     ],
   },
 ]
@@ -137,9 +137,9 @@ export function Sidebar() {
             {hasChildren && (
               <div className="flex-shrink-0 ml-2">
                 {isItemExpanded ? (
-                  <ChevronDown className="h-4 w-4" />
+                  <CaretDown className="h-4 w-4" />
                 ) : (
-                  <ChevronRight className="h-4 w-4" />
+                  <CaretRight className="h-4 w-4" />
                 )}
               </div>
             )}

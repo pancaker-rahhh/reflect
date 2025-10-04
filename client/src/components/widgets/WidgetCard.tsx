@@ -1,4 +1,4 @@
-import { MoreVertical, Trash2, Palette, Puzzle, Calendar, TrendingUp, Code } from 'lucide-react'
+import { DotsThreeVertical, Trash, Palette, PuzzlePiece, Calendar, TrendUp, Code } from 'phosphor-react'
 import { useState } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -44,7 +44,7 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
                 </div>
                 <div className="flex items-center gap-6 text-sm text-gray-600">
                   <div className="flex items-center gap-1">
-                    <Puzzle className="h-4 w-4" />
+                    <PuzzlePiece className="h-4 w-4" />
                     <span>{moduleCount} modules</span>
                   </div>
                   <div className="flex items-center gap-1">
@@ -63,7 +63,7 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-4 text-sm">
                   <div className="flex items-center gap-1 text-blue-600">
-                    <TrendingUp className="h-4 w-4" />
+                    <TrendUp className="h-4 w-4" />
                     <span className="font-medium">
                       {metricsLoading ? '...' : metrics?.total_responses || 0}
                     </span>
@@ -79,7 +79,7 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
                         size="icon"
                         className="h-8 w-8 text-gray-500 hover:bg-gray-100"
                       >
-                        <MoreVertical className="h-4 w-4" />
+                        <DotsThreeVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -91,7 +91,7 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
                         onClick={onDelete}
                         className="gap-2 text-destructive focus:text-destructive cursor-pointer"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash className="h-4 w-4" />
                         <span>Delete</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -142,7 +142,7 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
                   size="icon"
                   className="h-8 w-8 text-gray-500 hover:bg-gray-100"
                 >
-                  <MoreVertical className="h-4 w-4" />
+                  <DotsThreeVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -154,7 +154,7 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
                   onClick={onDelete}
                   className="gap-2 text-destructive focus:text-destructive cursor-pointer"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash className="h-4 w-4" />
                   <span>Delete</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -168,7 +168,7 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
         <div className="flex justify-center p-3 bg-gray-50 rounded-lg">
           <div className="text-center">
             <div className="flex items-center justify-center gap-1 text-blue-600 mb-1">
-              <TrendingUp className="h-4 w-4" />
+              <TrendUp className="h-4 w-4" />
               <span className="font-bold text-lg">
                 {metricsLoading ? '...' : metrics?.total_responses || 0}
               </span>

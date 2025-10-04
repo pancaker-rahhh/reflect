@@ -1,4 +1,4 @@
-import { Check } from 'lucide-react'
+import { Check } from 'phosphor-react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { PRICING_PLANS, formatPrice, getFeatureList } from '@/lib/constants/pricing'

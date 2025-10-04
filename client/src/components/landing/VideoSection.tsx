@@ -1,4 +1,4 @@
-import { Play } from 'lucide-react';
+import { Play } from 'phosphor-react';
 import { motion } from 'framer-motion';
 
 export const VideoSection = () => {

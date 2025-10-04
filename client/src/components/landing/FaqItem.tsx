@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown } from 'lucide-react';
+import { CaretDown } from 'phosphor-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Define the props for the FaqItem component
@@ -78,7 +78,7 @@ export const FaqItem: React.FC<FaqItemProps> = ({ question, answer, icon, isOpen
                 damping: 25 
               }}
             >
-              <ChevronDown
+              <CaretDown
                 className={`h-6 w-6 transition-colors duration-200 ${isOpen ? 'text-purple-600' : 'text-gray-500'}`}
                 aria-hidden="true"
               />

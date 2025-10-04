@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Star, FileText, Bug, Lightbulb, ChevronRight, MessageCircle, Zap } from 'lucide-react';
+import { Star, FileText, Bug, Lightbulb, CaretRight, ChatCircle, Lightning } from 'phosphor-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Define the structure for a module
@@ -191,7 +191,7 @@ export const InteractiveModulesSection = () => {
                           transition={{ duration: 0.5 }}
                           key={`zap-${activeCount}`}
                         >
-                          <Zap size={16} />
+                          <Lightning size={16} />
                         </motion.div>
                         {activeCount} {activeCount === 1 ? 'module' : 'modules'} active
                     </motion.div>
@@ -226,7 +226,7 @@ export const InteractiveModulesSection = () => {
                           animate={{ rotate: [0, 10, -10, 0] }}
                           transition={{ duration: 2, repeat: Infinity }}
                         >
-                          <MessageCircle />
+                          <ChatCircle />
                         </motion.div>
                         <h4 className="text-lg font-bold">How can we help you today?</h4>
                     </div>
@@ -297,7 +297,7 @@ export const InteractiveModulesSection = () => {
                                   whileHover={{ x: 5 }}
                                   transition={{ duration: 0.2 }}
                                 >
-                                  <ChevronRight className="text-gray-400" />
+                                  <CaretRight className="text-gray-400" />
                                 </motion.div>
                             </motion.div>
                           </motion.div>

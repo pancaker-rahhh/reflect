@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import {
   Bug,
-  BarChart,
+  ChartBar,
   FileText,
   Lightbulb,
   GitMerge,
   Star,
   Play,
-  ChevronLeft,
-  ChevronRight,
+  CaretLeft,
+  CaretRight,
   Check,
-} from 'lucide-react'
+} from 'phosphor-react'
 import { motion } from 'framer-motion'
 
 const features = [
@@ -32,7 +32,7 @@ const features = [
   },
   {
     name: 'Dashboard',
-    icon: BarChart,
+    icon: ChartBar,
     color: 'text-blue-500',
     bgColor: 'bg-blue-50',
     title: 'Get a Complete Overview',
@@ -237,7 +237,7 @@ export const PlatformSection = () => {
               onClick={handlePrev}
               className="p-2 rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors"
             >
-              <ChevronLeft className="h-7 w-7" />
+              <CaretLeft className="h-7 w-7" />
             </button>
             <div className="flex items-center gap-2">
               {features.map((_, index) => (
@@ -254,7 +254,7 @@ export const PlatformSection = () => {
               onClick={handleNext}
               className="p-2 rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors"
             >
-              <ChevronRight className="h-7 w-7" />
+              <CaretRight className="h-7 w-7" />
             </button>
           </div>
         </div>

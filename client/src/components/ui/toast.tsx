@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { type VariantProps, cva } from 'class-variance-authority'
-import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react'
+import { X, CheckCircle, WarningCircle, Warning, Info } from 'phosphor-react'
 import * as ToastPrimitives from '@radix-ui/react-toast'
 
 import { cn } from '@/lib/utils'
@@ -121,9 +121,9 @@ const ToastIcon = React.forwardRef<
       case 'success':
         return <CheckCircle className="h-5 w-5 text-green-600" />
       case 'destructive':
-        return <AlertCircle className="h-5 w-5 text-red-600" />
+        return <WarningCircle className="h-5 w-5 text-red-600" />
       case 'warning':
-        return <AlertTriangle className="h-5 w-5 text-yellow-600" />
+        return <Warning className="h-5 w-5 text-yellow-600" />
       case 'info':
         return <Info className="h-5 w-5 text-blue-600" />
       default:
