@@ -54,6 +54,7 @@ export default defineConfig({
   },
   define: {
     'process.env.NODE_ENV': '"production"',
+    'import.meta.env.VITE_API_BASE_URL': '"https://api.reflectfeedback.com/api/v1"',
     global: 'globalThis',
   },
   esbuild: {

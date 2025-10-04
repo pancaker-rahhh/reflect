@@ -51,109 +51,13 @@ class PublicFeedbackPayload(BaseModel):
     context: Optional[Dict[str, Any]] = None
 
 
-@public_router.get(
-    '/widgets/{public_key}/feedback', response_model=List[Dict[str, Any]]
-)
-@create_rate_limit_decorator('widget_access', is_anonymous=True)
-async def get_public_widget_feedback(
-    request: Request,
-    public_key: str,
-    feedback_type: Optional[str] = None,
-    limit: int = 50,
-    offset: int = 0,
-    db: AsyncSession = Depends(get_db),
-    service: WidgetService = Depends(lambda: widget_service),
-):
-    from app.services.voting_service import voting_service
-
-    sanitized_public_key = InputSanitizer.sanitize_widget_key(public_key)
-    if not sanitized_public_key:
-        raise HTTPException(status_code=400, detail='Invalid widget key')
-
-    widget = await service.get_public_widget_by_key(db, public_key=sanitized_public_key)
-
-    feedback_data = await feedback_repository.get_public_feedback_for_widget(
-        db, widget_id=widget.id, feedback_type=feedback_type, limit=limit, offset=offset
-    )
-
-    voter_ip = request.client.host if request.client else '127.0.0.1'
-    voter_user_agent = request.headers.get('user-agent', '')
-
-    for feedback in feedback_data:
-        has_user_voted = await voting_service.get_user_vote_status(
-            db, feedback['id'], voter_ip, voter_user_agent
-        )
-        feedback['hasUserUpvoted'] = has_user_voted
-
-    return feedback_data
-
-
-@public_router.get('/widgets/{public_key}/reviews', response_model=List[Dict[str, Any]])
-@create_rate_limit_decorator('widget_access', is_anonymous=True)
-async def get_public_widget_reviews(
-    request: Request,
-    public_key: str,
-    limit: int = 50,
-    offset: int = 0,
-    db: AsyncSession = Depends(get_db),
-    service: WidgetService = Depends(lambda: widget_service),
-):
-    sanitized_public_key = InputSanitizer.sanitize_widget_key(public_key)
-    if not sanitized_public_key:
-        raise HTTPException(status_code=400, detail='Invalid widget key')
-
-    widget = await service.get_public_widget_by_key(db, public_key=sanitized_public_key)
-
-    review_data = await feedback_repository.get_public_reviews_for_widget(
-        db, widget_id=widget.id, limit=limit, offset=offset
-    )
-
-    return review_data
-
-
-@public_router.get(
-    '/widgets/bug-reports/{public_key}', response_model=List[Dict[str, Any]]
-)
-@create_rate_limit_decorator('widget_access', is_anonymous=True)
-async def get_public_widget_bug_reports(
-    request: Request,
-    public_key: str,
-    limit: int = 50,
-    offset: int = 0,
-    db: AsyncSession = Depends(get_db),
-    service: WidgetService = Depends(lambda: widget_service),
-):
-    from app.services.voting_service import voting_service
-
-    sanitized_public_key = InputSanitizer.sanitize_widget_key(public_key)
-    if not sanitized_public_key:
-        raise HTTPException(status_code=400, detail='Invalid widget key')
-
-    widget = await service.get_public_widget_by_key(db, public_key=sanitized_public_key)
-
-    bug_data = await feedback_repository.get_public_bug_reports_for_widget(
-        db, widget_id=widget.id, limit=limit, offset=offset
-    )
-
-    voter_ip = request.client.host if request.client else '127.0.0.1'
-    voter_user_agent = request.headers.get('user-agent', '')
-
-    for bug in bug_data:
-        has_user_voted = await voting_service.get_user_vote_status(
-            db, bug['id'], voter_ip, voter_user_agent
-        )
-        bug['hasUserUpvoted'] = has_user_voted
-
-    return bug_data
-
-
 @public_router.post(
     '/feedback',
     response_model=FeedbackResponsePayload,
     status_code=status.HTTP_201_CREATED,
 )
 @create_rate_limit_decorator('feedback_submission', is_anonymous=True)
-async def submit_public_feedback(
+async def create_or_update_widget_feedback(
     request: Request,
     payload: PublicFeedbackPayload,
     db: AsyncSession = Depends(get_db),
@@ -357,6 +261,102 @@ async def submit_public_feedback(
         raise HTTPException(status_code=500, detail='Internal server error')
 
 
+@public_router.get(
+    '/widgets/{public_key}/feedback', response_model=List[Dict[str, Any]]
+)
+@create_rate_limit_decorator('widget_access', is_anonymous=True)
+async def list_widget_feedback_with_votes(
+    request: Request,
+    public_key: str,
+    feedback_type: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+    db: AsyncSession = Depends(get_db),
+    service: WidgetService = Depends(lambda: widget_service),
+):
+    from app.services.voting_service import voting_service
+
+    sanitized_public_key = InputSanitizer.sanitize_widget_key(public_key)
+    if not sanitized_public_key:
+        raise HTTPException(status_code=400, detail='Invalid widget key')
+
+    widget = await service.get_public_widget_by_key(db, public_key=sanitized_public_key)
+
+    feedback_data = await feedback_repository.get_public_feedback_for_widget(
+        db, widget_id=widget.id, feedback_type=feedback_type, limit=limit, offset=offset
+    )
+
+    voter_ip = request.client.host if request.client else '127.0.0.1'
+    voter_user_agent = request.headers.get('user-agent', '')
+
+    for feedback in feedback_data:
+        has_user_voted = await voting_service.get_user_vote_status(
+            db, feedback['id'], voter_ip, voter_user_agent
+        )
+        feedback['hasUserUpvoted'] = has_user_voted
+
+    return feedback_data
+
+
+@public_router.get('/widgets/{public_key}/reviews', response_model=List[Dict[str, Any]])
+@create_rate_limit_decorator('widget_access', is_anonymous=True)
+async def list_widget_reviews(
+    request: Request,
+    public_key: str,
+    limit: int = 50,
+    offset: int = 0,
+    db: AsyncSession = Depends(get_db),
+    service: WidgetService = Depends(lambda: widget_service),
+):
+    sanitized_public_key = InputSanitizer.sanitize_widget_key(public_key)
+    if not sanitized_public_key:
+        raise HTTPException(status_code=400, detail='Invalid widget key')
+
+    widget = await service.get_public_widget_by_key(db, public_key=sanitized_public_key)
+
+    review_data = await feedback_repository.get_public_reviews_for_widget(
+        db, widget_id=widget.id, limit=limit, offset=offset
+    )
+
+    return review_data
+
+
+@public_router.get(
+    '/widgets/bug-reports/{public_key}', response_model=List[Dict[str, Any]]
+)
+@create_rate_limit_decorator('widget_access', is_anonymous=True)
+async def list_widget_bug_reports_with_votes(
+    request: Request,
+    public_key: str,
+    limit: int = 50,
+    offset: int = 0,
+    db: AsyncSession = Depends(get_db),
+    service: WidgetService = Depends(lambda: widget_service),
+):
+    from app.services.voting_service import voting_service
+
+    sanitized_public_key = InputSanitizer.sanitize_widget_key(public_key)
+    if not sanitized_public_key:
+        raise HTTPException(status_code=400, detail='Invalid widget key')
+
+    widget = await service.get_public_widget_by_key(db, public_key=sanitized_public_key)
+
+    bug_data = await feedback_repository.get_public_bug_reports_for_widget(
+        db, widget_id=widget.id, limit=limit, offset=offset
+    )
+
+    voter_ip = request.client.host if request.client else '127.0.0.1'
+    voter_user_agent = request.headers.get('user-agent', '')
+
+    for bug in bug_data:
+        has_user_voted = await voting_service.get_user_vote_status(
+            db, bug['id'], voter_ip, voter_user_agent
+        )
+        bug['hasUserUpvoted'] = has_user_voted
+
+    return bug_data
+
+
 class FeatureRequestPublic(BaseModel):
     id: str
     title: str
@@ -377,7 +377,7 @@ class VoteRequest(BaseModel):
     '/widgets/features/{public_key}', response_model=List[FeatureRequestPublic]
 )
 @create_rate_limit_decorator('widget_access', is_anonymous=True)
-async def get_widget_feature_requests(
+async def list_widget_feature_requests_with_votes(
     request: Request,
     public_key: str,
     db: AsyncSession = Depends(get_db),
@@ -433,7 +433,7 @@ async def get_widget_feature_requests(
 
 @public_router.get('/widgets/{public_key}', response_model=WidgetReadPublic)
 @create_rate_limit_decorator('widget_access', is_anonymous=True)
-async def get_public_widget_config(
+async def retrieve_widget_configuration(
     request: Request,
     public_key: str,
     db: AsyncSession = Depends(get_db),
@@ -448,7 +448,7 @@ async def get_public_widget_config(
 
 @public_router.post('/vote')
 @create_rate_limit_decorator('voting', is_anonymous=True)
-async def vote(
+async def toggle_item_vote(
     request: Request,
     payload: VoteRequest,
     db: AsyncSession = Depends(get_db),
