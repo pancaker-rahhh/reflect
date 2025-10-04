@@ -77,6 +77,7 @@ export function useFeedbackSubmission({
 
     // Default to unknown
     return {
+      message: errorMessage,
       type: 'unknown',
     }
   }, [])
