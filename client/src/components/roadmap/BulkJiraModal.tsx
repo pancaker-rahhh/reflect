@@ -146,7 +146,7 @@ export function BulkJiraModal({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
-            <ExternalLink className="h-6 w-6 text-blue-600" />
+            <ExternalLink className="h-6 w-6 text-info" />
             <span className="text-lg font-semibold">
               Push {selectedItems.length} Action Items to JIRA
             </span>
@@ -154,9 +154,9 @@ export function BulkJiraModal({
         </DialogHeader>
 
         <div className="space-y-6">
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+          <div className="bg-surface-2 rounded-lg p-4 border border-border">
             <div className="flex items-center gap-2 mb-3">
-              <Label className="text-sm font-semibold text-gray-900">Selected Items</Label>
+              <Label className="text-sm font-semibold text-foreground">Selected Items</Label>
               <Badge variant="outline" className="text-xs">
                 {selectedItems.length} items
               </Badge>
@@ -168,9 +168,9 @@ export function BulkJiraModal({
                   className="flex items-center justify-between p-3 bg-tertiary rounded-lg border border-border shadow-sm"
                 >
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
+                    <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
                     {item.description && (
-                      <p className="text-xs text-gray-600 line-clamp-1 mt-1">{item.description}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{item.description}</p>
                     )}
                   </div>
                 </div>
@@ -181,7 +181,7 @@ export function BulkJiraModal({
           <div className="space-y-5">
             {jiraIntegrations.length > 1 && (
               <div className="space-y-2">
-                <Label className="text-sm font-semibold text-gray-900">JIRA Integration</Label>
+                <Label className="text-sm font-semibold text-foreground">JIRA Integration</Label>
                 <Select value={selectedIntegrationId} onValueChange={setSelectedIntegrationId}>
                   <SelectTrigger className="h-11">
                     <SelectValue placeholder="Select your JIRA integration" />
@@ -206,9 +206,9 @@ export function BulkJiraModal({
 
             {selectedIntegrationId && (
               <div className="space-y-2">
-                <Label className="text-sm font-semibold text-gray-900">Project</Label>
+                <Label className="text-sm font-semibold text-foreground">Project</Label>
                 {projectsQuery.isLoading ? (
-                  <div className="h-11 bg-gray-100 rounded-md animate-pulse"></div>
+                  <div className="h-11 bg-muted rounded-md animate-pulse"></div>
                 ) : (
                   <Select value={selectedProjectKey} onValueChange={setSelectedProjectKey}>
                     <SelectTrigger className="h-11">
@@ -237,9 +237,9 @@ export function BulkJiraModal({
 
             {selectedIntegrationId && (
               <div className="space-y-2">
-                <Label className="text-sm font-semibold text-gray-900">Issue Type</Label>
+                <Label className="text-sm font-semibold text-foreground">Issue Type</Label>
                 {issueTypesQuery.isLoading ? (
-                  <div className="h-11 bg-gray-100 rounded-md animate-pulse"></div>
+                  <div className="h-11 bg-muted rounded-md animate-pulse"></div>
                 ) : (
                   <Select value={issueType} onValueChange={setIssueType}>
                     <SelectTrigger className="h-11">
@@ -282,21 +282,21 @@ export function BulkJiraModal({
             <Card
               className={
                 bulkCreate.data.success
-                  ? 'border-green-200 bg-green-50'
-                  : 'border-red-200 bg-red-50'
+                  ? 'border-success/20 bg-success/10'
+                  : 'border-destructive/20 bg-destructive/10'
               }
             >
               <CardHeader className="pb-4">
                 <CardTitle className="text-base flex items-center gap-3">
                   {bulkCreate.data.success ? (
                     <>
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                      <span className="text-green-900">Bulk Creation Complete</span>
+                      <CheckCircle className="h-5 w-5 text-success" />
+                      <span className="text-success">Bulk Creation Complete</span>
                     </>
                   ) : (
                     <>
-                      <XCircle className="h-5 w-5 text-red-600" />
-                      <span className="text-red-900">Creation Failed</span>
+                      <XCircle className="h-5 w-5 text-destructive" />
+                      <span className="text-destructive">Creation Failed</span>
                     </>
                   )}
                 </CardTitle>

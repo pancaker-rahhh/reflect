@@ -91,7 +91,7 @@ export const FaqSection = () => {
               viewport={{ once: true }}
             >
               <motion.p
-                className="text-base font-semibold leading-7 text-purple-600"
+                className="text-base font-semibold leading-7 text-primary"
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, delay: 0.3 }}
@@ -100,7 +100,7 @@ export const FaqSection = () => {
                 FAQ
               </motion.p>
               <motion.h2
-                className="mt-2 text-3xl font-bold leading-10 tracking-tight text-gray-900 sm:text-4xl"
+                className="mt-2 text-3xl font-bold leading-10 tracking-tight text-foreground sm:text-4xl"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
@@ -109,7 +109,7 @@ export const FaqSection = () => {
                 Frequently Asked Questions
               </motion.h2>
               <motion.p
-                className="mt-6 text-lg leading-8 text-gray-600"
+                className="mt-6 text-lg leading-8 text-muted-foreground"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
@@ -120,7 +120,7 @@ export const FaqSection = () => {
               </motion.p>
               <motion.button
                 onClick={() => (window.location.href = '/login')}
-                className="mt-10 inline-flex items-center gap-3 rounded-md bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 transition-all"
+                className="mt-10 inline-flex items-center gap-3 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.6 }}

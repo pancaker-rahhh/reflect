@@ -46,14 +46,14 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ organizati
       <div className="bg-tertiary rounded-lg max-w-md w-full mx-4">
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-              <UserPlus className="w-6 h-6 text-indigo-600" />
+            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+              <UserPlus className="w-6 h-6 text-primary" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900">Invite Member</h2>
+            <h2 className="text-xl font-semibold text-foreground">Invite Member</h2>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -70,11 +70,11 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ organizati
             required
           />
           {email && !isValidEmail(email) && (
-            <p className="text-xs text-red-600 mt-1">Please enter a valid email</p>
+            <p className="text-xs text-destructive mt-1">Please enter a valid email</p>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Organization Role
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -85,8 +85,8 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ organizati
                   onClick={() => setRole(roleOption)}
                   className={`px-4 py-2 rounded-lg border-2 font-medium capitalize transition-all ${
                     role === roleOption
-                      ? 'border-indigo-500 bg-indigo-50 text-indigo-600'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border hover:border-border-strong'
                   }`}
                 >
                   {roleOption}
@@ -96,8 +96,8 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ organizati
           </div>
 
           <div className="bg-secondary rounded-lg p-4">
-            <h3 className="font-medium text-gray-900 mb-2">Role Permissions</h3>
-            <div className="text-sm text-gray-600 space-y-1">
+            <h3 className="font-medium text-foreground mb-2">Role Permissions</h3>
+            <div className="text-sm text-muted-foreground space-y-1">
               <p><strong>Viewer:</strong> Can view projects and feedback but cannot make changes</p>
               <p><strong>Member:</strong> Can create and edit widgets, and feedback</p>
               <p><strong>Admin:</strong> Full access including organization settings and member management</p>

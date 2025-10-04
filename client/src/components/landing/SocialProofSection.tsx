@@ -15,16 +15,16 @@ import { Star, Users, Lightning, TrendUp } from 'phosphor-react'
 
 // TODO: Update with real metrics when you have actual data
 const stats = [
-  { number: 'Growing', label: 'User Base', icon: Users, color: 'text-blue-600' },
-  { number: 'Free', label: 'Plan Available', icon: Star, color: 'text-yellow-600' },
-  { number: '3 min', label: 'Setup Time', icon: Lightning, color: 'text-green-600' },
-  { number: 'Easy', label: 'Integration', icon: TrendUp, color: 'text-purple-600' },
+  { number: 'Growing', label: 'User Base', icon: Users, color: 'text-info' },
+  { number: 'Free', label: 'Plan Available', icon: Star, color: 'text-warning' },
+  { number: '3 min', label: 'Setup Time', icon: Lightning, color: 'text-success' },
+  { number: 'Easy', label: 'Integration', icon: TrendUp, color: 'text-primary' },
 ]
 
 export const SocialProofSection = () => {
   return (
     <motion.section
-      className="bg-gray-50 py-16"
+      className="bg-surface-2 py-16"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
@@ -49,8 +49,8 @@ export const SocialProofSection = () => {
               viewport={{ once: true }}
             >
               <stat.icon className={`h-8 w-8 ${stat.color} mx-auto mb-4`} />
-              <div className="text-3xl font-bold text-gray-900 mb-2">{stat.number}</div>
-              <div className="text-gray-600">{stat.label}</div>
+              <div className="text-3xl font-bold text-foreground mb-2">{stat.number}</div>
+              <div className="text-muted-foreground">{stat.label}</div>
             </motion.div>
           ))}
         </motion.div>
@@ -64,10 +64,10 @@ export const SocialProofSection = () => {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl font-bold text-foreground mb-4">
             Loved by Product Teams Worldwide
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Join thousands of companies using Reflect to collect better feedback and build products users love.
           </p>
         </motion.div>
@@ -84,11 +84,11 @@ export const SocialProofSection = () => {
             >
               <div className="flex items-center mb-4">
                 {[...Array(testimonial.rating)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                  <Star key={i} className="h-5 w-5 text-warning fill-current" />
                 ))}
               </div>
               
-              <p className="text-gray-700 mb-4 italic">"{testimonial.text}"</p>
+              <p className="text-foreground mb-4 italic">"{testimonial.text}"</p>
               
               <div className="flex items-center">
                 <img 
@@ -97,8 +97,8 @@ export const SocialProofSection = () => {
                   className="w-12 h-12 rounded-full mr-4"
                 />
                 <div>
-                  <div className="font-semibold text-gray-900">{testimonial.author}</div>
-                  <div className="text-sm text-gray-600">{testimonial.role}, {testimonial.company}</div>
+                  <div className="font-semibold text-foreground">{testimonial.author}</div>
+                  <div className="text-sm text-muted-foreground">{testimonial.role}, {testimonial.company}</div>
                 </div>
               </div>
             </motion.div>
@@ -115,11 +115,11 @@ export const SocialProofSection = () => {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <p className="text-gray-500 text-sm mb-6">Trusted by companies worldwide</p>
+          <p className="text-muted-foreground text-sm mb-6">Trusted by companies worldwide</p>
           <div className="flex justify-center items-center space-x-8 opacity-60">
-            <div className="text-2xl font-bold text-gray-400">Real Company 1</div>
-            <div className="text-2xl font-bold text-gray-400">Real Company 2</div>
-            <div className="text-2xl font-bold text-gray-400">Real Company 3</div>
+            <div className="text-2xl font-bold text-muted-foreground">Real Company 1</div>
+            <div className="text-2xl font-bold text-muted-foreground">Real Company 2</div>
+            <div className="text-2xl font-bold text-muted-foreground">Real Company 3</div>
           </div>
         </motion.div>
         */}

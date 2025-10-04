@@ -23,9 +23,9 @@ export function SyncLoader() {
       <div className="text-center space-y-8 px-4">
         {/* Creative animated logo/icon */}
         <div className="relative mx-auto w-20 h-20">
-          <div className="absolute inset-0 rounded-full border-4 border-blue-200"></div>
-          <div className="absolute inset-0 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"></div>
-          <div className="absolute inset-2 rounded-full border-2 border-indigo-300 border-b-transparent animate-spin animate-reverse" style={{ animationDuration: '2s' }}></div>
+          <div className="absolute inset-0 rounded-full border-4 border-border"></div>
+          <div className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+          <div className="absolute inset-2 rounded-full border-2 border-primary/60 border-b-transparent animate-spin animate-reverse" style={{ animationDuration: '2s' }}></div>
           <div className="absolute inset-4 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center">
             <svg className="w-6 h-6 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -35,12 +35,12 @@ export function SyncLoader() {
 
         {/* Animated message */}
         <div className="space-y-2">
-          <h2 className="text-2xl font-bold text-gray-800 animate-fade-in">
+          <h2 className="text-2xl font-bold text-foreground animate-fade-in">
             Welcome to Reflect! 
           </h2>
           <p 
             key={messageIndex} 
-            className="text-lg text-gray-600 animate-fade-in-up transition-all duration-300"
+            className="text-lg text-muted-foreground animate-fade-in-up transition-all duration-300"
           >
             {loadingMessages[messageIndex]}
           </p>
@@ -53,8 +53,8 @@ export function SyncLoader() {
               key={index}
               className={`h-2 w-2 rounded-full transition-all duration-300 ${
                 index <= messageIndex 
-                  ? 'bg-blue-500 scale-125' 
-                  : 'bg-gray-300'
+                  ? 'bg-primary scale-125' 
+                  : 'bg-muted'
               }`}
               style={{
                 animationDelay: `${index * 200}ms`,
@@ -65,7 +65,7 @@ export function SyncLoader() {
 
         {/* Fun fact or tip */}
         <div className="max-w-md mx-auto">
-          <p className="text-sm text-gray-500 italic animate-fade-in" style={{ animationDelay: '2s' }}>
+          <p className="text-sm text-muted-foreground italic animate-fade-in" style={{ animationDelay: '2s' }}>
             💡 Tip: Use keyboard shortcuts to navigate faster once you&apos;re in!
           </p>
         </div>

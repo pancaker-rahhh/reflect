@@ -5,7 +5,7 @@ export const VideoSection = () => {
   return (
     <motion.div 
       id="video-section"
-      className="bg-slate-50 py-24 sm:py-32"
+      className="bg-surface-2 py-24 sm:py-32"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
@@ -20,7 +20,7 @@ export const VideoSection = () => {
           viewport={{ once: true }}
         >
           <motion.h2 
-            className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl"
+            className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -37,7 +37,7 @@ export const VideoSection = () => {
             </motion.span>
           </motion.h2>
           <motion.p 
-            className="mt-4 text-lg leading-8 text-gray-600"
+            className="mt-4 text-lg leading-8 text-muted-foreground"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
@@ -129,7 +129,7 @@ export const VideoSection = () => {
               }}
             />
             <motion.div
-              className="absolute bottom-4 left-4 w-2 h-2 bg-purple-400/40 rounded-full"
+              className="absolute bottom-4 left-4 w-2 h-2 bg-primary/40 rounded-full"
               animate={{
                 y: [0, -8, 0],
                 x: [0, 5, 0],

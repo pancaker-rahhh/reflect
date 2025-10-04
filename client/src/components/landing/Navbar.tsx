@@ -69,13 +69,13 @@ export const Navbar = () => {
             whileTap={{ scale: 0.95 }}
           >
             <motion.div
-              className={`p-2 rounded-lg transition-colors ${isScrolled ? 'bg-purple-600' : isDocsPage ? 'bg-purple-600' : 'bg-white/20'}`}
+              className={`p-2 rounded-lg transition-colors ${isScrolled ? 'bg-primary' : isDocsPage ? 'bg-primary' : 'bg-white/20'}`}
               animate={{ rotate: isScrolled ? 360 : 0 }}
               transition={{ duration: 0.5 }}
             >
                 <ChatCircle className={`transition-colors ${isScrolled ? 'text-white' : isDocsPage ? 'text-white' : 'text-white'}`} size={20} />
             </motion.div>
-            <h3 className={`text-xl font-bold transition-colors ${isScrolled ? 'text-gray-900' : isDocsPage ? 'text-gray-900' : 'text-white'}`}>
+            <h3 className={`text-xl font-bold transition-colors ${isScrolled ? 'text-foreground' : isDocsPage ? 'text-foreground' : 'text-white'}`}>
               Reflect.
             </h3>
           </motion.button>
@@ -86,7 +86,7 @@ export const Navbar = () => {
                 key={link.name}
                 href={link.href}
                 onClick={(e) => handleNavClick(e, link.targetId)}
-                className={`text-sm font-semibold transition-colors ${isScrolled ? 'text-gray-700 hover:text-purple-600' : isDocsPage ? 'text-gray-700 hover:text-purple-600' : 'text-white/80 hover:text-white'} relative`}
+                className={`text-sm font-semibold transition-colors ${isScrolled ? 'text-muted-foreground hover:text-primary' : isDocsPage ? 'text-muted-foreground hover:text-primary' : 'text-white/80 hover:text-white'} relative`}
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.4 + (index * 0.1) }}
@@ -95,7 +95,7 @@ export const Navbar = () => {
               >
                 {link.name}
                 <motion.div
-                  className="absolute -bottom-1 left-0 h-0.5 bg-purple-600"
+                  className="absolute -bottom-1 left-0 h-0.5 bg-primary"
                   initial={{ width: 0 }}
                   whileHover={{ width: "100%" }}
                   transition={{ duration: 0.3 }}
@@ -107,7 +107,7 @@ export const Navbar = () => {
           <div className="hidden lg:flex items-center gap-4">
             <motion.button
               onClick={handleLogin}
-              className={`text-sm font-semibold transition-colors ${isScrolled ? 'text-gray-700 hover:text-purple-600' : isDocsPage ? 'text-gray-700 hover:text-purple-600' : 'text-white/80 hover:text-white'}`}
+              className={`text-sm font-semibold transition-colors ${isScrolled ? 'text-muted-foreground hover:text-primary' : isDocsPage ? 'text-muted-foreground hover:text-primary' : 'text-white/80 hover:text-white'}`}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.8 }}
@@ -117,7 +117,7 @@ export const Navbar = () => {
             </motion.button>
             <motion.button
               onClick={handleGetStarted}
-              className="rounded-md bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 transition-all hover-glow"
+              className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all hover-glow"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.9 }}
@@ -131,7 +131,7 @@ export const Navbar = () => {
           <div className="lg:hidden">
             <motion.button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`${isScrolled ? 'text-gray-800' : isDocsPage ? 'text-gray-800' : 'text-white'} p-2 rounded-lg hover:bg-white/10 transition-colors`}
+              className={`${isScrolled ? 'text-foreground' : isDocsPage ? 'text-foreground' : 'text-white'} p-2 rounded-lg hover:bg-white/10 transition-colors`}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
@@ -185,7 +185,7 @@ export const Navbar = () => {
                   key={link.name}
                   href={link.href}
                   onClick={(e) => handleNavClick(e, link.targetId)}
-                  className={`block text-base font-semibold transition-colors ${isScrolled ? 'text-gray-700 hover:text-purple-600' : isDocsPage ? 'text-gray-700 hover:text-purple-600' : 'text-white/80 hover:text-white'}`}
+                  className={`block text-base font-semibold transition-colors ${isScrolled ? 'text-muted-foreground hover:text-primary' : isDocsPage ? 'text-muted-foreground hover:text-primary' : 'text-white/80 hover:text-white'}`}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.2 + (index * 0.05) }}
@@ -194,20 +194,20 @@ export const Navbar = () => {
                 </motion.a>
               ))}
               <motion.div
-                className="border-t border-gray-500/20 pt-4 flex flex-col space-y-4"
+                className="border-t border-border/20 pt-4 flex flex-col space-y-4"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
               >
                  <button 
                    onClick={handleLogin}
-                   className={`text-base font-semibold transition-colors ${isScrolled ? 'text-gray-700 hover:text-purple-600' : isDocsPage ? 'text-gray-700 hover:text-purple-600' : 'text-white/80 hover:text-white'}`}
+                   className={`text-base font-semibold transition-colors ${isScrolled ? 'text-muted-foreground hover:text-primary' : isDocsPage ? 'text-muted-foreground hover:text-primary' : 'text-white/80 hover:text-white'}`}
                  >
                   Log in
                 </button>
                 <motion.button
                   onClick={handleGetStarted}
-                  className="rounded-md bg-purple-600 px-4 py-2 text-base font-semibold text-white shadow-sm hover:bg-purple-500 text-center transition-all"
+                  className="rounded-md bg-primary px-4 py-2 text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 text-center transition-all"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >

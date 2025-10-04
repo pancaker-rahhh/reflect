@@ -10,10 +10,10 @@ export const CtaSection = () => {
   }
 
   return (
-    <section id="cta" className="bg-white py-16 sm:py-24">
+    <section id="cta" className="bg-background py-16 sm:py-24">
       <div className="container mx-auto px-6">
         <motion.div
-          className="relative isolate overflow-hidden bg-gradient-to-r from-purple-600 to-indigo-600 shadow-2xl rounded-3xl"
+          className="relative isolate overflow-hidden bg-gradient-to-r from-primary to-primary/80 shadow-2xl rounded-3xl"
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
@@ -31,11 +31,11 @@ export const CtaSection = () => {
               <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
                 Ready to 10x Your Feedback?
               </h2>
-              <p className="mt-6 text-lg text-purple-200">
+              <p className="mt-6 text-lg text-primary-foreground/80">
                 Join hundreds of innovative companies who set up in minutes and see immediate
                 results. No credit card required, ever.
               </p>
-              <ul className="mt-8 space-y-4 text-purple-100">
+              <ul className="mt-8 space-y-4 text-primary-foreground/70">
                 <motion.li
                   className="flex items-center gap-3"
                   initial={{ opacity: 0, x: -20 }}
@@ -43,7 +43,7 @@ export const CtaSection = () => {
                   transition={{ duration: 0.4, delay: 0.4 }}
                   viewport={{ once: true }}
                 >
-                  <CheckCircle className="text-green-400" size={22} />
+                  <CheckCircle className="text-success" size={22} />
                   <span>
                     <span className="font-semibold">Completely Free:</span> Get started without any
                     cost.
@@ -56,7 +56,7 @@ export const CtaSection = () => {
                   transition={{ duration: 0.4, delay: 0.5 }}
                   viewport={{ once: true }}
                 >
-                  <CheckCircle className="text-green-400" size={22} />
+                  <CheckCircle className="text-success" size={22} />
                   <span>
                     <span className="font-semibold">Effortless 3-Min Setup:</span> A single line of
                     code is all it takes.
@@ -69,7 +69,7 @@ export const CtaSection = () => {
                   transition={{ duration: 0.4, delay: 0.6 }}
                   viewport={{ once: true }}
                 >
-                  <CheckCircle className="text-green-400" size={22} />
+                  <CheckCircle className="text-success" size={22} />
                   <span>
                     <span className="font-semibold">Modular by Design:</span> Enable only the
                     features you need.
@@ -78,7 +78,7 @@ export const CtaSection = () => {
               </ul>
               <motion.button
                 onClick={handleGetStarted}
-                className="mt-10 inline-flex items-center gap-3 rounded-md bg-white px-6 py-3 text-base font-semibold text-purple-600 shadow-sm hover:bg-purple-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-all"
+                className="mt-10 inline-flex items-center gap-3 rounded-md bg-background px-6 py-3 text-base font-semibold text-primary shadow-sm hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-background transition-all"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.7 }}
@@ -104,12 +104,12 @@ export const CtaSection = () => {
                 whileHover={{ scale: 1.02 }}
               >
                 {/* Card Header */}
-                <div className="flex items-center justify-between p-6 bg-slate-50 border-b border-slate-200">
+                <div className="flex items-center justify-between p-6 bg-surface-2 border-b border-border">
                   <div className="flex items-center gap-3">
                     <span className="text-xl">👋</span>
-                    <p className="font-bold text-lg text-gray-800">How can we help?</p>
+                    <p className="font-bold text-lg text-foreground">How can we help?</p>
                   </div>
-                  <button className="text-gray-500 hover:text-gray-700 transition-colors">
+                  <button className="text-muted-foreground hover:text-foreground transition-colors">
                     &times;
                   </button>
                 </div>
@@ -117,33 +117,33 @@ export const CtaSection = () => {
                 {/* Card Content */}
                 <div className="p-6 space-y-4">
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer">
-                      <div className="flex items-center gap-2 text-blue-700">
+                    <div className="p-4 bg-info/10 rounded-lg border border-info/20 hover:bg-info/20 transition-colors cursor-pointer">
+                      <div className="flex items-center gap-2 text-info">
                         <span className="text-lg">🐛</span>
                         <span className="font-medium text-sm">Bug Report</span>
                       </div>
                     </div>
-                    <div className="p-4 bg-purple-50 rounded-lg border border-purple-200 hover:bg-purple-100 transition-colors cursor-pointer">
-                      <div className="flex items-center gap-2 text-purple-700">
+                    <div className="p-4 bg-primary/10 rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors cursor-pointer">
+                      <div className="flex items-center gap-2 text-primary">
                         <span className="text-lg">💡</span>
                         <span className="font-medium text-sm">Feature Request</span>
                       </div>
                     </div>
-                    <div className="p-4 bg-green-50 rounded-lg border border-green-200 hover:bg-green-100 transition-colors cursor-pointer">
-                      <div className="flex items-center gap-2 text-green-700">
+                    <div className="p-4 bg-success/10 rounded-lg border border-success/20 hover:bg-success/20 transition-colors cursor-pointer">
+                      <div className="flex items-center gap-2 text-success">
                         <span className="text-lg">⭐</span>
                         <span className="font-medium text-sm">Review</span>
                       </div>
                     </div>
-                    <div className="p-4 bg-orange-50 rounded-lg border border-orange-200 hover:bg-orange-100 transition-colors cursor-pointer">
-                      <div className="flex items-center gap-2 text-orange-700">
+                    <div className="p-4 bg-warning/10 rounded-lg border border-warning/20 hover:bg-warning/20 transition-colors cursor-pointer">
+                      <div className="flex items-center gap-2 text-warning">
                         <span className="text-lg">💬</span>
                         <span className="font-medium text-sm">General</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="text-center text-sm text-gray-600">
+                  <div className="text-center text-sm text-muted-foreground">
                     Choose a feedback type to get started
                   </div>
                 </div>

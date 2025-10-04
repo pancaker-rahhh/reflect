@@ -12,10 +12,10 @@ interface Module {
 
 // Module data with specific icon colors
 const modules: Module[] = [
-  { id: 'reviews', name: 'Reviews & Surveys', description: 'Customer feedback & ratings', icon: <Star className="text-green-500" /> },
-  { id: 'surveys', name: 'Custom Surveys', description: 'NPS, CSAT & custom forms', icon: <FileText className="text-blue-500" /> },
-  { id: 'bugs', name: 'Bug Reports', description: 'Issue reporting with screenshots', icon: <Bug className="text-red-500" /> },
-  { id: 'features', name: 'Feature Requests', description: 'Ideas with voting system', icon: <Lightbulb className="text-purple-500" /> },
+  { id: 'reviews', name: 'Reviews & Surveys', description: 'Customer feedback & ratings', icon: <Star className="text-success" /> },
+  { id: 'surveys', name: 'Custom Surveys', description: 'NPS, CSAT & custom forms', icon: <FileText className="text-info" /> },
+  { id: 'bugs', name: 'Bug Reports', description: 'Issue reporting with screenshots', icon: <Bug className="text-destructive" /> },
+  { id: 'features', name: 'Feature Requests', description: 'Ideas with voting system', icon: <Lightbulb className="text-primary" /> },
 ];
 
 export const InteractiveModulesSection = () => {
@@ -35,7 +35,7 @@ export const InteractiveModulesSection = () => {
   return (
     <motion.div 
       id="interactive-modules" 
-      className="bg-slate-50 py-24 sm:py-32"
+      className="bg-surface-2 py-24 sm:py-32"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
@@ -50,7 +50,7 @@ export const InteractiveModulesSection = () => {
           viewport={{ once: true }}
         >
           <motion.h2 
-            className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl"
+            className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -67,14 +67,14 @@ export const InteractiveModulesSection = () => {
             </motion.span> in one widget
           </motion.h2>
           <motion.p 
-            className="mt-6 text-lg leading-8 text-gray-600"
+            className="mt-6 text-lg leading-8 text-muted-foreground"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
             viewport={{ once: true }}
           >
             <motion.span 
-              className="font-semibold text-purple-600"
+              className="font-semibold text-primary"
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 0.5 }}
@@ -103,7 +103,7 @@ export const InteractiveModulesSection = () => {
                 viewport={{ once: true }}
               >
                 <motion.h3 
-                  className="text-lg font-semibold text-gray-900 px-4 mb-2"
+                  className="text-lg font-semibold text-foreground px-4 mb-2"
                   initial={{ opacity: 0 }}
                   whileInView={{ opacity: 1 }}
                   transition={{ delay: 0.8 }}

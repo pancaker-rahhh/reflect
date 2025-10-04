@@ -31,10 +31,10 @@ const toastVariants = cva(
         destructive:
           'destructive group border-destructive bg-destructive text-destructive-foreground',
         success:
-          'border-green-200 bg-green-50 text-green-900 group-[.success]:border-green-200 group-[.success]:bg-green-50 group-[.success]:text-green-900',
+          'border-success/20 bg-success/10 text-success group-[.success]:border-success/20 group-[.success]:bg-success/10 group-[.success]:text-success',
         warning:
-          'border-yellow-200 bg-yellow-50 text-yellow-900 group-[.warning]:border-yellow-200 group-[.warning]:bg-yellow-50 group-[.warning]:text-yellow-900',
-        info: 'border-blue-200 bg-blue-50 text-blue-900 group-[.info]:border-blue-200 group-[.info]:bg-blue-50 group-[.info]:text-blue-900',
+          'border-warning/20 bg-warning/10 text-warning group-[.warning]:border-warning/20 group-[.warning]:bg-warning/10 group-[.warning]:text-warning',
+        info: 'border-info/20 bg-info/10 text-info group-[.info]:border-info/20 group-[.info]:bg-info/10 group-[.info]:text-info',
       },
     },
     defaultVariants: {
@@ -79,7 +79,7 @@ const ToastClose = React.forwardRef<
   <ToastPrimitives.Close
     ref={ref}
     className={cn(
-      'absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600',
+      'absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 group-[.destructive]:text-destructive/70 group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive group-[.destructive]:focus:ring-offset-destructive',
       className
     )}
     toast-close=""
@@ -119,13 +119,13 @@ const ToastIcon = React.forwardRef<
   const getIcon = () => {
     switch (variant) {
       case 'success':
-        return <CheckCircle className="h-5 w-5 text-green-600" />
+        return <CheckCircle className="h-5 w-5 text-success" />
       case 'destructive':
-        return <WarningCircle className="h-5 w-5 text-red-600" />
+        return <WarningCircle className="h-5 w-5 text-destructive" />
       case 'warning':
-        return <Warning className="h-5 w-5 text-yellow-600" />
+        return <Warning className="h-5 w-5 text-warning" />
       case 'info':
-        return <Info className="h-5 w-5 text-blue-600" />
+        return <Info className="h-5 w-5 text-info" />
       default:
         return null
     }

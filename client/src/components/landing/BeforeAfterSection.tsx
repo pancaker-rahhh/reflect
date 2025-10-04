@@ -42,7 +42,7 @@ export const BeforeAfterSection = () => {
   return (
     <motion.div 
       id="features" 
-      className="bg-white py-24 sm:py-32"
+      className="bg-background py-24 sm:py-32"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.3 }}
@@ -53,12 +53,12 @@ export const BeforeAfterSection = () => {
           variants={containerVariants}
         >
           <motion.h2 
-            className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl"
+            className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl"
             variants={itemVariants}
             transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             Stop guessing, start <motion.span 
-              className="text-purple-600"
+              className="text-primary"
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5, duration: 0.6 }}
@@ -68,7 +68,7 @@ export const BeforeAfterSection = () => {
             </motion.span>
           </motion.h2>
           <motion.p 
-            className="mt-6 text-lg leading-8 text-gray-600"
+            className="mt-6 text-lg leading-8 text-muted-foreground"
             variants={itemVariants}
             transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
@@ -77,7 +77,7 @@ export const BeforeAfterSection = () => {
         </motion.div>
 
         <motion.div 
-          className="mt-16 grid grid-cols-1 gap-12 rounded-2xl lg:grid-cols-2 lg:gap-8 bg-slate-50 p-8"
+          className="mt-16 grid grid-cols-1 gap-12 rounded-2xl lg:grid-cols-2 lg:gap-8 bg-surface-2 p-8"
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
@@ -92,7 +92,7 @@ export const BeforeAfterSection = () => {
             viewport={{ once: true }}
           >
             <motion.h3 
-              className="text-2xl font-bold text-gray-800 mb-6"
+              className="text-2xl font-bold text-foreground mb-6"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
@@ -104,7 +104,7 @@ export const BeforeAfterSection = () => {
               {beforeItems.map((item, index) => (
                 <motion.div 
                   key={index} 
-                  className={`bg-white p-4 rounded-lg shadow-md border border-gray-200 flex items-center gap-3 hover:shadow-lg transition-all duration-300 ${index % 2 === 0 ? '-rotate-1 hover:rotate-0' : 'rotate-1 hover:rotate-0'}`}
+                  className={`bg-surface-1 p-4 rounded-lg shadow-md border border-border flex items-center gap-3 hover:shadow-lg transition-all duration-300 ${index % 2 === 0 ? '-rotate-1 hover:rotate-0' : 'rotate-1 hover:rotate-0'}`}
                   initial={{ opacity: 0, x: -30, rotate: index % 2 === 0 ? -10 : 10 }}
                   whileInView={{ 
                     opacity: 1, 
@@ -129,9 +129,9 @@ export const BeforeAfterSection = () => {
                     transition={{ delay: 0.8 + (index * 0.1), type: "spring", stiffness: 200 }}
                     viewport={{ once: true }}
                   >
-                    <XCircle className="h-6 w-6 text-red-500 flex-shrink-0" />
+                    <XCircle className="h-6 w-6 text-destructive flex-shrink-0" />
                   </motion.div>
-                  <p className="text-gray-600">{item}</p>
+                  <p className="text-muted-foreground">{item}</p>
                 </motion.div>
               ))}
             </div>
@@ -146,7 +146,7 @@ export const BeforeAfterSection = () => {
             viewport={{ once: true }}
           >
              <motion.div 
-               className="absolute top-0 right-0 -mt-3 -mr-3 bg-white text-purple-600 font-bold py-1 px-3 rounded-full text-sm shadow-lg"
+               className="absolute top-0 right-0 -mt-3 -mr-3 bg-surface-1 text-primary font-bold py-1 px-3 rounded-full text-sm shadow-lg"
                initial={{ opacity: 0, scale: 0, rotate: -45 }}
                whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
                transition={{ delay: 0.8, type: "spring", stiffness: 200 }}
@@ -194,7 +194,7 @@ export const BeforeAfterSection = () => {
                         }}
                         viewport={{ once: true }}
                       >
-                        <CheckCircle className="h-6 w-6 text-green-300 flex-shrink-0 mt-1" />
+                        <CheckCircle className="h-6 w-6 text-success flex-shrink-0 mt-1" />
                       </motion.div>
                       <p className="text-lg">{item}</p>
                     </motion.li>
@@ -213,7 +213,7 @@ export const BeforeAfterSection = () => {
         >
             <motion.button 
               onClick={() => window.location.href = '/login'}
-              className="inline-block rounded-full bg-purple-600 px-8 py-4 text-lg font-semibold text-white shadow-lg hover:bg-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 transition-all duration-300"
+              className="inline-block rounded-full bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all duration-300"
               whileHover={{ 
                 scale: 1.05,
                 boxShadow: "0 20px 40px rgba(147, 51, 234, 0.3)"

@@ -192,15 +192,15 @@ bob.wilson@example.com,Bob Wilson,viewer`;
               <Users className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Bulk Invite Team Members</h2>
-              <p className="text-sm text-gray-600">Invite multiple people to your organization</p>
+              <h2 className="text-xl font-semibold text-foreground">Bulk Invite Team Members</h2>
+              <p className="text-sm text-muted-foreground">Invite multiple people to your organization</p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="p-2 hover:bg-secondary rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
@@ -217,8 +217,8 @@ bob.wilson@example.com,Bob Wilson,viewer`;
                 onClick={() => setInputMode(mode.id as InputMode)}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
                   inputMode === mode.id
-                    ? 'border-indigo-500 bg-indigo-50 text-indigo-600'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border hover:border-border-strong'
                 }`}
               >
                 <mode.icon className="w-4 h-4" />
@@ -244,7 +244,7 @@ bob.wilson@example.com,Bob Wilson,viewer`;
                   <select
                     value={invite.role}
                     onChange={(e) => handleUpdateInvite(invite.id, 'role', e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    className="px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary"
                   >
                     <option value="viewer">Viewer</option>
                     <option value="member">Member</option>
@@ -253,7 +253,7 @@ bob.wilson@example.com,Bob Wilson,viewer`;
                   <button
                     onClick={() => handleRemoveInvite(invite.id)}
                     disabled={invites.length === 1}
-                    className="p-2 text-gray-400 hover:text-red-600 disabled:opacity-50"
+                    className="p-2 text-muted-foreground hover:text-destructive disabled:opacity-50"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -274,13 +274,13 @@ bob.wilson@example.com,Bob Wilson,viewer`;
           {inputMode === 'bulk' && isFeatureEnabled('ENABLE_BULK_TEXT_INVITES') && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Default Role for All Invites
                 </label>
                 <select
                   value={defaultRole}
                   onChange={(e) => setDefaultRole(e.target.value as any)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary"
                 >
                   <option value="viewer">Viewer</option>
                   <option value="member">Member</option>
@@ -305,13 +305,13 @@ jane.smith@example.com
 bob.wilson@example.com
 alice.johnson@example.com`);
                   }}
-                  className="text-sm text-indigo-600 hover:text-indigo-700"
+                  className="text-sm text-primary hover:text-primary/80"
                 >
                   Load Example
                 </button>
                 <button
                   onClick={() => setBulkText('')}
-                  className="text-sm text-gray-500 hover:text-gray-700"
+                  className="text-sm text-muted-foreground hover:text-foreground"
                 >
                   Clear
                 </button>
@@ -322,9 +322,9 @@ alice.johnson@example.com`);
           {/* CSV Upload Mode */}
           {inputMode === 'csv' && isFeatureEnabled('ENABLE_CSV_UPLOAD_INVITES') && (
             <div className="space-y-4">
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-2">Drop your CSV file here or click to browse</p>
+              <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground mb-2">Drop your CSV file here or click to browse</p>
                 <input
                   ref={fileInputRef}
                   type="file"
