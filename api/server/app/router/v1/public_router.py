@@ -200,10 +200,29 @@ async def submit_public_feedback(
         'rating': payload.rating,
     }
 
-    # Only include message if user actually provided one
     user_message = payload.response or payload.message
     if user_message and user_message.strip():
-        feedback_data['message'] = user_message
+        import re
+
+        is_only_rating = re.match(
+            r'^Rating:\s*\d+(/\d+)?$', user_message.strip(), re.IGNORECASE
+        )
+
+        if is_only_rating:
+            logger.info(f'🔍 IGNORED auto-generated rating message: {user_message}')
+        else:
+            cleaned_message = re.sub(
+                r'^Rating:\s*\d+(/\d+)?\s*-\s*',
+                '',
+                user_message.strip(),
+                flags=re.IGNORECASE,
+            )
+
+            if cleaned_message:
+                feedback_data['message'] = cleaned_message
+                logger.info(f'🔍 SET message in feedback_data to: {cleaned_message}')
+                if cleaned_message != user_message.strip():
+                    logger.info(f'🔍 STRIPPED rating prefix from: {user_message}')
 
     if widget_type == WidgetType.REVIEW:
         logger.debug(
@@ -318,6 +337,9 @@ async def submit_public_feedback(
         logger.debug(
             f'Creating new {widget_type.value} feedback for widget: {widget.id}'
         )
+        logger.info(f'🔍 SANITIZED FEEDBACK DATA: {sanitized_feedback_data}')
+        logger.info(f'🔍 SANITIZED CONTEXT: {sanitized_context}')
+
         return await feedback_service.create_feedback_from_widget(
             db=db,
             widget_id=widget.id,

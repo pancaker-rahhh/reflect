@@ -77,18 +77,21 @@ export function useFeedbackSubmission({
 
     // Default to unknown
     return {
-      message: errorMessage,
       type: 'unknown',
     }
   }, [])
 
   const validateFeedbackData = useCallback((data: FeedbackData): string | null => {
-    // Basic validation
-    if (!data.response || !data.response.trim()) {
+    // For rating-based feedback (NPS, CSAT, CES), response is optional
+    const ratingBasedTypes: FeedbackType[] = ['NPS', 'CSAT', 'CES', 'REVIEW']
+    const isRatingBased = ratingBasedTypes.includes(data.feedbackType)
+
+    // Basic validation - response only required for non-rating types
+    if (!isRatingBased && (!data.response || !data.response.trim())) {
       return 'Feedback message is required'
     }
 
-    if (data.response.length > 5000) {
+    if (data.response && data.response.length > 5000) {
       return 'Feedback message is too long (maximum 5000 characters)'
     }
 
