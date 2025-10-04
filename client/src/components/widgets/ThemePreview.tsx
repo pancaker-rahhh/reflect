@@ -13,13 +13,13 @@ export function ThemePreview({ theme, position, colors, content, widgetType }: T
   const getThemeStyles = () => {
     switch (theme) {
       case 'midnight':
-        return 'bg-gray-900 text-white'
+        return 'bg-surface-1 text-foreground border border-border'
       case 'minimal-light':
-        return 'bg-tertiary text-foreground border'
+        return 'bg-surface-2 text-foreground border border-border'
       case 'minimal-dark':
-        return 'bg-gray-800 text-white'
+        return 'bg-surface-1 text-foreground border border-border'
       default:
-        return 'bg-tertiary text-foreground shadow-lg'
+        return 'bg-surface-2 text-foreground shadow-lg border border-border'
     }
   }
 

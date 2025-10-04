@@ -210,7 +210,7 @@ export const HeroSection = () => {
     <motion.div
       id="hero"
       ref={containerRef}
-      className="relative isolate overflow-hidden min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"
+      className="relative isolate overflow-hidden min-h-screen flex items-center justify-center bg-gradient-to-br from-surface-1 via-surface-2 to-surface-3"
       onMouseMove={handleMouseMove}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -218,7 +218,7 @@ export const HeroSection = () => {
     >
       {/* Dynamic Background with Glass Morphism */}
       <motion.div
-        className="absolute inset-0 bg-gradient-to-br from-slate-800/50 via-purple-800/30 to-indigo-900/50"
+        className="absolute inset-0 bg-gradient-to-br from-surface-2/50 via-surface-3/30 to-surface-4/50"
         style={{ x: backgroundX, y: backgroundY }}
       />
 
@@ -228,7 +228,7 @@ export const HeroSection = () => {
       {/* Floating Glass Panels */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
-          className="absolute top-20 left-10 w-64 h-32 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl"
+          className="absolute top-20 left-10 w-64 h-32 bg-white/5 backdrop-blur-sm border border-border-subtle rounded-2xl"
           animate={{
             y: [-10, 10, -10],
             rotate: [0, 2, -2, 0],
@@ -236,7 +236,7 @@ export const HeroSection = () => {
           transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute top-32 right-16 w-48 h-24 bg-purple-500/10 backdrop-blur-sm border border-purple-300/20 rounded-2xl"
+          className="absolute top-32 right-16 w-48 h-24 bg-primary/10 backdrop-blur-sm border border-primary/20 rounded-2xl"
           animate={{
             y: [10, -10, 10],
             rotate: [0, -1, 1, 0],
@@ -244,7 +244,7 @@ export const HeroSection = () => {
           transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute bottom-32 left-20 w-56 h-40 bg-blue-500/10 backdrop-blur-sm border border-blue-300/20 rounded-2xl"
+          className="absolute bottom-32 left-20 w-56 h-40 bg-info/10 backdrop-blur-sm border border-info/20 rounded-2xl"
           animate={{
             y: [-15, 15, -15],
             rotate: [0, 1, -1, 0],

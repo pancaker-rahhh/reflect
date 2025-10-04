@@ -266,26 +266,26 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
         <DeviceFrame deviceType={deviceType}>
           <div className="relative w-full h-full bg-tertiary">
             {/* Simulated Website Background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-100 opacity-50" />
+            <div className="absolute inset-0 bg-gradient-to-br from-surface-2 to-surface-3 opacity-50" />
             <div className="absolute top-4 left-4 right-4">
-              <div className="h-12 bg-tertiary rounded-lg shadow-sm flex items-center px-4">
+              <div className="h-12 bg-surface-2 rounded-lg shadow-sm flex items-center px-4">
                 <div className="flex space-x-2">
-                  <div className="w-3 h-3 bg-red-400 rounded-full" />
-                  <div className="w-3 h-3 bg-yellow-400 rounded-full" />
-                  <div className="w-3 h-3 bg-green-400 rounded-full" />
+                  <div className="w-3 h-3 bg-destructive rounded-full" />
+                  <div className="w-3 h-3 bg-warning rounded-full" />
+                  <div className="w-3 h-3 bg-success rounded-full" />
                 </div>
-                <div className="ml-4 text-sm text-gray-600">example.com</div>
+                <div className="ml-4 text-sm text-muted-foreground">example.com</div>
               </div>
             </div>
 
             {/* Page Content Simulation */}
-            <div className="absolute top-20 left-4 right-4 bottom-20 bg-tertiary rounded-lg shadow-sm p-6">
+            <div className="absolute top-20 left-4 right-4 bottom-20 bg-surface-2 rounded-lg shadow-sm p-6">
               <div className="space-y-4">
-                <div className="h-4 bg-gray-200 rounded w-3/4" />
-                <div className="h-4 bg-gray-200 rounded w-1/2" />
-                <div className="h-4 bg-gray-200 rounded w-5/6" />
-                <div className="h-20 bg-gray-100 rounded" />
-                <div className="h-4 bg-gray-200 rounded w-2/3" />
+                <div className="h-4 bg-muted rounded w-3/4" />
+                <div className="h-4 bg-muted rounded w-1/2" />
+                <div className="h-4 bg-muted rounded w-5/6" />
+                <div className="h-20 bg-muted/50 rounded" />
+                <div className="h-4 bg-muted rounded w-2/3" />
               </div>
             </div>
 

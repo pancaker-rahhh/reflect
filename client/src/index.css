@@ -34,62 +34,109 @@
 
 @layer base {
   :root {
-    /* Dark pastel theme color palette */
-    --background: 220 15% 8%;
-    --foreground: 210 40% 95%;
-    --card: 220 15% 12%;
-    --card-foreground: 210 40% 95%;
-    --popover: 220 15% 12%;
-    --popover-foreground: 210 40% 95%;
+    /* Supabase-inspired dark theme with red as primary color */
     
-    /* Primary colors - Netflix-style dark red */
-    --primary: 0 70% 50%;
+    /* === CORE BACKGROUND COLORS === */
+    /* Main background - Deep dark slate */
+    --background: 222 84% 4.9%;
+    --foreground: 210 40% 98%;
+    
+    /* Card backgrounds - Subtle elevation */
+    --card: 222 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    
+    /* Popover backgrounds */
+    --popover: 222 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    
+    /* === PRIMARY COLORS (RED) === */
+    --primary: 0 84% 60%;          /* Vibrant red */
     --primary-foreground: 0 0% 100%;
     
-    /* Secondary colors - Deep blue-gray that complements dark red */
-    --secondary: 220 25% 15%;
-    --secondary-foreground: 210 40% 90%;
+    /* === SECONDARY COLORS === */
+    --secondary: 217 32% 17.5%;    /* Dark slate blue */
+    --secondary-foreground: 210 40% 98%;
     
-    /* Tertiary colors - Slightly lighter than secondary */
-    --tertiary: 220 15% 4%;
-    --tertiary-foreground: 210 40% 85%;
+    /* === MUTED COLORS === */
+    --muted: 217 32% 17.5%;        /* Dark slate for muted backgrounds */
+    --muted-foreground: 215 20.2% 65.1%;
     
-    /* Muted colors - Dark pastel backgrounds */
-    --muted: 220 15% 10%;
-    --muted-foreground: 215 16% 65%;
+    /* === ACCENT COLORS === */
+    --accent: 217 32% 17.5%;       /* Dark slate for accents */
+    --accent-foreground: 210 40% 98%;
     
-    /* Accent colors - Deep blue that complements the red */
-    --accent: 220 60% 25%;
-    --accent-foreground: 210 40% 90%;
+    /* === DESTRUCTIVE COLORS === */
+    --destructive: 0 62.8% 30.6%;  /* Dark red for destructive actions */
+    --destructive-foreground: 210 40% 98%;
     
-    /* Destructive colors - Dark pastel red */
-    --destructive: 0 60% 50%;
-    --destructive-foreground: 0 0% 100%;
+    /* === BORDER & INPUT COLORS === */
+    --border: 217 32% 17.5%;       /* Subtle borders */
+    --input: 217 32% 17.5%;        /* Input backgrounds */
+    --ring: 0 84% 60%;             /* Focus ring - red */
     
-    /* Border and input colors - Dark pastel gray */
-    --border: 220 15% 20%;
-    --input: 220 15% 20%;
-    --ring: 0 70% 50%;
+    /* === ADDITIONAL SURFACE COLORS === */
+    /* Tertiary surface for deeper nesting */
+    --tertiary: 222 84% 4.9%;
+    --tertiary-foreground: 210 40% 98%;
     
-    /* Border radius - More rounded for modern look */
-    --radius: 0.75rem;
+    /* === BORDER RADIUS === */
+    --radius: 0.5rem;
     
-    /* Custom shadow variables for soft pastel shadows */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
-    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+    /* === SHADOWS === */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     
-    /* Pastel metric card colors inspired by Buffer's design */
-    --metric-amber: 45 85% 85%;    /* Soft pastel yellow */
-    --metric-blue: 199 85% 88%;    /* Soft pastel blue */
-    --metric-purple: 270 60% 88%;  /* Soft pastel purple */
-    --metric-green: 142 70% 88%;   /* Soft pastel green */
-    --metric-pink: 330 60% 88%;    /* Soft pastel pink */
-    --metric-orange: 25 85% 85%;   /* Soft pastel orange */
+    /* === SEMANTIC COLORS === */
+    /* Success - Green */
+    --success: 142 76% 36%;
+    --success-foreground: 355 7% 97%;
     
-    /* Hover border colors for dark theme */
-    --hover-border: 210 40% 90%;   /* Light gray for hover borders on dark background */
+    /* Warning - Amber */
+    --warning: 38 92% 50%;
+    --warning-foreground: 48 96% 89%;
+    
+    /* Info - Blue */
+    --info: 199 89% 48%;
+    --info-foreground: 213 31% 91%;
+    
+    /* === METRIC CARD COLORS === */
+    --metric-amber: 45 93% 47%;    /* Amber */
+    --metric-blue: 199 89% 48%;    /* Blue */
+    --metric-purple: 262 83% 58%;  /* Purple */
+    --metric-green: 142 76% 36%;   /* Green */
+    --metric-pink: 330 81% 60%;    /* Pink */
+    --metric-orange: 25 95% 53%;   /* Orange */
+    --metric-red: 0 84% 60%;       /* Red */
+    
+    /* === HOVER & INTERACTIVE STATES === */
+    --hover-border: 0 84% 60%;     /* Red hover border */
+    --hover-bg: 217 32% 17.5%;     /* Hover background */
+    
+    /* === GLASSMORPHISM === */
+    --glass-bg: 222 84% 4.9% / 0.8;
+    --glass-border: 217 32% 17.5% / 0.3;
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --backdrop-blur: blur(16px);
+    
+    /* === TEXT COLORS === */
+    --text-primary: 210 40% 98%;   /* Primary text */
+    --text-secondary: 215 20.2% 65.1%; /* Secondary text */
+    --text-muted: 215 16% 47%;     /* Muted text */
+    --text-disabled: 215 16% 35%;  /* Disabled text */
+    
+    /* === SURFACE COLORS === */
+    --surface-1: 222 84% 4.9%;     /* Base surface */
+    --surface-2: 217 32% 17.5%;    /* Elevated surface */
+    --surface-3: 215 28% 17%;      /* Higher elevation */
+    --surface-4: 215 25% 27%;      /* Highest elevation */
+    
+    /* === BORDER VARIANTS === */
+    --border-subtle: 217 32% 17.5% / 0.5;
+    --border-strong: 217 32% 17.5%;
+    --border-interactive: 0 84% 60% / 0.3;
   }
 }
 
@@ -363,39 +410,44 @@
     transform: scale(0.95);
   }
 
-  /* Pastel card styling with dark border hover effects */
+  /* Dodo Payments inspired glassmorphism card styling */
   .card {
-    background-color: hsl(var(--card));
-    border: 1px solid hsl(var(--border));
+    background: hsl(var(--glass-bg));
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    border: 1px solid hsl(var(--glass-border));
     border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    transition: all 0.2s ease-out;
+    box-shadow: var(--glass-shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: transform, box-shadow, border-color;
   }
 
   .card:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
     border-bottom: 3px solid hsl(var(--hover-border));
+    background: hsl(var(--glass-bg) / 0.9);
   }
 
-  /* Pastel button styling with dark border hover effects */
+  /* Glassmorphism button styling */
   .btn {
     border-radius: calc(var(--radius) - 0.25rem);
-    box-shadow: var(--shadow-sm);
-    transition: all 0.15s ease-out;
+    box-shadow: var(--glass-shadow);
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: transform, box-shadow, border-color;
   }
 
   .btn:hover {
-    transform: translateY(-0.5px);
-    box-shadow: var(--shadow);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px 0 rgba(0, 0, 0, 0.4);
     border-bottom: 2px solid hsl(var(--hover-border));
   }
 
   .btn:active {
     transform: translateY(0);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--glass-shadow);
   }
 
   /* Smooth text transitions */
@@ -423,9 +475,10 @@
     animation: float 3s ease-in-out infinite;
   }
 
-  /* Pastel metric card utilities with dark border hover effects */
+  /* Metric card utilities with consistent theming */
   .metric-card-amber {
-    background-color: hsl(var(--metric-amber));
+    background-color: hsl(var(--metric-amber) / 0.1);
+    color: hsl(var(--metric-amber));
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     border: 1px solid hsl(var(--border));
@@ -433,7 +486,8 @@
   }
 
   .metric-card-blue {
-    background-color: hsl(var(--metric-blue));
+    background-color: hsl(var(--metric-blue) / 0.1);
+    color: hsl(var(--metric-blue));
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     border: 1px solid hsl(var(--border));
@@ -441,7 +495,8 @@
   }
 
   .metric-card-purple {
-    background-color: hsl(var(--metric-purple));
+    background-color: hsl(var(--metric-purple) / 0.1);
+    color: hsl(var(--metric-purple));
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     border: 1px solid hsl(var(--border));
@@ -449,7 +504,8 @@
   }
 
   .metric-card-green {
-    background-color: hsl(var(--metric-green));
+    background-color: hsl(var(--metric-green) / 0.1);
+    color: hsl(var(--metric-green));
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     border: 1px solid hsl(var(--border));
@@ -457,7 +513,8 @@
   }
 
   .metric-card-pink {
-    background-color: hsl(var(--metric-pink));
+    background-color: hsl(var(--metric-pink) / 0.1);
+    color: hsl(var(--metric-pink));
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     border: 1px solid hsl(var(--border));
@@ -465,7 +522,17 @@
   }
 
   .metric-card-orange {
-    background-color: hsl(var(--metric-orange));
+    background-color: hsl(var(--metric-orange) / 0.1);
+    color: hsl(var(--metric-orange));
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid hsl(var(--border));
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .metric-card-red {
+    background-color: hsl(var(--metric-red) / 0.1);
+    color: hsl(var(--metric-red));
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     border: 1px solid hsl(var(--border));
@@ -477,10 +544,11 @@
   .metric-card-purple:hover,
   .metric-card-green:hover,
   .metric-card-pink:hover,
-  .metric-card-orange:hover {
+  .metric-card-orange:hover,
+  .metric-card-red:hover {
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
-    border-bottom: 3px solid hsl(var(--hover-border));
+    border-color: hsl(var(--hover-border));
   }
 }
 
@@ -661,5 +729,56 @@
   .pastel-interactive:hover {
     transform: translateY(-1px) scale(1.02);
     border-bottom: 2px solid hsl(var(--hover-border));
+  }
+
+  /* Dodo Payments inspired glassmorphism utilities */
+  .glass {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    border: 1px solid hsl(var(--glass-border));
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-card {
+    @apply glass;
+    border-radius: var(--radius);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+    background: hsl(var(--glass-bg) / 0.9);
+  }
+
+  .glass-button {
+    @apply glass;
+    border-radius: calc(var(--radius) - 0.25rem);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px 0 rgba(0, 0, 0, 0.4);
+  }
+
+  /* Layer system utilities */
+  .layer-1 {
+    background: hsl(var(--background));
+  }
+
+  .layer-2 {
+    background: hsl(var(--card));
+  }
+
+  .layer-3 {
+    background: hsl(var(--secondary));
+  }
+
+  .glass-layer {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
   }
 }

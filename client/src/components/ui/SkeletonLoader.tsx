@@ -25,7 +25,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
           className={`animate-pulse ${className}`}
         >
           <div
-            className={`bg-gray-200 ${circle ? 'rounded-full' : 'rounded'} ${height} ${width}`}
+            className={`bg-muted ${circle ? 'rounded-full' : 'rounded'} ${height} ${width}`}
           />
         </div>
       ))}

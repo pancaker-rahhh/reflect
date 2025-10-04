@@ -95,8 +95,8 @@ export function Dashboard() {
       {/* Header Section */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground mt-1">
             Summary for {currentProject?.name || 'All Projects'} for{' '}
             {timeRange === 'all' ? 'all time' : timeRange}
           </p>
@@ -113,10 +113,10 @@ export function Dashboard() {
         if (isFreeTier && responseUsage.percentage >= 80) {
           return (
             <Alert
-              className={`border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/30`}
+              className={`border-warning/20 bg-warning/10`}
             >
-              <Warning className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="text-orange-800 dark:text-orange-200 flex items-center justify-between">
+              <Warning className="h-4 w-4 text-warning" />
+              <AlertDescription className="text-warning flex items-center justify-between">
                 <span>
                   {responseUsage.percentage >= 100
                     ? `You've reached your response limit (${responseUsage.current}/${responseUsage.limit}). Upgrade to Pro for unlimited responses.`
@@ -154,8 +154,8 @@ export function Dashboard() {
         <div className="xl:col-span-2">
           <div className="bg-tertiary rounded-xl border border-border p-8">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
-              <div className="text-sm text-gray-500">{recentActivity?.length || 0} items</div>
+              <h2 className="text-xl font-semibold text-foreground">Recent Activity</h2>
+              <div className="text-sm text-muted-foreground">{recentActivity?.length || 0} items</div>
             </div>
 
             {activityError && renderErrorState(activityError, refetchActivity, 'recent activity')}
@@ -178,7 +178,7 @@ export function Dashboard() {
         <div className="space-y-8">
           {/* NPS Distribution */}
           <div className="bg-tertiary rounded-xl border border-border p-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-8">NPS Distribution</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-8">NPS Distribution</h2>
             {feedbackError && renderErrorState(feedbackError, refetchFeedback, 'feedback data')}
 
             {feedbackLoading ? (
@@ -190,7 +190,7 @@ export function Dashboard() {
 
           {/* Feedback Distribution */}
           <div className="bg-tertiary rounded-xl border border-border p-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-8">Feedback Distribution</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-8">Feedback Distribution</h2>
             {feedbackLoading ? (
               <Skeleton className="h-64" />
             ) : (

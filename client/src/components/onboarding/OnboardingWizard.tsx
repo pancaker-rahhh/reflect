@@ -27,8 +27,8 @@ export const OnboardingWizard: React.FC = () => {
 
   return (
     <KeyboardShortcutProvider>
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 relative overflow-hidden">
-        <div className="absolute inset-0 bg-grid-slate-100 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)] opacity-10"></div>
+      <div className="min-h-screen bg-gradient-to-br from-surface-1 via-surface-2 to-surface-3 relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-white/[0.02] [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)] opacity-10"></div>
 
         <div className="container mx-auto px-4 py-8 relative z-10">
           <div className="max-w-3xl mx-auto">
@@ -43,7 +43,7 @@ export const OnboardingWizard: React.FC = () => {
 
             <div className="glass-effect rounded-2xl shadow-2xl p-8 animate-fade-in">
               {error && (
-                <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg text-red-700 animate-slide-in">
+                <div className="mb-6 p-4 bg-destructive/10 border-l-4 border-destructive rounded-lg text-destructive animate-slide-in">
                   <div className="flex items-start">
                     <svg className="w-5 h-5 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                       <path

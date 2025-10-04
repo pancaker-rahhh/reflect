@@ -138,7 +138,7 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ onProjectChang
         className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground bg-tertiary border border-border rounded-lg hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary"
       >
         <div className="flex items-center gap-2">
-          <FolderOpen className="w-4 h-4 text-gray-500" />
+          <FolderOpen className="w-4 h-4 text-muted-foreground" />
           <span>{currentProject?.name || 'Select Project'}</span>
         </div>
         <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -154,7 +154,7 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ onProjectChang
                   placeholder="Enter project name..."
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 text-sm border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -168,13 +168,13 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ onProjectChang
                   <button
                     onClick={handleCreateProject}
                     disabled={!newProjectName.trim()}
-                    className="px-3 py-1 text-xs bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Create
                   </button>
                   <button
                     onClick={handleCancelCreateProject}
-                    className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                    className="px-3 py-1 text-xs bg-muted text-muted-foreground rounded-md hover:bg-muted/80"
                   >
                     Cancel
                   </button>
@@ -182,13 +182,13 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ onProjectChang
               </div>
             ) : (
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
                   type="text"
                   placeholder="Search projects..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                   autoFocus
                 />
               </div>
@@ -197,28 +197,28 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ onProjectChang
 
           <div className="max-h-96 overflow-y-auto">
             {loading ? (
-              <div className="p-4 text-center text-gray-500">Loading...</div>
+              <div className="p-4 text-center text-muted-foreground">Loading...</div>
             ) : (
               <>
                 {recentProjectObjects.length > 0 && searchQuery === '' && !isCreatingProject && (
                   <div className="p-2">
-                    <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
+                    <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase">
                       Recent Projects
                     </div>
                     {recentProjectObjects.map((project) => (
                       <button
                         key={project.id}
                         onClick={() => handleProjectSelect(project)}
-                        className="w-full flex items-center gap-2 px-2 py-2 text-sm text-left hover:bg-gray-100 rounded"
+                        className="w-full flex items-center gap-2 px-2 py-2 text-sm text-left hover:bg-muted rounded"
                       >
-                        <Clock className="w-4 h-4 text-gray-400" />
+                        <Clock className="w-4 h-4 text-muted-foreground" />
                         <span>{project.name}</span>
                       </button>
                     ))}
                   </div>
                 )}
 
-                <div className="p-2 border-t border-gray-200">
+                <div className="p-2 border-t border-border">
                   <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
                     All Projects
                   </div>
@@ -226,8 +226,8 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ onProjectChang
                     <button
                       key={project.id}
                       onClick={() => handleProjectSelect(project)}
-                      className={`w-full flex items-center gap-2 px-2 py-2 text-sm text-left hover:bg-gray-100 rounded ${
-                        currentProject?.id === project.id ? 'bg-indigo-50 text-indigo-600' : ''
+                      className={`w-full flex items-center gap-2 px-2 py-2 text-sm text-left hover:bg-muted rounded ${
+                        currentProject?.id === project.id ? 'bg-primary/10 text-primary' : ''
                       }`}
                     >
                       <FolderOpen className="w-4 h-4" />
@@ -238,7 +238,7 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ onProjectChang
                   {!isCreatingProject && currentOrganization && (
                     <button
                       onClick={handleStartCreatingProject}
-                      className="w-full flex items-center gap-2 px-2 py-2 mt-2 text-sm text-left text-indigo-600 hover:bg-indigo-50 rounded"
+                      className="w-full flex items-center gap-2 px-2 py-2 mt-2 text-sm text-left text-primary hover:bg-primary/10 rounded"
                     >
                       <Plus className="w-4 h-4" />
                       <span>Create New Project</span>
@@ -246,7 +246,7 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ onProjectChang
                   )}
 
                   {!currentOrganization && (
-                    <div className="px-2 py-2 text-sm text-gray-500">No organization selected</div>
+                    <div className="px-2 py-2 text-sm text-muted-foreground">No organization selected</div>
                   )}
                 </div>
               </>

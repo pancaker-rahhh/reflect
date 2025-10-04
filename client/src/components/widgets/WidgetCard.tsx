@@ -34,7 +34,7 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
             <div className="flex items-center gap-6 flex-1">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 mb-2">
-                  <h3 className="font-bold text-lg text-gray-900 truncate">{widget.name}</h3>
+                  <h3 className="font-bold text-lg text-foreground truncate">{widget.name}</h3>
                   <Badge variant="default" className="bg-primary/10 text-primary border-primary/20">
                     Active
                   </Badge>
@@ -42,7 +42,7 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
                     {(widget.widget_type || '').replace('_', ' ').toUpperCase()}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-6 text-sm text-gray-600">
+                <div className="flex items-center gap-6 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <PuzzlePiece className="h-4 w-4" />
                     <span>{moduleCount} modules</span>
@@ -89,7 +89,7 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={onDelete}
-                        className="gap-2 text-red-600 hover:text-red-700 focus:text-red-700 cursor-pointer"
+                        className="gap-2 text-destructive hover:text-destructive/80 focus:text-destructive/80 cursor-pointer"
                       >
                         <Trash className="h-4 w-4" />
                         <span>Delete</span>
@@ -121,14 +121,14 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
       <CardHeader className="pt-12 pb-4">
         <div className="flex items-start justify-between">
           <div className="space-y-2 flex-1 min-w-0">
-            <h3 className="font-bold text-lg text-gray-900 truncate" title={widget.name}>
+            <h3 className="font-bold text-lg text-foreground truncate" title={widget.name}>
               {widget.name}
             </h3>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-xs">
                 {(widget.widget_type || '').replace('_', ' ').toUpperCase()}
               </Badge>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-muted-foreground">
                 {moduleCount} module{moduleCount !== 1 ? 's' : ''}
               </span>
             </div>

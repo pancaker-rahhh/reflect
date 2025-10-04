@@ -134,7 +134,7 @@ export function Widgets() {
             <ChartBar className="h-4 w-4" />
             <span>{activeWidgets.length} active</span>
           </div>
-          <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+          <div className="flex rounded-lg border border-border overflow-hidden">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
               size="sm"
@@ -188,8 +188,8 @@ export function Widgets() {
           {activeWidgets.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-semibold text-gray-900">Created Widgets</h2>
-                <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                <h2 className="text-xl font-semibold text-foreground">Created Widgets</h2>
+                <span className="bg-success/10 text-success text-xs font-medium px-2.5 py-0.5 rounded-full">
                   {activeWidgets.length}
                 </span>
               </div>
