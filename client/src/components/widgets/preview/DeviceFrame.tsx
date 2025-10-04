@@ -27,7 +27,7 @@ export function DeviceFrame({ deviceType, children }: DeviceFrameProps) {
         return {
           container: 'w-full max-w-4xl h-[600px] mx-auto',
           frame: 'w-full h-full bg-gray-900 rounded-lg p-4 shadow-2xl',
-          screen: 'w-full h-full bg-white rounded overflow-hidden relative border',
+          screen: 'w-full h-full bg-tertiary rounded overflow-hidden relative border',
           notch: false
         }
     }

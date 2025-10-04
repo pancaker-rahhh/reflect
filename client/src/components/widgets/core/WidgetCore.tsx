@@ -492,7 +492,7 @@ export function WidgetCore({
               updateState({ type: 'closed' })
             }
           }}
-          className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/20 hover:bg-white/30 transition-colors duration-200 flex items-center justify-center z-50 cursor-pointer"
+          className="absolute top-2 right-2 w-6 h-6 rounded-full bg-tertiary/20 hover:bg-tertiary/30 transition-colors duration-200 flex items-center justify-center z-50 cursor-pointer"
           style={{ zIndex: 9999 }}
           title="Close widget"
         >

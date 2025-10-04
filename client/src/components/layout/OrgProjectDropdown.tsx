@@ -159,7 +159,7 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground bg-tertiary border border-border rounded-lg hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary"
       >
         <div className="flex items-center gap-2">
           {currentOrganization && (
@@ -180,9 +180,9 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-80 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg">
+        <div className="absolute z-50 w-80 mt-2 bg-tertiary border border-border rounded-lg shadow-lg">
           {showOrgLimitMessage && (
-            <div className="p-3 border-b border-gray-200">
+            <div className="p-3 border-b border-border">
               <Alert>
                 <Info className="h-4 w-4" />
                 <AlertDescription>

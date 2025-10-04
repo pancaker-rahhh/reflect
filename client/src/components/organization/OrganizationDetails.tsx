@@ -117,7 +117,7 @@ export const OrganizationDetails: React.FC<OrganizationDetailsProps> = ({ organi
             />
           </div>
 
-          <div className="bg-gray-50 rounded-lg p-4">
+          <div className="bg-secondary rounded-lg p-4">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <WarningCircle className="w-4 h-4" />
               <span>Created on {new Date((organization as any)?.created_at || '').toLocaleDateString()}</span>

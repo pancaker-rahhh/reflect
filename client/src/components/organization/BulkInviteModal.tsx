@@ -185,7 +185,7 @@ bob.wilson@example.com,Bob Wilson,viewer`;
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       
-      <div className="relative bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden animate-fade-in">
+      <div className="relative bg-tertiary rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden animate-fade-in">
         <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-indigo-50 to-purple-50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
@@ -198,7 +198,7 @@ bob.wilson@example.com,Bob Wilson,viewer`;
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/80 rounded-lg transition-colors"
+            className="p-2 hover:bg-secondary rounded-lg transition-colors"
           >
             <X className="w-5 h-5 text-gray-500" />
           </button>

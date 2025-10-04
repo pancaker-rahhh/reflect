@@ -115,7 +115,7 @@ export function IntegrationsPage() {
               {jiraIntegrations.map((integration: Integration) => (
                 <div
                   key={integration.id}
-                  className="border border-gray-200 rounded-xl p-6 bg-white shadow-sm hover:shadow-md transition-shadow"
+                  className="border border-border rounded-xl p-6 bg-tertiary shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -185,7 +185,7 @@ export function IntegrationsPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="border border-gray-200 rounded-xl p-6 bg-white shadow-sm">
+            <div className="border border-border rounded-xl p-6 bg-tertiary shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
                   <span className="text-green-600 font-bold text-sm">T</span>
@@ -199,7 +199,7 @@ export function IntegrationsPage() {
                 </Badge>
               </div>
             </div>
-            <div className="border border-gray-200 rounded-xl p-6 bg-white shadow-sm">
+            <div className="border border-border rounded-xl p-6 bg-tertiary shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
                   <span className="text-purple-600 font-bold text-sm">L</span>

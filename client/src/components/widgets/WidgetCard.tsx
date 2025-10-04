@@ -77,7 +77,7 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-gray-500 hover:bg-gray-100"
+                        className="h-8 w-8 text-muted-foreground hover:bg-secondary"
                       >
                         <DotsThreeVertical className="h-4 w-4" />
                       </Button>
@@ -140,7 +140,7 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-gray-500 hover:bg-gray-100"
+                  className="h-8 w-8 text-muted-foreground hover:bg-secondary"
                 >
                   <DotsThreeVertical className="h-4 w-4" />
                 </Button>

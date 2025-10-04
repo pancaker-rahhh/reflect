@@ -152,7 +152,7 @@ export function Dashboard() {
       <div className="grid gap-12 xl:grid-cols-3">
         {/* Recent Activity Section - Takes 2 columns */}
         <div className="xl:col-span-2">
-          <div className="bg-white rounded-xl border border-gray-200 p-8">
+          <div className="bg-tertiary rounded-xl border border-border p-8">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
               <div className="text-sm text-gray-500">{recentActivity?.length || 0} items</div>
@@ -177,7 +177,7 @@ export function Dashboard() {
         {/* Charts Section - Takes 1 column */}
         <div className="space-y-8">
           {/* NPS Distribution */}
-          <div className="bg-white rounded-xl border border-gray-200 p-8">
+          <div className="bg-tertiary rounded-xl border border-border p-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-8">NPS Distribution</h2>
             {feedbackError && renderErrorState(feedbackError, refetchFeedback, 'feedback data')}
 
@@ -189,7 +189,7 @@ export function Dashboard() {
           </div>
 
           {/* Feedback Distribution */}
-          <div className="bg-white rounded-xl border border-gray-200 p-8">
+          <div className="bg-tertiary rounded-xl border border-border p-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-8">Feedback Distribution</h2>
             {feedbackLoading ? (
               <Skeleton className="h-64" />

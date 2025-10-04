@@ -188,8 +188,8 @@ export function AccountSettings() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="border-b border-gray-200">
+      <div className="bg-tertiary rounded-xl shadow-lg overflow-hidden">
+        <div className="border-b border-border">
           <nav className="flex">
             {tabs.map((tab) => {
               const Icon = tab.icon

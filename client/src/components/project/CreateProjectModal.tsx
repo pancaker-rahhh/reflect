@@ -43,7 +43,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         onClick={onClose}
       />
       
-      <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 animate-fade-in">
+      <div className="relative bg-tertiary rounded-xl shadow-2xl max-w-md w-full mx-4 animate-fade-in">
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">

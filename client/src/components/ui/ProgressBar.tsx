@@ -357,7 +357,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
             style={{ width: `${finalPercentage}%` }}
           >
             {animated && (
-              <div className="absolute inset-0 bg-white/20 animate-shimmer" />
+              <div className="absolute inset-0 bg-tertiary/20 animate-shimmer" />
             )}
           </div>
         </div>

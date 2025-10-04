@@ -19,7 +19,7 @@ export function BulkActionsBar({
 
   return (
     <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-      <div className="bg-white border border-gray-200 rounded-lg shadow-lg px-4 py-3 flex items-center gap-4">
+      <div className="bg-tertiary border border-border rounded-lg shadow-lg px-4 py-3 flex items-center gap-4">
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="bg-primary/10 text-primary">
             {selectedCount} selected

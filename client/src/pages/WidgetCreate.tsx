@@ -506,7 +506,7 @@ export function WidgetCreate() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex flex-col lg:flex-row max-h-[90vh]">
-        <div className="w-full lg:w-3/5 flex flex-col bg-white lg:border-r max-h-[90vh]">
+        <div className="w-full lg:w-3/5 flex flex-col bg-tertiary lg:border-r max-h-[90vh]">
           <div className="p-4 lg:p-6 border-b flex-shrink-0">
             <h1 className="text-2xl lg:text-3xl font-bold tracking-tight mb-2">
               {isEditMode ? 'Edit Your Widget' : 'Create Your Widget'}

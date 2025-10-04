@@ -34,37 +34,41 @@
 
 @layer base {
   :root {
-    /* Pastel theme color palette inspired by Buffer */
-    --background: 0 0% 100%;
-    --foreground: 220 13% 18%;
-    --card: 0 0% 100%;
-    --card-foreground: 220 13% 18%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 13% 18%;
+    /* Dark pastel theme color palette */
+    --background: 220 15% 8%;
+    --foreground: 210 40% 95%;
+    --card: 220 15% 12%;
+    --card-foreground: 210 40% 95%;
+    --popover: 220 15% 12%;
+    --popover-foreground: 210 40% 95%;
     
     /* Primary colors - Rose-red that complements purple */
     --primary: 340 70% 55%;
     --primary-foreground: 0 0% 100%;
     
-    /* Secondary colors - Very light pastel gray */
-    --secondary: 210 40% 95%;
-    --secondary-foreground: 220 13% 18%;
+    /* Secondary colors - Subtle dark pastel gray */
+    --secondary: 220 15% 6%;
+    --secondary-foreground: 210 40% 90%;
     
-    /* Muted colors - Soft pastel backgrounds */
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    /* Tertiary colors - Slightly lighter than secondary */
+    --tertiary: 220 15% 4%;
+    --tertiary-foreground: 210 40% 85%;
     
-    /* Accent colors - Soft pastel purple */
-    --accent: 270 60% 85%;
-    --accent-foreground: 220 13% 18%;
+    /* Muted colors - Dark pastel backgrounds */
+    --muted: 220 15% 10%;
+    --muted-foreground: 215 16% 65%;
     
-    /* Destructive colors - Soft pastel red */
-    --destructive: 0 60% 80%;
+    /* Accent colors - Dark pastel purple */
+    --accent: 270 60% 25%;
+    --accent-foreground: 210 40% 90%;
+    
+    /* Destructive colors - Dark pastel red */
+    --destructive: 0 60% 50%;
     --destructive-foreground: 0 0% 100%;
     
-    /* Border and input colors - Very light pastel gray */
-    --border: 214 32% 88%;
-    --input: 214 32% 88%;
+    /* Border and input colors - Dark pastel gray */
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
     --ring: 340 70% 55%;
     
     /* Border radius - More rounded for modern look */
@@ -84,8 +88,8 @@
     --metric-pink: 330 60% 88%;    /* Soft pastel pink */
     --metric-orange: 25 85% 85%;   /* Soft pastel orange */
     
-    /* Hover border colors for dark contrast */
-    --hover-border: 220 13% 18%;   /* Dark gray for hover borders */
+    /* Hover border colors for dark theme */
+    --hover-border: 210 40% 90%;   /* Light gray for hover borders on dark background */
   }
 }
 

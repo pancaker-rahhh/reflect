@@ -53,8 +53,8 @@ export const OrganizationSettings: React.FC<OrganizationSettingsProps> = ({ orga
         <p className="text-gray-600">Manage your organization details, members, and settings</p>
       </div>
 
-      <div className="bg-white rounded-lg shadow">
-        <div className="border-b border-gray-200">
+      <div className="bg-tertiary rounded-lg shadow">
+        <div className="border-b border-border">
           <nav className="flex space-x-8 px-6">
             {tabs.map((tab) => {
               const Icon = tab.icon;

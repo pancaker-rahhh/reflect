@@ -51,9 +51,9 @@ export const OrganizationDropdown: React.FC = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg">
+        <div className="absolute z-50 left-0 right-0 mt-2 bg-tertiary border border-border rounded-lg shadow-lg">
           {showOrgLimitMessage && (
-            <div className="p-3 border-b border-gray-200">
+            <div className="p-3 border-b border-border">
               <Alert>
                 <Info className="h-4 w-4" />
                 <AlertDescription>

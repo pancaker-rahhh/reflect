@@ -200,7 +200,7 @@ export const InvitationAcceptancePage: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4">
       <Card className="w-full max-w-2xl shadow-xl">
         <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
-          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white/20 mx-auto mb-4">
+          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-tertiary/20 mx-auto mb-4">
             <Mail className="h-8 w-8 text-white" />
           </div>
           <CardTitle className="text-2xl text-center">You're Invited!</CardTitle>

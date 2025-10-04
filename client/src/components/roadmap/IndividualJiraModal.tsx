@@ -166,7 +166,7 @@ export function IndividualJiraModal({
                 {feature.jira_integration ? 'Feature Details' : 'Feature to Convert'}
               </Label>
             </div>
-            <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div className="p-4 bg-tertiary rounded-lg border border-border shadow-sm">
               <h4 className="font-semibold text-base mb-2 text-gray-900">{feature.title}</h4>
               {feature.description && (
                 <p className="text-sm text-gray-600 line-clamp-2">{feature.description}</p>

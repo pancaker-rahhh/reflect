@@ -247,7 +247,7 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
     <div
       className={cn(
         'h-full flex flex-col bg-gray-50',
-        isFullscreen && 'fixed inset-0 z-50 bg-white'
+        isFullscreen && 'fixed inset-0 z-50 bg-background'
       )}
     >
       {/* Preview Controls */}
@@ -264,11 +264,11 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
       {/* Preview Area */}
       <div className="flex-1 p-4">
         <DeviceFrame deviceType={deviceType}>
-          <div className="relative w-full h-full bg-white">
+          <div className="relative w-full h-full bg-tertiary">
             {/* Simulated Website Background */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-100 opacity-50" />
             <div className="absolute top-4 left-4 right-4">
-              <div className="h-12 bg-white rounded-lg shadow-sm flex items-center px-4">
+              <div className="h-12 bg-tertiary rounded-lg shadow-sm flex items-center px-4">
                 <div className="flex space-x-2">
                   <div className="w-3 h-3 bg-red-400 rounded-full" />
                   <div className="w-3 h-3 bg-yellow-400 rounded-full" />
@@ -279,7 +279,7 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
             </div>
 
             {/* Page Content Simulation */}
-            <div className="absolute top-20 left-4 right-4 bottom-20 bg-white rounded-lg shadow-sm p-6">
+            <div className="absolute top-20 left-4 right-4 bottom-20 bg-tertiary rounded-lg shadow-sm p-6">
               <div className="space-y-4">
                 <div className="h-4 bg-gray-200 rounded w-3/4" />
                 <div className="h-4 bg-gray-200 rounded w-1/2" />
@@ -301,7 +301,7 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
             {/* Widget Dialog */}
             {previewState !== 'closed' && widgetConfig && (
               <div className="absolute inset-0 flex items-center justify-center p-4">
-                <div className="w-full max-w-sm h-full max-h-[600px] bg-white rounded-2xl shadow-2xl overflow-hidden">
+                <div className="w-full max-w-sm h-full max-h-[600px] bg-tertiary rounded-2xl shadow-2xl overflow-hidden">
                   <WidgetCore
                     config={widgetConfig}
                     mode="preview"

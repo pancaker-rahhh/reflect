@@ -299,7 +299,7 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
                   {projectsQuery.data.projects.map((project) => (
                     <div
                       key={project.key}
-                      className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow"
+                      className="flex items-center gap-3 p-4 border border-border rounded-lg bg-tertiary shadow-sm hover:shadow-md transition-shadow"
                     >
                       <FolderOpen className="h-5 w-5 text-blue-600" />
                       <div className="flex-1">

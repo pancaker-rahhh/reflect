@@ -103,8 +103,8 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = ({ organi
         </button>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg">
-        <div className="px-6 py-3 border-b border-gray-200 bg-gray-50">
+      <div className="bg-card border border-border rounded-lg">
+        <div className="px-6 py-3 border-b border-border bg-secondary">
           <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700">
             <div className="col-span-5">Member</div>
             <div className="col-span-3">Role</div>
@@ -155,33 +155,33 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = ({ organi
                       </button>
 
                       {memberMenuOpen === member.id && (
-                        <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                        <div className="absolute right-0 mt-1 w-48 bg-tertiary border border-border rounded-md shadow-lg z-10">
                           <div className="py-1">
                             <button
                               onClick={() => updateRoleMutation.mutate({ memberId: member.id, role: 'admin' })}
                               disabled={member.role === 'admin'}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               Make Admin
                             </button>
                             <button
                               onClick={() => updateRoleMutation.mutate({ memberId: member.id, role: 'member' })}
                               disabled={member.role === 'member'}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               Make Member
                             </button>
                             <button
                               onClick={() => updateRoleMutation.mutate({ memberId: member.id, role: 'viewer' })}
                               disabled={member.role === 'viewer'}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               Make Viewer
                             </button>
                             <hr className="my-1" />
                             <button
                               onClick={() => removeMemberMutation.mutate(member.id)}
-                              className="block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                              className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100"
                             >
                               Remove Member
                             </button>

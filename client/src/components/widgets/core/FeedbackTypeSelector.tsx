@@ -197,7 +197,7 @@ export function FeedbackTypeSelector({
         <div className="pt-6 border-t border-gray-100 text-center">
           <button
             onClick={() => onSelectType(config.primaryType)}
-            className="inline-flex items-center space-x-2 text-sm font-medium opacity-70 hover:opacity-100 transition-all duration-200 px-4 py-2 rounded-lg hover:bg-gray-50"
+            className="inline-flex items-center space-x-2 text-sm font-medium opacity-70 hover:opacity-100 transition-all duration-200 px-4 py-2 rounded-lg hover:bg-secondary"
             style={{ color: textColor }}
           >
             <span>{FEEDBACK_TYPE_INFO[config.primaryType].icon}</span>
@@ -238,7 +238,7 @@ export function SimpleFeedbackTypeSelector({
             <button
               key={type}
               onClick={() => onSelectType(type)}
-              className="w-full flex items-center space-x-3 p-3 rounded-lg border hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center space-x-3 p-3 rounded-lg border hover:bg-secondary transition-colors"
               style={{ borderColor: theme.colors.primary + '20' }}
             >
               <span className="text-xl">{info.icon}</span>

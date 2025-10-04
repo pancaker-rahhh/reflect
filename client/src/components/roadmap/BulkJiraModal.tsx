@@ -165,7 +165,7 @@ export function BulkJiraModal({
               {selectedItems.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm"
+                  className="flex items-center justify-between p-3 bg-tertiary rounded-lg border border-border shadow-sm"
                 >
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>

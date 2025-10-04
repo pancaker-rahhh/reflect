@@ -25,7 +25,7 @@ export const ResponsiveWrapper: React.FC<ResponsiveWrapperProps> = ({
 export const MobileOptimizedCard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <div className="
-      bg-white 
+      bg-tertiary 
       rounded-lg sm:rounded-xl lg:rounded-2xl
       shadow-md sm:shadow-lg lg:shadow-2xl
       p-4 sm:p-6 lg:p-8
