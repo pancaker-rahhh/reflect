@@ -250,8 +250,11 @@ declare global {
     return position.replace(/_/g, '-')
   }
 
-  // Use environment-based URLs
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+  // Use production API in production builds, localhost for development
+  const apiBaseUrl =
+    process.env.NODE_ENV === 'production'
+      ? 'https://api.reflectfeedback.com/api/v1'
+      : 'http://localhost:8000/api/v1'
   const apiUrl = `${apiBaseUrl}/public/widgets/${publicKey}`
 
   injectWidgetStyles()

@@ -59,7 +59,10 @@ export function PublicFeedbackDisplay({
         return
       }
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+      const apiBaseUrl =
+        process.env.NODE_ENV === 'production'
+          ? 'https://api.reflectfeedback.com/api/v1'
+          : 'http://localhost:8000/api/v1'
       let endpoint = ''
 
       switch (feedbackType) {
@@ -107,7 +110,10 @@ export function PublicFeedbackDisplay({
 
   const voteFeedback = async (feedbackId: string) => {
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+      const apiBaseUrl =
+        process.env.NODE_ENV === 'production'
+          ? 'https://api.reflectfeedback.com/api/v1'
+          : 'http://localhost:8000/api/v1'
 
       const itemType = feedbackType === 'FEATURE_REQUEST' ? 'feature_request' : 'general_feedback'
       const payload = {

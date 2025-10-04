@@ -17,7 +17,7 @@ class CorrelationIDMiddleware(BaseHTTPMiddleware):
         async with correlation_id_context(correlation_id):
             start_time = time.time()
 
-            logger.info(
+            logger.debug(
                 'request.started',
                 method=request.method,
                 url=str(request.url),
@@ -30,7 +30,7 @@ class CorrelationIDMiddleware(BaseHTTPMiddleware):
             response.headers['X-Correlation-ID'] = correlation_id
             response.headers['X-Process-Time'] = str(process_time)
 
-            logger.info(
+            logger.debug(
                 'request.completed',
                 method=request.method,
                 url=str(request.url),
