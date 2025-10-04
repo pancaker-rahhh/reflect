@@ -42,12 +42,12 @@
     --popover: 220 15% 12%;
     --popover-foreground: 210 40% 95%;
     
-    /* Primary colors - Rose-red that complements purple */
-    --primary: 340 70% 55%;
+    /* Primary colors - Netflix-style dark red */
+    --primary: 0 70% 50%;
     --primary-foreground: 0 0% 100%;
     
-    /* Secondary colors - Subtle dark pastel gray */
-    --secondary: 220 15% 6%;
+    /* Secondary colors - Deep blue-gray that complements dark red */
+    --secondary: 220 25% 15%;
     --secondary-foreground: 210 40% 90%;
     
     /* Tertiary colors - Slightly lighter than secondary */
@@ -58,8 +58,8 @@
     --muted: 220 15% 10%;
     --muted-foreground: 215 16% 65%;
     
-    /* Accent colors - Dark pastel purple */
-    --accent: 270 60% 25%;
+    /* Accent colors - Deep blue that complements the red */
+    --accent: 220 60% 25%;
     --accent-foreground: 210 40% 90%;
     
     /* Destructive colors - Dark pastel red */
@@ -69,7 +69,7 @@
     /* Border and input colors - Dark pastel gray */
     --border: 220 15% 20%;
     --input: 220 15% 20%;
-    --ring: 340 70% 55%;
+    --ring: 0 70% 50%;
     
     /* Border radius - More rounded for modern look */
     --radius: 0.75rem;
