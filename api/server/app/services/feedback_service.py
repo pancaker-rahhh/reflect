@@ -177,13 +177,17 @@ class FeedbackService:
             f'🔍 _create_review_feedback - rating from data: {data.get("rating")}'
         )
         rating_value = data.get('rating')
+
+        # Only include message if provided and not empty
+        message_value = data.get('message') or data.get('comment') or ''
+
         return ReviewFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.REVIEW,
             rating=rating_value,  # Set base rating field
             overall_rating=rating_value,  # Set overall_rating field for review-specific data
             title=data.get('title', 'Product Review'),
-            message=data.get('message', ''),
+            message=message_value if message_value.strip() else None,
         )
 
     def _create_bug_report_feedback(
@@ -237,6 +241,9 @@ class FeedbackService:
         else:
             promoter_category = 'detractor'
 
+        # Only include message if provided and not empty
+        message_value = data.get('message') or data.get('comment') or ''
+
         return NPSFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.NPS,
@@ -244,7 +251,7 @@ class FeedbackService:
             nps_score=nps_score,
             promoter_category=promoter_category,
             title='NPS Survey Response',
-            message=data.get('comment', ''),
+            message=message_value if message_value.strip() else None,
         )
 
     def _create_csat_feedback(
@@ -264,6 +271,9 @@ class FeedbackService:
             5: 'very_satisfied',
         }
 
+        # Only include message if provided and not empty
+        message_value = data.get('message') or data.get('comment') or ''
+
         return CSATFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.CSAT,
@@ -271,7 +281,7 @@ class FeedbackService:
             csat_score=csat_score,
             satisfaction_level=satisfaction_levels.get(csat_score, 'neutral'),
             title='CSAT Survey Response',
-            message=data.get('comment', ''),
+            message=message_value if message_value.strip() else None,
         )
 
     def _create_ces_feedback(
@@ -291,6 +301,9 @@ class FeedbackService:
             5: 'very_easy',
         }
 
+        # Only include message if provided and not empty
+        message_value = data.get('message') or data.get('comment') or ''
+
         return CESFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.CES,
@@ -298,7 +311,7 @@ class FeedbackService:
             ces_score=ces_score,
             ease_level=ease_levels.get(ces_score, 'neutral'),
             title='CES Survey Response',
-            message=data.get('comment', ''),
+            message=message_value if message_value.strip() else None,
         )
 
     def _create_general_feedback(
@@ -324,17 +337,48 @@ class FeedbackService:
     async def list_feedback(
         self,
         db: AsyncSession,
+        user_id: UUID,
         project_id: Optional[UUID] = None,
         widget_id: Optional[UUID] = None,
         skip: int = 0,
         limit: int = 100,
     ) -> List[FeedbackResponsePayload]:
+        from app.services.permission_service import permission_service
+
+        logger.info(
+            f'🔍 list_feedback called: user_id={user_id}, project_id={project_id}, widget_id={widget_id}'
+        )
+
+        if project_id:
+            role = await permission_service.get_user_role_in_project(
+                user_id, project_id, db
+            )
+            logger.info(f'🔐 User {user_id} role in project {project_id}: {role}')
+            if not role:
+                logger.warning(
+                    f'❌ User {user_id} has NO access to project {project_id}'
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail='You do not have access to this project',
+                )
+
         if widget_id:
             objs = await feedback_repository.get_by_widget(db, widget_id, skip, limit)
+            if objs and project_id:
+                objs = [o for o in objs if o.project_id == project_id]
         elif project_id:
             objs = await feedback_repository.get_by_project(db, project_id, skip, limit)
         else:
+            accessible_projects = await permission_service.get_accessible_projects(
+                user_id, None, db
+            )
+            project_ids = [p.id for p in accessible_projects]
+            logger.info(f'📋 User {user_id} has access to projects: {project_ids}')
             objs = await feedback_repository.get_multi(db, skip=skip, limit=limit)
+            objs = [o for o in objs if o.project_id in project_ids]
+
+        logger.info(f'✅ Returning {len(objs)} feedback items for user {user_id}')
         return [self._convert_to_response(o) for o in objs]
 
     async def update_feedback(
@@ -412,8 +456,24 @@ class FeedbackService:
         return True
 
     async def get_actionable_feedback(
-        self, db: AsyncSession, project_id: UUID, skip: int = 0, limit: int = 100
+        self,
+        db: AsyncSession,
+        user_id: UUID,
+        project_id: UUID,
+        skip: int = 0,
+        limit: int = 100,
     ) -> List[FeedbackResponsePayload]:
+        from app.services.permission_service import permission_service
+
+        role = await permission_service.get_user_role_in_project(
+            user_id, project_id, db
+        )
+        if not role:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail='You do not have access to this project',
+            )
+
         actionable_feedback = await action_item_service.get_actionable_feedback(
             db, project_id, skip, limit
         )
@@ -491,16 +551,47 @@ class FeedbackService:
             'feedback_metadata',
         }
 
+        rating_value = None
         for key, value in data.items():
             if key in safe_fields and value is not None:
                 logger.info(f'Setting {key} = {value}')
                 try:
                     setattr(existing_feedback, key, value)
+                    if key == 'rating':
+                        rating_value = value
                 except Exception as e:
                     logger.error(f'Error setting {key}: {str(e)}')
                     raise
             else:
                 logger.info(f'Skipping {key} (not in safe fields or None)')
+
+        # Update specialized rating columns based on feedback type
+        if rating_value is not None:
+            feedback_type = existing_feedback.feedback_type
+            logger.info(
+                f'🔄 Updating specialized rating field for type: {feedback_type.value}'
+            )
+
+            if feedback_type == FeedbackType.CSAT and isinstance(
+                existing_feedback, CSATFeedback
+            ):
+                existing_feedback.csat_score = rating_value
+                logger.info(f'✅ Updated csat_score to {rating_value}')
+            elif feedback_type == FeedbackType.CES and isinstance(
+                existing_feedback, CESFeedback
+            ):
+                existing_feedback.ces_score = rating_value
+                logger.info(f'✅ Updated ces_score to {rating_value}')
+            elif feedback_type == FeedbackType.NPS and isinstance(
+                existing_feedback, NPSFeedback
+            ):
+                existing_feedback.nps_score = rating_value
+                logger.info(f'✅ Updated nps_score to {rating_value}')
+            elif feedback_type == FeedbackType.REVIEW and isinstance(
+                existing_feedback, ReviewFeedback
+            ):
+                existing_feedback.overall_rating = rating_value
+                logger.info(f'✅ Updated overall_rating to {rating_value}')
 
         # Update context - handle this carefully to avoid lazy loading issues
         if context:

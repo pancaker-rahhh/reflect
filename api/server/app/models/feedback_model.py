@@ -153,7 +153,7 @@ class NPSFeedback(Feedback):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
     )
-    nps_score = Column(Integer)  # 0-10 scale
+    nps_score = Column(Integer)  # 1-10 scale
     promoter_category = Column(String(20))  # 'detractor', 'passive', 'promoter'
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.NPS}

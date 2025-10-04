@@ -1,7 +1,7 @@
 from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, or_
 from sqlalchemy.orm import selectinload
 
 from app.models.organization_model import (
@@ -106,9 +106,11 @@ class PermissionService:
         project = result.scalar_one_or_none()
 
         if project and project.organization_id:
-            return await self.get_user_role_in_organization(
+            org_role = await self.get_user_role_in_organization(
                 user_id, project.organization_id, db
             )
+            if org_role and org_role in ['admin', 'owner']:
+                return org_role
 
         return None
 
@@ -186,20 +188,28 @@ class PermissionService:
     async def get_accessible_projects(
         self, user_id: UUID, organization_id: Optional[UUID], db: AsyncSession
     ) -> List[Project]:
-        # First check if user is member of organization
         if organization_id:
             org_role = await self.get_user_role_in_organization(
                 user_id, organization_id, db
             )
 
-            if org_role:
-                # Organization members can see all projects in the org
+            logger.info(
+                f'🔍 get_accessible_projects: user_id={user_id}, org_id={organization_id}, org_role={org_role}'
+            )
+
+            if org_role and org_role in ['admin', 'owner']:
+                logger.info(
+                    f'✅ User {user_id} is org admin/owner - returning ALL projects in org {organization_id}'
+                )
                 stmt = (
                     select(Project)
                     .where(Project.organization_id == organization_id)
                     .options(selectinload(Project.members))
                 )
             else:
+                logger.info(
+                    f'🔒 User {user_id} is NOT admin/owner - filtering to assigned projects only'
+                )
                 stmt = (
                     select(Project)
                     .join(ProjectMember)
@@ -211,24 +221,54 @@ class PermissionService:
                     )
                     .options(selectinload(Project.members))
                 )
+
+            result = await db.execute(stmt)
+            projects = list(result.scalars().all())
         else:
-            stmt = (
+            logger.info(
+                f'🔍 get_accessible_projects: user_id={user_id}, no org_id specified'
+            )
+
+            # Get projects where user is a direct member
+            stmt_direct = (
                 select(Project)
                 .join(ProjectMember, ProjectMember.project_id == Project.id)
                 .where(ProjectMember.user_id == user_id)
-                .union(
-                    select(Project)
-                    .join(
-                        OrganizationMember,
-                        OrganizationMember.organization_id == Project.organization_id,
+                .options(selectinload(Project.members))
+            )
+            result_direct = await db.execute(stmt_direct)
+            direct_projects = list(result_direct.scalars().all())
+
+            # Get projects where user is org admin/owner
+            stmt_org = (
+                select(Project)
+                .join(
+                    OrganizationMember,
+                    OrganizationMember.organization_id == Project.organization_id,
+                )
+                .where(
+                    and_(
+                        OrganizationMember.user_id == user_id,
+                        OrganizationMember.role.in_(['admin', 'owner']),
                     )
-                    .where(OrganizationMember.user_id == user_id)
                 )
                 .options(selectinload(Project.members))
             )
+            result_org = await db.execute(stmt_org)
+            org_projects = list(result_org.scalars().all())
 
-        result = await db.execute(stmt)
-        return list(result.scalars().all())
+            # Combine and deduplicate
+            project_dict = {p.id: p for p in direct_projects}
+            for p in org_projects:
+                if p.id not in project_dict:
+                    project_dict[p.id] = p
+
+            projects = list(project_dict.values())
+
+        logger.info(
+            f'📋 Returning {len(projects)} accessible projects for user {user_id}: {[p.id for p in projects]}'
+        )
+        return projects
 
     def can_perform_action(self, user_role: str, action: str) -> bool:
         allowed_permissions = self.PERMISSIONS.get(user_role, [])
