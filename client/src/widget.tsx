@@ -269,14 +269,19 @@ declare global {
 
   // Add retry logic with exponential backoff for API fallback
   function fetchConfigWithRetry(retries = 3, delay = 1000): Promise<WidgetConfig> {
-    return fetch(apiUrl)
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
+    return fetch(apiUrl, { signal: controller.signal })
       .then((response) => {
+        clearTimeout(timeoutId)
         if (!response.ok) {
           throw new Error(`Widget configuration not found. Status: ${response.status}`)
         }
         return response.json()
       })
       .catch((error) => {
+        clearTimeout(timeoutId)
         if (retries > 0) {
           console.warn(`Reflect Widget: Retrying config fetch. Attempts left: ${retries}`)
           return new Promise((resolve) => {
@@ -405,13 +410,20 @@ declare global {
         config = window.__REFLECT_WIDGET_CONFIG__ as WidgetConfig
       } else {
         // Fall back to API fetch if no embedded config
-        fetch(apiUrl)
-          .then((response) => response.json())
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
+        fetch(apiUrl, { signal: controller.signal })
+          .then((response) => {
+            clearTimeout(timeoutId)
+            return response.json()
+          })
           .then((apiConfig: WidgetConfig) => {
             config = apiConfig
             createAndShowWidget(config)
           })
           .catch((error) => {
+            clearTimeout(timeoutId)
             console.error('Failed to load widget config:', error)
             // If config fails, try to show existing widget
             if (widgetContainer) {
@@ -546,7 +558,7 @@ declare global {
       async function submitWithRetry(retries = 2): Promise<void> {
         try {
           const controller = new AbortController()
-          const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+          const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout for production
 
           const payload = {
             widgetKey: publicKey,
