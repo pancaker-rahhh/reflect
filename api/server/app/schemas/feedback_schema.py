@@ -16,7 +16,6 @@ class FeedbackBase(BaseModel):
     widget_id: UUID = Field(...)
     project_id: UUID = Field(...)
     feedback_type: FeedbackType = Field(...)
-    title: Optional[str] = None
     message: Optional[str] = None
     rating: Optional[int] = None
 
@@ -37,7 +36,6 @@ class FeedbackCreate(FeedbackBase):
 
 class FeedbackUpdate(BaseModel):
     # Base fields
-    title: Optional[str] = None
     message: Optional[str] = None
     rating: Optional[int] = None
     feedback_metadata: Optional[Dict[str, Any]] = None
@@ -64,7 +62,6 @@ class FeedbackUpdate(BaseModel):
     # FeatureRequestFeedback fields
     upvotes_count: Optional[int] = None
     downvotes_count: Optional[int] = None
-    implementation_status: Optional[str] = None
 
     # NPSFeedback fields
     nps_score: Optional[int] = None
@@ -86,7 +83,6 @@ class FeedbackResponse(BaseModel):
     widget_id: UUID
     project_id: UUID
     feedback_type: FeedbackType
-    title: Optional[str]
     message: Optional[str]
     rating: Optional[int]
     feedback_votes: int = 0
@@ -131,7 +127,6 @@ class BugReportFeedbackCreate(FeedbackBase):
 
 class FeatureRequestFeedbackCreate(FeedbackBase):
     feedback_type: Literal[FeedbackType.FEATURE_REQUEST] = FeedbackType.FEATURE_REQUEST  # type: ignore[assignment]
-    implementation_status: str = 'backlog'
 
 
 class NPSFeedbackCreate(FeedbackBase):
@@ -191,7 +186,6 @@ class BugReportFeedbackResponse(FeedbackResponse):
 
 class FeatureRequestFeedbackResponse(FeedbackResponse):
     feedback_type: Literal[FeedbackType.FEATURE_REQUEST] = FeedbackType.FEATURE_REQUEST  # type: ignore[assignment]
-    implementation_status: str = 'backlog'
 
 
 class NPSFeedbackResponse(FeedbackResponse):

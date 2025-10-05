@@ -81,26 +81,23 @@ export function FeedbackRenderer({
   const handleSubmit = async () => {
     if (selectedScore === undefined) return
 
-    const response = additionalFeedback.trim()
-      ? additionalFeedback.trim()
-      : `Rating: ${selectedScore}`
+    const userMessage = additionalFeedback.trim()
 
     await onSubmit({
-      response,
+      response: userMessage,
       rating: selectedScore,
       feedbackType,
       typeSpecificData: {
-        title: feedbackType === 'FEEDBACK' ? 'General Feedback' : `${feedbackType} Feedback`,
-        message: additionalFeedback.trim() || '',
+        message: userMessage,
       } as GeneralFeedbackData,
     })
   }
 
   const handleReviewSubmit = async (data: { rating: number; review?: string }) => {
-    const response = data.review?.trim() ? data.review.trim() : `Rating: ${data.rating}/5`
+    const userMessage = data.review?.trim() || ''
 
     await onSubmit({
-      response,
+      response: userMessage,
       rating: data.rating,
       feedbackType,
       typeSpecificData: {
@@ -112,8 +109,6 @@ export function FeedbackRenderer({
   }
 
   const handleBugReportSubmit = async (data: {
-    title: string
-    category: string
     severity: string
     description: string
     stepsToReproduce?: string
@@ -122,15 +117,12 @@ export function FeedbackRenderer({
       response: data.description,
       feedbackType,
       typeSpecificData: {
-        title: data.title,
-        severity: data.severity,
+        severity_level: data.severity,
       } as BugReportFeedbackData,
     })
   }
 
   const handleFeatureRequestSubmit = async (data: {
-    title: string
-    category: string
     priority: string
     description: string
     useCase: string
@@ -138,9 +130,7 @@ export function FeedbackRenderer({
     await onSubmit({
       response: data.description,
       feedbackType,
-      typeSpecificData: {
-        title: data.title,
-      } as FeatureRequestFeedbackData,
+      typeSpecificData: {} as FeatureRequestFeedbackData,
     })
   }
 
@@ -149,7 +139,6 @@ export function FeedbackRenderer({
       response: feedback,
       feedbackType,
       typeSpecificData: {
-        title: feedbackType === 'FEEDBACK' ? 'General Feedback' : `${feedbackType} Feedback`,
         message: feedback,
       } as GeneralFeedbackData,
     })

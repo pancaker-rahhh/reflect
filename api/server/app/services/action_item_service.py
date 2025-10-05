@@ -112,12 +112,20 @@ class ActionItemService:
         else:
             final_priority = self._suggest_priority(typed_feedback)
 
+        title = feedback.message or f'Feedback: {feedback.feedback_type.value}'
+
+        if len(title.strip()) < 3:
+            title = f'{feedback.feedback_type.value.title()} Feedback'
+            if len(title) < 3:
+                title = 'User Feedback'
+
         feature_data = {
             'column_id': target_column.id,
-            'title': feedback.title or f'Feedback: {feedback.feedback_type.value}',
+            'title': title,
             'description': await self._generate_description_from_feedback(
-                db, typed_feedback, feedback.submitter_name
+                db, typed_feedback, feedback.submitter_name, conversion_notes
             ),
+            'priority': final_priority.value,
             'order': 0,
             'vote_count': feedback.feedback_votes or 0,
             'submitter_name': current_user.name or current_user.email,
@@ -229,114 +237,12 @@ class ActionItemService:
         db: AsyncSession,
         feedback: Feedback,
         original_submitter_name: Optional[str] = None,
+        conversion_notes: Optional[str] = None,
     ) -> str:
-        description_parts = []
+        if conversion_notes and conversion_notes.strip():
+            return conversion_notes.strip()
 
-        if feedback.feedback_type == FeedbackType.BUG_REPORT:
-            actual_behavior = getattr(feedback, 'actual_behavior', None)
-            if actual_behavior:
-                description_parts.append(f'Issue\n{actual_behavior}')
-
-            expected_behavior = getattr(feedback, 'expected_behavior', None)
-            if expected_behavior:
-                description_parts.append(f'Expected\n{expected_behavior}')
-
-            steps_to_reproduce = getattr(feedback, 'steps_to_reproduce', None)
-            if steps_to_reproduce:
-                description_parts.append(f'Steps to Reproduce\n{steps_to_reproduce}')
-
-            if feedback.message and feedback.message not in [
-                actual_behavior,
-                expected_behavior,
-                steps_to_reproduce,
-            ]:
-                description_parts.append(f'Additional Notes\n{feedback.message}')
-
-        elif feedback.feedback_type == FeedbackType.FEATURE_REQUEST:
-            use_case = getattr(feedback, 'use_case', None)
-            if use_case:
-                description_parts.append(f'Use Case\n{use_case}')
-
-            suggested_solution = getattr(feedback, 'suggested_solution', None)
-            if suggested_solution:
-                description_parts.append(f'Suggested Solution\n{suggested_solution}')
-
-            benefits = getattr(feedback, 'benefits', None)
-            if benefits:
-                description_parts.append(f'Benefits\n{benefits}')
-
-            if feedback.message and feedback.message not in [
-                use_case,
-                suggested_solution,
-                benefits,
-            ]:
-                description_parts.append(f'Additional Details\n{feedback.message}')
-
-        elif feedback.feedback_type == FeedbackType.REVIEW:
-            try:
-                overall_rating = getattr(feedback, 'overall_rating', None)
-                if overall_rating:
-                    stars = '★' * overall_rating + '☆' * (5 - overall_rating)
-                    description_parts.append(f'Rating\n{overall_rating}/5 {stars}')
-            except Exception:
-                pass
-
-            try:
-                pros = getattr(feedback, 'pros', None)
-                if pros:
-                    description_parts.append(f'What Works Well\n{pros}')
-            except Exception:
-                pass
-
-            try:
-                cons = getattr(feedback, 'cons', None)
-                if cons:
-                    description_parts.append(f'Areas for Improvement\n{cons}')
-            except Exception:
-                pass
-
-            try:
-                pros = getattr(feedback, 'pros', None)
-                cons = getattr(feedback, 'cons', None)
-                if feedback.message and feedback.message not in [pros, cons]:
-                    description_parts.append(feedback.message)
-            except Exception:
-                if feedback.message:
-                    description_parts.append(feedback.message)
-
-        elif feedback.feedback_type in [
-            FeedbackType.NPS,
-            FeedbackType.CSAT,
-            FeedbackType.CES,
-        ]:
-            rating = getattr(feedback, 'rating', None)
-            if rating:
-                if feedback.feedback_type == FeedbackType.NPS:
-                    description_parts.append(f'NPS Score\n{rating}/10')
-                elif feedback.feedback_type == FeedbackType.CSAT:
-                    description_parts.append(f'Satisfaction\n{rating}/5')
-                elif feedback.feedback_type == FeedbackType.CES:
-                    description_parts.append(f'Effort Score\n{rating}/5')
-
-            follow_up_comment = getattr(feedback, 'follow_up_comment', None)
-            if follow_up_comment:
-                description_parts.append(f'Comment\n{follow_up_comment}')
-
-            if feedback.message and feedback.message != follow_up_comment:
-                description_parts.append(feedback.message)
-
-        else:
-            if feedback.message:
-                description_parts.append(feedback.message)
-
-        if original_submitter_name:
-            description_parts.append(f'Submitted by: {original_submitter_name}')
-
-        return (
-            '\n\n'.join(description_parts)
-            if description_parts
-            else 'No description provided'
-        )
+        return ''
 
     async def _create_and_assign_tags(
         self,

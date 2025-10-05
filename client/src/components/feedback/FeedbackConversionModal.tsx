@@ -175,7 +175,7 @@ export function FeedbackConversionModal({
                 <Badge variant="outline">{feedback.feedback_type}</Badge>
               </div>
               <h4 className="font-medium">{feedback.title}</h4>
-              {feedback.message && (
+              {feedback.message && feedback.message !== feedback.title && (
                 <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                   {feedback.message}
                 </p>
@@ -301,12 +301,12 @@ export function FeedbackConversionModal({
             )}
           </div>
 
-          {/* Conversion Notes */}
+          {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="notes">Conversion Notes (Optional)</Label>
+            <Label htmlFor="notes">Description (Optional)</Label>
             <Textarea
               id="notes"
-              placeholder="Add any notes about this conversion..."
+              placeholder="Add a description for this roadmap item..."
               value={conversionNotes}
               onChange={(e) => setConversionNotes(e.target.value)}
               rows={3}

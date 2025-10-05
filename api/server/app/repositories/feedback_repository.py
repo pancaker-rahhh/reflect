@@ -448,11 +448,7 @@ class FeedbackRepository(BaseRepository[Feedback]):
                 feature_result = await db.execute(feature_stmt)
                 feature_data = feature_result.scalar_one_or_none()
                 if feature_data:
-                    feedback_dict.update(
-                        {
-                            'implementation_status': feature_data.implementation_status,
-                        }
-                    )
+                    pass
 
             elif item.feedback_type == 'NPS':
                 nps_stmt = select(NPSFeedback).where(NPSFeedback.id == item.id)

@@ -63,10 +63,11 @@ class RoadmapTagRead(RoadmapTagBase):
 
 
 class RoadmapActionItemBase(BaseModel):
-    title: str = Field(..., min_length=3, max_length=255, description='Feature title')
+    title: str = Field(..., min_length=1, max_length=255, description='Feature title')
     description: Optional[str] = Field(
         None, max_length=2000, description='Feature description'
     )
+    priority: Optional[str] = Field(None, description='Feature priority level')
     feedback_id: Optional[UUID] = Field(None, description='Associated feedback ID')
     submitter_name: Optional[str] = Field(
         None, max_length=255, description='Name of the person who submitted the feature'
@@ -85,9 +86,15 @@ class RoadmapActionItemBase(BaseModel):
 
     @validator('description')
     def validate_description(cls, v):
-        if v is not None and not v.strip():
+        if v is not None and v.strip() == '' and v != '':
             raise ValueError('Feature description cannot be whitespace only')
-        return v.strip() if v else v
+        return v.strip() if v and v.strip() else v
+
+    @validator('priority')
+    def validate_priority(cls, v):
+        if v is not None and v not in ['low', 'medium', 'high', 'critical']:
+            raise ValueError('Priority must be one of: low, medium, high, critical')
+        return v
 
     @validator('submitter_email')
     def validate_email(cls, v):
@@ -116,11 +123,12 @@ class RoadmapActionItemCreate(RoadmapActionItemBase):
 
 class RoadmapActionItemUpdate(BaseModel):
     title: Optional[str] = Field(
-        None, min_length=3, max_length=255, description='Feature title'
+        None, min_length=1, max_length=255, description='Feature title'
     )
     description: Optional[str] = Field(
         None, max_length=2000, description='Feature description'
     )
+    priority: Optional[str] = Field(None, description='Feature priority level')
     column_id: Optional[UUID] = Field(
         None, description='ID of the column where the feature should be moved'
     )
@@ -147,9 +155,15 @@ class RoadmapActionItemUpdate(BaseModel):
 
     @validator('description')
     def validate_description(cls, v):
-        if v is not None and not v.strip():
+        if v is not None and v.strip() == '' and v != '':
             raise ValueError('Feature description cannot be whitespace only')
-        return v.strip() if v else v
+        return v.strip() if v and v.strip() else v
+
+    @validator('priority')
+    def validate_priority(cls, v):
+        if v is not None and v not in ['low', 'medium', 'high', 'critical']:
+            raise ValueError('Priority must be one of: low, medium, high, critical')
+        return v
 
     @validator('order')
     def validate_order(cls, v):

@@ -60,8 +60,7 @@ export function FeedbackCard({
 
   const ratingBasedTypes = ['CES', 'NPS', 'CSAT', 'SURVEY', 'REVIEW']
   const feedbackType = feedback.feedback_type?.toUpperCase()
-  const hasMessage =
-    feedback.message && feedback.message.trim() && !feedback.message.startsWith('Rating:')
+  const hasMessage = feedback.message && feedback.message.trim()
 
   const shouldShowConvert =
     !isConverted &&
