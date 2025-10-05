@@ -268,23 +268,22 @@ declare global {
   }
 
   // Add retry logic with exponential backoff for API fallback
-  function fetchConfigWithRetry(retries = 3, delay = 1000): Promise<WidgetConfig> {
-    return fetch(apiUrl)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Widget configuration not found. Status: ${response.status}`)
-        }
-        return response.json()
-      })
-      .catch((error) => {
-        if (retries > 0) {
-          console.warn(`Reflect Widget: Retrying config fetch. Attempts left: ${retries}`)
-          return new Promise((resolve) => {
-            setTimeout(() => resolve(fetchConfigWithRetry(retries - 1, delay * 2)), delay)
-          })
-        }
-        throw error
-      })
+  async function fetchConfigWithRetry(retries = 3, delay = 1000): Promise<WidgetConfig> {
+    try {
+      const response = await fetch(apiUrl)
+      if (!response.ok) {
+        throw new Error(`Widget configuration not found. Status: ${response.status}`)
+      }
+      return await response.json()
+    } catch (error) {
+      if (retries > 0) {
+        console.warn(`Reflect Widget: Retrying config fetch. Attempts left: ${retries}`)
+        return new Promise((resolve) => {
+          setTimeout(() => resolve(fetchConfigWithRetry(retries - 1, delay * 2)), delay)
+        })
+      }
+      throw error
+    }
   }
 
   // Try embedded config first, then fall back to API
