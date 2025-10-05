@@ -311,7 +311,9 @@ class FeedbackRepository(BaseRepository[Feedback]):
         query = (
             select(Feedback)
             .options(selectinload(Feedback.widget))
-            .order_by(Feedback.created_at.desc())
+            .order_by(
+                Feedback.updated_at.desc().nullslast(), Feedback.created_at.desc()
+            )
             .limit(limit)
         )
 

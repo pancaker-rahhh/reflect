@@ -325,7 +325,9 @@ class ActionItemService:
                 Feedback.is_actionable.is_(True),
                 Feedback.converted_to_action_item_id.is_(None),
             )
-            .order_by(Feedback.created_at.desc())
+            .order_by(
+                Feedback.updated_at.desc().nullslast(), Feedback.created_at.desc()
+            )
             .offset(skip)
             .limit(limit)
         )
