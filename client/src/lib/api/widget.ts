@@ -16,8 +16,8 @@ function transformDataToPayload(data: WidgetFormData) {
         requireReviewText: data.content?.requireReviewText,
         requireStepsToReproduce: data.content?.requireStepsToReproduce,
         requireUseCase: data.content?.requireUseCase,
-        // Persist per-type content overrides from Step 2
-        perTypeContent: data.contentByType || {},
+      // Persist per-type content overrides from Step 2
+      perTypeContent: data.contentByType || {},
       },
     },
     theme_configuration: {
@@ -59,26 +59,14 @@ export const widgetApi = {
 
   create(projectId: string, formData: WidgetFormData): Promise<Widget> {
     const payload = transformDataToPayload(formData)
-    return apiClient.post<Widget>(
-      `/projects/${projectId}/widgets/`,
-      {
-        ...payload,
-        project_id: projectId,
-      },
-      {
-        timeout: 30000, // 30 second timeout for widget creation
-        maxRetries: 2,
-        retryDelay: 2000,
-      }
-    )
+    return apiClient.post<Widget>(`/projects/${projectId}/widgets/`, {
+      ...payload,
+      project_id: projectId,
+    })
   },
 
   createWidget(data: WidgetCreateRequest): Promise<Widget> {
-    return apiClient.post<Widget>(`/projects/${data.project_id}/widgets/`, data, {
-      timeout: 30000, // 30 second timeout for widget creation
-      maxRetries: 2,
-      retryDelay: 2000,
-    })
+    return apiClient.post<Widget>(`/projects/${data.project_id}/widgets/`, data)
   },
 
   update(widgetId: string, data: Partial<Widget>): Promise<Widget> {

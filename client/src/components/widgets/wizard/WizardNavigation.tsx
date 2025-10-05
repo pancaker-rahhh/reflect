@@ -31,11 +31,15 @@ export function WizardNavigation({
         Previous
       </Button>
 
-      <Button onClick={onNext} disabled={isSubmitting} className="gap-2 min-w-[120px]">
+      <Button
+        onClick={onNext}
+        disabled={isSubmitting}
+        className="gap-2"
+      >
         {isSubmitting ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            {isLastStep ? 'Creating Widget...' : 'Loading...'}
+            Creating...
           </>
         ) : isLastStep ? (
           'Create Widget'

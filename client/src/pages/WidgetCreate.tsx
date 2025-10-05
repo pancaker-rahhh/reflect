@@ -446,27 +446,7 @@ export function WidgetCreate() {
       }
     } catch (error) {
       console.error(`Failed to ${isEditMode ? 'update' : 'create'} widget:`, error)
-
-      // Provide specific error messages based on error type
-      let errorMessage = 'Unknown error occurred'
-
-      if (error instanceof Error) {
-        if (error.name === 'AbortError' || error.message.includes('timeout')) {
-          errorMessage =
-            'Request timed out. The server is taking longer than expected to respond. Please try again.'
-        } else if (error.message.includes('Network')) {
-          errorMessage =
-            'Network connection failed. Please check your internet connection and try again.'
-        } else if (error.message.includes('429')) {
-          errorMessage = 'Too many requests. Please wait a moment and try again.'
-        } else if (error.message.includes('500')) {
-          errorMessage = 'Server error occurred. Please try again in a few minutes.'
-        } else {
-          errorMessage = error.message
-        }
-      }
-
-      toast.showError(`Widget ${isEditMode ? 'update' : 'creation'} failed: ${errorMessage}`)
+      toast.showError(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsSubmitting(false)
     }
