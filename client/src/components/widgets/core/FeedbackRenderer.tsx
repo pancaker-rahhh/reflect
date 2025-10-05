@@ -364,7 +364,7 @@ export function FeedbackRenderer({
               isSubmitting={isSubmitting}
               colors={colors}
               content={content}
-              showExistingFeatures={false}
+              showExistingFeatures={true}
             />
           </div>
         </div>

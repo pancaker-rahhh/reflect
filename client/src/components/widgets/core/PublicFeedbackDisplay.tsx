@@ -59,7 +59,10 @@ export function PublicFeedbackDisplay({
         return
       }
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+      const apiBaseUrl =
+        process.env.NODE_ENV === 'production'
+          ? 'https://api.reflectfeedback.com/api/v1'
+          : 'http://localhost:8000/api/v1'
       let endpoint = ''
 
       switch (feedbackType) {
@@ -67,10 +70,10 @@ export function PublicFeedbackDisplay({
           endpoint = `${apiBaseUrl}/public/widgets/${widgetKey}/reviews`
           break
         case 'BUG_REPORT':
-          endpoint = `${apiBaseUrl}/public/widgets/bug-reports/${widgetKey}`
+          endpoint = `${apiBaseUrl}/public/widgets/${widgetKey}/feedback?feedback_type=bug_report`
           break
         case 'FEATURE_REQUEST':
-          endpoint = `${apiBaseUrl}/public/widgets/features/${widgetKey}`
+          endpoint = `${apiBaseUrl}/public/widgets/${widgetKey}/feedback?feedback_type=feature_request`
           break
         case 'FEEDBACK':
         default:
@@ -107,19 +110,19 @@ export function PublicFeedbackDisplay({
 
   const voteFeedback = async (feedbackId: string) => {
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+      const apiBaseUrl =
+        process.env.NODE_ENV === 'production'
+          ? 'https://api.reflectfeedback.com/api/v1'
+          : 'http://localhost:8000/api/v1'
 
-      let endpoint = ''
-      let payload: any = { widgetKey, feedbackId }
-
-      if (feedbackType === 'FEATURE_REQUEST') {
-        endpoint = `${apiBaseUrl}/public/features/upvote`
-        payload = { widgetKey, featureId: feedbackId }
-      } else {
-        endpoint = `${apiBaseUrl}/public/feedback/upvote`
+      const itemType = feedbackType === 'FEATURE_REQUEST' ? 'feature_request' : 'general_feedback'
+      const payload = {
+        itemId: feedbackId,
+        itemType,
+        widgetKey,
       }
 
-      const response = await fetch(endpoint, {
+      const response = await fetch(`${apiBaseUrl}/public/vote`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

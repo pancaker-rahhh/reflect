@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth, useSession } from '../../contexts/AuthContext'
 import { onboardingApi, organizationApi } from '../../lib/api'
@@ -13,8 +13,6 @@ export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) =>
   const { user, loading: authLoading } = useAuth()
   const session = useSession()
   const [isChecking, setIsChecking] = useState(true)
-  const [hasCheckedOnboarding, setHasCheckedOnboarding] = useState(false)
-  const lastCheckRef = useRef<number>(0)
 
   useEffect(() => {
     const checkOnboardingStatus = async () => {
@@ -23,12 +21,26 @@ export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) =>
       }
 
       const now = Date.now()
-      const timeSinceLastCheck = now - lastCheckRef.current
-      const shouldCheck = !hasCheckedOnboarding || timeSinceLastCheck > 5 * 60 * 1000 // 5 minutes
+      const cacheKey = `onboarding_check_${user.id}`
+      const cached = localStorage.getItem(cacheKey)
 
-      if (!shouldCheck) {
-        setIsChecking(false)
-        return
+      if (cached) {
+        const { isFirstTime, timestamp } = JSON.parse(cached)
+        const timeSinceLastCheck = now - timestamp
+        const shouldCheck = timeSinceLastCheck > 15 * 60 * 1000 // 15 minutes
+
+        if (!shouldCheck) {
+          console.log('OnboardingGuard: Using cached onboarding status')
+          // Use cached status for navigation
+          const isOnboardingRoute = location.pathname.startsWith('/onboarding')
+          if (isFirstTime && !isOnboardingRoute) {
+            navigate('/onboarding', { replace: true })
+          } else if (!isFirstTime && isOnboardingRoute) {
+            navigate('/app/dashboard', { replace: true })
+          }
+          setIsChecking(false)
+          return
+        }
       }
 
       const isOnboardingRoute = location.pathname.startsWith('/onboarding')
@@ -37,6 +49,15 @@ export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) =>
         console.log('OnboardingGuard: Checking first-time user status...')
         const data = await onboardingApi.checkFirstTime()
         console.log('OnboardingGuard: First-time check result:', data)
+
+        // Cache the result for 15 minutes
+        localStorage.setItem(
+          cacheKey,
+          JSON.stringify({
+            isFirstTime: data.is_first_time,
+            timestamp: now,
+          })
+        )
 
         if (data.is_first_time && !isOnboardingRoute) {
           // Clear any existing onboarding state to ensure fresh start
@@ -63,9 +84,6 @@ export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) =>
             }
           }
         }
-
-        setHasCheckedOnboarding(true)
-        lastCheckRef.current = now
       } catch (error) {
         console.error('OnboardingGuard: Failed to check onboarding status:', error)
 
@@ -92,7 +110,7 @@ export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) =>
     }
 
     checkOnboardingStatus()
-  }, [user, authLoading, session, navigate, location.pathname, hasCheckedOnboarding])
+  }, [user, authLoading, session, navigate, location.pathname])
 
   if (authLoading || isChecking) {
     return (

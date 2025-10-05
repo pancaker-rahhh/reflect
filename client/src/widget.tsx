@@ -250,8 +250,11 @@ declare global {
     return position.replace(/_/g, '-')
   }
 
-  // Use environment-based URLs
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+  // Use production API in production builds, localhost for development
+  const apiBaseUrl =
+    process.env.NODE_ENV === 'production'
+      ? 'https://api.reflectfeedback.com/api/v1'
+      : 'http://localhost:8000/api/v1'
   const apiUrl = `${apiBaseUrl}/public/widgets/${publicKey}`
 
   injectWidgetStyles()
@@ -265,23 +268,27 @@ declare global {
   }
 
   // Add retry logic with exponential backoff for API fallback
-  function fetchConfigWithRetry(retries = 3, delay = 1000): Promise<WidgetConfig> {
-    return fetch(apiUrl)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Widget configuration not found. Status: ${response.status}`)
-        }
-        return response.json()
-      })
-      .catch((error) => {
-        if (retries > 0) {
-          console.warn(`Reflect Widget: Retrying config fetch. Attempts left: ${retries}`)
-          return new Promise((resolve) => {
-            setTimeout(() => resolve(fetchConfigWithRetry(retries - 1, delay * 2)), delay)
-          })
-        }
-        throw error
-      })
+  async function fetchConfigWithRetry(retries = 3, delay = 1000): Promise<WidgetConfig> {
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout for config
+
+      const response = await fetch(apiUrl, { signal: controller.signal })
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        throw new Error(`Widget configuration not found. Status: ${response.status}`)
+      }
+      return await response.json()
+    } catch (error) {
+      if (retries > 0) {
+        console.warn(`Reflect Widget: Retrying config fetch. Attempts left: ${retries}`)
+        return new Promise((resolve) => {
+          setTimeout(() => resolve(fetchConfigWithRetry(retries - 1, delay * 2)), delay)
+        })
+      }
+      throw error
+    }
   }
 
   // Try embedded config first, then fall back to API
@@ -543,7 +550,7 @@ declare global {
       async function submitWithRetry(retries = 2): Promise<void> {
         try {
           const controller = new AbortController()
-          const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+          const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
 
           const payload = {
             widgetKey: publicKey,
@@ -558,6 +565,9 @@ declare global {
               : {}),
           }
 
+          console.log('Reflect Widget: Submitting feedback to:', `${apiBaseUrl}/public/feedback`)
+          console.log('Reflect Widget: Payload:', payload)
+
           const response = await fetch(`${apiBaseUrl}/public/feedback`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -566,6 +576,9 @@ declare global {
           })
 
           clearTimeout(timeoutId)
+
+          console.log('Reflect Widget: Response status:', response.status)
+          console.log('Reflect Widget: Response ok:', response.ok)
 
           if (!response.ok) {
             // Handle rate limiting with detailed error information
@@ -604,7 +617,18 @@ declare global {
           // Success
           return
         } catch (error) {
+          console.log('Reflect Widget: Error caught:', error)
+          console.log(
+            'Reflect Widget: Error name:',
+            error instanceof Error ? error.name : 'Unknown'
+          )
+          console.log(
+            'Reflect Widget: Error message:',
+            error instanceof Error ? error.message : String(error)
+          )
+
           if (error instanceof Error && error.name === 'AbortError') {
+            console.log('Reflect Widget: Request was aborted - likely due to timeout')
             throw new Error('Request timed out. Please check your internet connection.')
           }
 
