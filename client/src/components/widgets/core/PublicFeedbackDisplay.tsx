@@ -70,10 +70,10 @@ export function PublicFeedbackDisplay({
           endpoint = `${apiBaseUrl}/public/widgets/${widgetKey}/reviews`
           break
         case 'BUG_REPORT':
-          endpoint = `${apiBaseUrl}/public/widgets/bug-reports/${widgetKey}`
+          endpoint = `${apiBaseUrl}/public/widgets/${widgetKey}/feedback?feedback_type=bug_report`
           break
         case 'FEATURE_REQUEST':
-          endpoint = `${apiBaseUrl}/public/widgets/features/${widgetKey}`
+          endpoint = `${apiBaseUrl}/public/widgets/${widgetKey}/feedback?feedback_type=feature_request`
           break
         case 'FEEDBACK':
         default:
