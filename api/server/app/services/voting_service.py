@@ -6,6 +6,28 @@ from app.repositories.feedback_repository import feedback_repository
 
 
 class VotingService:
+    async def get_user_vote_status_bulk(
+        self,
+        db: AsyncSession,
+        feedback_ids: list[UUID],
+        voter_ip: str,
+        voter_user_agent: str,
+    ) -> set[UUID]:
+        if not feedback_ids:
+            return set()
+
+        from sqlalchemy import select
+
+        voter_hash = FeatureVote.create_voter_hash(voter_ip, voter_user_agent)
+
+        stmt = select(FeatureVote.feedback_id).where(
+            FeatureVote.voter_hash == voter_hash,
+            FeatureVote.feedback_id.in_(feedback_ids),
+        )
+        result = await db.execute(stmt)
+        rows = result.scalars().all()
+        return set(rows)
+
     async def vote_for_feature(
         self, db: AsyncSession, feedback_id: UUID, voter_ip: str, voter_user_agent: str
     ) -> dict:
