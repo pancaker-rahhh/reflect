@@ -33,7 +33,7 @@ interface RequestConfig {
 }
 
 const DEFAULT_CONFIG = {
-  timeout: 10000,
+  timeout: 30000,
   maxRetries: 3,
   retryDelay: 1000,
   retryableStatusCodes: new Set([408, 429, 500, 502, 503, 504]),
@@ -148,7 +148,7 @@ async function request<T>(endpoint: string, options: RequestInit & RequestConfig
         console.log(`✅ API Success: ${response.status}`, result)
       }
 
-      return result
+      return result as T
     } catch (error) {
       const apiError = handleApiError(error)
 

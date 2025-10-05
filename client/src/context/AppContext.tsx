@@ -35,7 +35,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const { data: currentOrganization, isLoading: isLoadingOrganization } = useQuery({
-    queryKey: ['organization'],
+    queryKey: ['organization', user?.id],
     queryFn: organizationApi.getMyOrganization,
     enabled: !!user && !authLoading,
     retry: (failureCount, error) => {
@@ -52,8 +52,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
       return failureCount < 2
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 15, // 15 minutes instead of 5
+    gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
     refetchOnWindowFocus: false,
+    refetchOnMount: false, // Don't refetch on component mount if data exists
   })
 
   const organization = currentOrganization

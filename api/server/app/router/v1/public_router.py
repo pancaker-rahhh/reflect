@@ -348,11 +348,13 @@ async def list_widget_bug_reports_with_votes(
     voter_ip = request.client.host if request.client else '127.0.0.1'
     voter_user_agent = request.headers.get('user-agent', '')
 
+    # Batch vote status lookup to avoid N+1
+    bug_ids = [bug['id'] for bug in bug_data]
+    voted_ids = await voting_service.get_user_vote_status_bulk(
+        db, bug_ids, voter_ip, voter_user_agent
+    )
     for bug in bug_data:
-        has_user_voted = await voting_service.get_user_vote_status(
-            db, bug['id'], voter_ip, voter_user_agent
-        )
-        bug['hasUserUpvoted'] = has_user_voted
+        bug['hasUserUpvoted'] = bug['id'] in voted_ids
 
     return bug_data
 
@@ -380,6 +382,8 @@ class VoteRequest(BaseModel):
 async def list_widget_feature_requests_with_votes(
     request: Request,
     public_key: str,
+    limit: int = 50,
+    offset: int = 0,
     db: AsyncSession = Depends(get_db),
     widget_service: WidgetService = Depends(lambda: widget_service),
 ):
@@ -390,45 +394,42 @@ async def list_widget_feature_requests_with_votes(
         raise HTTPException(status_code=400, detail='Invalid widget key')
 
     widget = await widget_service.get_public_widget_by_key(db, sanitized_public_key)
-    features = await feedback_repository.get_by_widget_and_type(
-        db, widget_id=widget.id, feedback_type=FeedbackType.FEATURE_REQUEST
+    # Use existing public listing with pagination and sorting
+    features = await feedback_repository.get_public_feedback_for_widget(
+        db,
+        widget_id=widget.id,
+        feedback_type='feature_request',
+        limit=limit,
+        offset=offset,
     )
 
     voter_ip = request.client.host if request.client else '127.0.0.1'
     voter_user_agent = request.headers.get('user-agent', '')
 
-    feature_requests = []
-    for feature in features:
-        context = feature.context or {}
+    # features from public list are dicts; extract ids for batch vote status
+    feature_ids = [f['id'] for f in features]
+    voted_ids = await voting_service.get_user_vote_status_bulk(
+        db, feature_ids, voter_ip, voter_user_agent
+    )
 
-        has_user_voted = await voting_service.get_user_vote_status(
-            db, feature.id, voter_ip, voter_user_agent
-        )
-
-        feature_requests.append(
+    result: list[FeatureRequestPublic] = []
+    for f in features:
+        context_category = f.get('category') or 'other'
+        context_priority = f.get('priority') or 'medium'
+        result.append(
             FeatureRequestPublic(
-                id=str(feature.id),
-                title=InputSanitizer.sanitize_text(
-                    feature.title, InputSanitizer.MAX_LENGTHS['title']
-                )
-                or 'Untitled Feature',
-                description=InputSanitizer.sanitize_text(
-                    feature.message, InputSanitizer.MAX_LENGTHS['message']
-                )
-                or '',
-                category=InputSanitizer.sanitize_category(
-                    context.get('category', 'other')
-                ),
-                priority=InputSanitizer.sanitize_priority(
-                    context.get('priority', 'medium')
-                ),
-                upvotes=feature.feedback_votes or 0,
-                hasUserUpvoted=has_user_voted,
+                id=f['id'],
+                title=f.get('title') or 'Untitled Feature',
+                description=f.get('message') or '',
+                category=InputSanitizer.sanitize_category(context_category),
+                priority=InputSanitizer.sanitize_priority(context_priority),
+                upvotes=f.get('feedback_votes') or 0,
+                hasUserUpvoted=f['id'] in voted_ids,
             )
         )
 
-    feature_requests.sort(key=lambda x: x.upvotes, reverse=True)
-    return feature_requests
+    result.sort(key=lambda x: x.upvotes, reverse=True)
+    return result
 
 
 @public_router.get('/widgets/{public_key}', response_model=WidgetReadPublic)
