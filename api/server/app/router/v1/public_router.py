@@ -9,7 +9,6 @@ from app.services.feedback_service import feedback_service
 from app.services.voting_service import voting_service
 from app.services.roadmap_vote_service import vote_service
 from app.models.widget_model import WidgetType
-from app.models.feedback_model import FeedbackType
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
 from app.repositories.feedback_repository import feedback_repository
@@ -24,28 +23,12 @@ public_router = APIRouter()
 
 class PublicFeedbackPayload(BaseModel):
     widgetKey: str
-    response: Optional[str] = None
     rating: Optional[int] = None
+    message: Optional[str] = None
     feedbackType: Optional[str] = None
     widgetType: Optional[str] = None
-    title: Optional[str] = None
-    message: Optional[str] = None
     overall_rating: Optional[int] = None
-    pros: Optional[str] = None
-    cons: Optional[str] = None
     severity: Optional[str] = None
-    steps_to_reproduce: Optional[str] = None
-    expected_result: Optional[str] = None
-    actual_result: Optional[str] = None
-    visual_proof: Optional[Dict[str, Any]] = None
-    suggested_solution: Optional[str] = None
-    benefits: Optional[str] = None
-    use_case: Optional[str] = None
-    business_value: Optional[str] = None
-    effort_estimate: Optional[str] = None
-    impact_score: Optional[int] = None
-    score: Optional[int] = None
-    comment: Optional[str] = None
     submitter_name: Optional[str] = None
     submitter_email: Optional[str] = None
     context: Optional[Dict[str, Any]] = None
@@ -100,71 +83,24 @@ async def create_or_update_widget_feedback(
     )
 
     feedback_data = {
-        'title': payload.title,
         'rating': payload.rating,
+        'message': payload.message or '',
     }
 
-    user_message = payload.response or payload.message
-    if user_message and user_message.strip():
-        import re
-
-        is_only_rating = re.match(
-            r'^Rating:\s*\d+(/\d+)?$', user_message.strip(), re.IGNORECASE
-        )
-
-        if is_only_rating:
-            logger.info(f'🔍 IGNORED auto-generated rating message: {user_message}')
-        else:
-            cleaned_message = re.sub(
-                r'^Rating:\s*\d+(/\d+)?\s*-\s*',
-                '',
-                user_message.strip(),
-                flags=re.IGNORECASE,
-            )
-
-            if cleaned_message:
-                feedback_data['message'] = cleaned_message
-                logger.info(f'🔍 SET message in feedback_data to: {cleaned_message}')
-                if cleaned_message != user_message.strip():
-                    logger.info(f'🔍 STRIPPED rating prefix from: {user_message}')
-
     if widget_type == WidgetType.REVIEW:
-        logger.debug(
-            f'🔍 REVIEW feedback - payload.rating: {payload.rating}, payload.overall_rating: {payload.overall_rating}'
-        )
         feedback_data.update(
             {
                 'rating': payload.overall_rating or payload.rating,
-                'pros': payload.pros,
-                'cons': payload.cons,
             }
         )
-        logger.debug(f'🔍 REVIEW feedback_data after update: {feedback_data}')
     elif widget_type == WidgetType.BUG_REPORT:
         feedback_data.update(
             {
-                'severity': payload.severity,
-                'steps_to_reproduce': payload.steps_to_reproduce,
-                'expected_result': payload.expected_result,
-                'actual_result': payload.actual_result,
-                'visual_proof': payload.visual_proof,
+                'severity_level': payload.severity,
             }
         )
     elif widget_type == WidgetType.FEATURE_REQUEST:
-        feedback_data.update(
-            {
-                'suggested_solution': payload.suggested_solution,
-                'benefits': payload.benefits,
-                'use_case': payload.use_case,
-            }
-        )
-    elif widget_type in [WidgetType.NPS, WidgetType.CSAT, WidgetType.CES]:
-        feedback_data.update(
-            {
-                'rating': payload.rating,  # Use rating from frontend
-                'comment': payload.comment,
-            }
-        )
+        pass
 
     if payload.submitter_name:
         sanitized_context['submitter_name'] = InputSanitizer.sanitize_text(
@@ -177,7 +113,6 @@ async def create_or_update_widget_feedback(
 
     sanitized_feedback_data = InputSanitizer.sanitize_feedback_data(feedback_data)
 
-    # Convert WidgetType to FeedbackType for database queries
     from app.models.feedback_model import FeedbackType
 
     feedback_type_mapping = {
@@ -192,8 +127,6 @@ async def create_or_update_widget_feedback(
     }
     feedback_type = feedback_type_mapping.get(widget_type.value, FeedbackType.GENERAL)
 
-    # Check for existing feedback from the same user context to prevent duplicates
-    # Only apply deduplication for rating-based feedback types (REVIEW, CSAT, CES, NPS)
     rating_based_types = [
         WidgetType.REVIEW,
         WidgetType.CSAT,
@@ -214,8 +147,8 @@ async def create_or_update_widget_feedback(
             db,
             widget_id=widget.id,
             context=sanitized_context,
-            feedback_type=widget_type,  # Pass widget_type instead of feedback_type
-            within_hours=24,  # Check for duplicates within 24 hours
+            feedback_type=widget_type,
+            within_hours=24,
         )
         logger.debug(
             f'🔍 Existing {widget_type.value} feedback found: {existing_feedback is not None}'
@@ -227,7 +160,6 @@ async def create_or_update_widget_feedback(
 
     try:
         if existing_feedback:
-            # Update existing feedback instead of creating new one (only for rating-based types)
             logger.debug(
                 f'Updating existing {widget_type.value} feedback with ID: {existing_feedback.id}'
             )
@@ -253,10 +185,8 @@ async def create_or_update_widget_feedback(
             context=sanitized_context,
         )
     except ValueError as e:
-        # Handle database errors and other validation errors
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        # Handle unexpected errors
         logger.error(f'Unexpected error in submit_public_feedback: {str(e)}')
         raise HTTPException(status_code=500, detail='Internal server error')
 

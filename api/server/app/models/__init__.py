@@ -33,6 +33,7 @@ from app.models.webhook_model import Webhook
 from app.models.notification_model import Notification
 from app.models.onboarding_model import UserOnboarding
 from app.models.invitation import Invitation, PendingMember, InvitationTask
+from app.models.usage_tracking_model import UsageTracking
 
 __all__ = [
     'BaseModel',
@@ -66,4 +67,5 @@ __all__ = [
     'Invitation',
     'PendingMember',
     'InvitationTask',
+    'UsageTracking',
 ]

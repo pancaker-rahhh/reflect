@@ -554,9 +554,9 @@ declare global {
 
           const payload = {
             widgetKey: publicKey,
-            response: data.response,
             rating: data.rating,
-            feedbackType: data.feedbackType?.toLowerCase() || 'general', // Convert to lowercase for backend
+            message: data.response || '',
+            feedbackType: data.feedbackType?.toLowerCase() || 'general',
             // Include type-specific data
             ...(data.typeSpecificData || {}),
             // For REVIEW feedback, ensure overall_rating is set

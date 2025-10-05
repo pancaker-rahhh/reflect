@@ -204,6 +204,7 @@ class RoadmapActionItem(BaseModel):
 
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
+    priority: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
 
     order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     vote_count: Mapped[int] = mapped_column(Integer, default=0)

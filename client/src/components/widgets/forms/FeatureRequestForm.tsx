@@ -13,13 +13,7 @@ interface ExistingFeature {
 }
 
 interface FeatureRequestFormProps {
-  onSubmit: (data: {
-    title: string
-    description: string
-    category: string
-    priority: string
-    useCase: string
-  }) => Promise<void>
+  onSubmit: (data: { description: string; priority: string; useCase: string }) => Promise<void>
   onUpvote?: (featureId: string) => Promise<void>
   widgetKey?: string
   isSubmitting?: boolean
@@ -195,11 +189,9 @@ export function FeatureRequestForm({
     if (!description.trim()) return
 
     await onSubmit({
-      title: description.trim().split('\n')[0] || description.trim().substring(0, 50),
       description: description.trim(),
-      category: 'other',
       priority: priority || 'medium',
-      useCase: description.trim(), // Use the description as use case
+      useCase: description.trim(),
     })
   }
 

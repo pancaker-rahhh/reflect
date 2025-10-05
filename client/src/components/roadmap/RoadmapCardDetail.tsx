@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/select'
 import { Loader2, ThumbsUp, User, Trash2, X, Clock, MapPin, Check, Edit2 } from 'lucide-react'
 import { safeFormat } from '@/lib/date'
+import { cn } from '@/lib/utils'
 import type { RoadmapActionItem, RoadmapColumn } from '@/types'
 import { StructuredDescription } from '@/components/common/StructuredDescription'
 
@@ -49,6 +50,7 @@ export function RoadmapCardDetail({
     title: string
     description: string
     columnId: string
+    priority: string
     submitterName?: string
     submitterEmail?: string
     tagIds: string[]
@@ -56,6 +58,7 @@ export function RoadmapCardDetail({
     title: '',
     description: '',
     columnId: '',
+    priority: 'medium',
     submitterName: '',
     submitterEmail: '',
     tagIds: [],
@@ -85,6 +88,7 @@ export function RoadmapCardDetail({
         title: feature.title || '',
         description: feature.description || '',
         columnId: feature.column_id || '',
+        priority: feature.priority || 'medium',
         submitterName: feature.submitter_name || '',
         submitterEmail: feature.submitter_email || '',
         tagIds: feature.tags?.map((tag) => tag.id) || [],
@@ -121,17 +125,16 @@ export function RoadmapCardDetail({
 
   const handleSave = () => {
     if (feature && formData.title.trim()) {
-      // Convert camelCase to snake_case for backend compatibility
       const updateData = {
         id: feature.id,
         title: formData.title,
         description: formData.description,
-        column_id: formData.columnId, // Convert columnId to column_id
+        priority: formData.priority,
+        column_id: formData.columnId,
         tag_ids: formData.tagIds,
         submitter_name: formData.submitterName,
         submitter_email: formData.submitterEmail,
       }
-      console.log('Saving feature with data:', updateData)
       updateFeatureMutation.mutate(updateData)
     }
   }
@@ -270,6 +273,26 @@ export function RoadmapCardDetail({
                 />
               </div>
 
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Priority</Label>
+                <Select
+                  value={formData.priority}
+                  onValueChange={(value: 'low' | 'medium' | 'high' | 'critical') =>
+                    setFormData({ ...formData, priority: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Column Selection */}
               <div className="space-y-3">
                 <Label className="text-sm font-medium">Column</Label>
@@ -362,15 +385,17 @@ export function RoadmapCardDetail({
           ) : (
             <div className="space-y-6">
               {/* Description */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">Description</Label>
-                <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                  <StructuredDescription
-                    description={feature.description || ''}
-                    className="text-sm text-muted-foreground leading-relaxed"
-                  />
+              {feature.description && (
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Description</Label>
+                  <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
+                    <StructuredDescription
+                      description={feature.description}
+                      className="text-sm text-muted-foreground leading-relaxed"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Column & Metadata */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -405,6 +430,30 @@ export function RoadmapCardDetail({
                   </div>
                 </div>
               </div>
+
+              {/* Priority */}
+              {feature.priority && (
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Priority</Label>
+                  <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg border border-border/50">
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        'text-xs font-medium px-2 py-1',
+                        feature.priority === 'critical' && 'bg-red-100 text-red-800 border-red-200',
+                        feature.priority === 'high' &&
+                          'bg-orange-100 text-orange-800 border-orange-200',
+                        feature.priority === 'medium' &&
+                          'bg-blue-100 text-blue-800 border-blue-200',
+                        feature.priority === 'low' && 'bg-green-100 text-green-800 border-green-200'
+                      )}
+                    >
+                      {feature.priority.charAt(0).toUpperCase() + feature.priority.slice(1)}{' '}
+                      Priority
+                    </Badge>
+                  </div>
+                </div>
+              )}
 
               {/* Submitter Information */}
               <div className="space-y-3">

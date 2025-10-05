@@ -54,7 +54,6 @@ class Feedback(BaseModel):
         nullable=False,
     )
 
-    title = Column(String(500))
     message = Column(Text)
     rating = Column(Integer)
     feedback_votes = Column(Integer, default=0)
@@ -120,7 +119,7 @@ class ReviewFeedback(Feedback):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
     )
-    overall_rating = Column(Integer)  # 1-5 star rating
+    overall_rating = Column(Integer)
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.REVIEW}
 
@@ -142,7 +141,6 @@ class FeatureRequestFeedback(Feedback):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
     )
-    implementation_status = Column(String(50), default='backlog')
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.FEATURE_REQUEST}
 
@@ -153,8 +151,8 @@ class NPSFeedback(Feedback):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
     )
-    nps_score = Column(Integer)  # 1-10 scale
-    promoter_category = Column(String(20))  # 'detractor', 'passive', 'promoter'
+    nps_score = Column(Integer)
+    promoter_category = Column(String(20))
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.NPS}
 
@@ -165,10 +163,8 @@ class CSATFeedback(Feedback):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
     )
-    csat_score = Column(Integer)  # 1-5 scale
-    satisfaction_level = Column(
-        String(20)
-    )  # 'very_dissatisfied', 'dissatisfied', 'neutral', 'satisfied', 'very_satisfied'
+    csat_score = Column(Integer)
+    satisfaction_level = Column(String(20))
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.CSAT}
 
@@ -179,10 +175,8 @@ class CESFeedback(Feedback):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey('feedback.id'), primary_key=True
     )
-    ces_score = Column(Integer)  # 1-5 scale
-    ease_level = Column(
-        String(20)
-    )  # 'very_difficult', 'difficult', 'neutral', 'easy', 'very_easy'
+    ces_score = Column(Integer)
+    ease_level = Column(String(20))
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.CES}
 

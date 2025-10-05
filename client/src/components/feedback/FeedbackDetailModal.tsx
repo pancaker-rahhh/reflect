@@ -28,6 +28,10 @@ export function FeedbackDetailModal({ isOpen, onClose, feedback }: FeedbackDetai
   }
 
   const getScoreValue = () => {
+    if (feedback.rating !== null && feedback.rating !== undefined) {
+      return feedback.rating
+    }
+
     if (
       feedback.feedback_type === 'NPS' &&
       feedback.nps_score !== null &&
@@ -48,9 +52,6 @@ export function FeedbackDetailModal({ isOpen, onClose, feedback }: FeedbackDetai
       feedback.ces_score !== undefined
     ) {
       return feedback.ces_score
-    }
-    if (feedback.rating !== null && feedback.rating !== undefined) {
-      return feedback.rating
     }
     return null
   }
@@ -129,73 +130,45 @@ export function FeedbackDetailModal({ isOpen, onClose, feedback }: FeedbackDetai
             </div>
           )}
 
-          {feedback.feedback_type === 'NPS' && feedback.nps_score !== null && (
+          {feedback.feedback_type === 'NPS' && feedback.promoter_category && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h4 className="font-medium text-blue-900 mb-2">NPS Details</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-blue-700">Score:</span>
-                  <span className="font-medium text-blue-900">{feedback.nps_score}/10</span>
+                  <span className="text-blue-700">Category:</span>
+                  <span className="font-medium text-blue-900 capitalize">
+                    {feedback.promoter_category}
+                  </span>
                 </div>
-                {feedback.promoter_category && (
-                  <div className="flex justify-between">
-                    <span className="text-blue-700">Category:</span>
-                    <span className="font-medium text-blue-900 capitalize">
-                      {feedback.promoter_category}
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
           )}
 
-          {feedback.feedback_type === 'CSAT' && feedback.csat_score !== null && (
+          {feedback.feedback_type === 'CSAT' && feedback.satisfaction_level && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <h4 className="font-medium text-green-900 mb-2">CSAT Details</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-green-700">Score:</span>
-                  <span className="font-medium text-green-900">{feedback.csat_score}/5</span>
+                  <span className="text-green-700">Level:</span>
+                  <span className="font-medium text-green-900 capitalize">
+                    {feedback.satisfaction_level.replace('_', ' ')}
+                  </span>
                 </div>
-                {feedback.satisfaction_level && (
-                  <div className="flex justify-between">
-                    <span className="text-green-700">Level:</span>
-                    <span className="font-medium text-green-900 capitalize">
-                      {feedback.satisfaction_level.replace('_', ' ')}
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
           )}
 
-          {feedback.feedback_type === 'CES' && feedback.ces_score !== null && (
+          {feedback.feedback_type === 'CES' && feedback.ease_level && (
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
               <h4 className="font-medium text-purple-900 mb-2">CES Details</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-purple-700">Score:</span>
-                  <span className="font-medium text-purple-900">{feedback.ces_score}/5</span>
+                  <span className="text-purple-700">Ease Level:</span>
+                  <span className="font-medium text-purple-900 capitalize">
+                    {feedback.ease_level.replace('_', ' ')}
+                  </span>
                 </div>
-                {feedback.ease_level && (
-                  <div className="flex justify-between">
-                    <span className="text-purple-700">Ease Level:</span>
-                    <span className="font-medium text-purple-900 capitalize">
-                      {feedback.ease_level.replace('_', ' ')}
-                    </span>
-                  </div>
-                )}
               </div>
-            </div>
-          )}
-
-          {feedback.message && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-              <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
-                <MessageSquare className="h-4 w-4" />
-                Message
-              </h4>
-              <p className="text-gray-700 whitespace-pre-wrap">{feedback.message}</p>
             </div>
           )}
 
