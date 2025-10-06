@@ -371,22 +371,21 @@ export function PublicFeedbackDisplay({
                 )}
               </div>
 
-              {/* Content */}
-              {item.title && (
-                <h4 className="font-medium mb-1 text-sm" style={{ color: colors.text }}>
-                  {item.title}
-                </h4>
-              )}
-
-              {item.message && (
-                <p className="text-xs text-gray-700 mb-2 line-clamp-2">{item.message}</p>
-              )}
-
-              {/* Type-specific fields */}
-              {feedbackType === 'FEATURE_REQUEST' && item.description && (
-                <div className="space-y-1">
-                  <div className="text-xs text-gray-600">{item.description}</div>
+              {feedbackType === 'BUG_REPORT' || feedbackType === 'FEATURE_REQUEST' ? (
+                <div className="text-sm text-gray-700 mb-2 line-clamp-3">
+                  {item.message || item.description || item.title}
                 </div>
+              ) : (
+                <>
+                  {item.title && (
+                    <h4 className="font-medium mb-1 text-sm" style={{ color: colors.text }}>
+                      {item.title}
+                    </h4>
+                  )}
+                  {item.message && (
+                    <p className="text-xs text-gray-700 mb-2 line-clamp-2">{item.message}</p>
+                  )}
+                </>
               )}
 
               {/* Footer with votes and quick actions */}
