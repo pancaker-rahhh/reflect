@@ -35,6 +35,8 @@ export function WidgetCore({
     onStateChange,
   })
 
+  const [selectedScore, setSelectedScore] = useState<number | undefined>()
+
   // Use custom hook for feedback submission
   const { isSubmitting, error, errorInfo, handleSubmit, handleScoreSubmission, clearError } =
     useFeedbackSubmission({
@@ -42,9 +44,8 @@ export function WidgetCore({
       onSubmit,
       onStateChange: updateState,
       getAvailableFeedbackTypes,
+      onScoreRestore: setSelectedScore,
     })
-
-  const [selectedScore, setSelectedScore] = useState<number | undefined>()
 
   const theme = config.appearance
   const content = config.content
@@ -477,9 +478,11 @@ export function WidgetCore({
       >
         <div className="relative z-10">
           <h2 className="text-lg font-bold text-white m-0">
-            {resolveContentFor(
-              currentState.type === 'active' ? currentState.feedbackType : config.primaryType
-            ).headerTitle}
+            {
+              resolveContentFor(
+                currentState.type === 'active' ? currentState.feedbackType : config.primaryType
+              ).headerTitle
+            }
           </h2>
         </div>
 

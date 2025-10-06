@@ -32,7 +32,7 @@ export function Widgets() {
     widgetId: null,
     widgetName: '',
   })
-  const { currentProject, isLoading: isContextLoading } = useAppContext()
+  const { currentProject, currentOrganization, isLoading: isContextLoading } = useAppContext()
 
   const { data: widgets, isLoading: isLoadingWidgets } = useQuery({
     queryKey: ['widgets', currentProject?.id],
@@ -68,6 +68,9 @@ export function Widgets() {
 
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['widgets', currentProject?.id] })
+      // Keep org-scoped usage/count queries in sync
+      queryClient.invalidateQueries({ queryKey: ['widget-count', currentOrganization?.id] })
+      queryClient.invalidateQueries({ queryKey: ['subscription-usage', currentOrganization?.id] })
     },
   })
 
