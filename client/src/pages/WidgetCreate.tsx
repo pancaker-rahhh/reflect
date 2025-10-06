@@ -220,7 +220,7 @@ export function WidgetCreate() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingWidget, setIsLoadingWidget] = useState(false)
   const [widgetDataLoaded, setWidgetDataLoaded] = useState(false)
-  const { currentProject, isLoading } = useAppContext()
+  const { currentProject, currentOrganization, isLoading } = useAppContext()
 
   const isEditMode = !!widgetId
 
@@ -442,6 +442,8 @@ export function WidgetCreate() {
       } else {
         const newWidget = await widgetApi.create(currentProject.id, data)
         queryClient.invalidateQueries({ queryKey: ['widgets', currentProject.id] })
+        queryClient.invalidateQueries({ queryKey: ['widget-count', currentOrganization?.id] })
+        queryClient.invalidateQueries({ queryKey: ['subscription-usage', currentOrganization?.id] })
         navigate(`/app/widgets/${newWidget.id}/get-code`)
       }
     } catch (error) {
