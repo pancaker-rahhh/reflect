@@ -12,6 +12,7 @@ interface UseFeedbackSubmissionProps {
   onSubmit?: (data: FeedbackData) => Promise<void>
   onStateChange?: (state: any) => void
   getAvailableFeedbackTypes: () => FeedbackType[]
+  onScoreRestore?: (score: number | undefined) => void
 }
 
 interface ErrorInfo {
@@ -26,10 +27,13 @@ export function useFeedbackSubmission({
   onSubmit,
   onStateChange,
   getAvailableFeedbackTypes,
+  onScoreRestore,
 }: UseFeedbackSubmissionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [errorInfo, setErrorInfo] = useState<ErrorInfo | null>(null)
+  const [lastActiveFeedbackType, setLastActiveFeedbackType] = useState<FeedbackType | null>(null)
+  const [lastSelectedScore, setLastSelectedScore] = useState<number | undefined>(undefined)
 
   // Parse error message to detect rate limiting and extract retry information
   const parseError = useCallback((errorMessage: string): ErrorInfo => {
@@ -143,13 +147,13 @@ export function useFeedbackSubmission({
 
   const handleSubmit = useCallback(
     async (data: FeedbackData) => {
-      // Client-side validation
+      setLastActiveFeedbackType(data.feedbackType)
+
       const validationError = validateFeedbackData(data)
       if (validationError) {
         const errorInfo = parseError(validationError)
         setError(validationError)
         setErrorInfo(errorInfo)
-        // Transition to error state to show the error UI
         onStateChange?.({ type: 'error' })
         return
       }
@@ -158,7 +162,6 @@ export function useFeedbackSubmission({
         setIsSubmitting(true)
         setTimeout(() => {
           setIsSubmitting(false)
-          // Always show success screen first, then user can choose to provide more feedback
           onStateChange?.({ type: 'success' })
         }, 1000)
       } else {
@@ -166,14 +169,12 @@ export function useFeedbackSubmission({
           try {
             setIsSubmitting(true)
             await onSubmit(data)
-            // Always show success screen first, then user can choose to provide more feedback
             onStateChange?.({ type: 'success' })
           } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Submission failed'
             const errorInfo = parseError(errorMessage)
             setError(errorMessage)
             setErrorInfo(errorInfo)
-            // Transition to error state to show the error UI
             onStateChange?.({ type: 'error' })
           } finally {
             setIsSubmitting(false)
@@ -186,7 +187,9 @@ export function useFeedbackSubmission({
 
   const handleScoreSubmission = useCallback(
     async (score: number, feedbackType: FeedbackType) => {
-      // Prepare type-specific data based on feedback type
+      setLastActiveFeedbackType(feedbackType)
+      setLastSelectedScore(score)
+
       let typeSpecificData: NPSFeedbackData | CSATFeedbackData | CESFeedbackData
 
       if (feedbackType === 'NPS') {
@@ -224,7 +227,6 @@ export function useFeedbackSubmission({
         }
         typeSpecificData = cesData
       } else {
-        // Fallback for unexpected types
         const fallbackData: NPSFeedbackData = {
           nps_score: score,
           promoter_category: 'passive',
@@ -244,8 +246,15 @@ export function useFeedbackSubmission({
   const clearError = useCallback(() => {
     setError(null)
     setErrorInfo(null)
-    onStateChange?.({ type: 'active' })
-  }, [onStateChange])
+    if (lastSelectedScore !== undefined) {
+      onScoreRestore?.(lastSelectedScore)
+    }
+    if (lastActiveFeedbackType) {
+      onStateChange?.({ type: 'active', feedbackType: lastActiveFeedbackType })
+    } else {
+      onStateChange?.({ type: 'active' })
+    }
+  }, [onStateChange, lastActiveFeedbackType, lastSelectedScore, onScoreRestore])
 
   return {
     isSubmitting,
@@ -254,5 +263,6 @@ export function useFeedbackSubmission({
     handleSubmit,
     handleScoreSubmission,
     clearError,
+    getLastSelectedScore: () => lastSelectedScore,
   }
 }
