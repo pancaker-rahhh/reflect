@@ -56,8 +56,8 @@ export function IntegrationsPage() {
   return (
     <div className="p-6">
       <div className="mb-8">
-        <h3 className="text-xl font-semibold text-gray-900 mb-3">Integrations</h3>
-        <p className="text-gray-600">
+        <h3 className="text-xl font-semibold text-foreground mb-3">Integrations</h3>
+        <p className="text-muted-foreground">
           Connect your Reflect project with external tools and services
         </p>
       </div>
@@ -66,15 +66,15 @@ export function IntegrationsPage() {
         <div>
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                <ExternalLink className="h-5 w-5 text-blue-600" />
+              <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center border border-border">
+                <ExternalLink className="h-5 w-5 text-foreground" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h4 className="text-lg font-semibold text-gray-900">JIRA Integration</h4>
+                  <h4 className="text-lg font-semibold text-foreground">JIRA Integration</h4>
                   <ProFeatureBadge feature="jira_integration" />
                 </div>
-                <p className="text-gray-600">
+                <p className="text-muted-foreground">
                   Convert action items to JIRA issues in your existing workflow
                 </p>
               </div>
@@ -84,16 +84,16 @@ export function IntegrationsPage() {
           {isLoading ? (
             <div className="text-center py-12">
               <div className="flex items-center justify-center gap-3 mb-4">
-                <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-                <span className="text-lg font-medium text-gray-900">Loading integrations...</span>
+                <Loader2 className="h-6 w-6 animate-spin text-[hsl(var(--primary))]" />
+                <span className="text-lg font-medium text-foreground">Loading integrations...</span>
               </div>
-              <p className="text-gray-600">Discovering your connected services</p>
+              <p className="text-muted-foreground">Discovering your connected services</p>
             </div>
           ) : jiraIntegrations.length === 0 ? (
-            <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
-              <ExternalLink className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">No JIRA connection</h4>
-              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+            <div className="text-center py-12 border-2 border-dashed border-border rounded-xl bg-secondary/20">
+              <ExternalLink className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h4 className="text-lg font-semibold text-foreground mb-2">No JIRA connection</h4>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                 Connect to JIRA to convert action items to issues in your existing workflow
               </p>
               <div className="flex justify-center">
@@ -115,26 +115,26 @@ export function IntegrationsPage() {
               {jiraIntegrations.map((integration: Integration) => (
                 <div
                   key={integration.id}
-                  className="border border-border rounded-xl p-6 bg-tertiary shadow-sm hover:shadow-md transition-shadow"
+                  className="border border-border rounded-xl p-6 bg-card shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                        <CheckCircle className="h-5 w-5 text-green-600" />
+                      <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center border border-border">
+                        <CheckCircle className="h-5 w-5 text-[hsl(var(--primary))]" />
                       </div>
                       <div>
                         <div className="flex items-center gap-3 mb-1">
-                          <span className="text-lg font-semibold text-gray-900">
+                          <span className="text-lg font-semibold text-foreground">
                             JIRA Connected
                           </span>
                           <Badge
                             variant="outline"
-                            className="text-xs border-green-300 text-green-700"
+                            className="text-xs border-[hsl(var(--primary))/0.4] text-[hsl(var(--primary))]"
                           >
                             {getJiraDomain(integration.config?.jira_url || '')}
                           </Badge>
                         </div>
-                        <p className="text-gray-600">
+                        <p className="text-muted-foreground">
                           Ready to create issues in your JIRA projects
                         </p>
                       </div>
@@ -175,40 +175,40 @@ export function IntegrationsPage() {
 
         <div>
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-              <TestTube className="h-5 w-5 text-gray-600" />
+            <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center border border-border">
+              <TestTube className="h-5 w-5 text-foreground" />
             </div>
             <div>
-              <h4 className="text-lg font-semibold text-gray-900">Coming Soon</h4>
-              <p className="text-gray-600">More integrations are on the way</p>
+              <h4 className="text-lg font-semibold text-foreground">Coming Soon</h4>
+              <p className="text-muted-foreground">More integrations are on the way</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="border border-border rounded-xl p-6 bg-tertiary shadow-sm">
+            <div className="border border-border rounded-xl p-6 bg-card shadow-sm">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                  <span className="text-green-600 font-bold text-sm">T</span>
+                <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center border border-border">
+                  <span className="text-foreground font-bold text-sm">T</span>
                 </div>
                 <div className="flex-1">
-                  <h5 className="font-semibold text-gray-900 mb-1">Trello</h5>
-                  <p className="text-gray-600">Create Trello cards</p>
+                  <h5 className="font-semibold text-foreground mb-1">Trello</h5>
+                  <p className="text-muted-foreground">Create Trello cards</p>
                 </div>
-                <Badge variant="outline" className="text-xs border-gray-300">
+                <Badge variant="outline" className="text-xs border-border">
                   Soon
                 </Badge>
               </div>
             </div>
-            <div className="border border-border rounded-xl p-6 bg-tertiary shadow-sm">
+            <div className="border border-border rounded-xl p-6 bg-card shadow-sm">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                  <span className="text-purple-600 font-bold text-sm">L</span>
+                <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center border border-border">
+                  <span className="text-foreground font-bold text-sm">L</span>
                 </div>
                 <div className="flex-1">
-                  <h5 className="font-semibold text-gray-900 mb-1">Linear</h5>
-                  <p className="text-gray-600">Create Linear issues</p>
+                  <h5 className="font-semibold text-foreground mb-1">Linear</h5>
+                  <p className="text-muted-foreground">Create Linear issues</p>
                 </div>
-                <Badge variant="outline" className="text-xs border-gray-300">
+                <Badge variant="outline" className="text-xs border-border">
                   Soon
                 </Badge>
               </div>

@@ -105,16 +105,16 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
-            <Settings className="h-6 w-6 text-blue-600" />
-            <span className="text-lg font-semibold">Connect to JIRA</span>
+            <Settings className="h-6 w-6 text-foreground" />
+            <span className="text-lg font-semibold text-foreground">Connect to JIRA</span>
           </DialogTitle>
         </DialogHeader>
 
         {step === 'connection' && (
           <div className="space-y-6">
             <div className="text-center space-y-3">
-              <h3 className="text-xl font-semibold text-gray-900">Connect to JIRA</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-semibold text-foreground">Connect to JIRA</h3>
+              <p className="text-muted-foreground">
                 Connect once, use everywhere. Your action items can be converted to issues in any of
                 your JIRA projects.
               </p>
@@ -122,7 +122,7 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
 
             <div className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="jira-url" className="text-sm font-semibold text-gray-900">
+                <Label htmlFor="jira-url" className="text-sm font-semibold text-foreground">
                   JIRA Instance URL
                 </Label>
                 <Input
@@ -136,7 +136,7 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-semibold text-gray-900">Authentication Method</Label>
+                <Label className="text-sm font-semibold text-foreground">Authentication Method</Label>
                 <Select
                   value={authType}
                   onValueChange={(value: 'api_token' | 'basic_auth') => setAuthType(value)}
@@ -154,7 +154,7 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
               {authType === 'api_token' ? (
                 <div className="space-y-5">
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-semibold text-gray-900">
+                    <Label htmlFor="email" className="text-sm font-semibold text-foreground">
                       Email Address
                     </Label>
                     <Input
@@ -167,7 +167,7 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="api-token" className="text-sm font-semibold text-gray-900">
+                    <Label htmlFor="api-token" className="text-sm font-semibold text-foreground">
                       API Token
                     </Label>
                     <Input
@@ -178,13 +178,13 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
                       onChange={(e) => setApiToken(e.target.value)}
                       className="h-11"
                     />
-                    <p className="text-sm text-gray-600 mt-2">
+                    <p className="text-sm text-muted-foreground mt-2">
                       <ExternalLink className="inline h-3 w-3 mr-1" />
                       <a
                         href="https://id.atlassian.com/manage-profile/security/api-tokens"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="underline hover:text-blue-600"
+                        className="underline hover:text-[hsl(var(--primary))]"
                       >
                         Get your API token from Atlassian
                       </a>
@@ -194,7 +194,7 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
               ) : (
                 <div className="space-y-5">
                   <div className="space-y-2">
-                    <Label htmlFor="username" className="text-sm font-semibold text-gray-900">
+                    <Label htmlFor="username" className="text-sm font-semibold text-foreground">
                       Username
                     </Label>
                     <Input
@@ -206,7 +206,7 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-sm font-semibold text-gray-900">
+                    <Label htmlFor="password" className="text-sm font-semibold text-foreground">
                       Password
                     </Label>
                     <Input
@@ -241,27 +241,27 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
               <Card
                 className={
                   connectionTest.data.success
-                    ? 'border-green-200 bg-green-50'
-                    : 'border-red-200 bg-red-50'
+                    ? 'border-[hsl(var(--primary))/0.4] bg-[hsl(var(--primary))/0.08]'
+                    : 'border-[hsl(var(--destructive))/0.4] bg-[hsl(var(--destructive))/0.08]'
                 }
               >
                 <CardHeader className="pb-4">
                   <CardTitle className="text-base flex items-center gap-3">
                     {connectionTest.data.success ? (
                       <>
-                        <CheckCircle className="h-5 w-5 text-green-600" />
-                        <span className="text-green-900">Connection Successful</span>
+                        <CheckCircle className="h-5 w-5 text-[hsl(var(--primary))]" />
+                        <span className="text-foreground">Connection Successful</span>
                       </>
                     ) : (
                       <>
-                        <XCircle className="h-5 w-5 text-red-600" />
-                        <span className="text-red-900">Connection Failed</span>
+                        <XCircle className="h-5 w-5 text-[hsl(var(--destructive))]" />
+                        <span className="text-foreground">Connection Failed</span>
                       </>
                     )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-700">{connectionTest.data.message}</p>
+                  <p className="text-sm text-muted-foreground">{connectionTest.data.message}</p>
                 </CardContent>
               </Card>
             )}
@@ -277,8 +277,8 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
         {step === 'discovery' && (
           <div className="space-y-6">
             <div className="text-center space-y-3">
-              <h3 className="text-xl font-semibold text-gray-900">Found Your Projects</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-semibold text-foreground">Found Your Projects</h3>
+              <p className="text-muted-foreground">
                 Your action items can be converted to issues in any of these projects
               </p>
             </div>
@@ -286,12 +286,12 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
             {projectsQuery.isLoading ? (
               <div className="text-center py-8">
                 <div className="flex items-center justify-center gap-3 mb-4">
-                  <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                  <span className="text-lg font-medium text-gray-900">
+                  <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--primary))]" />
+                  <span className="text-lg font-medium text-foreground">
                     Loading your projects...
                   </span>
                 </div>
-                <p className="text-gray-600">Discovering available JIRA projects</p>
+                <p className="text-muted-foreground">Discovering available JIRA projects</p>
               </div>
             ) : projectsQuery.data?.success ? (
               <div className="space-y-5">
@@ -299,14 +299,14 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
                   {projectsQuery.data.projects.map((project) => (
                     <div
                       key={project.key}
-                      className="flex items-center gap-3 p-4 border border-border rounded-lg bg-tertiary shadow-sm hover:shadow-md transition-shadow"
+                      className="flex items-center gap-3 p-4 border border-border rounded-lg bg-card shadow-sm hover:shadow-md transition-shadow"
                     >
-                      <FolderOpen className="h-5 w-5 text-blue-600" />
+                      <FolderOpen className="h-5 w-5 text-foreground" />
                       <div className="flex-1">
-                        <div className="font-semibold text-gray-900">{project.name}</div>
-                        <div className="text-sm text-gray-600">Project key: {project.key}</div>
+                        <div className="font-semibold text-foreground">{project.name}</div>
+                        <div className="text-sm text-muted-foreground">Project key: {project.key}</div>
                       </div>
-                      <Badge variant="outline" className="text-xs border-green-300 text-green-700">
+                      <Badge variant="outline" className="text-xs border-[hsl(var(--primary))/0.4] text-[hsl(var(--primary))]">
                         Available
                       </Badge>
                     </div>
@@ -364,10 +364,10 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
             ) : (
               <div className="text-center py-8">
                 <div className="flex items-center justify-center gap-3 mb-4">
-                  <XCircle className="h-8 w-8 text-red-600" />
-                  <span className="text-lg font-medium text-red-900">Failed to load projects</span>
+                  <XCircle className="h-8 w-8 text-[hsl(var(--destructive))]" />
+                  <span className="text-lg font-medium text-foreground">Failed to load projects</span>
                 </div>
-                <p className="text-gray-600 mb-6">Unable to discover your JIRA projects</p>
+                <p className="text-muted-foreground mb-6">Unable to discover your JIRA projects</p>
                 <Button variant="outline" onClick={() => setStep('connection')} className="h-11">
                   Go Back
                 </Button>
@@ -379,11 +379,11 @@ export function JiraIntegrationModal({ isOpen, onClose, projectId }: JiraIntegra
         {step === 'complete' && (
           <div className="text-center space-y-6">
             <div className="flex items-center justify-center">
-              <CheckCircle className="h-16 w-16 text-green-600" />
+              <CheckCircle className="h-16 w-16 text-[hsl(var(--primary))]" />
             </div>
             <div className="space-y-3">
-              <h3 className="text-xl font-semibold text-gray-900">JIRA Connected Successfully!</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-semibold text-foreground">JIRA Connected Successfully!</h3>
+              <p className="text-muted-foreground">
                 Your JIRA integration is ready. You can now convert action items to JIRA issues.
               </p>
             </div>
