@@ -117,8 +117,8 @@ export const AnimatedTextarea: React.FC<AnimatedInputProps & React.TextareaHTMLA
       {label && (
         <label 
           className={`block text-sm font-medium transition-colors duration-200 ${
-            isFocused ? 'text-indigo-600' : 'text-gray-700'
-          } ${error ? 'text-red-500' : ''}`}
+            isFocused ? 'text-foreground' : 'text-muted-foreground'
+          } ${error ? 'text-[hsl(var(--destructive))]' : ''}`}
         >
           {label}
         </label>
