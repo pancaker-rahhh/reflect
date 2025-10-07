@@ -188,7 +188,7 @@ export function AccountSettings() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="bg-tertiary rounded-xl shadow-lg overflow-hidden">
+      <div className="bg-card rounded-xl shadow-soft overflow-hidden border border-border">
         <div className="border-b border-border">
           <nav className="flex">
             {tabs.map((tab) => {
@@ -199,8 +199,8 @@ export function AccountSettings() {
                   onClick={() => handleTabChange(tab.id as Tab)}
                   className={`flex-1 lg:flex-initial flex items-center justify-center lg:justify-start gap-2 px-6 py-4 border-b-2 font-medium text-sm transition-colors relative ${
                     activeTab === tab.id
-                      ? 'border-indigo-500 text-indigo-600 bg-indigo-50/50'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                      ? 'border-primary text-foreground bg-secondary/30'
+                      : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary/30'
                   }`}
                 >
                   <Icon className="w-5 h-5" />

@@ -362,6 +362,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             placeholder="Describe your project"
             rows={3}
+            className="placeholder:text-muted-foreground/70"
           />
 
           <div className="grid grid-cols-2 gap-4">
@@ -592,7 +593,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
             </div>
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="px-4 py-2 bg-[hsl(var(--destructive))] text-white rounded-lg hover:bg-[hsl(var(--destructive))/0.9]"
+              className="px-4 py-2 bg-[hsl(var(--destructive))] text-white rounded-lg hover:bg-[hsl(var(--destructive))/0.8]"
             >
               Delete Project
             </button>
