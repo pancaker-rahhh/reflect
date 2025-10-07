@@ -265,7 +265,7 @@ export function AddFeatureModal({
           <Button
             type="submit"
             onClick={() => onSubmit(formData)}
-            disabled={!formData.title.trim() || !formData.description.trim() || isLoading}
+            disabled={!formData.title.trim() || isLoading}
             className="px-6 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
