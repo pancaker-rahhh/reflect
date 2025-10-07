@@ -65,6 +65,10 @@
     --ring: 152 62% 52%;
 
     --radius: 0.5rem;
+
+    /* Banner (info) colors derived from Tailwind blue-50 and blue-900 */
+    --banner-info-bg: 213 100% 97%;
+    --banner-info-foreground: 221 63% 33%;
   }
 }
 
