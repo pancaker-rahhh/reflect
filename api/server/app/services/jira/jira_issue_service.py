@@ -229,6 +229,8 @@ class JiraIssueService:
         return '\n\n'.join(description_parts)
 
     def _map_priority(self, reflect_priority: str) -> str:
+        if reflect_priority is None:
+            return 'Medium'
         priority_mapping = {
             'low': 'Low',
             'medium': 'Medium',
@@ -477,21 +479,85 @@ class JiraIssueService:
             }
 
     def _format_description(self, description: str) -> Dict[str, Any]:
+        jira_content = self._convert_markdown_to_jira(description)
         return {
             'type': 'doc',
             'version': 1,
-            'content': [
+            'content': jira_content,
+        }
+
+    def _convert_markdown_to_jira(self, markdown_text: str) -> list:
+        import re
+
+        lines = markdown_text.split('\n')
+        content = []
+        current_paragraph = []
+
+        for line in lines:
+            line = line.strip()
+
+            if line.startswith('## '):
+                if current_paragraph:
+                    content.append(
+                        {
+                            'type': 'paragraph',
+                            'content': [
+                                {'type': 'text', 'text': '\n'.join(current_paragraph)}
+                            ],
+                        }
+                    )
+                    current_paragraph = []
+
+                header_text = line[3:]
+                content.append(
+                    {
+                        'type': 'heading',
+                        'attrs': {'level': 2},
+                        'content': [{'type': 'text', 'text': header_text}],
+                    }
+                )
+                continue
+
+            if line == '---':
+                if current_paragraph:
+                    content.append(
+                        {
+                            'type': 'paragraph',
+                            'content': [
+                                {'type': 'text', 'text': '\n'.join(current_paragraph)}
+                            ],
+                        }
+                    )
+                    current_paragraph = []
+
+                content.append({'type': 'rule'})
+                continue
+
+            if not line:
+                if current_paragraph:
+                    content.append(
+                        {
+                            'type': 'paragraph',
+                            'content': [
+                                {'type': 'text', 'text': '\n'.join(current_paragraph)}
+                            ],
+                        }
+                    )
+                    current_paragraph = []
+                continue
+
+            processed_line = re.sub(r'\*\*(.*?)\*\*', r'\1', line)
+            current_paragraph.append(processed_line)
+
+        if current_paragraph:
+            content.append(
                 {
                     'type': 'paragraph',
-                    'content': [
-                        {
-                            'type': 'text',
-                            'text': description,
-                        }
-                    ],
+                    'content': [{'type': 'text', 'text': '\n'.join(current_paragraph)}],
                 }
-            ],
-        }
+            )
+
+        return content
 
     async def _store_integration_record(
         self,

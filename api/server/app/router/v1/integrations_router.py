@@ -75,6 +75,7 @@ async def create_jira_integration(
             jira_url=jira_url,
             auth_type=auth_type,
             project_key=config.get('project_key'),
+            default_project_key=config.get('default_project_key'),
             default_issue_type=config.get('default_issue_type', 'Task'),
             default_priority=config.get('default_priority', 'Medium'),
             status_mapping=config.get('status_mapping', {}),
