@@ -29,7 +29,7 @@ router = APIRouter(prefix='/integrations', tags=['Integrations'])
 jira_router = APIRouter(prefix='/jira', tags=['JIRA Integration'])
 
 
-@router.get('/')
+@router.get('')
 async def get_integrations(
     project_id: Optional[UUID] = Query(None, description='Project ID'),
     db: AsyncSession = Depends(get_db),
@@ -57,7 +57,7 @@ async def get_integrations(
         raise HTTPException(status_code=500, detail='Failed to retrieve integrations')
 
 
-@jira_router.post('/')
+@jira_router.post('')
 async def create_jira_integration(
     project_id: UUID = Body(..., embed=True),
     name: str = Body(..., embed=True),
