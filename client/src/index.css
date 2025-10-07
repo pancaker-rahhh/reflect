@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -34,109 +34,37 @@
 
 @layer base {
   :root {
-    /* Supabase-inspired dark theme with red as primary color */
-    
-    /* === CORE BACKGROUND COLORS === */
-    /* Main background - Deep dark slate */
-    --background: 222 84% 4.9%;
-    --foreground: 210 40% 98%;
-    
-    /* Card backgrounds - Subtle elevation */
-    --card: 222 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    
-    /* Popover backgrounds */
-    --popover: 222 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    
-    /* === PRIMARY COLORS (RED) === */
-    --primary: 0 84% 60%;          /* Vibrant red */
-    --primary-foreground: 0 0% 100%;
-    
-    /* === SECONDARY COLORS === */
-    --secondary: 217 32% 17.5%;    /* Dark slate blue */
-    --secondary-foreground: 210 40% 98%;
-    
-    /* === MUTED COLORS === */
-    --muted: 217 32% 17.5%;        /* Dark slate for muted backgrounds */
-    --muted-foreground: 215 20.2% 65.1%;
-    
-    /* === ACCENT COLORS === */
-    --accent: 217 32% 17.5%;       /* Dark slate for accents */
-    --accent-foreground: 210 40% 98%;
-    
-    /* === DESTRUCTIVE COLORS === */
-    --destructive: 0 62.8% 30.6%;  /* Dark red for destructive actions */
-    --destructive-foreground: 210 40% 98%;
-    
-    /* === BORDER & INPUT COLORS === */
-    --border: 217 32% 17.5%;       /* Subtle borders */
-    --input: 217 32% 17.5%;        /* Input backgrounds */
-    --ring: 0 84% 60%;             /* Focus ring - red */
-    
-    /* === ADDITIONAL SURFACE COLORS === */
-    /* Tertiary surface for deeper nesting */
-    --tertiary: 222 84% 4.9%;
-    --tertiary-foreground: 210 40% 98%;
-    
-    /* === BORDER RADIUS === */
+    /* Supabase dark theme tokens */
+    --background: 222 50% 6%; /* deep navy/ink */
+    --foreground: 210 40% 96%;
+
+    --card: 222 50% 7.5%;
+    --card-foreground: 210 40% 96%;
+
+    --popover: 222 50% 7.5%;
+    --popover-foreground: 210 40% 96%;
+
+    /* Supabase brand green #3ECF8E */
+    --primary: 152 62% 52%;
+    --primary-foreground: 158 100% 7%;
+
+    --secondary: 217 25% 16%;
+    --secondary-foreground: 210 40% 96%;
+
+    --muted: 217 25% 16%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 25% 16%;
+    --accent-foreground: 210 40% 96%;
+
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 217 25% 18%;
+    --input: 217 25% 18%;
+    --ring: 152 62% 52%;
+
     --radius: 0.5rem;
-    
-    /* === SHADOWS === */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    
-    /* === SEMANTIC COLORS === */
-    /* Success - Green */
-    --success: 142 76% 36%;
-    --success-foreground: 355 7% 97%;
-    
-    /* Warning - Amber */
-    --warning: 38 92% 50%;
-    --warning-foreground: 48 96% 89%;
-    
-    /* Info - Blue */
-    --info: 199 89% 48%;
-    --info-foreground: 213 31% 91%;
-    
-    /* === METRIC CARD COLORS === */
-    --metric-amber: 45 93% 47%;    /* Amber */
-    --metric-blue: 199 89% 48%;    /* Blue */
-    --metric-purple: 262 83% 58%;  /* Purple */
-    --metric-green: 142 76% 36%;   /* Green */
-    --metric-pink: 330 81% 60%;    /* Pink */
-    --metric-orange: 25 95% 53%;   /* Orange */
-    --metric-red: 0 84% 60%;       /* Red */
-    
-    /* === HOVER & INTERACTIVE STATES === */
-    --hover-border: 0 84% 60%;     /* Red hover border */
-    --hover-bg: 217 32% 17.5%;     /* Hover background */
-    
-    /* === GLASSMORPHISM === */
-    --glass-bg: 222 84% 4.9% / 0.8;
-    --glass-border: 217 32% 17.5% / 0.3;
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    --backdrop-blur: blur(16px);
-    
-    /* === TEXT COLORS === */
-    --text-primary: 210 40% 98%;   /* Primary text */
-    --text-secondary: 215 20.2% 65.1%; /* Secondary text */
-    --text-muted: 215 16% 47%;     /* Muted text */
-    --text-disabled: 215 16% 35%;  /* Disabled text */
-    
-    /* === SURFACE COLORS === */
-    --surface-1: 222 84% 4.9%;     /* Base surface */
-    --surface-2: 217 32% 17.5%;    /* Elevated surface */
-    --surface-3: 215 28% 17%;      /* Higher elevation */
-    --surface-4: 215 25% 27%;      /* Highest elevation */
-    
-    /* === BORDER VARIANTS === */
-    --border-subtle: 217 32% 17.5% / 0.5;
-    --border-strong: 217 32% 17.5%;
-    --border-interactive: 0 84% 60% / 0.3;
   }
 }
 
@@ -147,7 +75,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Manrope', 'Stolzl', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
@@ -208,8 +136,6 @@
     color: hsl(var(--muted-foreground));
     font-size: 1rem;
     line-height: 1.6;
-    letter-spacing: 0.02em;
-    word-spacing: 0.08em;
   }
 
   /* Enhanced keyboard navigation */
@@ -259,7 +185,6 @@
     -webkit-line-clamp: 3;
   }
 
-  /* Enhanced animations for roadmap */
   @keyframes slide-in-from-left {
     from {
       opacity: 0;
@@ -304,16 +229,7 @@
     }
   }
 
-  /* Enhanced micro-interactions */
-  @keyframes pulse-glow {
-    0%,
-    100% {
-      box-shadow: 0 0 5px rgba(139, 92, 246, 0.3);
-    }
-    50% {
-      box-shadow: 0 0 20px rgba(139, 92, 246, 0.6);
-    }
-  }
+  /* Remove non-Supabase glow */
 
   @keyframes float {
     0%,
@@ -410,45 +326,7 @@
     transform: scale(0.95);
   }
 
-  /* Dodo Payments inspired glassmorphism card styling */
-  .card {
-    background: hsl(var(--glass-bg));
-    backdrop-filter: var(--backdrop-blur);
-    -webkit-backdrop-filter: var(--backdrop-blur);
-    border: 1px solid hsl(var(--glass-border));
-    border-radius: var(--radius);
-    box-shadow: var(--glass-shadow);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform, box-shadow, border-color;
-  }
-
-  .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
-    border-bottom: 3px solid hsl(var(--hover-border));
-    background: hsl(var(--glass-bg) / 0.9);
-  }
-
-  /* Glassmorphism button styling */
-  .btn {
-    border-radius: calc(var(--radius) - 0.25rem);
-    box-shadow: var(--glass-shadow);
-    backdrop-filter: var(--backdrop-blur);
-    -webkit-backdrop-filter: var(--backdrop-blur);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform, box-shadow, border-color;
-  }
-
-  .btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 25px 0 rgba(0, 0, 0, 0.4);
-    border-bottom: 2px solid hsl(var(--hover-border));
-  }
-
-  .btn:active {
-    transform: translateY(0);
-    box-shadow: var(--glass-shadow);
-  }
+  /* Remove non-Supabase glass/pastel utilities */
 
   /* Smooth text transitions */
   .text-transition {
@@ -475,110 +353,10 @@
     animation: float 3s ease-in-out infinite;
   }
 
-  /* Metric card utilities with consistent theming */
-  .metric-card-amber {
-    background-color: hsl(var(--metric-amber) / 0.1);
-    color: hsl(var(--metric-amber));
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    border: 1px solid hsl(var(--border));
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .metric-card-blue {
-    background-color: hsl(var(--metric-blue) / 0.1);
-    color: hsl(var(--metric-blue));
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    border: 1px solid hsl(var(--border));
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .metric-card-purple {
-    background-color: hsl(var(--metric-purple) / 0.1);
-    color: hsl(var(--metric-purple));
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    border: 1px solid hsl(var(--border));
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .metric-card-green {
-    background-color: hsl(var(--metric-green) / 0.1);
-    color: hsl(var(--metric-green));
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    border: 1px solid hsl(var(--border));
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .metric-card-pink {
-    background-color: hsl(var(--metric-pink) / 0.1);
-    color: hsl(var(--metric-pink));
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    border: 1px solid hsl(var(--border));
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .metric-card-orange {
-    background-color: hsl(var(--metric-orange) / 0.1);
-    color: hsl(var(--metric-orange));
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    border: 1px solid hsl(var(--border));
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .metric-card-red {
-    background-color: hsl(var(--metric-red) / 0.1);
-    color: hsl(var(--metric-red));
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    border: 1px solid hsl(var(--border));
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .metric-card-amber:hover,
-  .metric-card-blue:hover,
-  .metric-card-purple:hover,
-  .metric-card-green:hover,
-  .metric-card-pink:hover,
-  .metric-card-orange:hover,
-  .metric-card-red:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-    border-color: hsl(var(--hover-border));
-  }
+  /* Removed metric/pastel/glass utilities to match Supabase system */
 }
 
 @layer utilities {
-  /* Enhanced text spacing utilities */
-  .text-spacing-wide {
-    letter-spacing: 0.05em;
-    word-spacing: 0.15em;
-  }
-  
-  .text-spacing-wider {
-    letter-spacing: 0.075em;
-    word-spacing: 0.2em;
-  }
-  
-  .text-spacing-widest {
-    letter-spacing: 0.1em;
-    word-spacing: 0.25em;
-  }
-  
-  .text-spacing-tight {
-    letter-spacing: -0.01em;
-    word-spacing: 0.05em;
-  }
-  
-  .text-spacing-normal {
-    letter-spacing: 0.025em;
-    word-spacing: 0.1em;
-  }
-
   /* Hide scrollbar for Chrome, Safari and Opera */
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
@@ -657,128 +435,5 @@
     background: hsl(var(--muted-foreground) / 0.5);
   }
 
-  /* Grid pattern background */
-  .bg-grid-pattern {
-    background-image:
-      linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
-    background-size: 20px 20px;
-  }
-
-  /* Removed dark mode variant of grid pattern */
-
-  /* Landing Page Specific Styles */
-  .hover-glow:hover {
-    box-shadow: 0 0 20px rgba(147, 51, 234, 0.4);
-    transition: box-shadow 0.3s ease;
-  }
-
-  /* Grid Background Pattern for Landing Page */
-  .bg-grid-white\/\[0\.02\] {
-    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  }
-
-  .bg-grid-white\/\[0\.05\] {
-    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  }
-
-  .bg-grid-white\/\[0\.1\] {
-    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-  }
-
-  /* Pastel theme utility classes */
-  .pastel-card {
-    @apply card;
-    background-color: hsl(var(--card));
-    border: 1px solid hsl(var(--border));
-  }
-
-  .pastel-card:hover {
-    @apply card:hover;
-    border-bottom: 3px solid hsl(var(--hover-border));
-  }
-
-  .pastel-button {
-    @apply btn;
-    background-color: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
-  }
-
-  .pastel-button:hover {
-    @apply btn:hover;
-    border-bottom: 2px solid hsl(var(--hover-border));
-  }
-
-  .pastel-button-secondary {
-    @apply btn;
-    background-color: hsl(var(--secondary));
-    color: hsl(var(--secondary-foreground));
-  }
-
-  .pastel-button-secondary:hover {
-    @apply btn:hover;
-    border-bottom: 2px solid hsl(var(--hover-border));
-  }
-
-  /* Interactive elements with pastel hover effects */
-  .pastel-interactive {
-    @apply interactive;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .pastel-interactive:hover {
-    transform: translateY(-1px) scale(1.02);
-    border-bottom: 2px solid hsl(var(--hover-border));
-  }
-
-  /* Dodo Payments inspired glassmorphism utilities */
-  .glass {
-    background: hsl(var(--glass-bg));
-    backdrop-filter: var(--backdrop-blur);
-    -webkit-backdrop-filter: var(--backdrop-blur);
-    border: 1px solid hsl(var(--glass-border));
-    box-shadow: var(--glass-shadow);
-  }
-
-  .glass-card {
-    @apply glass;
-    border-radius: var(--radius);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .glass-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
-    background: hsl(var(--glass-bg) / 0.9);
-  }
-
-  .glass-button {
-    @apply glass;
-    border-radius: calc(var(--radius) - 0.25rem);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .glass-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 25px 0 rgba(0, 0, 0, 0.4);
-  }
-
-  /* Layer system utilities */
-  .layer-1 {
-    background: hsl(var(--background));
-  }
-
-  .layer-2 {
-    background: hsl(var(--card));
-  }
-
-  .layer-3 {
-    background: hsl(var(--secondary));
-  }
-
-  .glass-layer {
-    background: hsl(var(--glass-bg));
-    backdrop-filter: var(--backdrop-blur);
-    -webkit-backdrop-filter: var(--backdrop-blur);
-  }
+  /* Removed grid/glass/pastel utilities to match Supabase system */
 }

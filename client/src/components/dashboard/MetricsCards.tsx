@@ -58,7 +58,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       value: metrics.totalFeedback,
       icon: MessageSquare,
       color: 'text-primary',
-      bgColor: 'metric-card-blue',
+      bgColor: 'bg-secondary/40',
       suffix: '',
     },
     {
@@ -66,7 +66,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       value: metrics.averageRating,
       icon: Star,
       color: 'text-foreground',
-      bgColor: 'metric-card-amber',
+      bgColor: 'bg-secondary/40',
       decimals: 1,
       suffix: '',
     },
@@ -75,7 +75,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       value: metrics.newBugReports,
       icon: Bug,
       color: 'text-foreground',
-      bgColor: 'metric-card-pink',
+      bgColor: 'bg-secondary/40',
       suffix: '',
     },
     {
@@ -83,7 +83,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       value: metrics.newFeatureRequests,
       icon: Lightbulb,
       color: 'text-foreground',
-      bgColor: 'metric-card-purple',
+      bgColor: 'bg-secondary/40',
       suffix: '',
     },
     {
@@ -91,7 +91,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       value: metrics.pendingFeedbackReview || 0,
       icon: Clock,
       color: 'text-foreground',
-      bgColor: 'metric-card-orange',
+      bgColor: 'bg-secondary/40',
       suffix: '',
     },
   ]
