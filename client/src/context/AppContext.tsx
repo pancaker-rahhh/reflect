@@ -39,7 +39,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     queryFn: organizationApi.getMyOrganization,
     enabled: !!user && !authLoading,
     retry: (failureCount, error) => {
-      // Don't retry for expected 404/403 errors (new users without organizations)
       if (error && typeof error === 'object' && 'message' in error) {
         const errorMessage = String(error.message).toLowerCase()
         if (
@@ -50,12 +49,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
           return false
         }
       }
-      return failureCount < 2
+      return failureCount < 3
     },
-    staleTime: 1000 * 60 * 15, // 15 minutes instead of 5
-    gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    staleTime: 1000 * 60 * 15,
+    gcTime: 1000 * 60 * 30,
     refetchOnWindowFocus: false,
-    refetchOnMount: false, // Don't refetch on component mount if data exists
+    refetchOnMount: true,
   })
 
   const organization = currentOrganization
@@ -71,7 +71,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     queryKey: ['projects', currentOrganization?.id],
     queryFn: () => projectApi.getByOrganization(currentOrganization!.id),
     enabled: !!currentOrganization && !!user,
-    retry: false,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     staleTime: 1000 * 60 * 5,
   })
 

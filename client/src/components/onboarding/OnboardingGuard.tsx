@@ -17,7 +17,7 @@ export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) =>
   const lastCheckRef = useRef<number>(0)
 
   useEffect(() => {
-    const checkOnboardingStatus = async () => {
+    const checkOnboardingStatus = async (retryCount = 0) => {
       if (!user || authLoading || !session) {
         return
       }
@@ -57,6 +57,10 @@ export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) =>
             }
           } catch (orgError) {
             console.error('Error checking organization status:', orgError)
+            if (retryCount < 3 && shouldRetry(orgError)) {
+              await new Promise((resolve) => setTimeout(resolve, 1000 * Math.pow(2, retryCount)))
+              return checkOnboardingStatus(retryCount + 1)
+            }
             // If we can't verify organization status, stay on onboarding to be safe
             if (!isOnboardingRoute) {
               navigate('/onboarding', { replace: true })
@@ -77,9 +81,18 @@ export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) =>
               'OnboardingGuard: CORS error detected - this usually happens on the first call'
             )
             // Don't redirect immediately on CORS errors - let it retry
+            if (retryCount < 3) {
+              await new Promise((resolve) => setTimeout(resolve, 1000 * Math.pow(2, retryCount)))
+              return checkOnboardingStatus(retryCount + 1)
+            }
             setIsChecking(false)
             return
           }
+        }
+
+        if (retryCount < 3 && shouldRetry(error)) {
+          await new Promise((resolve) => setTimeout(resolve, 1000 * Math.pow(2, retryCount)))
+          return checkOnboardingStatus(retryCount + 1)
         }
 
         // On other errors, redirect to onboarding to be safe
@@ -89,6 +102,19 @@ export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) =>
       } finally {
         setIsChecking(false)
       }
+    }
+
+    const shouldRetry = (error: any): boolean => {
+      if (error && typeof error === 'object' && 'message' in error) {
+        const errorMessage = String(error.message).toLowerCase()
+        return (
+          errorMessage.includes('fetch') ||
+          errorMessage.includes('network') ||
+          errorMessage.includes('timeout') ||
+          errorMessage.includes('cors')
+        )
+      }
+      return false
     }
 
     checkOnboardingStatus()
