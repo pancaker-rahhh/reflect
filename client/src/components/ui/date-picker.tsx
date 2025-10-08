@@ -34,11 +34,18 @@ export function DatePicker({ date, onDateChange, placeholder = 'Pick a date' }: 
           initialFocus
           className="rounded-md border shadow-lg"
           defaultMonth={date || new Date()}
+          captionLayout="dropdown"
+          fromYear={1990}
+          toYear={new Date().getFullYear() + 5}
           classNames={{
             months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
             month: 'space-y-4',
             caption: 'flex justify-center pt-1 relative items-center',
-            caption_label: 'text-sm font-medium',
+            caption_label: 'sr-only',
+            caption_dropdowns: 'flex items-center gap-8',
+            dropdown: 'bg-popover text-popover-foreground border border-border rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary',
+            dropdown_month: 'bg-popover text-popover-foreground',
+            dropdown_year: 'bg-popover text-popover-foreground',
             nav: 'space-x-1 flex items-center',
             nav_button: cn(
               'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 border-0 hover:bg-accent rounded-md'
