@@ -16,6 +16,7 @@ import {
 } from 'phosphor-react'
 import { cn } from '@/lib/utils'
 import { OrganizationDropdown } from './OrganizationDropdown'
+import { BrandWordmark } from '@/components/common/BrandWordmark'
 import { isFeatureEnabled } from '@/lib/featureFlags'
 import { useUser } from '@/contexts/AuthContext'
 
@@ -165,12 +166,10 @@ export function Sidebar() {
     >
       <div className={cn('p-6 flex items-center', !isExpanded && 'p-4 justify-center')}>
         {!isExpanded ? (
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">R</span>
-          </div>
+          <BrandWordmark size={24} textClassName="text-primary" showText={false} />
         ) : (
           <div className="flex items-center w-full">
-            <span className="text-xl font-bold text-primary tracking-tight">Reflect</span>
+            <BrandWordmark textClassName="text-primary" />
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
 import React from 'react'
-import { ChatCircle } from 'phosphor-react'
 import { useNavigate } from 'react-router-dom'
+import { BrandWordmark } from '@/components/common/BrandWordmark'
 
 export const Footer = () => {
   const navigate = useNavigate()
@@ -19,14 +19,7 @@ export const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-sm">
           {/* Column 1: Brand */}
           <div className="col-span-2 md:col-span-1">
-            <div className="flex items-center gap-2">
-              <div className="bg-primary p-2 rounded-lg">
-                <ChatCircle className="text-primary-foreground" size={20} />
-              </div>
-              <h3 className="text-xl font-bold text-foreground">
-                Reflect<span className="text-primary">.</span>
-              </h3>
-            </div>
+            <BrandWordmark />
             <p className="mt-4 text-muted-foreground">
               The simplest way to capture user feedback and build better products.
             </p>

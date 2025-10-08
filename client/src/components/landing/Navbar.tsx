@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ChatCircle, X, List } from 'phosphor-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BrandWordmark } from '@/components/common/BrandWordmark';
 
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -68,16 +69,7 @@ export const Navbar = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <motion.div
-              className={`p-2 rounded-lg transition-colors ${isScrolled ? 'bg-primary' : isDocsPage ? 'bg-primary' : 'bg-white/20'}`}
-              animate={{ rotate: isScrolled ? 360 : 0 }}
-              transition={{ duration: 0.5 }}
-            >
-                <ChatCircle className={`transition-colors ${isScrolled ? 'text-white' : isDocsPage ? 'text-white' : 'text-white'}`} size={20} />
-            </motion.div>
-            <h3 className={`text-xl font-bold transition-colors ${isScrolled ? 'text-foreground' : isDocsPage ? 'text-foreground' : 'text-white'}`}>
-              Reflect.
-            </h3>
+            <BrandWordmark size={20} />
           </motion.button>
 
           <nav className="hidden lg:flex items-center gap-8">
