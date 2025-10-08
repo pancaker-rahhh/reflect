@@ -135,7 +135,7 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ onProjectChang
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground bg-tertiary border border-border rounded-lg hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-accent focus:outline-none focus:ring-2 focus:ring-primary"
       >
         <div className="flex items-center gap-2">
           <FolderOpen className="w-4 h-4 text-muted-foreground" />
@@ -145,7 +145,7 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ onProjectChang
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-80 mt-2 bg-tertiary border border-border rounded-lg shadow-lg">
+        <div className="absolute z-50 w-80 mt-2 bg-popover border border-border rounded-lg shadow-lg">
           <div className="p-3 border-b border-border">
             {isCreatingProject ? (
               <div className="space-y-2">
@@ -154,7 +154,7 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ onProjectChang
                   placeholder="Enter project name..."
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 text-sm text-foreground bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -188,7 +188,7 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ onProjectChang
                   placeholder="Search projects..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full pl-9 pr-3 py-2 text-sm text-foreground bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                   autoFocus
                 />
               </div>

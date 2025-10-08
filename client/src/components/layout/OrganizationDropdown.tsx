@@ -29,8 +29,8 @@ export const OrganizationDropdown: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-secondary/50 rounded-md px-3 py-2">
-        <div className="text-sm font-medium text-gray-500">Loading...</div>
+      <div className="bg-card border border-border rounded-md px-3 py-2">
+        <div className="text-sm font-medium text-muted-foreground">Loading...</div>
       </div>
     );
   }
@@ -39,10 +39,10 @@ export const OrganizationDropdown: React.FC = () => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full bg-secondary/50 rounded-md px-3 py-2 flex items-center justify-between hover:bg-secondary/70 transition-colors"
+        className="w-full bg-card border border-border rounded-md px-3 py-2 flex items-center justify-between hover:bg-accent transition-colors"
       >
         <div className="flex items-center gap-2 min-w-0">
-          <Building2 className="w-4 h-4 text-gray-500 flex-shrink-0" />
+          <Building2 className="w-4 h-4 text-muted-foreground flex-shrink-0" />
           <span className="text-sm font-medium truncate">
             {currentOrganization?.name || 'No Organization'}
           </span>
@@ -51,7 +51,7 @@ export const OrganizationDropdown: React.FC = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 left-0 right-0 mt-2 bg-tertiary border border-border rounded-lg shadow-lg">
+        <div className="absolute z-50 left-0 right-0 mt-2 bg-popover border border-border rounded-lg shadow-lg">
           {showOrgLimitMessage && (
             <div className="p-3 border-b border-border">
               <Alert>
@@ -64,13 +64,13 @@ export const OrganizationDropdown: React.FC = () => {
           )}
           
           <div className="p-2">
-            <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
+            <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase">
               Organizations
             </div>
             
             {currentOrganization && (
               <button
-                className="w-full flex items-center gap-2 px-2 py-2 text-sm text-left bg-indigo-50 text-indigo-600 rounded"
+                className="w-full flex items-center gap-2 px-2 py-2 text-sm text-left bg-primary/10 text-primary rounded"
               >
                 <Building2 className="w-4 h-4" />
                 <span>{currentOrganization.name}</span>
@@ -79,7 +79,7 @@ export const OrganizationDropdown: React.FC = () => {
 
             <button 
               onClick={handleCreateOrganization}
-              className="w-full flex items-center gap-2 px-2 py-2 mt-2 text-sm text-left text-indigo-600 hover:bg-indigo-50 rounded"
+              className="w-full flex items-center gap-2 px-2 py-2 mt-2 text-sm text-left text-primary hover:bg-primary/10 rounded"
             >
               <Plus className="w-4 h-4" />
               <span>Create New Organization</span>
