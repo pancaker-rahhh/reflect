@@ -504,10 +504,10 @@ export function WidgetCreate() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="flex flex-col lg:flex-row max-h-[90vh]">
-        <div className="w-full lg:w-3/5 flex flex-col bg-tertiary lg:border-r max-h-[90vh]">
-          <div className="p-4 lg:p-6 border-b flex-shrink-0">
+        <div className="w-full lg:w-3/5 flex flex-col bg-card lg:border-r border-border max-h-[90vh]">
+          <div className="p-4 lg:p-6 border-b border-border flex-shrink-0">
             <h1 className="text-2xl lg:text-3xl font-bold tracking-tight mb-2">
               {isEditMode ? 'Edit Your Widget' : 'Create Your Widget'}
             </h1>
@@ -523,11 +523,11 @@ export function WidgetCreate() {
             <div className="w-full max-w-2xl mx-auto mb-6">
               {/* Step indicator header */}
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                <span className="text-sm font-semibold text-primary">
                   Step {currentStep + 1} of {steps.length}
                 </span>
-                <span className="text-sm font-semibold text-gray-600 flex items-center gap-1">
-                  <Sparkles className="w-4 h-4 text-yellow-500" />
+                <span className="text-sm font-semibold text-muted-foreground flex items-center gap-1">
+                  <Sparkles className="w-4 h-4 text-primary" />
                   {Math.round(((currentStep + 1) / steps.length) * 100)}% Complete (
                   {currentStep + 1}/{steps.length})
                 </span>
@@ -556,7 +556,7 @@ export function WidgetCreate() {
             </div>
           </div>
 
-          <div className="p-4 lg:p-6 border-t bg-gray-50 flex-shrink-0">
+          <div className="p-4 lg:p-6 border-t border-border bg-card flex-shrink-0">
             <WizardNavigation
               currentStep={currentStep}
               totalSteps={steps.length}
@@ -575,7 +575,7 @@ export function WidgetCreate() {
 
         <div className="lg:hidden fixed bottom-4 right-4 z-50">
           <button
-            className="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+            className="bg-primary text-primary-foreground p-3 rounded-full shadow-lg hover:bg-primary/90 transition-colors"
             onClick={() => {
               // TODO: Open mobile preview modal
             }}

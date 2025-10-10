@@ -327,7 +327,7 @@ export function Step2Content({ form }: Step2ContentProps) {
           }}
         />
 
-        <div className="space-y-4 rounded-lg border p-4">
+        <div className="space-y-4 rounded-lg border border-border p-4 bg-card">
           <h4 className="font-medium">Thank You Screen</h4>
 
           <FormField
