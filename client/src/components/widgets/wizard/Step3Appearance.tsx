@@ -32,40 +32,40 @@ function getThemeColors(theme: string) {
   switch (theme) {
     case 'midnight':
       return {
-        primary: 'hsl(var(--primary))',
-        headerGradientEnd: '',
-        background: 'hsl(var(--background))',
-        text: 'hsl(var(--foreground))',
-        buttonColor: 'hsl(var(--primary))',
-        buttonTextColor: 'hsl(var(--primary-foreground))',
+        primary: '#9333EA',
+        headerGradientEnd: '#7C3AED',
+        background: 'rgba(24, 24, 27, 0.95)',
+        text: '#F4F4F5',
+        buttonColor: '#9333EA',
+        buttonTextColor: '#FFFFFF',
       }
     case 'minimal-dark':
       return {
-        primary: 'hsl(var(--muted-foreground))',
+        primary: '#9CA3AF',
         headerGradientEnd: '',
-        background: 'hsl(var(--background))',
-        text: 'hsl(var(--foreground))',
-        buttonColor: 'hsl(var(--muted-foreground))',
-        buttonTextColor: 'hsl(var(--primary-foreground))',
+        background: '#111827',
+        text: '#F3F4F6',
+        buttonColor: '#9CA3AF',
+        buttonTextColor: '#FFFFFF',
       }
     case 'minimal-light':
       return {
-        primary: 'hsl(var(--muted-foreground))',
+        primary: '#6B7280',
         headerGradientEnd: '',
-        background: 'hsl(var(--background))',
-        text: 'hsl(var(--foreground))',
-        buttonColor: 'hsl(var(--muted-foreground))',
-        buttonTextColor: 'hsl(var(--primary-foreground))',
+        background: '#FFFFFF',
+        text: '#111827',
+        buttonColor: '#6B7280',
+        buttonTextColor: '#FFFFFF',
       }
     case 'default':
     default:
       return {
-        primary: 'hsl(var(--primary))',
+        primary: '#0066FF',
         headerGradientEnd: '',
-        background: 'hsl(var(--background))',
-        text: 'hsl(var(--foreground))',
-        buttonColor: 'hsl(var(--primary))',
-        buttonTextColor: 'hsl(var(--primary-foreground))',
+        background: '#FFFFFF',
+        text: '#000000',
+        buttonColor: '#0066FF',
+        buttonTextColor: '#FFFFFF',
       }
   }
 }
