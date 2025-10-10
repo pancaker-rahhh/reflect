@@ -36,7 +36,7 @@ export function PreviewControls({
   ]
 
   return (
-    <div className="border-b bg-tertiary p-3 space-y-3">
+    <div className="border-b bg-white p-3 space-y-3">
       {/* Device Selection */}
       <div className="flex items-center space-x-2">
         <span className="text-sm font-medium text-gray-700">Device:</span>

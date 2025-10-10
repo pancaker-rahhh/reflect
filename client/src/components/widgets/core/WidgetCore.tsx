@@ -35,6 +35,8 @@ export function WidgetCore({
     onStateChange,
   })
 
+  const [selectedScore, setSelectedScore] = useState<number | undefined>()
+
   // Use custom hook for feedback submission
   const { isSubmitting, error, errorInfo, handleSubmit, handleScoreSubmission, clearError } =
     useFeedbackSubmission({
@@ -42,9 +44,8 @@ export function WidgetCore({
       onSubmit,
       onStateChange: updateState,
       getAvailableFeedbackTypes,
+      onScoreRestore: setSelectedScore,
     })
-
-  const [selectedScore, setSelectedScore] = useState<number | undefined>()
 
   const theme = config.appearance
   const content = config.content
@@ -136,9 +137,9 @@ export function WidgetCore({
 
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-4 p-6 text-center">
-        <div className="w-16 h-16 rounded-full bg-warning/10 flex items-center justify-center">
+        <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center">
           <svg
-            className="w-8 h-8 text-warning"
+            className="w-8 h-8 text-orange-600"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -159,8 +160,8 @@ export function WidgetCore({
             {errorInfo?.message || 'Please wait before submitting again'}
           </p>
           {timeLeft > 0 && (
-            <div className="mt-3 p-3 rounded-lg bg-warning/10 border border-warning/20">
-              <p className="text-sm font-medium text-warning">
+            <div className="mt-3 p-3 rounded-lg bg-orange-50 border border-orange-200">
+              <p className="text-sm font-medium text-orange-800">
                 Try again in: {minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`}
               </p>
             </div>
@@ -170,7 +171,7 @@ export function WidgetCore({
           onClick={clearError}
           disabled={timeLeft > 0}
           className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-            timeLeft > 0 ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'hover:shadow-lg'
+            timeLeft > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'hover:shadow-lg'
           }`}
           style={{
             backgroundColor: timeLeft > 0 ? undefined : buttonColor,
@@ -193,9 +194,9 @@ export function WidgetCore({
     // Default error UI for other errors
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-4 p-6 text-center">
-        <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+        <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
           <svg
-            className="w-8 h-8 text-destructive"
+            className="w-8 h-8 text-red-600"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -241,9 +242,9 @@ export function WidgetCore({
           {/* Confetti animation would go here */}
         </div>
       )}
-      <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center">
+      <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
         <svg
-          className="w-8 h-8 text-success"
+          className="w-8 h-8 text-green-600"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -477,9 +478,11 @@ export function WidgetCore({
       >
         <div className="relative z-10">
           <h2 className="text-lg font-bold text-white m-0">
-            {resolveContentFor(
-              currentState.type === 'active' ? currentState.feedbackType : config.primaryType
-            ).headerTitle}
+            {
+              resolveContentFor(
+                currentState.type === 'active' ? currentState.feedbackType : config.primaryType
+              ).headerTitle
+            }
           </h2>
         </div>
 
@@ -492,7 +495,7 @@ export function WidgetCore({
               updateState({ type: 'closed' })
             }
           }}
-          className="absolute top-2 right-2 w-6 h-6 rounded-full bg-tertiary/20 hover:bg-tertiary/30 transition-colors duration-200 flex items-center justify-center z-50 cursor-pointer"
+          className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/20 hover:bg-white/30 transition-colors duration-200 flex items-center justify-center z-50 cursor-pointer"
           style={{ zIndex: 9999 }}
           title="Close widget"
         >
@@ -514,7 +517,7 @@ export function WidgetCore({
 
       {/* Branding */}
       {theme.showBranding && (
-        <div className="p-3 text-center border-t border-border/20">
+        <div className="p-3 text-center border-t border-gray-200/20">
           <div className="text-xs opacity-50" style={{ color: textColor }}>
             Powered by{' '}
             <a

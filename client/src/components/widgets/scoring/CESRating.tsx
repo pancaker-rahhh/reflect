@@ -63,7 +63,7 @@ export function CESRating({ value, onChange, disabled = false }: CESRatingProps)
                 disabled && 'opacity-50 cursor-not-allowed',
                 isSelected || isHovered
                   ? `${level.color} text-white border-transparent shadow-lg`
-                  : 'bg-tertiary hover:bg-secondary text-foreground border-border'
+                  : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-200'
               )}
             >
               <span className="text-2xl mb-1 transition-transform duration-200 hover:scale-110">
