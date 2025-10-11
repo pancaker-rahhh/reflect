@@ -79,12 +79,12 @@ export const ProfileStep: React.FC = () => {
 
   return (
     <div className="py-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-2">Complete Your Profile</h2>
-      <p className="text-gray-600 mb-6">Help us personalize your experience</p>
+      <h2 className="text-2xl font-bold mb-2">Complete Your Profile</h2>
+      <p className="mb-6">Help us personalize your experience</p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="name" className="block text-sm font-medium mb-2">
             Full Name *
           </label>
           <input
@@ -93,13 +93,13 @@ export const ProfileStep: React.FC = () => {
             required
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-background"
             placeholder="John Doe"
           />
         </div>
 
         <div>
-          <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="company" className="block text-sm font-medium mb-2">
             Company Name
           </label>
           <input
@@ -107,13 +107,13 @@ export const ProfileStep: React.FC = () => {
             id="company"
             value={formData.company}
             onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-background"
             placeholder="Acme Inc."
           />
         </div>
 
         <div>
-          <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="country" className="block text-sm font-medium mb-2">
             Country
           </label>
           <Select

@@ -224,13 +224,13 @@ export const ProjectStep: React.FC = () => {
           <FolderPlus className="w-8 h-8 text-indigo-600" />
         </div>
 
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Create Your First Project</h2>
-        <p className="text-gray-600">Projects help you organize your feedback and features</p>
+        <h2 className="text-2xl font-bold mb-2">Create Your First Project</h2>
+        <p>Projects help you organize your feedback and features</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="projectName" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="projectName" className="block text-sm font-medium mb-2">
             Project Name *
           </label>
           <input
@@ -239,7 +239,7 @@ export const ProjectStep: React.FC = () => {
             required
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-background"
             placeholder="My App v2.0"
           />
         </div>
@@ -247,7 +247,7 @@ export const ProjectStep: React.FC = () => {
         <div>
           <label
             htmlFor="projectDescription"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium mb-2"
           >
             Description (Optional)
           </label>
@@ -256,7 +256,7 @@ export const ProjectStep: React.FC = () => {
             rows={3}
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-background"
             placeholder="Describe what this project is about"
           />
         </div>
