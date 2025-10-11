@@ -441,3 +441,53 @@
 
   /* Removed grid/glass/pastel utilities to match Supabase system */
 }
+
+@layer base {
+  :root {
+    /* Tints — reusable color accents for cards, states, and highlights */
+    --tint-primary: 152 62% 52%;  /* Supabase green */
+    --tint-secondary: 217 25% 16%;
+    --tint-info: 213 100% 70%;    /* blue tone */
+    --tint-warning: 45 100% 50%;  /* yellow */
+    --tint-danger: 0 70% 55%;     /* red */
+    --tint-success: 152 62% 52%;  /* green */
+    --tint-neutral: 215 20% 65%;  /* gray */
+  }
+}
+
+@layer utilities {
+  .tint-primary {
+    background-color: hsl(var(--tint-primary) / 0.1);
+    color: hsl(var(--tint-primary));
+  }
+
+  .tint-secondary {
+    background-color: hsl(var(--tint-secondary) / 0.1);
+    color: hsl(var(--tint-secondary));
+  }
+
+  .tint-info {
+    background-color: hsl(var(--tint-info) / 0.1);
+    color: hsl(var(--tint-info));
+  }
+
+  .tint-warning {
+    background-color: hsl(var(--tint-warning) / 0.1);
+    color: hsl(var(--tint-warning));
+  }
+
+  .tint-danger {
+    background-color: hsl(var(--tint-danger) / 0.1);
+    color: hsl(var(--tint-danger));
+  }
+
+  .tint-success {
+    background-color: hsl(var(--tint-success) / 0.1);
+    color: hsl(var(--tint-success));
+  }
+
+  .tint-neutral {
+    background-color: hsl(var(--tint-neutral) / 0.1);
+    color: hsl(var(--tint-neutral));
+  }
+}
