@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   House,
@@ -135,6 +135,12 @@ export function Sidebar() {
             )}
           >
             <span className="truncate">{item.label}</span>
+              {/* Shortcut hints */}
+              {(item.label === 'Dashboard' || item.label === 'Widgets') && (
+                <span className="text-xs text-muted-foreground border rounded px-1 ml-2">
+                  ⌘⇧{item.label === 'Dashboard' ? '1' : item.label === 'Widgets' ? '2' : '3'}
+                </span>
+              )}
             {hasChildren && (
               <div className="flex-shrink-0 ml-2">
                 {isItemExpanded ? (
@@ -154,6 +160,24 @@ export function Sidebar() {
       </div>
     )
   }
+
+  useEffect(() => {
+    const handleShortcut = (e: KeyboardEvent) => {
+      if (e.metaKey && e.shiftKey) {
+        switch (e.key) {
+          case '1':
+            navigate('/app/dashboard')
+            break
+          case '2':
+            navigate('/app/widgets')
+            break
+        }
+      }
+    }
+  
+    window.addEventListener('keydown', handleShortcut)
+    return () => window.removeEventListener('keydown', handleShortcut)
+  }, [navigate])  
 
   return (
     <div
