@@ -34,8 +34,8 @@ export const AnimatedInput: React.FC<AnimatedInputProps> = ({
       {label && (
         <label 
           className={`block text-sm font-medium transition-colors duration-200 ${
-            isFocused ? 'text-indigo-600' : 'text-gray-700'
-          } ${error ? 'text-red-500' : ''}`}
+            isFocused ? 'text-foreground' : 'text-muted-foreground'
+          } ${error ? 'text-[hsl(var(--destructive))]' : ''}`}
         >
           {label}
         </label>
@@ -44,7 +44,7 @@ export const AnimatedInput: React.FC<AnimatedInputProps> = ({
       <div className="relative">
         {icon && (
           <div className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
-            isFocused ? 'text-indigo-600' : 'text-gray-400'
+            isFocused ? 'text-[hsl(var(--primary))]' : 'text-muted-foreground'
           }`}>
             {icon}
           </div>
@@ -60,30 +60,29 @@ export const AnimatedInput: React.FC<AnimatedInputProps> = ({
             pr-4
             py-2.5
             border
+            bg-background
+            text-foreground
             rounded-lg
             transition-all
             duration-200
             outline-none
             ${isFocused 
-              ? 'border-indigo-500 ring-2 ring-indigo-200 shadow-lg transform scale-[1.02]' 
-              : 'border-gray-300 hover:border-gray-400'
+              ? 'border-[hsl(var(--primary))] ring-2 ring-[hsl(var(--primary))/0.3] transform scale-[1.01]'
+              : 'border-border'
             }
             ${error 
-              ? 'border-red-500 focus:ring-red-200' 
+              ? 'border-[hsl(var(--destructive))] ring-1 ring-[hsl(var(--destructive))/0.3]'
               : ''
             }
             ${className}
           `}
         />
         
-        {isFocused && !error && (
-          <div className="absolute inset-0 -z-10 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-lg blur-xl opacity-20 animate-pulse"></div>
-        )}
       </div>
       
       {(error || helperText) && (
         <p className={`text-sm mt-1 transition-all duration-200 ${
-          error ? 'text-red-500' : 'text-gray-500'
+          error ? 'text-[hsl(var(--destructive))]' : 'text-muted-foreground'
         }`}>
           {error || helperText}
         </p>
@@ -118,8 +117,8 @@ export const AnimatedTextarea: React.FC<AnimatedInputProps & React.TextareaHTMLA
       {label && (
         <label 
           className={`block text-sm font-medium transition-colors duration-200 ${
-            isFocused ? 'text-indigo-600' : 'text-gray-700'
-          } ${error ? 'text-red-500' : ''}`}
+            isFocused ? 'text-foreground' : 'text-muted-foreground'
+          } ${error ? 'text-[hsl(var(--destructive))]' : ''}`}
         >
           {label}
         </label>
@@ -135,31 +134,30 @@ export const AnimatedTextarea: React.FC<AnimatedInputProps & React.TextareaHTMLA
             px-4
             py-2.5
             border
+            bg-background
+            text-foreground
             rounded-lg
             transition-all
             duration-200
             outline-none
             resize-none
             ${isFocused 
-              ? 'border-indigo-500 ring-2 ring-indigo-200 shadow-lg transform scale-[1.02]' 
-              : 'border-gray-300 hover:border-gray-400'
+              ? 'border-[hsl(var(--primary))] ring-2 ring-[hsl(var(--primary))/0.3] transform scale-[1.01]'
+              : 'border-border'
             }
             ${error 
-              ? 'border-red-500 focus:ring-red-200' 
+              ? 'border-[hsl(var(--destructive))] ring-1 ring-[hsl(var(--destructive))/0.3]'
               : ''
             }
             ${className}
           `}
         />
         
-        {isFocused && !error && (
-          <div className="absolute inset-0 -z-10 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-lg blur-xl opacity-20 animate-pulse"></div>
-        )}
       </div>
       
       {(error || helperText) && (
         <p className={`text-sm mt-1 transition-all duration-200 ${
-          error ? 'text-red-500' : 'text-gray-500'
+          error ? 'text-[hsl(var(--destructive))]' : 'text-muted-foreground'
         }`}>
           {error || helperText}
         </p>

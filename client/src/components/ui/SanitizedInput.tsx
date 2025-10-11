@@ -107,7 +107,7 @@ export const SanitizedInput = forwardRef<
             onChange={handleChange}
             className={cn(
               'transition-all duration-200',
-              isExceeding && 'border-red-500 focus:border-red-500',
+              isExceeding && 'border-destructive focus:border-destructive',
               className
             )}
             ref={ref as React.Ref<HTMLTextAreaElement>}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Building2, Users, Shield, Save, Trash2, Plus, X } from 'lucide-react'
+import { Buildings, Users, Shield, FloppyDisk, Trash, Plus, X } from 'phosphor-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { organizationApi, type OrganizationMember } from '../../lib/api/organization'
 import { useAppContext } from '../../context/AppContext'
@@ -113,7 +113,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
   }
 
   const tabs = [
-    { id: 'general', label: 'General', icon: Building2 },
+    { id: 'general', label: 'General', icon: Buildings },
     { id: 'members', label: 'Members', icon: Users },
   ]
 
@@ -128,7 +128,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder="Enter organization name"
-            icon={<Building2 className="w-4 h-4" />}
+            icon={<Buildings className="w-4 h-4" />}
           />
 
           <AnimatedTextarea
@@ -154,7 +154,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
             </>
           ) : (
             <>
-              <Save className="w-4 h-4" />
+              <FloppyDisk className="w-4 h-4" />
               Save Changes
             </>
           )}
@@ -183,25 +183,25 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
           Role Permissions
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-          <div className="bg-white p-3 rounded-lg border border-blue-100">
+          <div className="bg-tertiary p-3 rounded-lg border border-border">
             <p className="font-semibold text-yellow-700 mb-1">Owner</p>
             <p className="text-gray-600 text-xs">
               Full control including billing, member management, and organization deletion
             </p>
           </div>
-          <div className="bg-white p-3 rounded-lg border border-blue-100">
+          <div className="bg-tertiary p-3 rounded-lg border border-border">
             <p className="font-semibold text-purple-700 mb-1">Admin</p>
             <p className="text-gray-600 text-xs">
               Manage projects, invite members, and access all organization settings
             </p>
           </div>
-          <div className="bg-white p-3 rounded-lg border border-blue-100">
+          <div className="bg-tertiary p-3 rounded-lg border border-border">
             <p className="font-semibold text-blue-700 mb-1">Member</p>
             <p className="text-gray-600 text-xs">
               Manage project content, and collaborate with team
             </p>
           </div>
-          <div className="bg-white p-3 rounded-lg border border-blue-100">
+          <div className="bg-tertiary p-3 rounded-lg border border-border">
             <p className="font-semibold text-gray-700 mb-1">Viewer</p>
             <p className="text-gray-600 text-xs">
               Read-only access to view projects, dashboards, and reports
@@ -219,9 +219,9 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
           </p>
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div className="bg-tertiary border border-border rounded-lg overflow-hidden">
           {/* Table Header */}
-          <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
+          <div className="bg-secondary px-6 py-3 border-b border-border">
             <div className="grid grid-cols-12 gap-4 text-xs font-medium text-gray-500 uppercase tracking-wider">
               <div className="col-span-4">Member</div>
               <div className="col-span-2">Status</div>
@@ -312,7 +312,7 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
                         </>
                       ) : member.role !== 'owner' ? (
                         <button className="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
-                          <Trash2 className="w-4 h-4" />
+                          <Trash className="w-4 h-4" />
                         </button>
                       ) : null}
                     </div>
@@ -414,8 +414,8 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
         <p className="text-gray-600">Manage your organization settings and preferences</p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="border-b border-gray-200">
+      <div className="bg-tertiary rounded-xl shadow-lg overflow-hidden">
+        <div className="border-b border-border">
           <nav className="flex">
             {tabs.map((tab) => {
               const Icon = tab.icon

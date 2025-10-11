@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as ProgressPrimitive from '@radix-ui/react-progress'
-import { Check } from 'lucide-react'
+import { Check } from 'phosphor-react'
 import { cn } from '@/lib/utils'
 
 const Progress = React.forwardRef<
@@ -32,7 +32,7 @@ const Progress = React.forwardRef<
         className="h-full w-full flex-1 bg-gradient-to-r from-primary via-primary/90 to-primary/80 transition-all duration-700 ease-out relative"
         style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
       >
-        <div className="absolute inset-0 bg-white/20 animate-shimmer" />
+        <div className="absolute inset-0 bg-tertiary/20 animate-shimmer" />
       </ProgressPrimitive.Indicator>
     </ProgressPrimitive.Root>
   </div>
@@ -71,7 +71,7 @@ const ProgressSteps = React.forwardRef<HTMLDivElement, ProgressStepsProps>(
             className="h-full rounded-full bg-gradient-to-r from-primary via-primary/90 to-primary/80 transition-all duration-700 ease-out relative"
             style={{ width: `${progressPercentage}%` }}
           >
-            <div className="absolute inset-0 bg-white/20 animate-shimmer" />
+            <div className="absolute inset-0 bg-tertiary/20 animate-shimmer" />
           </div>
         </div>
         {showLabels && (

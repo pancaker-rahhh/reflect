@@ -1,21 +1,22 @@
-import { useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard,
-  Puzzle,
-  MessageSquare,
+  House,
+  PuzzlePiece,
+  ChatCircle,
   Bug,
   Lightbulb,
-  Map,
-  Settings,
-  ChevronDown,
-  ChevronRight,
+  MapPin,
+  Gear,
+  CaretDown,
+  CaretRight,
   Star,
   FileText,
   Users,
-} from 'lucide-react'
+} from 'phosphor-react'
 import { cn } from '@/lib/utils'
 import { OrganizationDropdown } from './OrganizationDropdown'
+import { BrandWordmark } from '@/components/common/BrandWordmark'
 import { isFeatureEnabled } from '@/lib/featureFlags'
 import { useUser } from '@/contexts/AuthContext'
 
@@ -30,36 +31,36 @@ const navigation: NavItem[] = [
   {
     label: 'Dashboard',
     href: '/app/dashboard',
-    icon: LayoutDashboard,
+    icon: House,
   },
   {
     label: 'Widgets',
     href: '/app/widgets',
-    icon: Puzzle,
+    icon: PuzzlePiece,
   },
   {
     label: 'Feedback & Roadmap',
     href: '/app/feedback',
-    icon: MessageSquare,
+    icon: ChatCircle,
     children: [
       { label: 'Responses', href: '/app/feedback/responses', icon: FileText },
       { label: 'Reviews', href: '/app/feedback/reviews', icon: Star },
       { label: 'Bug Reports', href: '/app/feedback/bugs', icon: Bug },
       { label: 'Feature Requests', href: '/app/feedback/features', icon: Lightbulb },
-      { label: 'Roadmap', href: '/app/roadmap', icon: Map },
+      { label: 'Roadmap', href: '/app/roadmap', icon: MapPin },
     ],
   },
   {
     label: 'Settings',
     href: '/app/settings',
-    icon: Settings,
+    icon: Gear,
     children: [
       { label: 'Account Settings', href: '/app/settings/account', icon: Users },
       ...(isFeatureEnabled('SHOW_ORG_SETTINGS_IN_SIDEBAR')
         ? [{ label: 'Organization Settings', href: '/app/settings/organization', icon: Users }]
         : []),
-      { label: 'Project Settings', href: '/app/settings/project', icon: Settings },
-      { label: 'Roadmap Settings', href: '/app/settings/roadmap', icon: Map },
+      { label: 'Project Settings', href: '/app/settings/project', icon: Gear },
+      { label: 'Roadmap Settings', href: '/app/settings/roadmap', icon: MapPin },
     ],
   },
 ]
@@ -134,12 +135,18 @@ export function Sidebar() {
             )}
           >
             <span className="truncate">{item.label}</span>
+              {/* Shortcut hints */}
+              {(item.label === 'Dashboard' || item.label === 'Widgets') && (
+                <span className="text-xs text-muted-foreground border rounded px-1 ml-2">
+                  ⌘⇧{item.label === 'Dashboard' ? '1' : item.label === 'Widgets' ? '2' : '3'}
+                </span>
+              )}
             {hasChildren && (
               <div className="flex-shrink-0 ml-2">
                 {isItemExpanded ? (
-                  <ChevronDown className="h-4 w-4" />
+                  <CaretDown className="h-4 w-4" />
                 ) : (
-                  <ChevronRight className="h-4 w-4" />
+                  <CaretRight className="h-4 w-4" />
                 )}
               </div>
             )}
@@ -154,6 +161,24 @@ export function Sidebar() {
     )
   }
 
+  useEffect(() => {
+    const handleShortcut = (e: KeyboardEvent) => {
+      if (e.metaKey && e.shiftKey) {
+        switch (e.key) {
+          case '1':
+            navigate('/app/dashboard')
+            break
+          case '2':
+            navigate('/app/widgets')
+            break
+        }
+      }
+    }
+  
+    window.addEventListener('keydown', handleShortcut)
+    return () => window.removeEventListener('keydown', handleShortcut)
+  }, [navigate])  
+
   return (
     <div
       className={cn(
@@ -165,12 +190,10 @@ export function Sidebar() {
     >
       <div className={cn('p-6 flex items-center', !isExpanded && 'p-4 justify-center')}>
         {!isExpanded ? (
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">R</span>
-          </div>
+          <BrandWordmark size={24} textClassName="text-primary" showText={false} />
         ) : (
           <div className="flex items-center w-full">
-            <span className="text-xl font-bold text-primary tracking-tight">Reflect</span>
+            <BrandWordmark textClassName="text-primary" />
           </div>
         )}
       </div>
@@ -188,7 +211,7 @@ export function Sidebar() {
       {isExpanded && (
         <div className="p-3 border-t border-border">
           <button
-            onClick={() => navigate('/app/settings/billing')}
+            onClick={() => navigate('/app/settings/account?tab=billing')}
             className="w-full bg-primary/90 text-primary-foreground rounded-md px-4 py-2 text-sm font-medium hover:bg-primary transition-colors"
           >
             Upgrade Now

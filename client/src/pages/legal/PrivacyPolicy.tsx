@@ -35,7 +35,7 @@ export const PrivacyPolicy = () => {
       />
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200">
+        <div className="bg-tertiary border-b border-border">
           <div className="max-w-4xl mx-auto px-6 py-8">
             <button
               onClick={() => navigate(-1)}
@@ -52,7 +52,7 @@ export const PrivacyPolicy = () => {
         {/* Content */}
         <div className="max-w-4xl mx-auto px-6 py-12">
           <motion.div
-            className="bg-white rounded-lg shadow-sm border border-gray-200 p-8"
+            className="bg-tertiary rounded-lg shadow-sm border border-border p-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}

@@ -176,7 +176,7 @@ export function RoadmapCard({
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
+                className="h-6 w-6 p-0 hover:bg-red-100 hover:text-red-600"
                 onClick={handleDelete}
                 disabled={deleteFeatureMutation.isPending}
               >
@@ -371,8 +371,8 @@ export function RoadmapCard({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-background rounded-lg p-6 max-w-sm mx-4 border border-border/50 shadow-xl">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-destructive/10 rounded-full flex items-center justify-center">
-                <Trash2 className="h-5 w-5 text-destructive" />
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <Trash2 className="h-5 w-5 text-red-600" />
               </div>
               <div>
                 <h3 className="font-semibold text-lg">Delete Feature</h3>

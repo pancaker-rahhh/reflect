@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../lib/client';
-import { Save, AlertCircle } from 'lucide-react';
+import { FloppyDisk, WarningCircle } from 'phosphor-react';
 
 interface Organization {
   id: string;
@@ -117,9 +117,9 @@ export const OrganizationDetails: React.FC<OrganizationDetailsProps> = ({ organi
             />
           </div>
 
-          <div className="bg-gray-50 rounded-lg p-4">
+          <div className="bg-secondary rounded-lg p-4">
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <AlertCircle className="w-4 h-4" />
+              <WarningCircle className="w-4 h-4" />
               <span>Created on {new Date((organization as any)?.created_at || '').toLocaleDateString()}</span>
             </div>
           </div>
@@ -132,7 +132,7 @@ export const OrganizationDetails: React.FC<OrganizationDetailsProps> = ({ organi
                 disabled={updateMutation.isPending}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
               >
-                <Save className="w-4 h-4" />
+                <FloppyDisk className="w-4 h-4" />
                 {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
               </button>
             </div>

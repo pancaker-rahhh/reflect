@@ -7,14 +7,14 @@ import { Badge } from '@/components/ui/badge'
 import {
   MapPin,
   Plus,
-  ChevronLeft,
-  ChevronRight,
-  ExternalLink,
-  Loader2,
-  Settings,
+  CaretLeft,
+  CaretRight,
+  ArrowSquareOut,
+  Spinner,
+  Gear,
   CheckSquare,
-  GripVertical,
-} from 'lucide-react'
+  DotsSixVertical,
+} from 'phosphor-react'
 import { cn } from '@/lib/utils'
 import { RoadmapCard } from '@/components/roadmap/RoadmapCard'
 import { AddFeatureModal } from '@/components/roadmap/AddFeatureModal'
@@ -581,7 +581,7 @@ function RoadmapPageContent() {
         </p>
         <Button className="mt-6" size="lg" asChild>
           <a href="/settings/roadmap">
-            <Settings className="mr-2 h-4 w-4" />
+            <Gear className="mr-2 h-4 w-4" />
             Configure Roadmap
           </a>
         </Button>
@@ -598,20 +598,20 @@ function RoadmapPageContent() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="rounded-lg border p-6">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold">
               {roadmap.name || 'Product Roadmap'}
             </h1>
-            <p className="text-gray-600 mt-2 text-lg">
+            <p className="mt-2 text-lg">
               Plan and track your product development progress
             </p>
           </div>
           <div className="flex items-center gap-2">
             {isSelectionMode && (
               <>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2 text-sm">
                   <span>{selectedItems.length} selected</span>
                   <Button variant="ghost" size="sm" onClick={handleSelectAll} className="text-xs">
                     Select All
@@ -629,7 +629,7 @@ function RoadmapPageContent() {
                   <Button
                     onClick={handleBulkJiraPush}
                     disabled={selectedItems.length === 0}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    className="bg-blue-600 hover:bg-blue-700"
                   >
                     Push to JIRA ({selectedItems.length})
                   </Button>
@@ -651,14 +651,14 @@ function RoadmapPageContent() {
             {publicUrl && (
               <Button variant="outline" asChild className="hover:bg-gray-50">
                 <a href={publicUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="mr-2 h-4 w-4" />
+                  <ArrowSquareOut className="mr-2 h-4 w-4" />
                   View Public Roadmap
                 </a>
               </Button>
             )}
-            <Button variant="outline" size="icon" asChild className="hover:bg-gray-50">
+            <Button variant="outline" size="icon" asChild className="hover:bg-border">
               <Link to="/app/settings/roadmap">
-                <Settings className="h-4 w-4" />
+                <Gear className="h-4 w-4" />
               </Link>
             </Button>
           </div>
@@ -670,7 +670,7 @@ function RoadmapPageContent() {
         {/* Kanban Board with enhanced container and smooth scrolling */}
         <div className="relative">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-gray-500">Drag columns by the grip icon to reorder them</p>
+            <p className="text-sm">Drag columns by the grip icon to reorder them</p>
           </div>
           <div
             ref={scrollContainerRef}
@@ -689,7 +689,7 @@ function RoadmapPageContent() {
                       key={column.id}
                       data-column-id={column.id}
                       className={cn(
-                        'flex-shrink-0 w-80 bg-white rounded-lg border border-gray-200 shadow-sm scroll-snap-start relative cursor-grab active:cursor-grabbing',
+                        'flex-shrink-0 w-80 rounded-lg border shadow-sm scroll-snap-start relative cursor-grab active:cursor-grabbing',
                         dragOverColumn === column.id &&
                           draggedItem &&
                           draggedItem.sourceColumnId !== column.id &&
@@ -717,22 +717,22 @@ function RoadmapPageContent() {
                         draggedColumn &&
                         draggedColumn !== column.id && (
                           <div className="absolute inset-0 border-2 border-dashed border-blue-500 bg-blue-50/30 rounded-lg z-10 flex items-center justify-center">
-                            <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+                            <div className="bg-blue-500 px-3 py-1 rounded-full text-sm font-medium shadow-lg">
                               Drop here
                             </div>
                           </div>
                         )}
 
                       {/* Column Header */}
-                      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                      <div className="flex items-center justify-between p-4 border-b">
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-2">
-                            <GripVertical className="h-5 w-5 text-gray-400 cursor-grab" />
+                            <DotsSixVertical className="h-5 w-5 cursor-grab" />
                             <div
                               className="w-3 h-3 rounded-full"
                               style={{ backgroundColor: column.color }}
                             />
-                            <h3 className="font-semibold text-base text-gray-900">{column.name}</h3>
+                            <h3 className="font-semibold text-base">{column.name}</h3>
                           </div>
                           <Badge
                             variant="secondary"
@@ -744,7 +744,7 @@ function RoadmapPageContent() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-8 w-8 p-0 hover:bg-gray-100"
+                          className="h-8 w-8 p-0 hover:bg-border"
                           onClick={() => handleOpenAddFeatureModal(column)}
                         >
                           <Plus className="h-4 w-4" />
@@ -755,8 +755,8 @@ function RoadmapPageContent() {
                       <div className="space-y-3 p-4">
                         {/* Loading indicator when moving features */}
                         {isMovingFeature && (
-                          <div className="flex items-center justify-center py-4 text-gray-500">
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          <div className="flex items-center justify-center py-4">
+                            <Spinner className="h-4 w-4 animate-spin mr-2" />
                             <span className="text-xs">Moving feature...</span>
                           </div>
                         )}
@@ -782,9 +782,9 @@ function RoadmapPageContent() {
 
                         {/* Empty State */}
                         {columnFeatures.length === 0 && (
-                          <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">
+                          <div className="text-center py-8 border-2 border-dashed rounded-lg">
                             <p className="text-sm font-medium">No features yet</p>
-                            <p className="text-xs text-gray-400 mt-1">
+                            <p className="text-xs mt-1">
                               Get started by adding your first feature
                             </p>
                           </div>
@@ -799,14 +799,14 @@ function RoadmapPageContent() {
 
         {/* Horizontal Slider */}
         <div className="flex justify-center">
-          <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-2 border border-gray-200">
+          <div className="flex items-center space-x-2 rounded-lg p-2 border">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => scrollToColumn('left')}
-              className="h-8 w-8 p-0 hover:bg-gray-200"
+              className="h-8 w-8 p-0 hover:bg-border"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <CaretLeft className="h-4 w-4" />
             </Button>
 
             <div className="flex items-center space-x-1">
@@ -833,9 +833,9 @@ function RoadmapPageContent() {
               variant="ghost"
               size="sm"
               onClick={() => scrollToColumn('right')}
-              className="h-8 w-8 p-0 hover:bg-gray-200"
+              className="h-8 w-8 p-0 hover:bg-border"
             >
-              <ChevronRight className="h-4 w-4" />
+              <CaretRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -885,12 +885,12 @@ export function RoadmapPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h2>
-          <p className="text-gray-600 mb-4">
+          <p className="mb-4">
             An unexpected error occurred. Please try refreshing the page.
           </p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700"
           >
             Refresh Page
           </button>

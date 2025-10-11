@@ -1,4 +1,4 @@
-import { Star } from 'lucide-react'
+import { Star } from 'phosphor-react'
 import { cn } from '@/lib/utils'
 
 interface StarRatingProps {
@@ -34,7 +34,7 @@ export function StarRating({
             <Star 
               className={cn(
                 sizeClasses[size],
-                "text-gray-300"
+                "text-muted-foreground"
               )}
               fill="currentColor"
             />
@@ -46,7 +46,7 @@ export function StarRating({
                 <Star 
                   className={cn(
                     sizeClasses[size],
-                    "text-yellow-500"
+                    "text-warning"
                   )}
                   fill="currentColor"
                 />

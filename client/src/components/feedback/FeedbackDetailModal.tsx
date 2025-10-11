@@ -124,7 +124,7 @@ export function FeedbackDetailModal({ isOpen, onClose, feedback }: FeedbackDetai
                 <MessageSquare className="h-4 w-4" />
                 Response
               </h4>
-              <div className="bg-white border rounded-lg p-4">
+              <div className="bg-tertiary border rounded-lg p-4">
                 <p className="text-gray-700 whitespace-pre-wrap">{feedback.message}</p>
               </div>
             </div>

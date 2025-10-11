@@ -35,7 +35,7 @@ export function WidgetCore({
     onStateChange,
   })
 
-  const [selectedScore, setSelectedScore] = useState<number | undefined>()
+
 
   // Use custom hook for feedback submission
   const { isSubmitting, error, errorInfo, handleSubmit, handleScoreSubmission, clearError } =
@@ -44,9 +44,9 @@ export function WidgetCore({
       onSubmit,
       onStateChange: updateState,
       getAvailableFeedbackTypes,
-      onScoreRestore: setSelectedScore,
     })
 
+  const [selectedScore, setSelectedScore] = useState<number | undefined>()
   const theme = config.appearance
   const content = config.content
 

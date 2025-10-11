@@ -8,7 +8,7 @@ import { NPSDistributionChart } from '@/components/dashboard/NPSDistributionChar
 import { FeedbackDistributionChart } from '@/components/dashboard/FeedbackDistributionChart'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAppContext } from '@/context/AppContext'
-import { AlertCircle, RefreshCw, AlertTriangle } from 'lucide-react'
+import { WarningCircle, ArrowClockwise, Warning } from 'phosphor-react'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -25,7 +25,7 @@ export function Dashboard() {
   const { getUsageInfo } = useSubscription()
 
   const handleUpgrade = () => {
-    navigate('/app/settings/billing')
+    navigate('/app/settings/account?tab=billing')
   }
 
   const { data: organizations } = useQuery({
@@ -79,11 +79,11 @@ export function Dashboard() {
 
   const renderErrorState = (_error: any, refetch: () => void, title: string) => (
     <Alert variant="destructive" className="mb-4">
-      <AlertCircle className="h-4 w-4" />
+      <WarningCircle className="h-4 w-4" />
       <AlertDescription className="flex items-center justify-between">
         <span>Failed to load {title}. Please try again.</span>
         <Button variant="outline" size="sm" onClick={refetch} className="ml-2">
-          <RefreshCw className="h-4 w-4 mr-2" />
+          <ArrowClockwise className="h-4 w-4 mr-2" />
           Retry
         </Button>
       </AlertDescription>
@@ -95,8 +95,8 @@ export function Dashboard() {
       {/* Header Section */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground mt-1">
             Summary for {currentProject?.name || 'All Projects'} for{' '}
             {timeRange === 'all' ? 'all time' : timeRange}
           </p>
@@ -113,10 +113,10 @@ export function Dashboard() {
         if (isFreeTier && responseUsage.percentage >= 80) {
           return (
             <Alert
-              className={`border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/30`}
+              className={`border-warning/20 bg-warning/10`}
             >
-              <AlertTriangle className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="text-orange-800 dark:text-orange-200 flex items-center justify-between">
+              <Warning className="h-4 w-4 text-warning" />
+              <AlertDescription className="text-warning flex items-center justify-between">
                 <span>
                   {responseUsage.percentage >= 100
                     ? `You've reached your response limit (${responseUsage.current}/${responseUsage.limit}). Upgrade to Pro for unlimited responses.`
@@ -152,10 +152,10 @@ export function Dashboard() {
       <div className="grid gap-12 xl:grid-cols-3">
         {/* Recent Activity Section - Takes 2 columns */}
         <div className="xl:col-span-2">
-          <div className="bg-white rounded-xl border border-gray-200 p-8">
+          <div className="bg-tertiary rounded-xl border border-border p-8">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
-              <div className="text-sm text-gray-500">{recentActivity?.length || 0} items</div>
+              <h2 className="text-xl font-semibold text-foreground">Recent Activity</h2>
+              <div className="text-sm text-muted-foreground">{recentActivity?.length || 0} items</div>
             </div>
 
             {activityError && renderErrorState(activityError, refetchActivity, 'recent activity')}
@@ -177,8 +177,8 @@ export function Dashboard() {
         {/* Charts Section - Takes 1 column */}
         <div className="space-y-8">
           {/* NPS Distribution */}
-          <div className="bg-white rounded-xl border border-gray-200 p-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-8">NPS Distribution</h2>
+          <div className="bg-tertiary rounded-xl border border-border p-8">
+            <h2 className="text-xl font-semibold text-foreground mb-8">NPS Distribution</h2>
             {feedbackError && renderErrorState(feedbackError, refetchFeedback, 'feedback data')}
 
             {feedbackLoading ? (
@@ -189,8 +189,8 @@ export function Dashboard() {
           </div>
 
           {/* Feedback Distribution */}
-          <div className="bg-white rounded-xl border border-gray-200 p-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-8">Feedback Distribution</h2>
+          <div className="bg-tertiary rounded-xl border border-border p-8">
+            <h2 className="text-xl font-semibold text-foreground mb-8">Feedback Distribution</h2>
             {feedbackLoading ? (
               <Skeleton className="h-64" />
             ) : (

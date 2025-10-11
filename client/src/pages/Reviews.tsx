@@ -287,7 +287,7 @@ export function Reviews() {
               <RotateCcw className="mr-2 h-4 w-4" />
               Reset filters
               {hasActiveFilters && (
-                <span className="ml-2 bg-white/20 text-xs px-1.5 py-0.5 rounded-full">
+                <span className="ml-2 bg-tertiary/20 text-xs px-1.5 py-0.5 rounded-full">
                   {[startDate, endDate, ratingFilter !== 'all', searchQuery].filter(Boolean).length}
                 </span>
               )}

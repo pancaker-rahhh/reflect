@@ -13,18 +13,18 @@ export function ThemePreview({ theme, position, colors, content, widgetType }: T
   const getThemeStyles = () => {
     switch (theme) {
       case 'midnight':
-        return 'bg-gray-900 text-white'
+        return 'bg-surface-1 text-foreground border border-border'
       case 'minimal-light':
-        return 'bg-white text-gray-900 border'
+        return 'bg-surface-2 text-foreground border border-border'
       case 'minimal-dark':
-        return 'bg-gray-800 text-white'
+        return 'bg-surface-1 text-foreground border border-border'
       default:
-        return 'bg-white text-gray-900 shadow-lg'
+        return 'bg-surface-2 text-foreground shadow-lg border border-border'
     }
   }
 
   return (
-    <Card className="h-[500px] relative overflow-hidden bg-gray-100">
+    <Card className="h-[500px] relative overflow-hidden bg-secondary">
       <div className="absolute inset-0 flex items-center justify-center p-8">
         <div className="text-center text-muted-foreground">
           <p className="text-sm mb-2">Widget Preview</p>

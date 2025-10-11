@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Search, Grid3X3, List, BarChart3 } from 'lucide-react'
+import { Plus, MagnifyingGlass, GridFour, List, ChartBar } from 'phosphor-react'
 import { widgetApi } from '@/lib/api/widget'
 import { useAppContext } from '@/context/AppContext'
 import { Button } from '@/components/ui/button'
@@ -134,10 +134,10 @@ export function Widgets() {
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <BarChart3 className="h-4 w-4" />
+            <ChartBar className="h-4 w-4" />
             <span>{activeWidgets.length} active</span>
           </div>
-          <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+          <div className="flex rounded-lg border border-border overflow-hidden">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
               size="sm"
@@ -145,7 +145,7 @@ export function Widgets() {
               onClick={() => setViewMode('grid')}
               aria-label="Grid view"
             >
-              <Grid3X3 className="h-4 w-4" />
+              <GridFour className="h-4 w-4" />
             </Button>
             <Button
               variant={viewMode === 'list' ? 'default' : 'ghost'}
@@ -163,7 +163,7 @@ export function Widgets() {
       <FreeTierAlert />
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           type="search"
           placeholder="Search widgets..."
@@ -191,8 +191,8 @@ export function Widgets() {
           {activeWidgets.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-semibold text-gray-900">Created Widgets</h2>
-                <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                <h2 className="text-xl font-semibold text-foreground">Created Widgets</h2>
+                <span className="bg-success/10 text-success text-xs font-medium px-2.5 py-0.5 rounded-full">
                   {activeWidgets.length}
                 </span>
               </div>

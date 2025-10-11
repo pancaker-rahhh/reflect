@@ -1,4 +1,4 @@
-import { Check } from 'lucide-react'
+import { Check } from 'phosphor-react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { PRICING_PLANS, formatPrice, getFeatureList } from '@/lib/constants/pricing'
@@ -31,7 +31,7 @@ export const PricingSection = () => {
   return (
     <motion.div
       id="pricing"
-      className="bg-white py-24 sm:py-32"
+      className="bg-background py-24 sm:py-32"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
@@ -46,7 +46,7 @@ export const PricingSection = () => {
           viewport={{ once: true }}
         >
           <motion.p
-            className="text-base font-semibold leading-7 text-purple-600"
+            className="text-base font-semibold leading-7 text-primary"
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, delay: 0.2 }}

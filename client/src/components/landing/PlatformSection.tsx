@@ -1,24 +1,24 @@
 import { useState } from 'react'
 import {
   Bug,
-  BarChart,
+  ChartBar,
   FileText,
   Lightbulb,
   GitMerge,
   Star,
   Play,
-  ChevronLeft,
-  ChevronRight,
+  CaretLeft,
+  CaretRight,
   Check,
-} from 'lucide-react'
+} from 'phosphor-react'
 import { motion } from 'framer-motion'
 
 const features = [
   {
     name: 'Bug Reports',
     icon: Bug,
-    color: 'text-red-500',
-    bgColor: 'bg-red-50',
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/10',
     title: 'Streamline Your Bug Tracking',
     description:
       'Track and manage bug reports with detailed information, screenshots, and priority levels. Users can easily report issues with screenshot capture.',
@@ -32,9 +32,9 @@ const features = [
   },
   {
     name: 'Dashboard',
-    icon: BarChart,
-    color: 'text-blue-500',
-    bgColor: 'bg-blue-50',
+    icon: ChartBar,
+    color: 'text-info',
+    bgColor: 'bg-info/10',
     title: 'Get a Complete Overview',
     description:
       'Our comprehensive analytics dashboard gives you real-time insights and performance metrics to track your user engagement and feedback trends.',
@@ -49,8 +49,8 @@ const features = [
   {
     name: 'Survey',
     icon: FileText,
-    color: 'text-green-500',
-    bgColor: 'bg-green-50',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
     title: 'Create Powerful Surveys',
     description:
       'Build custom surveys, NPS, and CSAT forms to gather targeted feedback. Understand your users better with flexible and powerful form creation.',
@@ -65,8 +65,8 @@ const features = [
   {
     name: 'Feature Requests',
     icon: Lightbulb,
-    color: 'text-yellow-500',
-    bgColor: 'bg-yellow-50',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
     title: 'Prioritize Your Roadmap',
     description:
       'Let your users submit ideas and vote on their favorite features. Our voting system helps you build a data-driven roadmap your users will love.',
@@ -81,8 +81,8 @@ const features = [
   {
     name: 'Roadmap',
     icon: GitMerge,
-    color: 'text-indigo-500',
-    bgColor: 'bg-indigo-50',
+    color: 'text-primary',
+    bgColor: 'bg-primary/10',
     title: 'Share Your Vision',
     description:
       "Keep your users in the loop with a beautiful, public-facing roadmap. Show them what you're working on and what's coming next to build trust and excitement.",
@@ -97,8 +97,8 @@ const features = [
   {
     name: 'Reviews & Testimonials',
     icon: Star,
-    color: 'text-pink-500',
-    bgColor: 'bg-pink-50',
+    color: 'text-accent',
+    bgColor: 'bg-accent/10',
     title: 'Showcase Social Proof',
     description:
       'Easily collect and display glowing reviews and testimonials from your happiest customers. Build trust and credibility with authentic social proof.',
@@ -143,7 +143,7 @@ export const PlatformSection = () => {
           viewport={{ once: true }}
         >
           <motion.h2
-            className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl"
+            className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -161,7 +161,7 @@ export const PlatformSection = () => {
             </motion.span>
           </motion.h2>
           <motion.p
-            className="mt-4 text-base leading-7 text-gray-600"
+            className="mt-4 text-base leading-7 text-muted-foreground"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
@@ -237,7 +237,7 @@ export const PlatformSection = () => {
               onClick={handlePrev}
               className="p-2 rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors"
             >
-              <ChevronLeft className="h-7 w-7" />
+              <CaretLeft className="h-7 w-7" />
             </button>
             <div className="flex items-center gap-2">
               {features.map((_, index) => (
@@ -254,7 +254,7 @@ export const PlatformSection = () => {
               onClick={handleNext}
               className="p-2 rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors"
             >
-              <ChevronRight className="h-7 w-7" />
+              <CaretRight className="h-7 w-7" />
             </button>
           </div>
         </div>

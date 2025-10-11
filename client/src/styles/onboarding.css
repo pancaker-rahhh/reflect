@@ -80,12 +80,7 @@
   background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
 }
 
-/* Glass morphism effect */
-.glass-effect {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
+/* Removed glass effect to align with Supabase design */
 
 /* Step transition */
 .step-enter {

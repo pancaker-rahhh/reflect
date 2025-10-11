@@ -20,7 +20,7 @@ export const UserTypeStep: React.FC = () => {
       <div className="grid md:grid-cols-2 gap-6">
         <button
           onClick={() => handleSelection('solo')}
-          className="group p-6 bg-white border-2 border-gray-200 rounded-xl hover:border-indigo-600 hover:shadow-lg transition-all text-left"
+          className="group p-6 bg-tertiary border-2 border-border rounded-xl hover:border-primary hover:shadow-lg transition-all text-left"
         >
           <div className="flex items-start gap-4">
             <div className="p-3 bg-indigo-100 rounded-lg group-hover:bg-indigo-600 transition-colors">
@@ -44,7 +44,7 @@ export const UserTypeStep: React.FC = () => {
 
         <button
           onClick={() => handleSelection('team')}
-          className="group p-6 bg-white border-2 border-gray-200 rounded-xl hover:border-indigo-600 hover:shadow-lg transition-all text-left"
+          className="group p-6 bg-tertiary border-2 border-border rounded-xl hover:border-primary hover:shadow-lg transition-all text-left"
         >
           <div className="flex items-start gap-4">
             <div className="p-3 bg-indigo-100 rounded-lg group-hover:bg-indigo-600 transition-colors">

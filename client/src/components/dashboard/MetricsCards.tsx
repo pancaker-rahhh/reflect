@@ -57,14 +57,16 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       title: 'Total Feedback',
       value: metrics.totalFeedback,
       icon: MessageSquare,
-      color: 'text-blue-600',
+      color: 'text-primary',
+      bgColor: 'bg-secondary/40',
       suffix: '',
     },
     {
       title: 'Average Rating',
       value: metrics.averageRating,
       icon: Star,
-      color: 'text-yellow-600',
+      color: 'text-foreground',
+      bgColor: 'bg-secondary/40',
       decimals: 1,
       suffix: '',
     },
@@ -72,21 +74,24 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       title: 'New Bug Reports',
       value: metrics.newBugReports,
       icon: Bug,
-      color: 'text-red-600',
+      color: 'text-foreground',
+      bgColor: 'bg-secondary/40',
       suffix: '',
     },
     {
       title: 'New Feature Requests',
       value: metrics.newFeatureRequests,
       icon: Lightbulb,
-      color: 'text-purple-600',
+      color: 'text-foreground',
+      bgColor: 'bg-secondary/40',
       suffix: '',
     },
     {
       title: 'Pending Feedback Review',
       value: metrics.pendingFeedbackReview || 0,
       icon: Clock,
-      color: 'text-orange-600',
+      color: 'text-foreground',
+      bgColor: 'bg-secondary/40',
       suffix: '',
     },
   ]
@@ -94,7 +99,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
       {cards.map((card) => (
-        <Card key={card.title} className="hover:shadow-md transition-shadow">
+        <Card key={card.title} className={cn("hover:shadow-md transition-all duration-200 hover:border-b-4 hover:border-b-foreground/20", card.bgColor)}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               {card.title}
@@ -102,7 +107,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
             <card.icon className={cn('h-5 w-5', card.color)} />
           </CardHeader>
           <CardContent className="pt-2">
-            <div className="text-3xl font-bold tracking-tight">
+            <div className="text-3xl font-bold tracking-tight text-foreground">
               <AnimatedNumber value={card.value} decimals={card.decimals} suffix={card.suffix} />
             </div>
           </CardContent>

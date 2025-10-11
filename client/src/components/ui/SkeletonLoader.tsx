@@ -25,7 +25,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
           className={`animate-pulse ${className}`}
         >
           <div
-            className={`bg-gray-200 ${circle ? 'rounded-full' : 'rounded'} ${height} ${width}`}
+            className={`bg-muted ${circle ? 'rounded-full' : 'rounded'} ${height} ${width}`}
           />
         </div>
       ))}
@@ -35,7 +35,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
 
 export const SkeletonCard: React.FC<{ lines?: number }> = ({ lines = 3 }) => {
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm">
+    <div className="bg-tertiary rounded-lg p-6 shadow-sm">
       <SkeletonLoader height="h-6" width="w-1/3" className="mb-4" />
       <SkeletonLoader count={lines} className="mb-2" />
       <SkeletonLoader height="h-10" width="w-24" className="mt-4" />

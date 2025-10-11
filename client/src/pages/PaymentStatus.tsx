@@ -102,7 +102,7 @@ function PaymentStatusContent() {
       refetch().then(() => {
         // Redirect to billing settings after a short delay
         setTimeout(() => {
-          navigate('/app/settings/billing', {
+          navigate('/app/settings/account?tab=billing', {
             state: {
               paymentSuccess: true,
               paymentId,
@@ -186,13 +186,13 @@ function PaymentStatusContent() {
 
             {status === 'failed' && (
               <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-                <Link to="/app/settings/billing">Try Again</Link>
+                <Link to="/app/settings/account?tab=billing">Try Again</Link>
               </Button>
             )}
 
             {status === 'cancelled' && (
               <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-                <Link to="/app/settings/billing">Upgrade Plan</Link>
+                <Link to="/app/settings/account?tab=billing">Upgrade Plan</Link>
               </Button>
             )}
           </div>

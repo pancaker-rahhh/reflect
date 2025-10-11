@@ -208,8 +208,8 @@ export function Step1Basics({ form }: Step1BasicsProps) {
                     <FormItem
                       className={`flex items-start space-x-3 space-y-0 rounded-lg border p-4 ${
                         module.featured
-                          ? 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30'
-                          : ''
+                          ? 'border-primary/20 bg-primary/5'
+                          : 'border-border'
                       }`}
                     >
                       <FormControl>
@@ -220,7 +220,7 @@ export function Step1Basics({ form }: Step1BasicsProps) {
                           <module.icon className="h-4 w-4" />
                           {module.label}
                           {module.featured && (
-                            <span className="inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100">
+                            <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
                               Primary
                             </span>
                           )}

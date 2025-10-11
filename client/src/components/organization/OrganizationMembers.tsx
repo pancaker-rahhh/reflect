@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../lib/client';
-import { UserPlus, Mail, MoreHorizontal, Shield, User, Eye, Crown } from 'lucide-react';
+import { UserPlus, Envelope, DotsThree, Shield, User, Eye, Crown } from 'phosphor-react';
 import { InviteMemberModal } from './InviteMemberModal';
 import type { OrganizationMember } from '../../lib/api/organization';
 
@@ -103,8 +103,8 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = ({ organi
         </button>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg">
-        <div className="px-6 py-3 border-b border-gray-200 bg-gray-50">
+      <div className="bg-card border border-border rounded-lg">
+        <div className="px-6 py-3 border-b border-border bg-secondary">
           <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700">
             <div className="col-span-5">Member</div>
             <div className="col-span-3">Role</div>
@@ -151,37 +151,37 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = ({ organi
                         onClick={() => setMemberMenuOpen(memberMenuOpen === member.id ? null : member.id)}
                         className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
                       >
-                        <MoreHorizontal className="w-4 h-4" />
+                        <DotsThree className="w-4 h-4" />
                       </button>
 
                       {memberMenuOpen === member.id && (
-                        <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                        <div className="absolute right-0 mt-1 w-48 bg-tertiary border border-border rounded-md shadow-lg z-10">
                           <div className="py-1">
                             <button
                               onClick={() => updateRoleMutation.mutate({ memberId: member.id, role: 'admin' })}
                               disabled={member.role === 'admin'}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               Make Admin
                             </button>
                             <button
                               onClick={() => updateRoleMutation.mutate({ memberId: member.id, role: 'member' })}
                               disabled={member.role === 'member'}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               Make Member
                             </button>
                             <button
                               onClick={() => updateRoleMutation.mutate({ memberId: member.id, role: 'viewer' })}
                               disabled={member.role === 'viewer'}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               Make Viewer
                             </button>
                             <hr className="my-1" />
                             <button
                               onClick={() => removeMemberMutation.mutate(member.id)}
-                              className="block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                              className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100"
                             >
                               Remove Member
                             </button>
@@ -198,7 +198,7 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = ({ organi
 
         {members.length === 0 && (
           <div className="px-6 py-12 text-center">
-            <Mail className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <Envelope className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No members yet</h3>
             <p className="text-gray-500 mb-4">Invite team members to start collaborating</p>
             <button

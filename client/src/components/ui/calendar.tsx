@@ -1,5 +1,5 @@
 import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { CaretLeft, CaretRight } from "phosphor-react"
 import { DayPicker } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
@@ -13,15 +13,23 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: CalendarProps) {
+  const currentYear = new Date().getFullYear()
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
+      captionLayout={props.captionLayout ?? 'dropdown'}
+      fromYear={props.fromYear ?? 1990}
+      toYear={props.toYear ?? currentYear + 5}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-sm font-medium",
+        caption_label: "sr-only",
+        caption_dropdowns: "flex items-center gap-8",
+        dropdown: "bg-popover text-popover-foreground border border-border rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary",
+        dropdown_month: "bg-popover text-popover-foreground",
+        dropdown_year: "bg-popover text-popover-foreground",
         nav: "space-x-1 flex items-center",
         nav_button: cn(
           buttonVariants({ variant: "outline" }),
@@ -54,9 +62,9 @@ function Calendar({
       components={{
         Chevron: ({ orientation }) =>
           orientation === "left" ? (
-            <ChevronLeft className="h-4 w-4" />
+            <CaretLeft className="h-4 w-4" />
           ) : (
-            <ChevronRight className="h-4 w-4" />
+            <CaretRight className="h-4 w-4" />
           ),
       }}
       {...props}

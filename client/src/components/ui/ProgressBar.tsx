@@ -204,28 +204,28 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       stepCompleted: 'bg-primary shadow-primary/30',
     },
     success: {
-      bg: 'bg-green-500',
-      text: 'text-green-600',
-      border: 'border-green-500',
-      gradient: 'from-green-500 via-green-400 to-green-600',
-      step: 'bg-green-500',
-      stepCompleted: 'bg-green-500 shadow-green-500/30',
+      bg: 'bg-success',
+      text: 'text-success',
+      border: 'border-success',
+      gradient: 'from-success via-success/90 to-success/80',
+      step: 'bg-success',
+      stepCompleted: 'bg-success shadow-success/30',
     },
     warning: {
-      bg: 'bg-yellow-500',
-      text: 'text-yellow-600',
-      border: 'border-yellow-500',
-      gradient: 'from-yellow-500 via-yellow-400 to-yellow-600',
-      step: 'bg-yellow-500',
-      stepCompleted: 'bg-yellow-500 shadow-yellow-500/30',
+      bg: 'bg-warning',
+      text: 'text-warning',
+      border: 'border-warning',
+      gradient: 'from-warning via-warning/90 to-warning/80',
+      step: 'bg-warning',
+      stepCompleted: 'bg-warning shadow-warning/30',
     },
     error: {
-      bg: 'bg-red-500',
-      text: 'text-red-600',
-      border: 'border-red-500',
-      gradient: 'from-red-500 via-red-400 to-red-600',
-      step: 'bg-red-500',
-      stepCompleted: 'bg-red-500 shadow-red-500/30',
+      bg: 'bg-destructive',
+      text: 'text-destructive',
+      border: 'border-destructive',
+      gradient: 'from-destructive via-destructive/90 to-destructive/80',
+      step: 'bg-destructive',
+      stepCompleted: 'bg-destructive shadow-destructive/30',
     },
   }
 
@@ -357,7 +357,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
             style={{ width: `${finalPercentage}%` }}
           >
             {animated && (
-              <div className="absolute inset-0 bg-white/20 animate-shimmer" />
+              <div className="absolute inset-0 bg-tertiary/20 animate-shimmer" />
             )}
           </div>
         </div>

@@ -345,7 +345,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
   const renderGeneralSettings = () => (
     <div className="p-6 space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Project Information</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">Project Information</h3>
 
         <div className="space-y-4">
           <AnimatedInput
@@ -362,15 +362,16 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             placeholder="Describe your project"
             rows={3}
+            className="placeholder:text-muted-foreground/70"
           />
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Visibility</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Visibility</label>
               <select
                 value={formData.visibility}
                 onChange={(e) => setFormData({ ...formData, visibility: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-primary"
               >
                 <option value="private">Private</option>
                 <option value="public">Public</option>
@@ -381,11 +382,11 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Timezone</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Timezone</label>
               <select
                 value={formData.timezone}
                 onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-primary"
               >
                 <option value="UTC">UTC</option>
                 <option value="America/New_York">Eastern Time</option>
@@ -396,11 +397,11 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Language</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Language</label>
               <select
                 value={formData.language}
                 onChange={(e) => setFormData({ ...formData, language: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-primary"
               >
                 <option value="en">English</option>
                 <option value="es">Spanish</option>
@@ -413,15 +414,15 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
         </div>
       </div>
 
-      <div className="flex justify-end pt-4 border-t">
+      <div className="flex justify-end pt-4 border-t border-border">
         <button
           onClick={handleSaveGeneral}
           disabled={saving}
-          className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
+          className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2"
         >
           {saving ? (
             <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground"></div>
               Saving...
             </>
           ) : (
@@ -483,18 +484,18 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
     <div className="p-6">
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
-          <h3 className="text-lg font-semibold text-gray-900">API Keys</h3>
-          <span className="inline-flex items-center px-2 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full">
-            <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mr-1 animate-pulse"></div>
+          <h3 className="text-lg font-semibold text-foreground">API Keys</h3>
+          <span className="inline-flex items-center px-2 py-1 bg-muted text-muted-foreground text-xs font-medium rounded-full">
+            <div className="w-1.5 h-1.5 rounded-full mr-1 animate-pulse bg-[hsl(var(--primary))]"></div>
             WIP
           </span>
         </div>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">
           Manage API keys for accessing your project programmatically
         </p>
-        <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-          <p className="text-orange-800 text-sm flex items-center">
-            <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+        <div className="mt-3 p-3 bg-muted/30 border border-border rounded-lg">
+          <p className="text-muted-foreground text-sm flex items-center">
+            <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0 text-[hsl(var(--primary))]" />
             API Keys functionality is currently under development. The interface below is for
             preview purposes only.
           </p>
@@ -503,34 +504,34 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
 
       <div className="space-y-4">
         {apiKeys.map((apiKey) => (
-          <div key={apiKey.id} className="border border-gray-200 rounded-lg p-4">
+          <div key={apiKey.id} className="border border-border rounded-lg p-4 bg-card">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <h4 className="font-medium text-gray-900">{apiKey.name}</h4>
-                <p className="text-sm text-gray-500 mt-1">
+                <h4 className="font-medium text-foreground">{apiKey.name}</h4>
+                <p className="text-sm text-muted-foreground mt-1">
                   Created: {apiKey.created} • Last used: {apiKey.lastUsed}
                 </p>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => handleRegenerateApiKey(apiKey.id)}
-                  className="p-2 text-gray-400 hover:text-indigo-600"
+                  className="p-2 text-muted-foreground hover:text-[hsl(var(--primary))]"
                   title="Regenerate key"
                 >
                   <RefreshCw className="w-4 h-4" />
                 </button>
-                <button className="p-2 text-gray-400 hover:text-red-600">
+                <button className="p-2 text-muted-foreground hover:text-[hsl(var(--destructive))]">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg font-mono text-sm">
-              <Lock className="w-4 h-4 text-gray-400" />
-              <span className="flex-1 text-gray-600">{apiKey.key}</span>
+            <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg font-mono text-sm">
+              <Lock className="w-4 h-4 text-muted-foreground" />
+              <span className="flex-1 text-muted-foreground">{apiKey.key}</span>
               <button
                 onClick={() => handleCopyApiKey(apiKey.key)}
-                className="p-1 text-gray-400 hover:text-gray-600"
+                className="p-1 text-muted-foreground hover:text-foreground"
               >
                 <Copy className="w-4 h-4" />
               </button>
@@ -541,7 +542,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
 
       <button
         onClick={() => setShowApiKeyModal(true)}
-        className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+        className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-2"
       >
         <Key className="w-4 h-4" />
         Generate New API Key
@@ -552,19 +553,19 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
   const renderPlaceholderSection = (title: string, description: string, icon: React.ReactNode) => (
     <div className="p-6">
       <div className="text-center py-12">
-        <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
           {icon}
         </div>
         <div className="mb-3">
-          <span className="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-700 text-sm font-medium rounded-full">
-            <div className="w-2 h-2 bg-orange-500 rounded-full mr-2 animate-pulse"></div>
+          <span className="inline-flex items-center px-3 py-1 bg-muted text-muted-foreground text-sm font-medium rounded-full">
+            <div className="w-2 h-2 rounded-full mr-2 animate-pulse bg-[hsl(var(--primary))]"></div>
             Work in Progress
           </span>
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-        <p className="text-gray-500 mb-4 max-w-md mx-auto">{description}</p>
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-orange-800 text-sm max-w-md mx-auto">
-          <AlertCircle className="w-4 h-4 inline mr-2" />
+        <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
+        <p className="text-muted-foreground mb-4 max-w-md mx-auto">{description}</p>
+        <div className="bg-muted/30 border border-border rounded-lg p-4 text-muted-foreground text-sm max-w-md mx-auto">
+          <AlertCircle className="w-4 h-4 inline mr-2 text-[hsl(var(--primary))]" />
           This feature is currently under development and will be available soon.
         </div>
       </div>
@@ -574,25 +575,25 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
   const renderDangerZone = () => (
     <div className="p-6">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Danger Zone</h3>
-        <p className="text-sm text-gray-600">Irreversible and destructive actions</p>
+        <h3 className="text-lg font-semibold text-foreground mb-2">Danger Zone</h3>
+        <p className="text-sm text-muted-foreground">Irreversible and destructive actions</p>
       </div>
 
       <div className="space-y-4">
-        <div className="border border-red-200 rounded-lg p-4 bg-red-50">
+        <div className="border rounded-lg p-4 bg-[hsl(var(--destructive))/0.08] border-[hsl(var(--destructive))/0.25]">
           <div className="flex items-start justify-between">
             <div>
-              <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-red-600" />
+              <h4 className="font-medium text-foreground flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-[hsl(var(--destructive))]" />
                 Delete Project
               </h4>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 Permanently delete this project and all of its data. This action cannot be undone.
               </p>
             </div>
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              className="px-4 py-2 bg-[hsl(var(--destructive))] text-white rounded-lg hover:bg-[hsl(var(--destructive))/0.8]"
             >
               Delete Project
             </button>
@@ -628,7 +629,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     )
   }
@@ -680,8 +681,8 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="border-b border-gray-200">
+      <div className="bg-card rounded-xl shadow-soft overflow-hidden border border-border">
+        <div className="border-b border-border">
           <nav className="flex">
             {tabs.map((tab) => {
               const Icon = tab.icon
@@ -691,8 +692,8 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
                   onClick={() => setActiveTab(tab.id as Tab)}
                   className={`flex-1 lg:flex-initial flex items-center justify-center lg:justify-start gap-2 px-6 py-4 border-b-2 font-medium text-sm transition-colors relative ${
                     activeTab === tab.id
-                      ? 'border-indigo-500 text-indigo-600 bg-indigo-50/50'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                      ? 'border-primary text-foreground bg-secondary/30'
+                      : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary/30'
                   }`}
                 >
                   <Icon className="w-5 h-5" />

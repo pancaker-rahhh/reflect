@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { ArrowRight, CheckCircle, Loader2, Calendar, User } from 'lucide-react'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { getTintByScoreOutOfFive } from '@/lib/tints'
 import { FeedbackConversionModal } from './FeedbackConversionModal'
 import { FeedbackDetailModal } from './FeedbackDetailModal'
 
@@ -67,13 +68,16 @@ export function FeedbackCard({
     (!ratingBasedTypes.includes(feedbackType) ||
       (ratingBasedTypes.includes(feedbackType) && hasMessage))
 
+  const tintClass = getTintByScoreOutOfFive(feedback.overall_rating);
+
   return (
     <>
       <Card
         className={cn(
           'group transition-all duration-200 hover:shadow-md',
           isSelectionMode && 'cursor-pointer',
-          isSelected && 'ring-2 ring-primary border-primary/50 bg-primary/5'
+          isSelected && 'ring-2 ring-primary border-primary/50 bg-primary/5',
+          !isSelected && feedback.overall_rating && `${tintClass} border border-transparent`
         )}
         onClick={handleCardClick}
       >

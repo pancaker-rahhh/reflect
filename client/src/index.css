@@ -34,26 +34,41 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 262.1 83.3% 57.8%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 262.1 83.3% 57.8%;
+    /* Supabase dark theme tokens */
+    --background: 222 50% 6%; /* deep navy/ink */
+    --foreground: 210 40% 96%;
+
+    --card: 222 50% 7.5%;
+    --card-foreground: 210 40% 96%;
+
+    --popover: 222 50% 7.5%;
+    --popover-foreground: 210 40% 96%;
+
+    /* Supabase brand green #3ECF8E */
+    --primary: 152 62% 52%;
+    --primary-foreground: 158 100% 7%;
+
+    --secondary: 217 25% 16%;
+    --secondary-foreground: 210 40% 96%;
+
+    --muted: 217 25% 16%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 25% 16%;
+    --accent-foreground: 210 40% 96%;
+
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 217 25% 18%;
+    --input: 217 25% 18%;
+    --ring: 152 62% 52%;
+
     --radius: 0.5rem;
+
+    /* Banner (info) colors derived from Tailwind blue-50 and blue-900 */
+    --banner-info-bg: 213 100% 97%;
+    --banner-info-foreground: 221 63% 33%;
   }
 }
 
@@ -64,42 +79,67 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family:
-      'Inter',
-      system-ui,
-      -apple-system,
-      sans-serif;
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    letter-spacing: 0.025em;
+    word-spacing: 0.1em;
   }
 
   h1 {
-    @apply text-4xl font-bold tracking-tight;
+    @apply text-5xl font-bold tracking-tight;
+    color: hsl(var(--foreground));
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+    word-spacing: 0.05em;
   }
 
   h2 {
     @apply text-3xl font-semibold tracking-tight;
+    color: hsl(var(--foreground));
+    line-height: 1.2;
+    letter-spacing: 0.015em;
+    word-spacing: 0.05em;
   }
 
   h3 {
     @apply text-2xl font-semibold tracking-tight;
+    color: hsl(var(--foreground));
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+    word-spacing: 0.04em;
   }
 
   h4 {
     @apply text-xl font-semibold tracking-tight;
+    color: hsl(var(--foreground));
+    line-height: 1.4;
+    letter-spacing: 0.008em;
+    word-spacing: 0.03em;
   }
 
   h5 {
     @apply text-lg font-semibold;
+    color: hsl(var(--foreground));
+    line-height: 1.4;
+    letter-spacing: 0.005em;
+    word-spacing: 0.02em;
   }
 
   h6 {
     @apply text-base font-semibold;
+    color: hsl(var(--foreground));
+    line-height: 1.5;
+    letter-spacing: 0.003em;
+    word-spacing: 0.02em;
   }
 
   p {
     @apply leading-relaxed;
+    color: hsl(var(--muted-foreground));
+    font-size: 1rem;
+    line-height: 1.6;
   }
 
   /* Enhanced keyboard navigation */
@@ -149,7 +189,6 @@
     -webkit-line-clamp: 3;
   }
 
-  /* Enhanced animations for roadmap */
   @keyframes slide-in-from-left {
     from {
       opacity: 0;
@@ -194,16 +233,7 @@
     }
   }
 
-  /* Enhanced micro-interactions */
-  @keyframes pulse-glow {
-    0%,
-    100% {
-      box-shadow: 0 0 5px rgba(139, 92, 246, 0.3);
-    }
-    50% {
-      box-shadow: 0 0 20px rgba(139, 92, 246, 0.6);
-    }
-  }
+  /* Remove non-Supabase glow */
 
   @keyframes float {
     0%,
@@ -300,15 +330,7 @@
     transform: scale(0.95);
   }
 
-  /* Card hover effects */
-  .card-hover {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .card-hover:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  }
+  /* Remove non-Supabase glass/pastel utilities */
 
   /* Smooth text transitions */
   .text-transition {
@@ -334,6 +356,8 @@
   .animate-float {
     animation: float 3s ease-in-out infinite;
   }
+
+  /* Removed metric/pastel/glass utilities to match Supabase system */
 }
 
 @layer utilities {
@@ -415,32 +439,55 @@
     background: hsl(var(--muted-foreground) / 0.5);
   }
 
-  /* Grid pattern background */
-  .bg-grid-pattern {
-    background-image:
-      linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
-    background-size: 20px 20px;
+  /* Removed grid/glass/pastel utilities to match Supabase system */
+}
+
+@layer base {
+  :root {
+    /* Tints — reusable color accents for cards, states, and highlights */
+    --tint-primary: 152 62% 52%;  /* Supabase green */
+    --tint-secondary: 217 25% 16%;
+    --tint-info: 213 100% 70%;    /* blue tone */
+    --tint-warning: 45 100% 50%;  /* yellow */
+    --tint-danger: 0 70% 55%;     /* red */
+    --tint-success: 152 62% 52%;  /* green */
+    --tint-neutral: 215 20% 65%;  /* gray */
+  }
+}
+
+@layer utilities {
+  .tint-primary {
+    background-color: hsl(var(--tint-primary) / 0.1);
+    color: hsl(var(--tint-primary));
   }
 
-  /* Removed dark mode variant of grid pattern */
-
-  /* Landing Page Specific Styles */
-  .hover-glow:hover {
-    box-shadow: 0 0 20px rgba(147, 51, 234, 0.4);
-    transition: box-shadow 0.3s ease;
+  .tint-secondary {
+    background-color: hsl(var(--tint-secondary) / 0.1);
+    color: hsl(var(--tint-secondary));
   }
 
-  /* Grid Background Pattern for Landing Page */
-  .bg-grid-white\/\[0\.02\] {
-    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  .tint-info {
+    background-color: hsl(var(--tint-info) / 0.1);
+    color: hsl(var(--tint-info));
   }
 
-  .bg-grid-white\/\[0\.05\] {
-    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  .tint-warning {
+    background-color: hsl(var(--tint-warning) / 0.1);
+    color: hsl(var(--tint-warning));
   }
 
-  .bg-grid-white\/\[0\.1\] {
-    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  .tint-danger {
+    background-color: hsl(var(--tint-danger) / 0.1);
+    color: hsl(var(--tint-danger));
+  }
+
+  .tint-success {
+    background-color: hsl(var(--tint-success) / 0.1);
+    color: hsl(var(--tint-success));
+  }
+
+  .tint-neutral {
+    background-color: hsl(var(--tint-neutral) / 0.1);
+    color: hsl(var(--tint-neutral));
   }
 }

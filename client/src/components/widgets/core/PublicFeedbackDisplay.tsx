@@ -219,7 +219,7 @@ export function PublicFeedbackDisplay({
 
   const PlaceholderCard = () => (
     <div
-      className="p-4 rounded-lg border border-gray-200 bg-white/50 backdrop-blur-sm animate-pulse"
+      className="p-4 rounded-lg border border-border bg-tertiary/50 backdrop-blur-sm animate-pulse"
       style={{ borderColor: `${colors.primary}20` }}
     >
       <div className="flex items-center justify-between mb-3">
