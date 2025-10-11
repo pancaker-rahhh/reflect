@@ -63,23 +63,23 @@ export function RecentActivityTable({
                               : 'bg-purple-500'
                       }`}
                     />
-                    <span className="text-sm font-medium text-gray-600 uppercase tracking-wide">
+                    <span className="text-sm font-medium uppercase tracking-wide">
                       {typeConfigItem.label}
                     </span>
 
                     {activity.widget_name && (
                       <>
                         <span className="text-gray-400">•</span>
-                        <span className="text-xs text-gray-500">{activity.widget_name}</span>
+                        <span className="text-xs">{activity.widget_name}</span>
                       </>
                     )}
                   </div>
 
-                  <h3 className="text-base font-medium text-gray-900 mb-2 leading-relaxed">
+                  <h3 className="text-base font-medium mb-2 leading-relaxed">
                     {activity.summary}
                   </h3>
 
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                  <div className="flex items-center gap-4 text-sm">
                     <span>By {activity.submittedBy}</span>
                     <span>•</span>
                     <span>
@@ -89,7 +89,7 @@ export function RecentActivityTable({
                     {activity.rating && (
                       <>
                         <span>•</span>
-                        <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+                        <span className="text-xs bg-secondary px-2 py-1 rounded-full">
                           Rating: {activity.rating}
                         </span>
                       </>
