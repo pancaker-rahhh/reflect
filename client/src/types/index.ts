@@ -225,6 +225,7 @@ export interface RoadmapActionItem {
   feedback_id?: string
   title: string
   description?: string
+  priority?: 'low' | 'medium' | 'high' | 'critical'
   order: number
   vote_count: number
   submitter_name?: string

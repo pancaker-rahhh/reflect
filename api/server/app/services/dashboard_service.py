@@ -229,7 +229,9 @@ class DashboardService:
                     all_feedback.extend(project_feedback)
 
                 all_feedback = sorted(
-                    all_feedback, key=lambda x: x.get('created_at', ''), reverse=True
+                    all_feedback,
+                    key=lambda x: x.get('updated_at') or x.get('created_at', ''),
+                    reverse=True,
                 )
                 all_feedback = all_feedback[offset : offset + limit]
 

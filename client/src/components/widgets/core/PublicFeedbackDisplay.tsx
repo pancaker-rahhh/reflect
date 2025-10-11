@@ -59,7 +59,10 @@ export function PublicFeedbackDisplay({
         return
       }
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+      const apiBaseUrl =
+        process.env.NODE_ENV === 'production'
+          ? 'https://api.reflectfeedback.com/api/v1'
+          : 'http://localhost:8000/api/v1'
       let endpoint = ''
 
       switch (feedbackType) {
@@ -67,10 +70,10 @@ export function PublicFeedbackDisplay({
           endpoint = `${apiBaseUrl}/public/widgets/${widgetKey}/reviews`
           break
         case 'BUG_REPORT':
-          endpoint = `${apiBaseUrl}/public/widgets/bug-reports/${widgetKey}`
+          endpoint = `${apiBaseUrl}/public/widgets/${widgetKey}/feedback?feedback_type=bug_report`
           break
         case 'FEATURE_REQUEST':
-          endpoint = `${apiBaseUrl}/public/widgets/features/${widgetKey}`
+          endpoint = `${apiBaseUrl}/public/widgets/${widgetKey}/feedback?feedback_type=feature_request`
           break
         case 'FEEDBACK':
         default:
@@ -107,19 +110,19 @@ export function PublicFeedbackDisplay({
 
   const voteFeedback = async (feedbackId: string) => {
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+      const apiBaseUrl =
+        process.env.NODE_ENV === 'production'
+          ? 'https://api.reflectfeedback.com/api/v1'
+          : 'http://localhost:8000/api/v1'
 
-      let endpoint = ''
-      let payload: any = { widgetKey, feedbackId }
-
-      if (feedbackType === 'FEATURE_REQUEST') {
-        endpoint = `${apiBaseUrl}/public/features/upvote`
-        payload = { widgetKey, featureId: feedbackId }
-      } else {
-        endpoint = `${apiBaseUrl}/public/feedback/upvote`
+      const itemType = feedbackType === 'FEATURE_REQUEST' ? 'feature_request' : 'general_feedback'
+      const payload = {
+        itemId: feedbackId,
+        itemType,
+        widgetKey,
       }
 
-      const response = await fetch(endpoint, {
+      const response = await fetch(`${apiBaseUrl}/public/vote`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -368,22 +371,21 @@ export function PublicFeedbackDisplay({
                 )}
               </div>
 
-              {/* Content */}
-              {item.title && (
-                <h4 className="font-medium mb-1 text-sm" style={{ color: colors.text }}>
-                  {item.title}
-                </h4>
-              )}
-
-              {item.message && (
-                <p className="text-xs text-gray-700 mb-2 line-clamp-2">{item.message}</p>
-              )}
-
-              {/* Type-specific fields */}
-              {feedbackType === 'FEATURE_REQUEST' && item.description && (
-                <div className="space-y-1">
-                  <div className="text-xs text-gray-600">{item.description}</div>
+              {feedbackType === 'BUG_REPORT' || feedbackType === 'FEATURE_REQUEST' ? (
+                <div className="text-sm text-gray-700 mb-2 line-clamp-3">
+                  {item.message || item.description || item.title}
                 </div>
+              ) : (
+                <>
+                  {item.title && (
+                    <h4 className="font-medium mb-1 text-sm" style={{ color: colors.text }}>
+                      {item.title}
+                    </h4>
+                  )}
+                  {item.message && (
+                    <p className="text-xs text-gray-700 mb-2 line-clamp-2">{item.message}</p>
+                  )}
+                </>
               )}
 
               {/* Footer with votes and quick actions */}

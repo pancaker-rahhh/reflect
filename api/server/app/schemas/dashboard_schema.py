@@ -42,8 +42,6 @@ class FeedbackDataResponse(BaseModel):
 
     severity_level: Optional[str] = None
 
-    implementation_status: Optional[str] = None
-
     nps_score: Optional[int] = None
     csat_score: Optional[int] = None
     ces_score: Optional[int] = None

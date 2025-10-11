@@ -39,8 +39,9 @@ export function FeedbackCard({
     if (isSelectionMode) {
       onToggleSelection(feedback.id)
     } else {
-      const surveyTypes = ['CES', 'NPS', 'CSAT', 'SURVEY']
-      if (surveyTypes.includes(feedback.feedback_type)) {
+      const surveyTypes = ['CES', 'NPS', 'CSAT', 'SURVEY', 'REVIEW']
+      const feedbackType = feedback.feedback_type?.toUpperCase()
+      if (surveyTypes.includes(feedbackType)) {
         setIsDetailModalOpen(true)
       }
     }
@@ -58,8 +59,14 @@ export function FeedbackCard({
 
   const isConverted = feedback.converted_to_action_item_id
 
-  const nonConvertibleTypes = ['CES', 'NPS', 'CSAT', 'SURVEY']
-  const shouldShowConvert = !isConverted && !nonConvertibleTypes.includes(feedback.feedback_type)
+  const ratingBasedTypes = ['CES', 'NPS', 'CSAT', 'SURVEY', 'REVIEW']
+  const feedbackType = feedback.feedback_type?.toUpperCase()
+  const hasMessage = feedback.message && feedback.message.trim()
+
+  const shouldShowConvert =
+    !isConverted &&
+    (!ratingBasedTypes.includes(feedbackType) ||
+      (ratingBasedTypes.includes(feedbackType) && hasMessage))
 
   const tintClass = getTintByScoreOutOfFive(feedback.overall_rating);
 

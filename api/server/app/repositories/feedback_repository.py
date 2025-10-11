@@ -311,7 +311,9 @@ class FeedbackRepository(BaseRepository[Feedback]):
         query = (
             select(Feedback)
             .options(selectinload(Feedback.widget))
-            .order_by(Feedback.created_at.desc())
+            .order_by(
+                Feedback.updated_at.desc().nullslast(), Feedback.created_at.desc()
+            )
             .limit(limit)
         )
 
@@ -448,11 +450,7 @@ class FeedbackRepository(BaseRepository[Feedback]):
                 feature_result = await db.execute(feature_stmt)
                 feature_data = feature_result.scalar_one_or_none()
                 if feature_data:
-                    feedback_dict.update(
-                        {
-                            'implementation_status': feature_data.implementation_status,
-                        }
-                    )
+                    pass
 
             elif item.feedback_type == 'NPS':
                 nps_stmt = select(NPSFeedback).where(NPSFeedback.id == item.id)

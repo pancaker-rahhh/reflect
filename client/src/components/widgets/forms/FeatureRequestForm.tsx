@@ -13,13 +13,7 @@ interface ExistingFeature {
 }
 
 interface FeatureRequestFormProps {
-  onSubmit: (data: {
-    title: string
-    description: string
-    category: string
-    priority: string
-    useCase: string
-  }) => Promise<void>
+  onSubmit: (data: { description: string; priority: string; useCase: string }) => Promise<void>
   onUpvote?: (featureId: string) => Promise<void>
   widgetKey?: string
   isSubmitting?: boolean
@@ -97,7 +91,10 @@ export function FeatureRequestForm({
     }
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+      const apiBaseUrl =
+        process.env.NODE_ENV === 'production'
+          ? 'https://api.reflectfeedback.com/api/v1'
+          : 'http://localhost:8000/api/v1'
 
       const response = await fetch(`${apiBaseUrl}/public/widgets/features/${widgetKey}`)
 
@@ -143,7 +140,10 @@ export function FeatureRequestForm({
     setVotingFeatures((prev) => new Set([...prev, featureId]))
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+      const apiBaseUrl =
+        process.env.NODE_ENV === 'production'
+          ? 'https://api.reflectfeedback.com/api/v1'
+          : 'http://localhost:8000/api/v1'
 
       const response = await fetch(`${apiBaseUrl}/public/vote`, {
         method: 'POST',
@@ -189,11 +189,9 @@ export function FeatureRequestForm({
     if (!description.trim()) return
 
     await onSubmit({
-      title: description.trim().split('\n')[0] || description.trim().substring(0, 50),
       description: description.trim(),
-      category: 'other',
       priority: priority || 'medium',
-      useCase: description.trim(), // Use the description as use case
+      useCase: description.trim(),
     })
   }
 

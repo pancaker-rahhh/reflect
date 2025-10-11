@@ -208,6 +208,23 @@ export function RoadmapCard({
             )}
           </div>
 
+          {feature.priority && (
+            <div className="flex items-center gap-2">
+              <Badge
+                variant="outline"
+                className={cn(
+                  'text-xs font-medium px-2 py-1',
+                  feature.priority === 'critical' && 'bg-red-100 text-red-800 border-red-200',
+                  feature.priority === 'high' && 'bg-orange-100 text-orange-800 border-orange-200',
+                  feature.priority === 'medium' && 'bg-blue-100 text-blue-800 border-blue-200',
+                  feature.priority === 'low' && 'bg-green-100 text-green-800 border-green-200'
+                )}
+              >
+                {feature.priority.charAt(0).toUpperCase() + feature.priority.slice(1)} Priority
+              </Badge>
+            </div>
+          )}
+
           {/* Description */}
           {feature.description && (
             <div className="line-clamp-3">

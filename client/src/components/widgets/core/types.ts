@@ -107,16 +107,12 @@ export interface ReviewFeedbackData {
 }
 
 export interface BugReportFeedbackData {
-  title: string
-  severity: string
+  severity_level: string
 }
 
-export interface FeatureRequestFeedbackData {
-  title: string
-}
+export interface FeatureRequestFeedbackData {}
 
 export interface GeneralFeedbackData {
-  title: string
   message: string
 }
 

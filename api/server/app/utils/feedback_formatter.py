@@ -8,10 +8,13 @@ class FeedbackFormatter:
 
     @staticmethod
     def format_display_title(item: Feedback) -> str:
-        content = item.message or item.title
+        content = item.message
 
         if not content or content.strip() == '':
-            return f'{item.feedback_type.value.replace("_", " ").title()} Submitted'
+            if item.rating is not None:
+                return f'Rating: {item.rating}'
+            else:
+                return f'{item.feedback_type.value.replace("_", " ").title()} Submitted'
 
         if content.startswith('New '):
             content = content[4:]

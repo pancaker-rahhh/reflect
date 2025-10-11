@@ -63,7 +63,6 @@ class FeedbackService:
     ) -> FeedbackResponsePayload:
         obj = await feedback_repository.create_polymorphic(db, **payload.model_dump())
 
-        # Dispatch webhook for new feedback
         try:
             from app.services.webhook_dispatcher import webhook_dispatcher
 
@@ -126,7 +125,6 @@ class FeedbackService:
                 message='Upgrade to Pro plan for unlimited responses',
             )
 
-        # Base feedback data
         base_data = {
             'widget_id': widget_id,
             'project_id': project_id,
@@ -138,7 +136,6 @@ class FeedbackService:
             },
         }
 
-        # Create appropriate feedback based on widget type
         if widget_type == WidgetType.REVIEW:
             payload = self._create_review_feedback(base_data, data)
         elif widget_type == WidgetType.BUG_REPORT:
@@ -152,7 +149,6 @@ class FeedbackService:
         elif widget_type == WidgetType.CES:
             payload = self._create_ces_feedback(base_data, data)
         else:
-            # Default to general feedback
             payload = self._create_general_feedback(base_data, data)
 
         result = await self.create_feedback(db, payload)
@@ -165,50 +161,38 @@ class FeedbackService:
 
     def _get_resource_type_from_widget_type(self, widget_type: WidgetType) -> str:
         """Map widget type to subscription resource type"""
-        # All feedback types now count towards the unified 'responses' limit
         return 'responses'
 
     def _create_review_feedback(
         self, base_data: Dict[str, Any], data: Dict[str, Any]
     ) -> ReviewFeedbackCreate:
         """Create review feedback with 5-star rating system"""
-        logger.info(f'🔍 _create_review_feedback - data: {data}')
-        logger.info(
-            f'🔍 _create_review_feedback - rating from data: {data.get("rating")}'
-        )
         rating_value = data.get('rating')
-
-        # Only include message if provided and not empty
-        message_value = data.get('message') or data.get('comment') or ''
+        user_message = data.get('message', '').strip()
 
         return ReviewFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.REVIEW,
-            rating=rating_value,  # Set base rating field
-            overall_rating=rating_value,  # Set overall_rating field for review-specific data
-            title=data.get('title', 'Product Review'),
-            message=message_value if message_value.strip() else None,
+            rating=rating_value,
+            overall_rating=rating_value,
+            message=user_message,
         )
 
     def _create_bug_report_feedback(
         self, base_data: Dict[str, Any], data: Dict[str, Any]
     ) -> BugReportFeedbackCreate:
         """Create bug report feedback with detailed fields"""
-        # Convert severity string to FeedbackPriority enum
         severity_str = data.get('severity', 'medium').lower()
         try:
             severity_level = FeedbackPriority(severity_str)
         except ValueError:
-            # Default to medium if invalid severity provided
             severity_level = FeedbackPriority.MEDIUM
 
         user_description = data.get('message', '') or data.get('description', '')
-        title_value = data.get('title', '')
 
         return BugReportFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.BUG_REPORT,
-            title=title_value or 'Bug Report',
             message=user_description,
             severity_level=severity_level,
         )
@@ -218,10 +202,10 @@ class FeedbackService:
     ) -> FeatureRequestFeedbackCreate:
         """Create feature request feedback"""
         user_description = data.get('message', '') or data.get('description', '')
+
         return FeatureRequestFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.FEATURE_REQUEST,
-            title=data.get('title') or 'Feature Request',
             message=user_description,
         )
 
@@ -229,7 +213,7 @@ class FeedbackService:
         self, base_data: Dict[str, Any], data: Dict[str, Any]
     ) -> NPSFeedbackCreate:
         """Create NPS feedback with 0-10 scale"""
-        nps_score = data.get('rating', 0)  # Use rating field from frontend
+        nps_score = data.get('rating', 0)
         if not isinstance(nps_score, int) or nps_score < 0 or nps_score > 10:
             raise ValidationError('NPS score must be an integer between 0 and 10')
 
@@ -241,24 +225,22 @@ class FeedbackService:
         else:
             promoter_category = 'detractor'
 
-        # Only include message if provided and not empty
-        message_value = data.get('message') or data.get('comment') or ''
+        user_message = data.get('message', '').strip()
 
         return NPSFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.NPS,
-            rating=nps_score,  # Set base rating field
+            rating=nps_score,
             nps_score=nps_score,
             promoter_category=promoter_category,
-            title='NPS Survey Response',
-            message=message_value if message_value.strip() else None,
+            message=user_message,
         )
 
     def _create_csat_feedback(
         self, base_data: Dict[str, Any], data: Dict[str, Any]
     ) -> CSATFeedbackCreate:
         """Create CSAT feedback with 1-5 scale"""
-        csat_score = data.get('rating', 1)  # Use rating field from frontend
+        csat_score = data.get('rating', 1)
         if not isinstance(csat_score, int) or csat_score < 1 or csat_score > 5:
             raise ValidationError('CSAT score must be an integer between 1 and 5')
 
@@ -271,24 +253,22 @@ class FeedbackService:
             5: 'very_satisfied',
         }
 
-        # Only include message if provided and not empty
-        message_value = data.get('message') or data.get('comment') or ''
+        user_message = data.get('message', '').strip()
 
         return CSATFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.CSAT,
-            rating=csat_score,  # Set base rating field
+            rating=csat_score,
             csat_score=csat_score,
             satisfaction_level=satisfaction_levels.get(csat_score, 'neutral'),
-            title='CSAT Survey Response',
-            message=message_value if message_value.strip() else None,
+            message=user_message,
         )
 
     def _create_ces_feedback(
         self, base_data: Dict[str, Any], data: Dict[str, Any]
     ) -> CESFeedbackCreate:
         """Create CES feedback with 1-5 scale"""
-        ces_score = data.get('rating', 1)  # Use rating field from frontend
+        ces_score = data.get('rating', 1)
         if not isinstance(ces_score, int) or ces_score < 1 or ces_score > 5:
             raise ValidationError('CES score must be an integer between 1 and 5')
 
@@ -301,29 +281,25 @@ class FeedbackService:
             5: 'very_easy',
         }
 
-        # Only include message if provided and not empty
-        message_value = data.get('message') or data.get('comment') or ''
+        user_message = data.get('message', '').strip()
 
         return CESFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.CES,
-            rating=ces_score,  # Set base rating field
+            rating=ces_score,
             ces_score=ces_score,
             ease_level=ease_levels.get(ces_score, 'neutral'),
-            title='CES Survey Response',
-            message=message_value if message_value.strip() else None,
+            message=user_message,
         )
 
     def _create_general_feedback(
         self, base_data: Dict[str, Any], data: Dict[str, Any]
     ) -> GeneralFeedbackCreate:
         user_message = data.get('message', '')
-        title = user_message
 
         return GeneralFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.GENERAL,
-            title=title,
             message=user_message,
             rating=data.get('rating'),
         )
@@ -537,10 +513,8 @@ class FeedbackService:
 
         logger.info('Found existing feedback, updating data')
 
-        # Update the feedback data - only update safe, non-relationship fields
         logger.info(f'Updating feedback data with keys: {list(data.keys())}')
 
-        # Define safe fields that can be updated directly
         safe_fields = {
             'title',
             'message',
@@ -550,6 +524,9 @@ class FeedbackService:
             'status',
             'feedback_metadata',
         }
+
+        if 'message' in data:
+            pass
 
         rating_value = None
         for key, value in data.items():

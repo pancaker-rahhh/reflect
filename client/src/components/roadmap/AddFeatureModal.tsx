@@ -14,6 +14,13 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 import { Sparkles, Loader2, Plus, Check, Lightbulb, FileText, Hash } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -34,6 +41,7 @@ export interface FeatureFormData {
   title: string
   description: string
   tagIds: string[]
+  priority: 'low' | 'medium' | 'high' | 'critical'
 }
 
 export function AddFeatureModal({
@@ -49,6 +57,7 @@ export function AddFeatureModal({
     title: '',
     description: '',
     tagIds: [],
+    priority: 'medium',
   })
 
   // Fetch tags
@@ -60,7 +69,7 @@ export function AddFeatureModal({
 
   useEffect(() => {
     if (!isOpen) {
-      setFormData({ title: '', description: '', tagIds: [] })
+      setFormData({ title: '', description: '', tagIds: [], priority: 'medium' })
     }
   }, [isOpen])
 
@@ -122,7 +131,8 @@ export function AddFeatureModal({
             <div className="flex items-center gap-2 mb-3">
               <Lightbulb className="h-4 w-4 text-muted-foreground" />
               <Label className="text-sm font-semibold text-foreground">
-                Feature Description <span className="text-destructive">*</span>
+                Feature Description{' '}
+                <span className="text-muted-foreground text-xs">(Optional)</span>
               </Label>
             </div>
             <Textarea
@@ -140,7 +150,7 @@ export function AddFeatureModal({
             />
             <div className="flex items-center justify-between mt-2">
               <p className="text-xs text-muted-foreground">
-                Required for better understanding and processing of your request.
+                Optional - provide additional details about the feature.
               </p>
               <div
                 className={cn(
@@ -153,7 +163,34 @@ export function AddFeatureModal({
             </div>
           </div>
 
-          {/* Tags Section */}
+          <div className="bg-muted/30 rounded-lg p-4 border border-border/50 transition-all duration-200 hover:border-border/70 hover:bg-muted/40">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="h-4 w-4 text-muted-foreground" />
+              <Label className="text-sm font-semibold text-foreground">
+                Priority <span className="text-destructive">*</span>
+              </Label>
+            </div>
+            <Select
+              value={formData.priority}
+              onValueChange={(value: 'low' | 'medium' | 'high' | 'critical') =>
+                setFormData((prev) => ({ ...prev, priority: value }))
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="critical">Critical</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-2">
+              Choose the priority level for this feature.
+            </p>
+          </div>
+
           {tags.length > 0 && (
             <div className="bg-muted/30 rounded-lg p-4 border border-border/50 transition-all duration-200 hover:border-border/70 hover:bg-muted/40">
               <div className="flex items-center gap-2 mb-3">
@@ -228,7 +265,7 @@ export function AddFeatureModal({
           <Button
             type="submit"
             onClick={() => onSubmit(formData)}
-            disabled={!formData.title.trim() || !formData.description.trim() || isLoading}
+            disabled={!formData.title.trim() || isLoading}
             className="px-6 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (

@@ -4,10 +4,8 @@ import { cn } from '@/lib/utils'
 
 interface BugReportFormProps {
   onSubmit: (data: {
-    title: string
     description: string
     severity: string
-    category: string
     stepsToReproduce?: string
   }) => Promise<void>
   isSubmitting?: boolean
@@ -49,11 +47,9 @@ export function BugReportForm({ onSubmit, isSubmitting, colors, content }: BugRe
     if (!description.trim()) return
 
     await onSubmit({
-      title: description.trim().split('\n')[0] || description.trim().substring(0, 50),
       description: description.trim(),
       severity: severity || 'medium',
-      category: 'other',
-      stepsToReproduce: description.trim(), // Use description as steps to reproduce
+      stepsToReproduce: description.trim(),
     })
   }
 

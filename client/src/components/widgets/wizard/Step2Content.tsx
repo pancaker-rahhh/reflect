@@ -57,9 +57,13 @@ export function Step2Content({ form }: Step2ContentProps) {
     }
 
     const list: { value: WidgetFormData['primaryType']; label: string }[] = []
-    // For feedback, only include the chosen primary type (from Step 1)
+
     if (modules.feedback) {
       list.push({ value: primaryType, label: typeLabel(primaryType) })
+
+      if (primaryType !== 'FEEDBACK') {
+        list.push({ value: 'FEEDBACK', label: typeLabel('FEEDBACK') })
+      }
     }
     if (modules.reviews) list.push({ value: 'REVIEW', label: typeLabel('REVIEW') })
     if (modules.bugReporting) list.push({ value: 'BUG_REPORT', label: typeLabel('BUG_REPORT') })

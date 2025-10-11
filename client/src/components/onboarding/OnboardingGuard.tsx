@@ -13,30 +13,19 @@ export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) =>
   const { user, loading: authLoading } = useAuth()
   const session = useSession()
   const [isChecking, setIsChecking] = useState(true)
-  const [hasCheckedOnboarding, setHasCheckedOnboarding] = useState(false)
-  const lastCheckRef = useRef<number>(0)
+  const hasRunRef = useRef<boolean>(false)
 
   useEffect(() => {
-    const checkOnboardingStatus = async () => {
-      if (!user || authLoading || !session) {
-        return
-      }
+    const checkOnboardingStatusOnce = async () => {
+      if (hasRunRef.current) return
+      if (!user || authLoading || !session) return
 
-      const now = Date.now()
-      const timeSinceLastCheck = now - lastCheckRef.current
-      const shouldCheck = !hasCheckedOnboarding || timeSinceLastCheck > 5 * 60 * 1000 // 5 minutes
-
-      if (!shouldCheck) {
-        setIsChecking(false)
-        return
-      }
+      hasRunRef.current = true
 
       const isOnboardingRoute = location.pathname.startsWith('/onboarding')
 
       try {
-        console.log('OnboardingGuard: Checking first-time user status...')
         const data = await onboardingApi.checkFirstTime()
-        console.log('OnboardingGuard: First-time check result:', data)
 
         if (data.is_first_time && !isOnboardingRoute) {
           // Clear any existing onboarding state to ensure fresh start
@@ -50,7 +39,7 @@ export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) =>
               // User has completed onboarding and has an organization
               navigate('/app/dashboard', { replace: true })
             } else {
-              // User marked as completed but missing organization - force onboarding
+              // User marked as onboarded but missing organization - force onboarding
               console.warn('User marked as onboarded but missing organization, forcing onboarding')
               localStorage.removeItem('reflect_onboarding_state')
               navigate('/onboarding', { replace: true })
@@ -63,25 +52,8 @@ export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) =>
             }
           }
         }
-
-        setHasCheckedOnboarding(true)
-        lastCheckRef.current = now
       } catch (error) {
         console.error('OnboardingGuard: Failed to check onboarding status:', error)
-
-        // Check if it's a CORS error
-        if (error && typeof error === 'object' && 'message' in error) {
-          const errorMessage = String(error.message)
-          if (errorMessage.includes('CORS') || errorMessage.includes('blocked by CORS')) {
-            console.error(
-              'OnboardingGuard: CORS error detected - this usually happens on the first call'
-            )
-            // Don't redirect immediately on CORS errors - let it retry
-            setIsChecking(false)
-            return
-          }
-        }
-
         // On other errors, redirect to onboarding to be safe
         if (!isOnboardingRoute) {
           navigate('/onboarding', { replace: true })
@@ -91,8 +63,8 @@ export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) =>
       }
     }
 
-    checkOnboardingStatus()
-  }, [user, authLoading, session, navigate, location.pathname, hasCheckedOnboarding])
+    checkOnboardingStatusOnce()
+  }, [user, authLoading, session, navigate])
 
   if (authLoading || isChecking) {
     return (

@@ -114,15 +114,29 @@ window.__REFLECT_WIDGET_CONFIG__ = {config_json};
 // Override the fetch-based config loading with embedded config
 const originalFetch = window.fetch;
 window.fetch = function(url) {{
-  // Intercept widget config requests and return embedded config
-  if (url.includes('/public/widgets/')) {{
-    return Promise.resolve({{
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(window.__REFLECT_WIDGET_CONFIG__)
-    }});
+  // This regex is specifically designed to match ONLY the initial widget configuration URL.
+  // It looks for a URL path that ends with `/public/widgets/widget_` followed by an alphanumeric key.
+  // It will NOT match the other API calls for fetching feedback items, like those ending in `/reviews` or containing `?feedback_type=`.
+  const configUrlRegex = /\\/public\\/widgets\\/widget_[a-f0-9]+$/;
+
+  try {{
+    const parsedUrl = new URL(url);
+    // Intercept ONLY the main widget config request by testing its path against the regex.
+    if (configUrlRegex.test(parsedUrl.pathname)) {{
+      console.log('Reflect Widget: Intercepting initial config fetch:', url);
+      return Promise.resolve({{
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(window.__REFLECT_WIDGET_CONFIG__)
+      }});
+    }}
+  }} catch (error) {{
+    // If URL parsing fails, it's not a standard HTTP URL, so we let it pass through.
+    // This can happen with data URIs or other non-standard requests.
   }}
-  // Pass through all other fetch requests
+
+  // Pass through all other fetch requests (e.g., to fetch bug reports, feature requests) to the original fetch function.
+  console.log('Reflect Widget: Passing through API call:', url);
   return originalFetch.apply(this, arguments);
 }};"""
 
