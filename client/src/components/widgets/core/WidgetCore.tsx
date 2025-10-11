@@ -44,7 +44,6 @@ export function WidgetCore({
       onSubmit,
       onStateChange: updateState,
       getAvailableFeedbackTypes,
-      onScoreRestore: setSelectedScore,
     })
 
   const [selectedScore, setSelectedScore] = useState<number | undefined>()

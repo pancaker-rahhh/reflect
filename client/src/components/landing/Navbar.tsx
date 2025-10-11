@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ChatCircle, X, List } from 'phosphor-react';
+import { X, List } from 'phosphor-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BrandWordmark } from '@/components/common/BrandWordmark';
 
