@@ -375,12 +375,12 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
   const _renderPlaceholderSection = (title: string, description: string) => (
     <div className="p-6">
       <div className="text-center py-12">
-        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Settings className="w-8 h-8 text-gray-400" />
+        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+          <Settings className="w-8 h-8 text-muted-foreground" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-        <p className="text-gray-500 mb-4">{description}</p>
-        <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+        <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
+        <p className="text-muted-foreground mb-4">{description}</p>
+        <button className="px-4 py-2 bg-muted text-muted-foreground rounded-lg hover:bg-muted/80">
           Coming Soon
         </button>
       </div>

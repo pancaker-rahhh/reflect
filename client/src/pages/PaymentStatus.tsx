@@ -18,24 +18,24 @@ interface PaymentStatusConfig {
 
 const PAYMENT_STATUS_CONFIG: Record<string, PaymentStatusConfig> = {
   succeeded: {
-    icon: <CheckCircle2 className="w-16 h-16 text-green-500" />,
+    icon: <CheckCircle2 className="w-16 h-16" style={{ color: 'hsl(var(--tint-success))' }} />,
     title: 'Payment Successful',
     description: 'Your payment has been processed successfully. Your subscription is now active.',
-    color: 'text-green-500',
+    color: 'hsl(var(--tint-success))',
     badgeVariant: 'default',
   },
   active: {
-    icon: <CheckCircle2 className="w-16 h-16 text-green-500" />,
+    icon: <CheckCircle2 className="w-16 h-16" style={{ color: 'hsl(var(--tint-success))' }} />,
     title: 'Subscription Active',
     description: 'Your subscription is now active! You can access all Pro features.',
-    color: 'text-green-500',
+    color: 'hsl(var(--tint-success))',
     badgeVariant: 'default',
   },
   completed: {
-    icon: <CheckCircle2 className="w-16 h-16 text-green-500" />,
+    icon: <CheckCircle2 className="w-16 h-16" style={{ color: 'hsl(var(--tint-success))' }} />,
     title: 'Payment Completed',
     description: 'Your payment has been completed successfully. Your subscription is now active.',
-    color: 'text-green-500',
+    color: 'hsl(var(--tint-success))',
     badgeVariant: 'default',
   },
   failed: {
@@ -127,7 +127,10 @@ function PaymentStatusContent() {
   if (isVerifying) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <CheckCircle2 className="w-16 h-16 text-green-500 animate-pulse" />
+        <CheckCircle2
+          className="w-16 h-16 animate-pulse"
+          style={{ color: 'hsl(var(--tint-success))' }}
+        />
         <h2 className="text-2xl font-bold text-green-600 mt-4">Payment Successful!</h2>
         <p className="text-muted-foreground mt-2">Verifying your subscription status...</p>
         <p className="text-sm text-muted-foreground mt-1">Redirecting to billing settings...</p>

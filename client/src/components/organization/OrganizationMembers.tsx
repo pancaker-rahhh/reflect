@@ -1,99 +1,100 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '../../lib/client';
-import { UserPlus, Envelope, DotsThree, Shield, User, Eye, Crown } from 'phosphor-react';
-import { InviteMemberModal } from './InviteMemberModal';
-import type { OrganizationMember } from '../../lib/api/organization';
+import React, { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { apiClient } from '../../lib/client'
+import { UserPlus, Envelope, DotsThree, Shield, User, Eye, Crown } from 'phosphor-react'
+import { InviteMemberModal } from './InviteMemberModal'
+import type { OrganizationMember } from '../../lib/api/organization'
 
 interface OrganizationMembersProps {
-  organizationId: string;
+  organizationId: string
 }
 
 export const OrganizationMembers: React.FC<OrganizationMembersProps> = ({ organizationId }) => {
-  const queryClient = useQueryClient();
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [memberMenuOpen, setMemberMenuOpen] = useState<string | null>(null);
+  const queryClient = useQueryClient()
+  const [showInviteModal, setShowInviteModal] = useState(false)
+  const [memberMenuOpen, setMemberMenuOpen] = useState<string | null>(null)
 
   const { data: members = [], isLoading } = useQuery({
     queryKey: ['organization', organizationId, 'members'],
-    queryFn: () => apiClient.get<OrganizationMember[]>(`/organizations/${organizationId}/members?skip=0&limit=50`),
-  });
+    queryFn: () =>
+      apiClient.get<OrganizationMember[]>(
+        `/organizations/${organizationId}/members?skip=0&limit=50`
+      ),
+  })
 
   const updateRoleMutation = useMutation({
     mutationFn: ({ memberId, role }: { memberId: string; role: string }) =>
       apiClient.put(`/organizations/${organizationId}/members/${memberId}`, { role }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['organization', organizationId, 'members'] });
-      setMemberMenuOpen(null);
+      queryClient.invalidateQueries({ queryKey: ['organization', organizationId, 'members'] })
+      setMemberMenuOpen(null)
     },
-  });
+  })
 
   const removeMemberMutation = useMutation({
     mutationFn: (memberId: string) =>
       apiClient.delete(`/organizations/${organizationId}/members/${memberId}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['organization', organizationId, 'members'] });
-      setMemberMenuOpen(null);
+      queryClient.invalidateQueries({ queryKey: ['organization', organizationId, 'members'] })
+      setMemberMenuOpen(null)
     },
-  });
+  })
 
   const getRoleIcon = (role: string) => {
     switch (role) {
       case 'owner':
-        return <Crown className="w-4 h-4 text-yellow-600" />;
+        return <Crown className="w-4 h-4" style={{ color: 'hsl(var(--tint-warning))' }} />
       case 'admin':
-        return <Shield className="w-4 h-4 text-red-600" />;
+        return <Shield className="w-4 h-4" style={{ color: 'hsl(var(--tint-danger))' }} />
       case 'member':
-        return <User className="w-4 h-4 text-blue-600" />;
+        return <User className="w-4 h-4" style={{ color: 'hsl(var(--tint-info))' }} />
       case 'viewer':
-        return <Eye className="w-4 h-4 text-gray-600" />;
+        return <Eye className="w-4 h-4 text-muted-foreground" />
       default:
-        return <User className="w-4 h-4 text-gray-600" />;
+        return <User className="w-4 h-4 text-muted-foreground" />
     }
-  };
+  }
 
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'owner':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'tint-warning'
       case 'admin':
-        return 'bg-red-100 text-red-800';
+        return 'tint-danger'
       case 'member':
-        return 'bg-blue-100 text-blue-800';
+        return 'tint-info'
       case 'viewer':
-        return 'bg-gray-100 text-gray-800';
+        return 'tint-neutral'
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'tint-neutral'
     }
-  };
+  }
 
   if (isLoading) {
     return (
       <div className="p-6">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
+          <div className="h-6 bg-muted rounded w-1/4 mb-4"></div>
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="flex items-center space-x-4">
-                <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                <div className="w-10 h-10 bg-muted rounded-full"></div>
                 <div className="flex-1">
-                  <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-4 bg-muted rounded w-1/3 mb-2"></div>
+                  <div className="h-3 bg-muted rounded w-1/2"></div>
                 </div>
               </div>
             ))}
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">
-          Team Members ({members.length})
-        </h3>
+        <h3 className="text-lg font-semibold text-foreground">Team Members ({members.length})</h3>
         <button
           onClick={() => setShowInviteModal(true)}
           className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
@@ -134,7 +135,11 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = ({ organi
                 <div className="col-span-3">
                   <div className="flex items-center gap-2">
                     {getRoleIcon(member.role)}
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(member.role)}`}>
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(
+                        member.role
+                      )}`}
+                    >
                       {member.role}
                     </span>
                   </div>
@@ -148,7 +153,9 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = ({ organi
                   {member.role !== 'owner' && (
                     <div className="relative">
                       <button
-                        onClick={() => setMemberMenuOpen(memberMenuOpen === member.id ? null : member.id)}
+                        onClick={() =>
+                          setMemberMenuOpen(memberMenuOpen === member.id ? null : member.id)
+                        }
                         className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
                       >
                         <DotsThree className="w-4 h-4" />
@@ -158,21 +165,27 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = ({ organi
                         <div className="absolute right-0 mt-1 w-48 bg-tertiary border border-border rounded-md shadow-lg z-10">
                           <div className="py-1">
                             <button
-                              onClick={() => updateRoleMutation.mutate({ memberId: member.id, role: 'admin' })}
+                              onClick={() =>
+                                updateRoleMutation.mutate({ memberId: member.id, role: 'admin' })
+                              }
                               disabled={member.role === 'admin'}
                               className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               Make Admin
                             </button>
                             <button
-                              onClick={() => updateRoleMutation.mutate({ memberId: member.id, role: 'member' })}
+                              onClick={() =>
+                                updateRoleMutation.mutate({ memberId: member.id, role: 'member' })
+                              }
                               disabled={member.role === 'member'}
                               className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               Make Member
                             </button>
                             <button
-                              onClick={() => updateRoleMutation.mutate({ memberId: member.id, role: 'viewer' })}
+                              onClick={() =>
+                                updateRoleMutation.mutate({ memberId: member.id, role: 'viewer' })
+                              }
                               disabled={member.role === 'viewer'}
                               className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
                             >
@@ -219,5 +232,5 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = ({ organi
         />
       )}
     </div>
-  );
-};
+  )
+}

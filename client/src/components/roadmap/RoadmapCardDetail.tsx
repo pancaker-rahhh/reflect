@@ -440,12 +440,14 @@ export function RoadmapCardDetail({
                       variant="outline"
                       className={cn(
                         'text-xs font-medium px-2 py-1',
-                        feature.priority === 'critical' && 'bg-red-100 text-red-800 border-red-200',
+                        feature.priority === 'critical' &&
+                          'bg-destructive/10 text-destructive border-destructive/20',
                         feature.priority === 'high' &&
-                          'bg-orange-100 text-orange-800 border-orange-200',
+                          'bg-orange-500/10 text-orange-500 border-orange-500/20',
                         feature.priority === 'medium' &&
-                          'bg-blue-100 text-blue-800 border-blue-200',
-                        feature.priority === 'low' && 'bg-green-100 text-green-800 border-green-200'
+                          'bg-blue-500/10 text-blue-500 border-blue-500/20',
+                        feature.priority === 'low' &&
+                          'bg-green-500/10 text-green-500 border-green-500/20'
                       )}
                     >
                       {feature.priority.charAt(0).toUpperCase() + feature.priority.slice(1)}{' '}

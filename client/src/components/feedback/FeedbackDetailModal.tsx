@@ -3,7 +3,6 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Calendar, User, MessageSquare, Star, TrendingUp, Zap, BarChart3 } from 'lucide-react'
 import { format } from 'date-fns'
-import { cn } from '@/lib/utils'
 
 interface FeedbackDetailModalProps {
   isOpen: boolean
@@ -71,16 +70,16 @@ export function FeedbackDetailModal({ isOpen, onClose, feedback }: FeedbackDetai
 
   const getScoreColor = (score: number, type: string) => {
     if (type === 'NPS') {
-      if (score >= 9) return 'text-green-600'
-      if (score >= 7) return 'text-yellow-600'
-      return 'text-red-600'
+      if (score >= 9) return { color: 'hsl(var(--tint-success))' }
+      if (score >= 7) return { color: 'hsl(var(--tint-warning))' }
+      return { color: 'hsl(var(--destructive))' }
     }
     if (type === 'CSAT' || type === 'CES') {
-      if (score >= 4) return 'text-green-600'
-      if (score >= 3) return 'text-yellow-600'
-      return 'text-red-600'
+      if (score >= 4) return { color: 'hsl(var(--tint-success))' }
+      if (score >= 3) return { color: 'hsl(var(--tint-warning))' }
+      return { color: 'hsl(var(--destructive))' }
     }
-    return 'text-gray-600'
+    return { color: 'hsl(var(--muted-foreground))' }
   }
 
   const score = getScoreValue()
@@ -100,18 +99,19 @@ export function FeedbackDetailModal({ isOpen, onClose, feedback }: FeedbackDetai
 
         <div className="space-y-6">
           {score !== null && (
-            <div className="bg-gray-50 rounded-lg p-4">
+            <div className="bg-muted rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 {getScoreIcon(feedback.feedback_type)}
-                <span className="font-medium text-gray-700">{scoreLabel}</span>
+                <span className="font-medium text-foreground">{scoreLabel}</span>
               </div>
               <div className="flex items-center gap-3">
                 <span
-                  className={cn('text-3xl font-bold', getScoreColor(score, feedback.feedback_type))}
+                  className="text-3xl font-bold"
+                  style={getScoreColor(score, feedback.feedback_type)}
                 >
                   {score}
                 </span>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-muted-foreground">
                   {feedback.feedback_type === 'NPS' ? '/ 10' : '/ 5'}
                 </span>
               </div>
@@ -120,23 +120,23 @@ export function FeedbackDetailModal({ isOpen, onClose, feedback }: FeedbackDetai
 
           {feedback.message && (
             <div>
-              <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+              <h4 className="font-medium text-foreground mb-2 flex items-center gap-2">
                 <MessageSquare className="h-4 w-4" />
                 Response
               </h4>
-              <div className="bg-tertiary border rounded-lg p-4">
-                <p className="text-gray-700 whitespace-pre-wrap">{feedback.message}</p>
+              <div className="bg-muted border rounded-lg p-4">
+                <p className="text-foreground whitespace-pre-wrap">{feedback.message}</p>
               </div>
             </div>
           )}
 
           {feedback.feedback_type === 'NPS' && feedback.promoter_category && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="font-medium text-blue-900 mb-2">NPS Details</h4>
+            <div className="bg-muted border rounded-lg p-4">
+              <h4 className="font-medium text-foreground mb-2">NPS Details</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-blue-700">Category:</span>
-                  <span className="font-medium text-blue-900 capitalize">
+                  <span className="text-muted-foreground">Category:</span>
+                  <span className="font-medium text-foreground capitalize">
                     {feedback.promoter_category}
                   </span>
                 </div>
@@ -145,12 +145,12 @@ export function FeedbackDetailModal({ isOpen, onClose, feedback }: FeedbackDetai
           )}
 
           {feedback.feedback_type === 'CSAT' && feedback.satisfaction_level && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <h4 className="font-medium text-green-900 mb-2">CSAT Details</h4>
+            <div className="bg-muted border rounded-lg p-4">
+              <h4 className="font-medium text-foreground mb-2">CSAT Details</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-green-700">Level:</span>
-                  <span className="font-medium text-green-900 capitalize">
+                  <span className="text-muted-foreground">Level:</span>
+                  <span className="font-medium text-foreground capitalize">
                     {feedback.satisfaction_level.replace('_', ' ')}
                   </span>
                 </div>
@@ -159,12 +159,12 @@ export function FeedbackDetailModal({ isOpen, onClose, feedback }: FeedbackDetai
           )}
 
           {feedback.feedback_type === 'CES' && feedback.ease_level && (
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-              <h4 className="font-medium text-purple-900 mb-2">CES Details</h4>
+            <div className="bg-muted border rounded-lg p-4">
+              <h4 className="font-medium text-foreground mb-2">CES Details</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-purple-700">Ease Level:</span>
-                  <span className="font-medium text-purple-900 capitalize">
+                  <span className="text-muted-foreground">Ease Level:</span>
+                  <span className="font-medium text-foreground capitalize">
                     {feedback.ease_level.replace('_', ' ')}
                   </span>
                 </div>
@@ -173,30 +173,32 @@ export function FeedbackDetailModal({ isOpen, onClose, feedback }: FeedbackDetai
           )}
 
           <div className="border-t pt-4">
-            <h4 className="font-medium text-gray-900 mb-3">Submission Details</h4>
+            <h4 className="font-medium text-foreground mb-3">Submission Details</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-gray-500" />
-                <span className="text-gray-600">Submitter:</span>
-                <span className="font-medium">{feedback.submitter_name || 'Anonymous'}</span>
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Submitter:</span>
+                <span className="font-medium text-foreground">
+                  {feedback.submitter_name || 'Anonymous'}
+                </span>
               </div>
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-gray-500" />
-                <span className="text-gray-600">Date:</span>
-                <span className="font-medium">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Date:</span>
+                <span className="font-medium text-foreground">
                   {format(new Date(feedback.created_at), 'MMM d, yyyy')}
                 </span>
               </div>
               {feedback.submitter_email && (
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-600">Email:</span>
-                  <span className="font-medium">{feedback.submitter_email}</span>
+                  <span className="text-muted-foreground">Email:</span>
+                  <span className="font-medium text-foreground">{feedback.submitter_email}</span>
                 </div>
               )}
               {feedback.widget_name && (
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-600">Widget:</span>
-                  <span className="font-medium">{feedback.widget_name}</span>
+                  <span className="text-muted-foreground">Widget:</span>
+                  <span className="font-medium text-foreground">{feedback.widget_name}</span>
                 </div>
               )}
             </div>

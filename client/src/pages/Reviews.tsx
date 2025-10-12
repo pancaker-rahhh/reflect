@@ -193,7 +193,7 @@ export function Reviews() {
           <CardContent className="pt-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="text-5xl font-bold text-black">{averageRating.toFixed(1)}</div>
+                <div className="text-5xl font-bold text-foreground">{averageRating.toFixed(1)}</div>
                 <div className="flex flex-col gap-2">
                   <StarRating rating={averageRating} size="lg" />
                   <p className="text-sm text-muted-foreground">Based on {reviews.length} reviews</p>
@@ -225,11 +225,11 @@ export function Reviews() {
               {ratingDistribution.map(({ rating, count, percentage }) => (
                 <div key={rating} className="flex items-center gap-2">
                   <div className="flex items-center gap-1 w-12">
-                    <span className="text-sm font-medium">{rating}</span>
+                    <span className="text-sm font-medium text-foreground">{rating}</span>
                     <Star className="h-4 w-4 text-yellow-500 fill-current" />
                   </div>
                   <div className="flex-1">
-                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
                       <div
                         className="h-full bg-yellow-500 transition-all duration-500"
                         style={{ width: `${percentage}%` }}

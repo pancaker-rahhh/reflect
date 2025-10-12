@@ -1,24 +1,20 @@
-import { Monitor, Tablet, Smartphone, RotateCcw, Maximize2, Minimize2 } from 'lucide-react'
+import { Monitor, Tablet, Smartphone, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { PreviewState, DeviceType } from './LiveWidgetPreview'
 
 interface PreviewControlsProps {
   previewState: PreviewState
   deviceType: DeviceType
-  isFullscreen: boolean
   onStateChange: (state: PreviewState) => void
   onDeviceChange: (device: DeviceType) => void
-  onFullscreenToggle: () => void
   onReset: () => void
 }
 
 export function PreviewControls({
   previewState,
   deviceType,
-  isFullscreen,
   onStateChange,
   onDeviceChange,
-  onFullscreenToggle,
   onReset,
 }: PreviewControlsProps) {
   const stateButtons = [
@@ -36,10 +32,10 @@ export function PreviewControls({
   ]
 
   return (
-    <div className="border-b bg-white p-3 space-y-3">
+    <div className="border-b border-border bg-card p-3 space-y-3">
       {/* Device Selection */}
       <div className="flex items-center space-x-2">
-        <span className="text-sm font-medium text-gray-700">Device:</span>
+        <span className="text-sm font-medium text-foreground">Device:</span>
         <div className="flex space-x-1">
           {deviceButtons.map(({ device, icon: Icon, label }) => (
             <Button
@@ -58,7 +54,7 @@ export function PreviewControls({
 
       {/* State Selection */}
       <div className="flex items-center space-x-2">
-        <span className="text-sm font-medium text-gray-700">State:</span>
+        <span className="text-sm font-medium text-foreground">State:</span>
         <div className="flex gap-1 flex-wrap">
           {stateButtons.map(({ state, label, description }) => (
             <Button
@@ -76,28 +72,16 @@ export function PreviewControls({
       </div>
 
       {/* Control Actions */}
-      <div className="flex items-center justify-between">
-        <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onReset}
-            className="h-8 px-3"
-            title="Reset to initial state"
-          >
-            <RotateCcw className="w-4 h-4 mr-1" />
-            Reset
-          </Button>
-        </div>
-
+      <div className="flex items-center">
         <Button
           variant="outline"
           size="sm"
-          onClick={onFullscreenToggle}
+          onClick={onReset}
           className="h-8 px-3"
-          title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+          title="Reset to initial state"
         >
-          {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          <RotateCcw className="w-4 h-4 mr-1" />
+          Reset
         </Button>
       </div>
     </div>

@@ -367,7 +367,9 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Visibility</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
+                Visibility
+              </label>
               <select
                 value={formData.visibility}
                 onChange={(e) => setFormData({ ...formData, visibility: e.target.value })}
@@ -382,7 +384,9 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Timezone</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
+                Timezone
+              </label>
               <select
                 value={formData.timezone}
                 onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
@@ -397,7 +401,9 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Language</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
+                Language
+              </label>
               <select
                 value={formData.language}
                 onChange={(e) => setFormData({ ...formData, language: e.target.value })}
@@ -442,7 +448,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
         <ComingSoon
           title="Team Management"
           description="Team collaboration features are coming soon. You'll be able to invite team members and manage their roles."
-          icon={<Users className="w-8 h-8 text-gray-400" />}
+          icon={<Users className="w-8 h-8 text-muted-foreground" />}
         />
       )
     }
