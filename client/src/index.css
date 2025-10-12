@@ -67,6 +67,8 @@
     /* Banner colors */
     --banner-info-bg: 0 70% 95%;
     --banner-info-foreground: 0 85% 45%;
+    --banner-info-bg-light: 0 30% 97%;
+    --banner-info-foreground-light: 0 0% 25%;
   }
 }
 

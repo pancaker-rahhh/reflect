@@ -66,9 +66,9 @@ export function FreeTierAlert() {
     if (isInGracePeriod) {
       // Still in grace period - show undo cancellation option
       return (
-        <Alert className="text-[hsl(var(--banner-info-foreground))] p-4 bg-[hsl(var(--banner-info-bg))]">
-          <AlertCircle className="h-4 w-4 text-[hsl(var(--banner-info-foreground))]" />
-          <AlertTitle className="text-[hsl(var(--banner-info-foreground))]">
+        <Alert className="text-[hsl(var(--banner-info-foreground-light))] p-4 bg-[hsl(var(--banner-info-bg-light))]">
+          <AlertCircle className="h-4 w-4 text-[hsl(var(--banner-info-foreground-light))]" />
+          <AlertTitle className="text-[hsl(var(--banner-info-foreground-light))]">
             Cancellation Scheduled
           </AlertTitle>
           <AlertDescription className="mt-2">
@@ -83,7 +83,7 @@ export function FreeTierAlert() {
                 <Undo2 className="h-4 w-4" />
                 {isUndoingCancellation ? 'Processing...' : 'Undo Cancellation'}
               </Button>
-              <span className="text-sm text-[hsl(var(--banner-info-foreground))]">
+              <span className="text-sm text-[hsl(var(--banner-info-foreground-light))]">
                 Your subscription will end in {daysRemaining} {daysRemaining === 1 ? 'day' : 'days'}
                 . You can undo this cancellation to keep your Pro features.
               </span>
@@ -94,16 +94,16 @@ export function FreeTierAlert() {
     } else {
       // Grace period expired - show renew option
       return (
-        <Alert className="text-[hsl(var(--banner-info-foreground))] p-4 bg-[hsl(var(--banner-info-bg))]">
-          <AlertCircle className="h-4 w-4 text-[hsl(var(--banner-info-foreground))]" />
-          <AlertTitle className="text-[hsl(var(--banner-info-foreground))]">Subscription Expired</AlertTitle>
+        <Alert className="text-[hsl(var(--banner-info-foreground-light))] p-4 bg-[hsl(var(--banner-info-bg-light))]">
+          <AlertCircle className="h-4 w-4 text-[hsl(var(--banner-info-foreground-light))]" />
+          <AlertTitle className="text-[hsl(var(--banner-info-foreground-light))]">Subscription Expired</AlertTitle>
           <AlertDescription className="mt-2">
             <div className="flex items-center gap-3">
               <Button size="sm" variant="destructive" className="gap-2" onClick={handleUpgrade}>
                 <RotateCcw className="h-4 w-4" />
                 Renew subscription
               </Button>
-              <span className="text-sm text-[hsl(var(--banner-info-foreground))]">
+              <span className="text-sm text-[hsl(var(--banner-info-foreground-light))]">
                 Your subscription has ended. Renew now to regain access to all Pro features.
               </span>
             </div>
@@ -114,13 +114,13 @@ export function FreeTierAlert() {
   }
 
   return (
-    <Alert className="text-[hsl(var(--banner-info-foreground))] p-4 bg-[hsl(var(--banner-info-bg))]">
-      <AlertCircle className="h-4 w-4 text-[hsl(var(--banner-info-foreground))]" />
-      <AlertTitle className="text-[hsl(var(--banner-info-foreground))]">
+    <Alert className="text-[hsl(var(--banner-info-foreground-light))] p-4 bg-[hsl(var(--banner-info-bg-light))]">
+      <AlertCircle className="h-4 w-4 text-[hsl(var(--banner-info-foreground-light))]" />
+      <AlertTitle className="text-[hsl(var(--banner-info-foreground-light))]">
         Free Tier Limitations
       </AlertTitle>
       <AlertDescription className="mt-2 space-y-4">
-        <p className="text-[hsl(var(--banner-info-foreground))]">
+        <p className="text-[hsl(var(--banner-info-foreground-light))]">
           Your current plan allows for {widgetUsage.limit} active widget and up to{' '}
           {responseUsage.limit} responses per month.
         </p>
@@ -135,7 +135,7 @@ export function FreeTierAlert() {
             <Zap className="h-4 w-4" />
             Upgrade to Pro
           </Button>
-          <span className="text-sm text-[hsl(var(--banner-info-foreground))]">
+          <span className="text-sm text-[hsl(var(--banner-info-foreground-light))]">
             Unlock unlimited widgets and responses
           </span>
         </div>
