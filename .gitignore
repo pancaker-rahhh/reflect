@@ -4,6 +4,7 @@
 # Terraform
 *.terraform/
 terraform.tfstate*
+terraform.tfvars
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
