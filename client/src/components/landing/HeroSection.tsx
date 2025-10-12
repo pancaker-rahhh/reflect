@@ -299,7 +299,7 @@ export const HeroSection = () => {
           transition={{ duration: 0.8, delay: 0.2 }}
         >
           <motion.h1
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[hsl(var(--foreground))] leading-tight"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
@@ -311,7 +311,7 @@ export const HeroSection = () => {
               }}
               transition={{ duration: 3, repeat: Infinity }}
               style={{
-                background: 'linear-gradient(45deg, #ffffff, #a855f7, #ec4899, #ffffff)',
+                background: 'linear-gradient(45deg, hsl(var(--foreground)), hsl(var(--primary)), hsl(var(--accent)), hsl(var(--foreground)))',
                 backgroundSize: '300% 300%',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
@@ -321,22 +321,22 @@ export const HeroSection = () => {
               Collect User Feedback
             </motion.span>
             <br />
-            <span className="text-white/90">in 3 Minutes</span>
+            <span className="text-[hsl(var(--muted-foreground))]">in 3 Minutes</span>
           </motion.h1>
 
           <motion.p
-            className="text-lg sm:text-xl text-white/80 leading-relaxed max-w-lg mx-auto lg:mx-0"
+            className="text-lg sm:text-xl text-[hsl(var(--muted-foreground))] leading-relaxed max-w-lg mx-auto lg:mx-0"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
           >
             The fastest way to collect bug reports, feature requests, and user insights.
-            <strong className="text-white"> No coding required.</strong> Free plan available.
+            <strong className="text-[hsl(var(--foreground))]"> No coding required.</strong> Free plan available.
           </motion.p>
 
           <motion.button
             onClick={() => setIsWidgetOpen(true)}
-            className="inline-flex items-center gap-3 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full text-white font-semibold text-base sm:text-lg shadow-2xl hover:shadow-purple-500/25 w-full sm:w-auto justify-center"
+            className="inline-flex items-center gap-3 px-6 sm:px-8 py-3 sm:py-4 bg-[hsl(var(--primary))] rounded-full text-[hsl(var(--primary-foreground))] font-semibold text-base sm:text-lg shadow-2xl hover:shadow-purple-500/25 w-full sm:w-auto justify-center"
             whileHover={{
               scale: 1.05,
               boxShadow: '0 20px 40px rgba(168, 85, 247, 0.4)',
@@ -365,7 +365,7 @@ export const HeroSection = () => {
         >
           {/* Widget Container */}
           <motion.div
-            className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-4 sm:p-6 lg:p-8 shadow-2xl w-full max-w-lg"
+            className="bg-[hsl(var(--background))/0.8] backdrop-blur-lg border border-[hsl(var(--border))/0.2] rounded-3xl p-4 sm:p-6 lg:p-8 shadow-2xl w-full max-w-lg"
             whileHover={{
               scale: 1.02,
               boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)',
@@ -377,8 +377,8 @@ export const HeroSection = () => {
               animate={{ y: [-2, 2, -2] }}
               transition={{ duration: 4, repeat: Infinity }}
             >
-              <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Live Demo Widget</h3>
-              <p className="text-white/70 text-sm sm:text-base">
+              <h3 className="text-xl sm:text-2xl font-bold text-[hsl(var(--foreground))] mb-2">Live Demo Widget</h3>
+              <p className="text-[hsl(var(--muted-foreground))] text-sm sm:text-base">
                 Leave feedback and watch the magic happen
               </p>
             </motion.div>
@@ -386,7 +386,7 @@ export const HeroSection = () => {
             {/* Widget Button */}
             <motion.button
               onClick={() => setIsWidgetOpen(!isWidgetOpen)}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg"
+              className="w-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-semibold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -418,7 +418,7 @@ export const HeroSection = () => {
                         className={`flex items-center justify-center gap-1 sm:gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all w-full sm:w-auto ${
                           selectedType === type
                             ? `bg-gradient-to-r ${typeColors[type]} text-white`
-                            : 'bg-white/10 text-white/70 hover:bg-white/20'
+                            : 'bg-[hsl(var(--muted))/0.1] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))/0.2]'
                         }`}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -434,7 +434,7 @@ export const HeroSection = () => {
                     value={feedbackText}
                     onChange={(e) => setFeedbackText(e.target.value)}
                     placeholder="Share your thoughts..."
-                    className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 resize-none focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full p-4 bg-[hsl(var(--background))/0.1] border border-[hsl(var(--border))/0.2] rounded-xl text-[hsl(var(--foreground))] placeholder-[hsl(var(--muted-foreground))/0.5] resize-none focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
                     rows={3}
                   />
 
@@ -442,7 +442,7 @@ export const HeroSection = () => {
                   <motion.button
                     onClick={handleSubmitFeedback}
                     disabled={!feedbackText.trim()}
-                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all"
+                    className="w-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--accent))] hover:from-[hsl(var(--primary))/0.8] hover:to-[hsl(var(--accent))/0.8] disabled:from-[hsl(var(--muted))] disabled:to-[hsl(var(--muted))] text-[hsl(var(--primary-foreground))] disabled:text-[hsl(var(--muted-foreground))] font-semibold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all"
                     whileHover={feedbackText.trim() ? { scale: 1.02 } : {}}
                     whileTap={feedbackText.trim() ? { scale: 0.98 } : {}}
                   >
@@ -464,17 +464,17 @@ export const HeroSection = () => {
         >
           {/* Metrics Dashboard */}
           <motion.div
-            className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-4 sm:p-6"
+            className="bg-[hsl(var(--background))/0.8] backdrop-blur-lg border border-[hsl(var(--border))/0.2] rounded-2xl p-4 sm:p-6"
             whileHover={{ scale: 1.02 }}
           >
-            <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
+            <h3 className="text-base sm:text-lg font-semibold text-[hsl(var(--foreground))] mb-3 sm:mb-4 flex items-center gap-2">
               <BarChart3 size={18} className="sm:w-5 sm:h-5" />
               Live Metrics
             </h3>
             <div className="grid grid-cols-2 gap-2 sm:gap-4">
               <motion.div className="text-center" whileHover={{ scale: 1.1 }}>
                 <motion.div
-                  className="text-lg sm:text-2xl font-bold text-white break-words"
+                  className="text-lg sm:text-2xl font-bold text-[hsl(var(--foreground))] break-words"
                   animate={{ scale: [1, 1.03] }}
                   transition={{
                     duration: 1,
@@ -485,11 +485,11 @@ export const HeroSection = () => {
                 >
                   {metrics.totalFeedback.toLocaleString()}
                 </motion.div>
-                <div className="text-white/60 text-xs sm:text-sm">Total Feedback</div>
+                <div className="text-[hsl(var(--muted-foreground))] text-xs sm:text-sm">Total Feedback</div>
               </motion.div>
               <motion.div className="text-center" whileHover={{ scale: 1.1 }}>
                 <motion.div
-                  className="text-lg sm:text-2xl font-bold text-white flex items-center justify-center gap-1"
+                  className="text-lg sm:text-2xl font-bold text-[hsl(var(--foreground))] flex items-center justify-center gap-1"
                   animate={{ scale: [1, 1.03] }}
                   transition={{
                     duration: 1,
@@ -500,13 +500,13 @@ export const HeroSection = () => {
                   }}
                 >
                   <span className="break-words">{metrics.satisfaction.toFixed(1)}</span>
-                  <Star size={14} className="text-yellow-400 sm:w-4 sm:h-4 flex-shrink-0" />
+                  <Star size={14} className="text-[hsl(var(--tint-warning))] sm:w-4 sm:h-4 flex-shrink-0" />
                 </motion.div>
-                <div className="text-white/60 text-xs sm:text-sm">Satisfaction</div>
+                <div className="text-[hsl(var(--muted-foreground))] text-xs sm:text-sm">Satisfaction</div>
               </motion.div>
               <motion.div className="text-center" whileHover={{ scale: 1.1 }}>
                 <motion.div
-                  className="text-lg sm:text-2xl font-bold text-white break-words"
+                  className="text-lg sm:text-2xl font-bold text-[hsl(var(--foreground))] break-words"
                   animate={{ scale: [1, 1.03] }}
                   transition={{
                     duration: 1,
@@ -518,11 +518,11 @@ export const HeroSection = () => {
                 >
                   {metrics.responseRate}%
                 </motion.div>
-                <div className="text-white/60 text-xs sm:text-sm">Response Rate</div>
+                <div className="text-[hsl(var(--muted-foreground))] text-xs sm:text-sm">Response Rate</div>
               </motion.div>
               <motion.div className="text-center" whileHover={{ scale: 1.1 }}>
                 <motion.div
-                  className="text-lg sm:text-2xl font-bold text-white flex items-center justify-center gap-1"
+                  className="text-lg sm:text-2xl font-bold text-[hsl(var(--foreground))] flex items-center justify-center gap-1"
                   animate={{ scale: [1, 1.03] }}
                   transition={{
                     duration: 1,
@@ -533,19 +533,19 @@ export const HeroSection = () => {
                   }}
                 >
                   <span className="break-words">{metrics.activeUsers.toLocaleString()}</span>
-                  <Users size={14} className="text-blue-400 sm:w-4 sm:h-4 flex-shrink-0" />
+                  <Users size={14} className="text-[hsl(var(--tint-info))] sm:w-4 sm:h-4 flex-shrink-0" />
                 </motion.div>
-                <div className="text-white/60 text-xs sm:text-sm">Active Users</div>
+                <div className="text-[hsl(var(--muted-foreground))] text-xs sm:text-sm">Active Users</div>
               </motion.div>
             </div>
           </motion.div>
 
           {/* Recent Feedback */}
           <motion.div
-            className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-4 sm:p-6"
+            className="bg-[hsl(var(--background))/0.8] backdrop-blur-lg border border-[hsl(var(--border))/0.2] rounded-2xl p-4 sm:p-6"
             whileHover={{ scale: 1.02 }}
           >
-            <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
+            <h3 className="text-base sm:text-lg font-semibold text-[hsl(var(--foreground))] mb-3 sm:mb-4 flex items-center gap-2">
               <TrendingUp size={18} className="sm:w-5 sm:h-5" />
               Live Feedback
             </h3>
@@ -558,7 +558,7 @@ export const HeroSection = () => {
                     animate={{ opacity: 1, x: 0, scale: 1 }}
                     exit={{ opacity: 0, x: -20, scale: 0.9 }}
                     transition={{ duration: 0.3, delay: index * 0.1 }}
-                    className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors min-h-[3.5rem]"
+                    className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 bg-[hsl(var(--muted))/0.05] rounded-lg hover:bg-[hsl(var(--muted))/0.1] transition-colors min-h-[3.5rem]"
                   >
                     <div
                       className={`p-1.5 sm:p-2 rounded-lg bg-gradient-to-r ${
@@ -568,10 +568,10 @@ export const HeroSection = () => {
                       {typeIcons[item.type]}
                     </div>
                     <div className="flex-1 min-w-0 w-full">
-                      <p className="text-white text-xs sm:text-sm break-words leading-relaxed">
+                      <p className="text-[hsl(var(--foreground))] text-xs sm:text-sm break-words leading-relaxed">
                         {item.text}
                       </p>
-                      <p className="text-white/50 text-xs mt-1">
+                      <p className="text-[hsl(var(--muted-foreground))/0.5] text-xs mt-1">
                         {item.timestamp.toLocaleTimeString()}
                       </p>
                     </div>
@@ -585,7 +585,7 @@ export const HeroSection = () => {
 
       {/* Floating Action Hint */}
       <motion.div
-        className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 text-white/60 text-xs sm:text-sm flex items-center gap-2 px-4 text-center"
+        className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 text-[hsl(var(--muted-foreground))/0.6] text-xs sm:text-sm flex items-center gap-2 px-4 text-center"
         animate={{ y: [0, -10, 0] }}
         transition={{ duration: 2, repeat: Infinity }}
       >

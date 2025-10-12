@@ -139,7 +139,7 @@ export const BeforeAfterSection = () => {
 
           {/* After Column */}
           <motion.div 
-            className="relative rounded-2xl p-8 bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-2xl hover:shadow-3xl transition-shadow duration-300"
+            className="relative rounded-2xl p-8 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] text-[hsl(var(--primary-foreground))] shadow-2xl hover:shadow-3xl transition-shadow duration-300"
             initial={{ opacity: 0, x: 50, scale: 0.9 }}
             whileInView={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
@@ -164,7 +164,7 @@ export const BeforeAfterSection = () => {
               With Reflect
             </motion.h3>
             <motion.div 
-              className="bg-white/10 p-6 rounded-lg backdrop-blur-sm"
+              className="bg-[hsl(var(--background))/0.1] p-6 rounded-lg backdrop-blur-sm"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}

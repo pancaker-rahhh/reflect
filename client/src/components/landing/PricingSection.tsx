@@ -55,7 +55,7 @@ export const PricingSection = () => {
             Pricing
           </motion.p>
           <motion.h2
-            className="mt-2 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl"
+            className="mt-2 text-4xl font-bold tracking-tight text-[hsl(var(--foreground))] sm:text-5xl"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
@@ -64,7 +64,7 @@ export const PricingSection = () => {
             The Right Plan for Your Needs
           </motion.h2>
           <motion.p
-            className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600"
+            className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-[hsl(var(--muted-foreground))]"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
@@ -80,8 +80,8 @@ export const PricingSection = () => {
               key={plan.name}
               className={`rounded-3xl p-8 xl:p-10 ${
                 plan.primary || plan.id === 'pro_yearly'
-                  ? 'bg-white ring-2 ring-purple-600 shadow-2xl relative'
-                  : 'bg-gray-50 ring-1 ring-gray-200'
+                  ? 'bg-[hsl(var(--background))] ring-2 ring-[hsl(var(--primary))] shadow-2xl relative'
+                  : 'bg-[hsl(var(--muted))/0.05] ring-1 ring-[hsl(var(--border))]'
               }`}
               initial={{ opacity: 0, y: 50, scale: 0.9 }}
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -101,7 +101,7 @@ export const PricingSection = () => {
                   transition={{ delay: 0.8 + index * 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+                  <div className="bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--accent))] text-[hsl(var(--primary-foreground))] px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
                     ⚡ Most Popular
                   </div>
                 </motion.div>
@@ -115,7 +115,7 @@ export const PricingSection = () => {
                   transition={{ delay: 0.8 + index * 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <div className="bg-gradient-to-r from-green-500 to-emerald-900 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+                  <div className="bg-gradient-to-r from-[hsl(var(--tint-success))] to-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
                     💰 10% Off
                   </div>
                 </motion.div>
@@ -129,7 +129,7 @@ export const PricingSection = () => {
                 viewport={{ once: true }}
               >
                 <h3
-                  className={`text-xl font-semibold leading-8 ${plan.primary || plan.id === 'pro_yearly' ? 'text-purple-600' : 'text-gray-900'}`}
+                  className={`text-xl font-semibold leading-8 ${plan.primary || plan.id === 'pro_yearly' ? 'text-[hsl(var(--primary))]' : 'text-[hsl(var(--foreground))]'}`}
                 >
                   {plan.display_name}
                 </h3>
@@ -152,7 +152,7 @@ export const PricingSection = () => {
                 transition={{ delay: 0.9 + index * 0.1, type: 'spring', stiffness: 200 }}
                 viewport={{ once: true }}
               >
-                <span className="text-3xl font-bold tracking-tight text-gray-900">
+                <span className="text-3xl font-bold tracking-tight text-[hsl(var(--foreground))]">
                   {plan.price}
                 </span>
               </motion.p>
@@ -161,8 +161,8 @@ export const PricingSection = () => {
                 onClick={handleGetStarted}
                 className={`mt-8 block rounded-md px-3 py-3 text-center text-base font-semibold leading-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 transition-all ${
                   plan.primary || plan.id === 'pro_yearly'
-                    ? 'bg-purple-600 text-white shadow-sm hover:bg-purple-500 focus-visible:outline-purple-600'
-                    : 'bg-white text-purple-600 ring-1 ring-inset ring-purple-200 hover:bg-purple-50'
+                    ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-sm hover:bg-[hsl(var(--primary))/0.9] focus-visible:outline-[hsl(var(--primary))]'
+                    : 'bg-[hsl(var(--background))] text-[hsl(var(--primary))] ring-1 ring-inset ring-[hsl(var(--border))] hover:bg-[hsl(var(--accent))]'
                 }`}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -197,7 +197,7 @@ export const PricingSection = () => {
                       }}
                       viewport={{ once: true }}
                     >
-                      <Check className="h-6 w-5 flex-none text-purple-600" aria-hidden="true" />
+                      <Check className="h-6 w-5 flex-none text-[hsl(var(--primary))]" aria-hidden="true" />
                     </motion.div>
                     {feature}
                   </motion.li>
