@@ -599,7 +599,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
             </div>
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="px-4 py-2 bg-[hsl(var(--destructive))] text-white rounded-lg hover:bg-[hsl(var(--destructive))/0.8]"
+              className="px-4 py-2 text-destructive hover:text-destructive/80 border border-destructive/20 bg-destructive/5 hover:bg-destructive/10 rounded-lg transition-colors"
             >
               Delete Project
             </button>
