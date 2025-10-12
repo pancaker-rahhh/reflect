@@ -47,21 +47,23 @@ export function RecentActivityTable({
           return (
             <div
               key={activity.id}
-              className="group p-4 rounded-lg border border-gray-100 hover:border-gray-200 shadow-md hover:shadow-lg transition-all duration-200"
+              className="group p-4 rounded-lg border border-border hover:border-border/80 shadow-md hover:shadow-lg transition-all duration-200"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-3">
                     <div
-                      className={`w-3 h-3 rounded-full ${
-                        typeConfigItem.variant === 'destructive'
-                          ? 'bg-red-500'
-                          : typeConfigItem.variant === 'success'
-                            ? 'bg-green-500'
-                            : typeConfigItem.variant === 'secondary'
-                              ? 'bg-blue-500'
-                              : 'bg-purple-500'
-                      }`}
+                      className="w-3 h-3 rounded-full"
+                      style={{
+                        backgroundColor:
+                          typeConfigItem.variant === 'destructive'
+                            ? 'hsl(var(--tint-danger))'
+                            : typeConfigItem.variant === 'success'
+                              ? 'hsl(var(--tint-success))'
+                              : typeConfigItem.variant === 'secondary'
+                                ? 'hsl(var(--tint-info))'
+                                : 'hsl(var(--tint-primary))',
+                      }}
                     />
                     <span className="text-sm font-medium uppercase tracking-wide">
                       {typeConfigItem.label}
@@ -69,15 +71,13 @@ export function RecentActivityTable({
 
                     {activity.widget_name && (
                       <>
-                        <span className="text-gray-400">•</span>
+                        <span className="text-muted-foreground">•</span>
                         <span className="text-xs">{activity.widget_name}</span>
                       </>
                     )}
                   </div>
 
-                  <h3 className="text-base font-medium mb-2 leading-relaxed">
-                    {activity.summary}
-                  </h3>
+                  <h3 className="text-base font-medium mb-2 leading-relaxed">{activity.summary}</h3>
 
                   <div className="flex items-center gap-4 text-sm">
                     <span>By {activity.submittedBy}</span>

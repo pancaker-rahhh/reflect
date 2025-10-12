@@ -601,12 +601,8 @@ function RoadmapPageContent() {
       <div className="rounded-lg border p-6">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold">
-              {roadmap.name || 'Product Roadmap'}
-            </h1>
-            <p className="mt-2 text-lg">
-              Plan and track your product development progress
-            </p>
+            <h1 className="text-3xl font-bold">{roadmap.name || 'Product Roadmap'}</h1>
+            <p className="mt-2 text-lg">Plan and track your product development progress</p>
           </div>
           <div className="flex items-center gap-2">
             {isSelectionMode && (
@@ -693,11 +689,11 @@ function RoadmapPageContent() {
                         dragOverColumn === column.id &&
                           draggedItem &&
                           draggedItem.sourceColumnId !== column.id &&
-                          'ring-2 ring-blue-500 ring-offset-2 shadow-lg border-blue-500',
+                          'ring-2 ring-primary ring-offset-2 shadow-lg border-primary',
                         dragOverColumn === column.id &&
                           draggedColumn &&
                           draggedColumn !== column.id &&
-                          'ring-2 ring-blue-500 ring-offset-2 shadow-lg',
+                          'ring-2 ring-primary ring-offset-2 shadow-lg',
                         draggedColumn === column.id && 'opacity-70'
                       )}
                       style={{
@@ -716,8 +712,8 @@ function RoadmapPageContent() {
                       {dragOverColumn === column.id &&
                         draggedColumn &&
                         draggedColumn !== column.id && (
-                          <div className="absolute inset-0 border-2 border-dashed border-blue-500 bg-blue-50/30 rounded-lg z-10 flex items-center justify-center">
-                            <div className="bg-blue-500 px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+                          <div className="absolute inset-0 border-2 border-dashed border-primary bg-primary/10 rounded-lg z-10 flex items-center justify-center">
+                            <div className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium shadow-lg">
                               Drop here
                             </div>
                           </div>
@@ -736,7 +732,7 @@ function RoadmapPageContent() {
                           </div>
                           <Badge
                             variant="secondary"
-                            className="text-xs font-medium px-2 py-1 bg-blue-100 text-blue-800"
+                            className="text-xs font-medium px-2 py-1 tint-info"
                           >
                             {columnFeatures.length}
                           </Badge>
@@ -784,9 +780,7 @@ function RoadmapPageContent() {
                         {columnFeatures.length === 0 && (
                           <div className="text-center py-8 border-2 border-dashed rounded-lg">
                             <p className="text-sm font-medium">No features yet</p>
-                            <p className="text-xs mt-1">
-                              Get started by adding your first feature
-                            </p>
+                            <p className="text-xs mt-1">Get started by adding your first feature</p>
                           </div>
                         )}
                       </div>
@@ -824,7 +818,7 @@ function RoadmapPageContent() {
                         })
                       }
                     }}
-                    className="w-2 h-2 rounded-full bg-gray-400 hover:bg-blue-500"
+                    className="w-2 h-2 rounded-full bg-muted-foreground hover:bg-primary"
                   />
                 ))}
             </div>
@@ -885,9 +879,7 @@ export function RoadmapPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h2>
-          <p className="mb-4">
-            An unexpected error occurred. Please try refreshing the page.
-          </p>
+          <p className="mb-4">An unexpected error occurred. Please try refreshing the page.</p>
           <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700"

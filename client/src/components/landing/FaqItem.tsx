@@ -14,13 +14,13 @@ interface FaqItemProps {
 export const FaqItem: React.FC<FaqItemProps> = ({ question, answer, icon, isOpen, onClick }) => {
   return (
     <motion.div 
-      className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden"
+      className="bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-lg shadow-sm overflow-hidden"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       whileHover={{ 
         scale: 1.02,
         boxShadow: "0 12px 35px rgba(0, 0, 0, 0.12)",
-        borderColor: "#d1d5db",
+        borderColor: "hsl(var(--border))",
         y: -2
       }}
       transition={{ 
@@ -33,10 +33,10 @@ export const FaqItem: React.FC<FaqItemProps> = ({ question, answer, icon, isOpen
       <dt>
         <motion.button
           onClick={onClick}
-          className="flex w-full items-center justify-between text-left text-gray-900 p-6 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-inset"
+          className={`flex w-full items-center justify-between text-left text-[hsl(var(--foreground))] p-6 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] focus:ring-inset`}
           aria-expanded={isOpen}
           whileHover={{ 
-            backgroundColor: isOpen ? "#fef7ff" : "#fafafb",
+            backgroundColor: isOpen ? "hsl(var(--primary) / 0.05)" : "hsl(var(--muted) / 0.05)",
             transition: { duration: 0.2 }
           }}
           whileTap={{ scale: 0.995 }}
@@ -44,7 +44,7 @@ export const FaqItem: React.FC<FaqItemProps> = ({ question, answer, icon, isOpen
         >
           <div className="flex items-center gap-4">
             <motion.span 
-              className={`transition-colors duration-200 ${isOpen ? 'text-purple-600' : 'text-gray-500'}`}
+              className={`transition-colors duration-200 ${isOpen ? 'text-[hsl(var(--primary))]' : 'text-[hsl(var(--muted-foreground))]'}`}
               animate={{ 
                 scale: isOpen ? 1.1 : 1,
                 rotate: isOpen ? 5 : 0
@@ -59,7 +59,7 @@ export const FaqItem: React.FC<FaqItemProps> = ({ question, answer, icon, isOpen
               {icon}
             </motion.span>
             <motion.span 
-              className={`text-md font-semibold leading-7 transition-colors duration-200 ${isOpen ? 'text-purple-600' : 'text-gray-900'}`}
+              className={`text-md font-semibold leading-7 transition-colors duration-200 ${isOpen ? 'text-[hsl(var(--primary))]' : 'text-[hsl(var(--foreground))]'}`}
               animate={{ x: isOpen ? 5 : 0 }}
               transition={{ duration: 0.2 }}
             >

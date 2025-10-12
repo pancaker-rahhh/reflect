@@ -176,7 +176,7 @@ export function RoadmapCard({
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-6 w-6 p-0 hover:bg-red-100 hover:text-red-600"
+                className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
                 onClick={handleDelete}
                 disabled={deleteFeatureMutation.isPending}
               >
@@ -214,10 +214,11 @@ export function RoadmapCard({
                 variant="outline"
                 className={cn(
                   'text-xs font-medium px-2 py-1',
-                  feature.priority === 'critical' && 'bg-red-100 text-red-800 border-red-200',
-                  feature.priority === 'high' && 'bg-orange-100 text-orange-800 border-orange-200',
-                  feature.priority === 'medium' && 'bg-blue-100 text-blue-800 border-blue-200',
-                  feature.priority === 'low' && 'bg-green-100 text-green-800 border-green-200'
+                  feature.priority === 'critical' &&
+                    'bg-destructive/10 text-destructive border-destructive/20',
+                  feature.priority === 'high' && 'tint-warning',
+                  feature.priority === 'medium' && 'tint-info',
+                  feature.priority === 'low' && 'tint-success'
                 )}
               >
                 {feature.priority.charAt(0).toUpperCase() + feature.priority.slice(1)} Priority
@@ -265,12 +266,15 @@ export function RoadmapCard({
 
           {feature.feedback_id && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <MessageSquare className="h-3 w-3 text-blue-500" />
-              <span className="text-blue-600 font-medium">From Feedback</span>
+              <MessageSquare className="h-3 w-3" style={{ color: 'hsl(var(--tint-info))' }} />
+              <span className="font-medium" style={{ color: 'hsl(var(--tint-info))' }}>
+                From Feedback
+              </span>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-5 px-2 text-xs hover:bg-blue-50 hover:text-blue-700"
+                className="h-5 px-2 text-xs hover:bg-muted/50"
+                style={{ color: 'hsl(var(--tint-info))' }}
                 onClick={(e) => {
                   e.stopPropagation()
                   window.open(`/feedback/${feature.feedback_id}`, '_blank')
@@ -371,8 +375,8 @@ export function RoadmapCard({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-background rounded-lg p-6 max-w-sm mx-4 border border-border/50 shadow-xl">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                <Trash2 className="h-5 w-5 text-red-600" />
+              <div className="w-10 h-10 bg-destructive/10 rounded-full flex items-center justify-center">
+                <Trash2 className="h-5 w-5 text-destructive" />
               </div>
               <div>
                 <h3 className="font-semibold text-lg">Delete Feature</h3>

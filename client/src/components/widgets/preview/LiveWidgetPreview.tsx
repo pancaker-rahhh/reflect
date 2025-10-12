@@ -6,7 +6,6 @@ import { WidgetCore } from '@/components/widgets/core/WidgetCore'
 import { DeviceFrame } from './DeviceFrame'
 import { PreviewControls } from './PreviewControls'
 import { useDebounce } from '@/hooks/useDebounce'
-import { cn } from '@/lib/utils'
 import type {
   WidgetConfiguration,
   WidgetState,
@@ -129,7 +128,6 @@ interface LiveWidgetPreviewProps {
 export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
   const [previewState, setPreviewState] = useState<PreviewState>('closed')
   const [deviceType, setDeviceType] = useState<DeviceType>('desktop')
-  const [isFullscreen, setIsFullscreen] = useState(false)
   const [_widgetState, setWidgetState] = useState<WidgetState>({ type: 'closed' })
   const [selectedFeedbackType, setSelectedFeedbackType] = useState<FeedbackType | null>(null)
 
@@ -244,48 +242,41 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
   }, [])
 
   return (
-    <div
-      className={cn(
-        'h-full flex flex-col bg-gray-50',
-        isFullscreen && 'fixed inset-0 z-50 bg-white'
-      )}
-    >
+    <div className="h-full flex flex-col bg-muted">
       {/* Preview Controls */}
       <PreviewControls
         previewState={previewState}
         deviceType={deviceType}
-        isFullscreen={isFullscreen}
         onStateChange={setPreviewState}
         onDeviceChange={setDeviceType}
-        onFullscreenToggle={() => setIsFullscreen(!isFullscreen)}
         onReset={handleStateReset}
       />
 
       {/* Preview Area */}
       <div className="flex-1 p-4">
         <DeviceFrame deviceType={deviceType}>
-          <div className="relative w-full h-full bg-white">
+          <div className="relative w-full h-full bg-background">
             {/* Simulated Website Background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-100 opacity-50" />
+            <div className="absolute inset-0 bg-gradient-to-br from-muted/50 to-muted/30 opacity-50" />
             <div className="absolute top-4 left-4 right-4">
-              <div className="h-12 bg-white rounded-lg shadow-sm flex items-center px-4">
+              <div className="h-12 bg-card rounded-lg shadow-sm flex items-center px-4 border border-border">
                 <div className="flex space-x-2">
                   <div className="w-3 h-3 bg-red-400 rounded-full" />
                   <div className="w-3 h-3 bg-yellow-400 rounded-full" />
                   <div className="w-3 h-3 bg-green-400 rounded-full" />
                 </div>
-                <div className="ml-4 text-sm text-gray-600">example.com</div>
+                <div className="ml-4 text-sm text-muted-foreground">example.com</div>
               </div>
             </div>
 
             {/* Page Content Simulation */}
-            <div className="absolute top-20 left-4 right-4 bottom-20 bg-white rounded-lg shadow-sm p-6">
+            <div className="absolute top-20 left-4 right-4 bottom-20 bg-card rounded-lg shadow-sm p-6 border border-border">
               <div className="space-y-4">
-                <div className="h-4 bg-gray-200 rounded w-3/4" />
-                <div className="h-4 bg-gray-200 rounded w-1/2" />
-                <div className="h-4 bg-gray-200 rounded w-5/6" />
-                <div className="h-20 bg-gray-100 rounded" />
-                <div className="h-4 bg-gray-200 rounded w-2/3" />
+                <div className="h-4 bg-muted rounded w-3/4" />
+                <div className="h-4 bg-muted rounded w-1/2" />
+                <div className="h-4 bg-muted rounded w-5/6" />
+                <div className="h-20 bg-muted/50 rounded" />
+                <div className="h-4 bg-muted rounded w-2/3" />
               </div>
             </div>
 
@@ -301,7 +292,7 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
             {/* Widget Dialog */}
             {previewState !== 'closed' && widgetConfig && (
               <div className="absolute inset-0 flex items-center justify-center p-4">
-                <div className="w-full max-w-sm h-full max-h-[600px] bg-white rounded-2xl shadow-2xl overflow-hidden">
+                <div className="w-full max-w-sm h-full max-h-[600px] bg-card rounded-2xl shadow-2xl overflow-hidden border border-border">
                   <WidgetCore
                     config={widgetConfig}
                     mode="preview"

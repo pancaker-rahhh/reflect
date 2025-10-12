@@ -147,12 +147,12 @@ export function IndividualJiraModal({
           <DialogTitle className="flex items-center gap-3">
             {feature.jira_integration ? (
               <>
-                <CheckCircle className="h-6 w-6 text-green-600" />
+                <CheckCircle className="h-6 w-6" style={{ color: 'hsl(var(--tint-success))' }} />
                 <span className="text-lg font-semibold">JIRA Issue Details</span>
               </>
             ) : (
               <>
-                <ExternalLink className="h-6 w-6 text-blue-600" />
+                <ExternalLink className="h-6 w-6 text-primary" />
                 <span className="text-lg font-semibold">Convert to JIRA Issue</span>
               </>
             )}
@@ -160,51 +160,51 @@ export function IndividualJiraModal({
         </DialogHeader>
 
         <div className="space-y-6">
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+          <div className="bg-muted rounded-lg p-4 border border-border">
             <div className="flex items-center gap-2 mb-3">
-              <Label className="text-sm font-semibold text-gray-900">
+              <Label className="text-sm font-semibold text-foreground">
                 {feature.jira_integration ? 'Feature Details' : 'Feature to Convert'}
               </Label>
             </div>
-            <div className="p-4 bg-tertiary rounded-lg border border-border shadow-sm">
-              <h4 className="font-semibold text-base mb-2 text-gray-900">{feature.title}</h4>
+            <div className="p-4 bg-card rounded-lg border border-border shadow-sm">
+              <h4 className="font-semibold text-base mb-2 text-foreground">{feature.title}</h4>
               {feature.description && (
-                <p className="text-sm text-gray-600 line-clamp-2">{feature.description}</p>
+                <p className="text-sm text-muted-foreground line-clamp-2">{feature.description}</p>
               )}
             </div>
           </div>
 
           {feature.jira_integration && (
-            <Card className="border-green-200 bg-green-50">
+            <Card className="border-green-500/20 bg-green-500/10">
               <CardHeader className="pb-4">
                 <CardTitle className="text-base flex items-center gap-3">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  <span className="text-green-900">JIRA Issue Created</span>
+                  <CheckCircle className="h-5 w-5" style={{ color: 'hsl(var(--tint-success))' }} />
+                  <span style={{ color: 'hsl(var(--tint-success))' }}>JIRA Issue Created</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-sm text-gray-700">Issue:</span>
-                    <Badge variant="default" className="bg-green-600 text-white px-3 py-1">
+                    <span className="font-medium text-sm text-muted-foreground">Issue:</span>
+                    <Badge variant="default" className="bg-green-500 text-white px-3 py-1">
                       {feature.jira_integration.external_id} - {feature.title}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-sm text-gray-700">Issue Type:</span>
-                    <Badge variant="outline" className="text-xs border-gray-300">
+                    <span className="font-medium text-sm text-muted-foreground">Issue Type:</span>
+                    <Badge variant="outline" className="text-xs">
                       {feature.jira_integration.integration_metadata?.issue_type || 'Task'}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-sm text-gray-700">Status:</span>
-                    <Badge variant="outline" className="text-xs border-gray-300">
+                    <span className="font-medium text-sm text-muted-foreground">Status:</span>
+                    <Badge variant="outline" className="text-xs">
                       {feature.jira_integration.external_status || 'To Do'}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-sm text-gray-700">Last Synced:</span>
-                    <span className="text-gray-600 text-sm">
+                    <span className="font-medium text-sm text-muted-foreground">Last Synced:</span>
+                    <span className="text-muted-foreground text-sm">
                       {feature.jira_integration.last_synced_at
                         ? new Date(feature.jira_integration.last_synced_at).toLocaleDateString()
                         : 'Unknown'}
@@ -213,11 +213,11 @@ export function IndividualJiraModal({
                 </div>
 
                 {feature.jira_integration.external_url && (
-                  <div className="pt-3 border-t border-green-200">
+                  <div className="pt-3 border-t border-border">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full border-green-300 text-green-700 hover:bg-green-100"
+                      className="w-full"
                       onClick={() => window.open(feature.jira_integration!.external_url, '_blank')}
                     >
                       <ExternalLink className="mr-2 h-4 w-4" />
@@ -233,7 +233,7 @@ export function IndividualJiraModal({
             <div className="space-y-5">
               {jiraIntegrations.length > 1 && (
                 <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-gray-900">JIRA Integration</Label>
+                  <Label className="text-sm font-semibold text-foreground">JIRA Integration</Label>
                   <Select value={selectedIntegrationId} onValueChange={setSelectedIntegrationId}>
                     <SelectTrigger className="h-11">
                       <SelectValue placeholder="Select your JIRA integration" />
@@ -258,9 +258,9 @@ export function IndividualJiraModal({
 
               {selectedIntegrationId && (
                 <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-gray-900">Project</Label>
+                  <Label className="text-sm font-semibold text-foreground">Project</Label>
                   {projectsQuery.isLoading ? (
-                    <div className="h-11 bg-gray-100 rounded-md animate-pulse"></div>
+                    <div className="h-11 bg-muted rounded-md animate-pulse"></div>
                   ) : (
                     <Select value={selectedProjectKey} onValueChange={setSelectedProjectKey}>
                       <SelectTrigger className="h-11">
@@ -289,9 +289,9 @@ export function IndividualJiraModal({
 
               {selectedIntegrationId && (
                 <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-gray-900">Issue Type</Label>
+                  <Label className="text-sm font-semibold text-foreground">Issue Type</Label>
                   {issueTypesQuery.isLoading ? (
-                    <div className="h-11 bg-gray-100 rounded-md animate-pulse"></div>
+                    <div className="h-11 bg-muted rounded-md animate-pulse"></div>
                   ) : (
                     <Select value={issueType} onValueChange={setIssueType}>
                       <SelectTrigger className="h-11">
@@ -336,21 +336,26 @@ export function IndividualJiraModal({
             <Card
               className={
                 syncToJira.data.success
-                  ? 'border-green-200 bg-green-50'
-                  : 'border-red-200 bg-red-50'
+                  ? 'border-green-500/20 bg-green-500/10'
+                  : 'border-destructive/20 bg-destructive/10'
               }
             >
               <CardHeader className="pb-4">
                 <CardTitle className="text-base flex items-center gap-3">
                   {syncToJira.data.success ? (
                     <>
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                      <span className="text-green-900">JIRA Issue Created Successfully!</span>
+                      <CheckCircle
+                        className="h-5 w-5"
+                        style={{ color: 'hsl(var(--tint-success))' }}
+                      />
+                      <span style={{ color: 'hsl(var(--tint-success))' }}>
+                        JIRA Issue Created Successfully!
+                      </span>
                     </>
                   ) : (
                     <>
-                      <XCircle className="h-5 w-5 text-red-600" />
-                      <span className="text-red-900">Creation Failed</span>
+                      <XCircle className="h-5 w-5 text-destructive" />
+                      <span className="text-destructive">Creation Failed</span>
                     </>
                   )}
                 </CardTitle>
@@ -360,14 +365,14 @@ export function IndividualJiraModal({
                   <>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-sm text-gray-700">Issue:</span>
-                        <Badge variant="default" className="bg-green-600 text-white px-3 py-1">
+                        <span className="font-medium text-sm text-muted-foreground">Issue:</span>
+                        <Badge variant="default" className="bg-green-500 text-white px-3 py-1">
                           {syncToJira.data.data.issue_key} - {feature.title}
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-sm text-gray-700">Project:</span>
-                        <span className="text-gray-600 text-sm">
+                        <span className="font-medium text-sm text-muted-foreground">Project:</span>
+                        <span className="text-muted-foreground text-sm">
                           {projectName ||
                             (selectedIntegration
                               ? getProjectDisplayName(selectedIntegration)
@@ -375,25 +380,27 @@ export function IndividualJiraModal({
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-sm text-gray-700">Issue Type:</span>
-                        <Badge variant="outline" className="text-xs border-gray-300">
+                        <span className="font-medium text-sm text-muted-foreground">
+                          Issue Type:
+                        </span>
+                        <Badge variant="outline" className="text-xs">
                           {issueType}
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-sm text-gray-700">Status:</span>
-                        <Badge variant="outline" className="text-xs border-gray-300">
+                        <span className="font-medium text-sm text-muted-foreground">Status:</span>
+                        <Badge variant="outline" className="text-xs">
                           To Do
                         </Badge>
                       </div>
                     </div>
 
                     {syncToJira.data.data.issue_url && (
-                      <div className="pt-3 border-t border-green-200">
+                      <div className="pt-3 border-t border-border">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="w-full border-green-300 text-green-700 hover:bg-green-100"
+                          className="w-full"
                           onClick={() => window.open(syncToJira.data.data.issue_url, '_blank')}
                         >
                           <ExternalLink className="mr-2 h-4 w-4" />
@@ -403,12 +410,16 @@ export function IndividualJiraModal({
                     )}
                   </>
                 ) : (
-                  <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+                  <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4">
                     <div className="flex items-start gap-3">
-                      <XCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                      <XCircle className="h-5 w-5 text-destructive mt-0.5" />
                       <div>
-                        <h4 className="font-medium text-red-900">Failed to Create JIRA Issue</h4>
-                        <p className="text-sm text-red-700 mt-1">{syncToJira.data.message}</p>
+                        <h4 className="font-medium text-destructive">
+                          Failed to Create JIRA Issue
+                        </h4>
+                        <p className="text-sm text-destructive/80 mt-1">
+                          {syncToJira.data.message}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -418,7 +429,7 @@ export function IndividualJiraModal({
           )}
         </div>
 
-        <div className="flex gap-3 pt-6 border-t border-gray-200">
+        <div className="flex gap-3 pt-6 border-t border-border">
           <Button variant="outline" onClick={handleClose} className="flex-1 h-11">
             {feature.jira_integration ? 'Close' : 'Cancel'}
           </Button>

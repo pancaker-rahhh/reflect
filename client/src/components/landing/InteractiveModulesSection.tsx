@@ -87,7 +87,7 @@ export const InteractiveModulesSection = () => {
         </motion.div>
 
         <motion.div 
-          className="mx-auto mt-16 max-w-6xl rounded-2xl bg-white p-4 sm:p-8 shadow-2xl ring-1 ring-gray-200/50"
+          className="mx-auto mt-16 max-w-6xl rounded-2xl bg-[hsl(var(--background))] p-4 sm:p-8 shadow-2xl ring-1 ring-[hsl(var(--border))/0.5]"
           initial={{ opacity: 0, y: 50, scale: 0.95 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.4 }}
@@ -114,7 +114,7 @@ export const InteractiveModulesSection = () => {
                 {modules.map((module, index) => (
                   <motion.div 
                     key={module.id} 
-                    className="p-4 flex items-center justify-between rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                    className="p-4 flex items-center justify-between rounded-lg hover:bg-[hsl(var(--muted))/0.5] transition-colors duration-200"
                     initial={{ opacity: 0, x: -30 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     transition={{ 
@@ -132,7 +132,7 @@ export const InteractiveModulesSection = () => {
                   >
                     <div className="flex items-center gap-4">
                       <motion.div 
-                        className="bg-gray-100 p-3 rounded-lg"
+                        className="bg-[hsl(var(--muted))] p-3 rounded-lg"
                         whileHover={{ scale: 1.1, rotate: 5 }}
                         transition={{ type: "spring", stiffness: 300 }}
                       >
@@ -150,15 +150,15 @@ export const InteractiveModulesSection = () => {
                     </div>
                     <motion.button
                       onClick={() => handleToggle(module.id)}
-                      className={`relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 ${
-                        activeModules[module.id] ? 'bg-purple-600' : 'bg-gray-200'
+                      className={`relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] focus:ring-offset-2 ${
+                        activeModules[module.id] ? 'bg-[hsl(var(--primary))]' : 'bg-[hsl(var(--muted))]'
                       }`}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
                       <motion.span
                         aria-hidden="true"
-                        className="pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0"
+                        className="pointer-events-none inline-block h-6 w-6 transform rounded-full bg-[hsl(var(--background))] shadow ring-0"
                         animate={{ 
                           x: activeModules[module.id] ? 20 : 0,
                           scale: activeModules[module.id] ? 1.05 : 1
@@ -180,7 +180,7 @@ export const InteractiveModulesSection = () => {
                   viewport={{ once: true }}
                 >
                     <motion.div 
-                      className="bg-purple-50 text-purple-700 font-semibold p-4 rounded-xl text-center flex items-center justify-center gap-2"
+                      className="bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] font-semibold p-4 rounded-xl text-center flex items-center justify-center gap-2"
                       key={activeCount}
                       initial={{ scale: 0.9 }}
                       animate={{ scale: 1 }}

@@ -99,7 +99,7 @@ export const Navbar = () => {
           <div className="hidden lg:flex items-center gap-4">
             <motion.button
               onClick={handleLogin}
-              className={`text-sm font-semibold transition-colors ${isScrolled ? 'text-muted-foreground hover:text-primary' : isDocsPage ? 'text-muted-foreground hover:text-primary' : 'text-white/80 hover:text-white'}`}
+                className={`text-sm font-semibold transition-colors ${isScrolled ? 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))]' : isDocsPage ? 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))]' : 'text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))]'}`}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.8 }}
@@ -121,9 +121,9 @@ export const Navbar = () => {
           </div>
 
           <div className="lg:hidden">
-            <motion.button
+                        <motion.button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`${isScrolled ? 'text-foreground' : isDocsPage ? 'text-foreground' : 'text-white'} p-2 rounded-lg hover:bg-white/10 transition-colors`}
+              className={`${isScrolled ? 'text-[hsl(var(--foreground))]' : isDocsPage ? 'text-[hsl(var(--foreground))]' : 'text-[hsl(var(--foreground))]'}`}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
@@ -177,7 +177,7 @@ export const Navbar = () => {
                   key={link.name}
                   href={link.href}
                   onClick={(e) => handleNavClick(e, link.targetId)}
-                  className={`block text-base font-semibold transition-colors ${isScrolled ? 'text-muted-foreground hover:text-primary' : isDocsPage ? 'text-muted-foreground hover:text-primary' : 'text-white/80 hover:text-white'}`}
+                  className={`block text-base font-semibold transition-colors ${isScrolled ? 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))]' : isDocsPage ? 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))]' : 'text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))]'}`}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.2 + (index * 0.05) }}
@@ -193,7 +193,7 @@ export const Navbar = () => {
               >
                  <button 
                    onClick={handleLogin}
-                   className={`text-base font-semibold transition-colors ${isScrolled ? 'text-muted-foreground hover:text-primary' : isDocsPage ? 'text-muted-foreground hover:text-primary' : 'text-white/80 hover:text-white'}`}
+                   className={`text-base font-semibold transition-colors ${isScrolled ? 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))]' : isDocsPage ? 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))]' : 'text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))]'}`}
                  >
                   Log in
                 </button>
