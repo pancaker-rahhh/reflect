@@ -10,7 +10,7 @@ export const CtaSection = () => {
   }
 
   return (
-    <section id="cta" className="bg-background py-16 sm:py-24">
+    <section id="cta" className="bg-background py-20 sm:py-28">
       <div className="container mx-auto px-6">
         <motion.div
           className="relative isolate overflow-hidden bg-gradient-to-r from-primary to-primary/80 shadow-2xl rounded-3xl"
@@ -19,7 +19,7 @@ export const CtaSection = () => {
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <div className="p-8 md:p-16 lg:p-24 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="p-10 md:p-20 lg:p-28 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Text Content */}
             <motion.div
               className="text-white"
@@ -28,16 +28,16 @@ export const CtaSection = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
+              <h2 className="text-5xl md:text-6xl font-bold tracking-tight leading-tight">
                 Ready to 10x Your Feedback?
               </h2>
-              <p className="mt-6 text-lg text-primary-foreground/80">
+              <p className="mt-8 text-xl text-primary-foreground/80 leading-relaxed">
                 Join hundreds of innovative companies who set up in minutes and see immediate
                 results. No credit card required, ever.
               </p>
-              <ul className="mt-8 space-y-4 text-primary-foreground/70">
+              <ul className="mt-10 space-y-5 text-primary-foreground/70">
                 <motion.li
-                  className="flex items-center gap-3"
+                  className="flex items-center gap-4"
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.4, delay: 0.4 }}
@@ -50,7 +50,7 @@ export const CtaSection = () => {
                   </span>
                 </motion.li>
                 <motion.li
-                  className="flex items-center gap-3"
+                  className="flex items-center gap-4"
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.4, delay: 0.5 }}
@@ -63,7 +63,7 @@ export const CtaSection = () => {
                   </span>
                 </motion.li>
                 <motion.li
-                  className="flex items-center gap-3"
+                  className="flex items-center gap-4"
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.4, delay: 0.6 }}
@@ -78,7 +78,7 @@ export const CtaSection = () => {
               </ul>
               <motion.button
                 onClick={handleGetStarted}
-                className="mt-10 inline-flex items-center gap-3 rounded-md bg-background px-6 py-3 text-base font-semibold text-primary shadow-sm hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-background transition-all"
+                className="mt-12 inline-flex items-center gap-4 rounded-2xl bg-background px-8 py-4 text-lg font-semibold text-primary shadow-xl hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-background transition-all"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.7 }}
@@ -116,27 +116,27 @@ export const CtaSection = () => {
 
                 {/* Card Content */}
                 <div className="p-6 space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-4 bg-info/10 rounded-lg border border-info/20 hover:bg-info/20 transition-colors cursor-pointer">
-                      <div className="flex items-center gap-2 text-info">
+                  <div className="space-y-3">
+                    <div className="p-4 bg-muted/10 rounded-lg border border-border/20 hover:bg-muted/20 transition-colors cursor-pointer">
+                      <div className="flex items-center gap-3 text-foreground">
                         <span className="text-lg">🐛</span>
                         <span className="font-medium text-sm">Bug Report</span>
                       </div>
                     </div>
-                    <div className="p-4 bg-primary/10 rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors cursor-pointer">
-                      <div className="flex items-center gap-2 text-primary">
+                    <div className="p-4 bg-muted/10 rounded-lg border border-border/20 hover:bg-muted/20 transition-colors cursor-pointer">
+                      <div className="flex items-center gap-3 text-foreground">
                         <span className="text-lg">💡</span>
                         <span className="font-medium text-sm">Feature Request</span>
                       </div>
                     </div>
-                    <div className="p-4 bg-success/10 rounded-lg border border-success/20 hover:bg-success/20 transition-colors cursor-pointer">
-                      <div className="flex items-center gap-2 text-success">
+                    <div className="p-4 bg-muted/10 rounded-lg border border-border/20 hover:bg-muted/20 transition-colors cursor-pointer">
+                      <div className="flex items-center gap-3 text-foreground">
                         <span className="text-lg">⭐</span>
                         <span className="font-medium text-sm">Review</span>
                       </div>
                     </div>
-                    <div className="p-4 bg-warning/10 rounded-lg border border-warning/20 hover:bg-warning/20 transition-colors cursor-pointer">
-                      <div className="flex items-center gap-2 text-warning">
+                    <div className="p-4 bg-muted/10 rounded-lg border border-border/20 hover:bg-muted/20 transition-colors cursor-pointer">
+                      <div className="flex items-center gap-3 text-foreground">
                         <span className="text-lg">💬</span>
                         <span className="font-medium text-sm">General</span>
                       </div>

@@ -74,15 +74,15 @@ export const FaqSection = () => {
   return (
     <motion.div
       id="faq"
-      className="bg-white"
+      className="bg-background"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
       viewport={{ once: true }}
     >
-      <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8 lg:py-40">
+      <div className="mx-auto max-w-7xl px-6 py-28 sm:py-36 lg:px-8 lg:py-44">
         <div className="mx-auto max-w-7xl">
-          <div className="lg:grid lg:grid-cols-12 lg:gap-12">
+          <div className="lg:grid lg:grid-cols-12 lg:gap-16">
             <motion.div
               className="lg:col-span-5"
               initial={{ opacity: 0, x: -50 }}
@@ -91,7 +91,7 @@ export const FaqSection = () => {
               viewport={{ once: true }}
             >
               <motion.p
-                className="text-base font-semibold leading-7 text-primary"
+                className="text-lg font-semibold leading-7 text-primary"
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, delay: 0.3 }}
@@ -100,7 +100,7 @@ export const FaqSection = () => {
                 FAQ
               </motion.p>
               <motion.h2
-                className="mt-2 text-3xl font-bold leading-10 tracking-tight text-foreground sm:text-4xl"
+                className="mt-4 text-4xl font-bold leading-10 tracking-tight text-foreground sm:text-5xl"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
@@ -109,7 +109,7 @@ export const FaqSection = () => {
                 Frequently Asked Questions
               </motion.h2>
               <motion.p
-                className="mt-6 text-lg leading-8 text-muted-foreground"
+                className="mt-8 text-xl leading-8 text-muted-foreground"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
@@ -120,13 +120,13 @@ export const FaqSection = () => {
               </motion.p>
               <motion.button
                 onClick={() => (window.location.href = '/login')}
-                className="mt-10 inline-flex items-center gap-3 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all"
+                className="mt-12 inline-flex items-center gap-4 rounded-2xl bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.6 }}
                 whileHover={{
                   scale: 1.05,
-                  boxShadow: '0 10px 25px rgba(147, 51, 234, 0.3)',
+                  boxShadow: '0 10px 25px rgba(220, 38, 38, 0.3)',
                 }}
                 whileTap={{ scale: 0.95 }}
                 viewport={{ once: true }}
@@ -141,13 +141,13 @@ export const FaqSection = () => {
               </motion.button>
             </motion.div>
             <motion.div
-              className="mt-10 lg:col-span-7 lg:mt-0"
+              className="mt-12 lg:col-span-7 lg:mt-0"
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
               viewport={{ once: true }}
             >
-              <dl className="space-y-4">
+              <dl className="space-y-6">
                 {faqData.map((faq, index) => (
                   <motion.div
                     key={index}

@@ -128,7 +128,7 @@ export const PlatformSection = () => {
   return (
     <motion.div
       id="platform"
-      className="bg-white py-24 sm:py-32"
+      className="bg-background py-24 sm:py-32"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
@@ -143,25 +143,16 @@ export const PlatformSection = () => {
           viewport={{ once: true }}
         >
           <motion.h2
-            className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
+            className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl leading-tight"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: true }}
           >
-            One platform to handle your{' '}
-            <motion.span
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent"
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 0.4 }}
-              viewport={{ once: true }}
-            >
-              feedback
-            </motion.span>
+            One platform to handle your <span className="text-primary">feedback</span>
           </motion.h2>
           <motion.p
-            className="mt-4 text-base leading-7 text-muted-foreground"
+            className="mt-6 text-lg leading-8 text-muted-foreground max-w-3xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
@@ -172,20 +163,22 @@ export const PlatformSection = () => {
           </motion.p>
         </motion.div>
 
-        <div className="mt-16 overflow-x-auto pb-4">
-          <div className="flex justify-center space-x-2 sm:space-x-4">
+        <div className="mt-24 overflow-x-auto pb-4">
+          <div className="flex justify-center space-x-4 sm:space-x-6">
             {features.map((feature, index) => (
               <button
                 key={feature.name}
                 onClick={() => setActiveIndex(index)}
-                className={`flex-shrink-0 flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 ${
+                className={`flex-shrink-0 flex items-center gap-4 rounded-2xl px-8 py-4 text-base font-semibold transition-all duration-300 ${
                   activeIndex === index
-                    ? 'bg-purple-600 text-white shadow-md'
-                    : 'bg-white text-gray-600 hover:bg-gray-100 ring-1 ring-inset ring-gray-200'
+                    ? 'bg-primary text-primary-foreground shadow-xl'
+                    : 'bg-background text-muted-foreground hover:bg-muted ring-1 ring-inset ring-border/50 hover:shadow-lg'
                 }`}
               >
                 <feature.icon
-                  className={`h-5 w-5 ${activeIndex === index ? 'text-white' : feature.color}`}
+                  className={`h-5 w-5 ${
+                    activeIndex === index ? 'text-primary-foreground' : feature.color
+                  }`}
                 />
                 {feature.name}
               </button>
@@ -193,9 +186,9 @@ export const PlatformSection = () => {
           </div>
         </div>
 
-        <div className="mt-8 rounded-2xl bg-white p-4 sm:p-8 shadow-2xl ring-1 ring-gray-900/10">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12 items-center">
-            <div className="relative aspect-video w-full rounded-xl overflow-hidden group">
+        <div className="mt-16 rounded-3xl bg-background p-8 sm:p-12 shadow-2xl ring-1 ring-border/30">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16 items-center">
+            <div className="relative aspect-video w-full rounded-2xl overflow-hidden group shadow-xl">
               <img
                 src={activeFeature.image}
                 alt={`${activeFeature.name} UI`}
@@ -217,14 +210,16 @@ export const PlatformSection = () => {
                   {activeFeature.name}
                 </h3>
               </div>
-              <h4 className="mt-6 text-xl font-bold tracking-tight text-gray-900">
+              <h4 className="mt-8 text-3xl font-bold tracking-tight text-foreground">
                 {activeFeature.title}
               </h4>
-              <p className="mt-2 text-base leading-7 text-gray-600">{activeFeature.description}</p>
-              <ul className="mt-6 space-y-3">
+              <p className="mt-6 text-xl leading-8 text-muted-foreground">
+                {activeFeature.description}
+              </p>
+              <ul className="mt-8 space-y-4">
                 {activeFeature.keyFeatures.map((kf) => (
-                  <li key={kf} className="flex items-center gap-3 text-sm text-gray-700">
-                    <Check className="h-5 w-5 flex-none text-purple-600" />
+                  <li key={kf} className="flex items-center gap-4 text-base text-muted-foreground">
+                    <Check className="h-5 w-5 flex-none text-primary" />
                     <span>{kf}</span>
                   </li>
                 ))}
@@ -235,7 +230,7 @@ export const PlatformSection = () => {
           <div className="mt-8 flex items-center justify-between">
             <button
               onClick={handlePrev}
-              className="p-2 rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors"
+              className="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
             >
               <CaretLeft className="h-7 w-7" />
             </button>
@@ -245,14 +240,14 @@ export const PlatformSection = () => {
                   key={`dot-${index}`}
                   onClick={() => setActiveIndex(index)}
                   className={`h-2.5 w-2.5 rounded-full transition-colors ${
-                    activeIndex === index ? 'bg-purple-600' : 'bg-gray-300 hover:bg-gray-400'
+                    activeIndex === index ? 'bg-primary' : 'bg-muted hover:bg-muted-foreground'
                   }`}
                 />
               ))}
             </div>
             <button
               onClick={handleNext}
-              className="p-2 rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors"
+              className="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
             >
               <CaretRight className="h-7 w-7" />
             </button>

@@ -1,7 +1,6 @@
 import { Navbar } from '@/components/landing/Navbar'
 import { HeroSection } from '@/components/landing/HeroSection'
 import { BeforeAfterSection } from '@/components/landing/BeforeAfterSection'
-import { VideoSection } from '@/components/landing/VideoSection'
 import { PlatformSection } from '@/components/landing/PlatformSection'
 import { InteractiveModulesSection } from '@/components/landing/InteractiveModulesSection'
 import { SocialProofSection } from '@/components/landing/SocialProofSection'
@@ -28,7 +27,6 @@ export const LandingPage = () => {
         <Navbar />
         <HeroSection />
         <BeforeAfterSection />
-        <VideoSection />
         <PlatformSection />
         <InteractiveModulesSection />
         <SocialProofSection />
