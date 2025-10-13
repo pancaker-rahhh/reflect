@@ -1,19 +1,5 @@
-terraform {
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "~> 5.0"
-    }
-  }
-}
-
-provider "google" {
-  project = var.project_id
-  region  = var.region
-}
-
-resource "google_cloud_run_v2_service" "reflectfeedback" {
-  name     = "reflectfeedback"
+resource "google_cloud_run_v2_service" "service" {
+  name     = var.service_name
   location = var.region
   ingress  = "INGRESS_TRAFFIC_ALL"
 
@@ -59,7 +45,7 @@ resource "google_cloud_run_v2_service" "reflectfeedback" {
       }
     }
 
-    timeout                          = "300s"
+    timeout = "300s"
     max_instance_request_concurrency = 80
   }
 
@@ -70,12 +56,8 @@ resource "google_cloud_run_v2_service" "reflectfeedback" {
 }
 
 resource "google_cloud_run_v2_service_iam_member" "public_access" {
-  name     = google_cloud_run_v2_service.reflectfeedback.name
-  location = google_cloud_run_v2_service.reflectfeedback.location
+  name     = google_cloud_run_v2_service.service.name
+  location = google_cloud_run_v2_service.service.location
   role     = "roles/run.invoker"
   member   = "allUsers"
-}
-
-output "service_url" {
-  value = google_cloud_run_v2_service.reflectfeedback.uri
 }
