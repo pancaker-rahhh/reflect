@@ -1,6 +1,3 @@
-from contextlib import asynccontextmanager
-import contextlib
-import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.exception_handlers import (
@@ -9,63 +6,14 @@ from app.core.exception_handlers import (
 )
 from app.core.exceptions import AuthenticationError
 from app.core.settings import get_settings
-from app.core.logging import setup_logging
 from app.core.middleware import CorrelationIDMiddleware, RequestLoggingMiddleware
 from app.core.rate_limiting import setup_rate_limiting
-from app.db import engine
+from app.core.logging import setup_logging
+from app.core.lifespan import lifespan
 from app.router.api_router import api_router
 from app.router.v1.health_router import health_router
-from app.db import AsyncSessionLocal
-from app.services.subscription_service import subscription_service
-from app.services.payment_service import payment_service
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    setup_logging()
-    # Import all models to ensure SQLAlchemy relationships are properly configured
-    import app.models  # noqa
-
-    # Start background task: scheduled cancellation processor
-    stop_event = asyncio.Event()
-
-    async def cancellation_worker():
-        while not stop_event.is_set():
-            try:
-                async with AsyncSessionLocal() as db:
-                    orgs = (
-                        await subscription_service.list_organizations_due_cancellation(
-                            db
-                        )
-                    )
-                    for org in orgs:
-                        try:
-                            # Perform actual cancellation in Dodo if subscription exists
-                            if org.dodo_subscription_id:
-                                await payment_service.cancel_subscription(db, org.id)
-                            else:
-                                await subscription_service.cancel_subscription(
-                                    db, org.id
-                                )
-                        except Exception:
-                            # Log inside payment_service; continue processing others
-                            pass
-            except Exception:
-                # Swallow to avoid killing loop
-                pass
-            # Sleep a minute between scans
-            await asyncio.sleep(60)
-
-    task = asyncio.create_task(cancellation_worker())
-
-    try:
-        yield
-    finally:
-        stop_event.set()
-        task.cancel()
-        with contextlib.suppress(Exception):
-            await task
-    await engine.dispose()
+setup_logging()
 
 
 def create_application() -> FastAPI:
