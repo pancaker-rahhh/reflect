@@ -17,7 +17,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    env_file: .env.local
+    env_file: .env
     volumes:
       - ./api/server:/app/server
     networks:
@@ -41,7 +41,7 @@ services:
       - '5432:${POSTGRES_PORT}'
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    env_file: .env.local
+    env_file: .env
     networks:
       - reflect
 
