@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = 'reflect_dev_pass'
     POSTGRES_HOST: str = 'localhost'
     POSTGRES_PORT: int = 5432
-    DATABASE_URL: str = None
+    DATABASE_URL: str = 'localhost'
     DATABASE_POOL_SIZE: int = 20
     DATABASE_MAX_OVERFLOW: int = 0
 

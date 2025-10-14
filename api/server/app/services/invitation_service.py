@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
-
+from app.db import AsyncSessionLocal
 from app.models.organization_model import OrganizationMember
 from app.models.invitation import Invitation, PendingMember, InvitationTask
 from app.models.user_model import User
@@ -30,7 +30,7 @@ logger = get_logger(__name__)
 
 class InvitationService:
     def __init__(self):
-        self.invitation_expiry_hours = 72  # 3 days
+        self.invitation_expiry_hours = 72
         self.max_retries = 3
 
     async def check_invite_permission(
@@ -77,8 +77,10 @@ class InvitationService:
         organization_id: Optional[UUID],
         invitations: List[InvitationEntry],
     ):
-        from app.db import AsyncSessionLocal
-
+        if AsyncSessionLocal is None:
+            raise RuntimeError(
+                'Database not initialized. This function should not be called in migration context.'
+            )
         async with AsyncSessionLocal() as db:
             try:
                 await self._update_task_status(task_id, 'processing', db)
@@ -557,5 +559,4 @@ class InvitationService:
             )
 
 
-# Singleton instance
 invitation_service = InvitationService()
