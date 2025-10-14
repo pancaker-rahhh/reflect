@@ -2,7 +2,6 @@ import os
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-
 from app.core.settings import get_settings
 
 settings = get_settings()
@@ -39,6 +38,11 @@ Base = declarative_base()
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    if AsyncSessionLocal is None:
+        raise RuntimeError(
+            'Database not initialized. This function should not be called in migration context.'
+        )
+
     async with AsyncSessionLocal() as session:
         try:
             yield session
@@ -51,6 +55,11 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def init_db() -> None:
+    if engine is None:
+        raise RuntimeError(
+            'Database engine not initialized. This function should not be called in migration context.'
+        )
+
     async with engine.begin() as conn:
         from app.models import base_model  # noqa
 
@@ -61,4 +70,9 @@ async def init_db() -> None:
 
 
 async def close_db() -> None:
+    if engine is None:
+        raise RuntimeError(
+            'Database engine not initialized. This function should not be called in migration context.'
+        )
+
     await engine.dispose()
