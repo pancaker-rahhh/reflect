@@ -5,6 +5,13 @@ interface CSATRatingProps {
   value?: number
   onChange: (value: number) => void
   disabled?: boolean
+  colors?: {
+    primary: string
+    background: string
+    text: string
+    buttonColor: string
+    buttonTextColor: string
+  }
 }
 
 const satisfactionLevels = [
@@ -15,7 +22,7 @@ const satisfactionLevels = [
   { value: 5, label: 'Great', emoji: '😍', color: 'bg-green-500 hover:bg-green-600' },
 ]
 
-export function CSATRating({ value, onChange, disabled = false }: CSATRatingProps) {
+export function CSATRating({ value, onChange, disabled = false, colors }: CSATRatingProps) {
   const [hoveredValue, setHoveredValue] = useState<number | null>(null)
 
   const handleClick = (score: number) => {
@@ -58,9 +65,15 @@ export function CSATRating({ value, onChange, disabled = false }: CSATRatingProp
                 'min-w-[60px] max-w-[70px]',
                 disabled && 'opacity-50 cursor-not-allowed',
                 isSelected || isHovered
-                  ? `${level.color} text-white border-transparent shadow-lg`
-                  : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-200'
+                  ? `${level.color} border-transparent shadow-lg`
+                  : 'bg-white hover:bg-gray-50 border-gray-200'
               )}
+              style={{
+                color:
+                  isSelected || isHovered
+                    ? colors?.buttonTextColor || '#ffffff'
+                    : colors?.text || '#374151',
+              }}
             >
               <span className="text-2xl mb-1 transition-transform duration-200 hover:scale-110">
                 {level.emoji}
@@ -73,8 +86,12 @@ export function CSATRating({ value, onChange, disabled = false }: CSATRatingProp
 
       {displayLevel && (
         <div className="text-center animate-fade-in">
-          <div className="text-sm font-medium text-gray-800">{displayLevel.label}</div>
-          <div className="text-xs text-gray-600">Score: {displayLevel.value}/5</div>
+          <div className="text-sm font-medium" style={{ color: colors?.text || '#1f2937' }}>
+            {displayLevel.label}
+          </div>
+          <div className="text-xs" style={{ color: colors?.text || '#6b7280' }}>
+            Score: {displayLevel.value}/5
+          </div>
         </div>
       )}
     </div>

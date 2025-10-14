@@ -68,9 +68,7 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  /* Removed global border application to prevent unwanted borders */
 
   /* Widget-specific base styles to prevent conflicts with host page */
   #reflect-widget-container * {
