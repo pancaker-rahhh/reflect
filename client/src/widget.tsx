@@ -494,12 +494,14 @@ declare global {
       maxWidth: 'calc(100vw - 40px)',
       height: '520px',
       maxHeight: 'calc(100vh - 120px)',
-      border: '1px solid rgba(255,255,255,0.2)',
+      border: 'none',
       borderRadius: '20px',
       background: `linear-gradient(135deg, ${themeStyles.background}ee, ${themeStyles.background}f5)`,
       color: themeStyles.text,
       boxShadow:
-        '0 24px 48px rgba(0,0,0,0.1), 0 12px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(255,255,255,0.05)',
+        theme === 'dark'
+          ? '0 24px 48px rgba(0,0,0,0.3), 0 12px 24px rgba(0,0,0,0.2)'
+          : '0 24px 48px rgba(0,0,0,0.1), 0 12px 24px rgba(0,0,0,0.06)',
       display: 'none',
       zIndex: '9998',
       overflow: 'visible',

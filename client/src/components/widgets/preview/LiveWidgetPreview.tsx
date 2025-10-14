@@ -24,7 +24,7 @@ function getFormColors(formColors: any) {
     background: formColors?.background || '#FFFFFF',
     text: formColors?.text || '#000000',
     buttonColor: formColors?.buttonColor || '#0066FF',
-    buttonTextColor: formColors?.buttonTextColor || '#FFFFFF',
+    buttonTextColor: formColors?.text || '#000000',
   }
 }
 

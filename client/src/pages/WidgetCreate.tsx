@@ -250,7 +250,7 @@ export function WidgetCreate() {
               background: '#FFFFFF',
               text: '#000000',
               buttonColor: '#0066FF',
-              buttonTextColor: '#FFFFFF',
+              buttonTextColor: '#000000', // Use text color instead of hardcoded white
             },
             showBranding: true,
           },
@@ -409,7 +409,10 @@ export function WidgetCreate() {
                 background: widget.theme_configuration?.background || '#FFFFFF',
                 text: widget.theme_configuration?.text || '#000000',
                 buttonColor: widget.theme_configuration?.buttonColor || '#0066FF',
-                buttonTextColor: widget.theme_configuration?.buttonTextColor || '#FFFFFF',
+                buttonTextColor:
+                  widget.theme_configuration?.buttonTextColor ||
+                  widget.theme_configuration?.text ||
+                  '#000000',
               },
               showBranding: widget.theme_configuration?.show_branding ?? true,
             },

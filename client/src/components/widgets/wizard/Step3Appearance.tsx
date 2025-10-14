@@ -37,7 +37,7 @@ function getThemeColors(theme: string) {
         background: 'rgba(24, 24, 27, 0.95)',
         text: '#F4F4F5',
         buttonColor: '#9333EA',
-        buttonTextColor: '#FFFFFF',
+        buttonTextColor: '#F4F4F5',
       }
     case 'minimal-dark':
       return {
@@ -46,7 +46,7 @@ function getThemeColors(theme: string) {
         background: '#111827',
         text: '#F3F4F6',
         buttonColor: '#9CA3AF',
-        buttonTextColor: '#FFFFFF',
+        buttonTextColor: '#F3F4F6',
       }
     case 'minimal-light':
       return {
@@ -55,7 +55,7 @@ function getThemeColors(theme: string) {
         background: '#FFFFFF',
         text: '#111827',
         buttonColor: '#6B7280',
-        buttonTextColor: '#FFFFFF',
+        buttonTextColor: '#111827',
       }
     case 'default':
     default:
@@ -65,7 +65,7 @@ function getThemeColors(theme: string) {
         background: '#FFFFFF',
         text: '#000000',
         buttonColor: '#0066FF',
-        buttonTextColor: '#FFFFFF',
+        buttonTextColor: '#000000',
       }
   }
 }
@@ -203,8 +203,23 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
                   <FormLabel>Text Color</FormLabel>
                   <FormControl>
                     <div className="flex gap-2">
-                      <Input type="color" className="w-16 p-1 h-10" {...field} />
-                      <Input placeholder="#000000" {...field} />
+                      <Input
+                        type="color"
+                        className="w-16 p-1 h-10"
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e)
+                          form.setValue('appearance.colors.buttonTextColor', e.target.value)
+                        }}
+                      />
+                      <Input
+                        placeholder="#000000"
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e)
+                          form.setValue('appearance.colors.buttonTextColor', e.target.value)
+                        }}
+                      />
                     </div>
                   </FormControl>
                   <FormMessage />

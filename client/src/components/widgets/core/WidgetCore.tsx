@@ -35,8 +35,6 @@ export function WidgetCore({
     onStateChange,
   })
 
-
-
   // Use custom hook for feedback submission
   const { isSubmitting, error, errorInfo, handleSubmit, handleScoreSubmission, clearError } =
     useFeedbackSubmission({
@@ -55,7 +53,9 @@ export function WidgetCore({
     const overrides = config.contentByType?.[type] || {}
     return {
       headerTitle: overrides.headerTitle || content.headerTitle,
-      mainQuestion: overrides.mainQuestion || content.mainQuestion,
+      // Only fall back to primary content if the per-type content is undefined/null, not if it's an empty string
+      mainQuestion:
+        overrides.mainQuestion !== undefined ? overrides.mainQuestion : content.mainQuestion,
       submitButtonText: overrides.submitButtonText || content.submitButtonText,
       thankYouTitle: overrides.thankYouTitle || content.thankYouTitle,
       thankYouMessage: overrides.thankYouMessage || content.thankYouMessage,
@@ -67,7 +67,8 @@ export function WidgetCore({
   const textColor = theme.colors.text
   // Always use primary color for buttons, ignore any configured buttonColor
   const buttonColor = primaryColor
-  const buttonTextColor = '#ffffff'
+  // Use text color for buttonTextColor to ensure consistency
+  const buttonTextColor = theme.colors.buttonTextColor || textColor
 
   const colors = {
     ...theme.colors,
@@ -459,12 +460,19 @@ export function WidgetCore({
     <div
       className={cn(
         'flex flex-col h-full font-sans antialiased relative rounded-2xl overflow-hidden',
-        isGlassmorphism && 'backdrop-blur-xl border border-white/20'
+        isGlassmorphism && 'backdrop-blur-xl'
       )}
       style={{
         backgroundColor: backgroundColor,
         color: textColor,
         backdropFilter: isGlassmorphism ? 'blur(20px)' : undefined,
+        border: isGlassmorphism
+          ? `1px solid ${
+              textColor === '#000000' || textColor === '#111827'
+                ? 'rgba(0,0,0,0.1)'
+                : 'rgba(255,255,255,0.1)'
+            }`
+          : undefined,
       }}
     >
       {/* Header */}
@@ -477,7 +485,7 @@ export function WidgetCore({
         }}
       >
         <div className="relative z-10">
-          <h2 className="text-lg font-bold text-white m-0">
+          <h2 className="text-lg font-bold m-0" style={{ color: buttonTextColor }}>
             {
               resolveContentFor(
                 currentState.type === 'active' ? currentState.feedbackType : config.primaryType
@@ -499,7 +507,13 @@ export function WidgetCore({
           style={{ zIndex: 9999 }}
           title="Close widget"
         >
-          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            style={{ color: buttonTextColor }}
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

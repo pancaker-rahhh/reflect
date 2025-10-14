@@ -148,7 +148,12 @@ export function FeedbackRenderer({
     case 'NPS':
       return (
         <div className="space-y-6">
-          <NPSRating value={selectedScore} onChange={onScoreChange} disabled={isSubmitting} />
+          <NPSRating
+            value={selectedScore}
+            onChange={onScoreChange}
+            disabled={isSubmitting}
+            colors={colors}
+          />
           {selectedScore !== undefined && (
             <div className="space-y-4">
               <div>
@@ -200,7 +205,12 @@ export function FeedbackRenderer({
     case 'CSAT':
       return (
         <div className="space-y-4">
-          <CSATRating value={selectedScore} onChange={onScoreChange} disabled={isSubmitting} />
+          <CSATRating
+            value={selectedScore}
+            onChange={onScoreChange}
+            disabled={isSubmitting}
+            colors={colors}
+          />
           {selectedScore !== undefined && (
             <div className="space-y-3">
               <div>
@@ -252,7 +262,12 @@ export function FeedbackRenderer({
     case 'CES':
       return (
         <div className="space-y-4">
-          <CESRating value={selectedScore} onChange={onScoreChange} disabled={isSubmitting} />
+          <CESRating
+            value={selectedScore}
+            onChange={onScoreChange}
+            disabled={isSubmitting}
+            colors={colors}
+          />
           {selectedScore !== undefined && (
             <div className="space-y-3">
               <div>
