@@ -210,10 +210,10 @@ export const PlatformSection = () => {
                   {activeFeature.name}
                 </h3>
               </div>
-              <h4 className="mt-8 text-3xl font-bold tracking-tight text-foreground">
+              <h4 className="mt-8 text-2xl font-bold tracking-tight text-foreground">
                 {activeFeature.title}
               </h4>
-              <p className="mt-6 text-xl leading-8 text-muted-foreground">
+              <p className="mt-6 text-lg leading-8 text-muted-foreground">
                 {activeFeature.description}
               </p>
               <ul className="mt-8 space-y-4">

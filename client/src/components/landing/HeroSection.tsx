@@ -25,7 +25,7 @@ export const HeroSection = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             <motion.h1
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-[hsl(var(--foreground))] leading-[1.1] tracking-tight"
+              className="text-4xl sm:text-5xl md:text-6xl font-bold text-[hsl(var(--foreground))] leading-[1.1] tracking-tight"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
@@ -52,7 +52,7 @@ export const HeroSection = () => {
             </motion.h1>
 
             <motion.p
-              className="text-xl sm:text-2xl text-[hsl(var(--muted-foreground))] leading-relaxed max-w-2xl mx-auto font-light"
+              className="text-lg sm:text-xl text-[hsl(var(--muted-foreground))] leading-relaxed max-w-2xl mx-auto font-light"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}

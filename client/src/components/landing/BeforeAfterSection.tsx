@@ -196,7 +196,7 @@ export const BeforeAfterSection = () => {
                     >
                       <CheckCircle className="h-7 w-7 text-green-500 flex-shrink-0 mt-1" />
                     </motion.div>
-                    <p className="text-xl text-slate-700 leading-relaxed font-medium">{item}</p>
+                    <p className="text-lg text-slate-700 leading-relaxed font-medium">{item}</p>
                   </motion.li>
                 ))}
               </ul>
