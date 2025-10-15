@@ -19,7 +19,7 @@ export const CtaSection = () => {
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <div className="p-10 md:p-20 lg:p-28 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <div className="p-8 md:p-12 lg:p-16 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Text Content */}
             <motion.div
               className="text-white"
@@ -28,10 +28,10 @@ export const CtaSection = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-5xl md:text-6xl font-bold tracking-tight leading-tight">
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight leading-tight">
                 Ready to 10x Your Feedback?
               </h2>
-              <p className="mt-8 text-xl text-primary-foreground/80 leading-relaxed">
+              <p className="mt-6 text-lg text-primary-foreground/80 leading-relaxed">
                 Join hundreds of innovative companies who set up in minutes and see immediate
                 results. No credit card required, ever.
               </p>
@@ -78,7 +78,7 @@ export const CtaSection = () => {
               </ul>
               <motion.button
                 onClick={handleGetStarted}
-                className="mt-12 inline-flex items-center gap-4 rounded-2xl bg-background px-8 py-4 text-lg font-semibold text-primary shadow-xl hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-background transition-all"
+                className="mt-10 inline-flex items-center gap-4 rounded-2xl bg-background px-6 py-3 text-base font-semibold text-primary shadow-xl hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-background transition-all"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.7 }}

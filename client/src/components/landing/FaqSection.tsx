@@ -80,7 +80,7 @@ export const FaqSection = () => {
       transition={{ duration: 0.8 }}
       viewport={{ once: true }}
     >
-      <div className="mx-auto max-w-7xl px-6 py-28 sm:py-36 lg:px-8 lg:py-44">
+  <div className="mx-auto max-w-7xl px-6 py-16 sm:py-20 lg:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <div className="lg:grid lg:grid-cols-12 lg:gap-16">
             <motion.div
@@ -100,7 +100,7 @@ export const FaqSection = () => {
                 FAQ
               </motion.p>
               <motion.h2
-                className="mt-4 text-4xl font-bold leading-10 tracking-tight text-foreground sm:text-5xl"
+                className="mt-4 text-3xl font-bold leading-9 tracking-tight text-foreground sm:text-4xl"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
@@ -109,7 +109,7 @@ export const FaqSection = () => {
                 Frequently Asked Questions
               </motion.h2>
               <motion.p
-                className="mt-8 text-xl leading-8 text-muted-foreground"
+                className="mt-6 text-lg leading-7 text-muted-foreground"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}

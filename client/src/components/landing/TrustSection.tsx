@@ -58,7 +58,7 @@ const securityFeatures = [
 export const TrustSection = () => {
   return (
     <motion.section
-      className="bg-background py-20 border-t border-border/50"
+      className="bg-background py-12 border-t border-border/50"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
@@ -66,16 +66,16 @@ export const TrustSection = () => {
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <motion.div
-          className="text-center mb-16"
+          className="text-center mb-12"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-4xl font-bold text-foreground mb-6 tracking-tight">
+          <h2 className="text-3xl font-bold text-foreground mb-4 tracking-tight">
             Secure & Reliable Platform
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             Your data is protected with enterprise-grade security measures and industry best
             practices.
           </p>

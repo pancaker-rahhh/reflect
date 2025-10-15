@@ -55,7 +55,7 @@ export const InteractiveModulesSection = () => {
   return (
     <motion.div
       id="interactive-modules"
-      className="bg-surface-2 py-24 sm:py-32"
+      className="bg-surface-2 py-16 sm:py-20"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
@@ -100,7 +100,7 @@ export const InteractiveModulesSection = () => {
         </motion.div>
 
         <motion.div
-          className="mx-auto mt-24 max-w-6xl rounded-3xl bg-[hsl(var(--background))] p-8 sm:p-12 shadow-2xl border-2 border-[hsl(var(--border))/0.3]"
+          className="mx-auto mt-16 max-w-6xl rounded-3xl bg-[hsl(var(--background))] p-6 sm:p-8 shadow-2xl border-2 border-[hsl(var(--border))/0.3]"
           initial={{ opacity: 0, y: 50, scale: 0.95 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.4 }}
@@ -116,7 +116,7 @@ export const InteractiveModulesSection = () => {
               viewport={{ once: true }}
             >
               <motion.h3
-                className="text-3xl font-bold text-foreground px-4 mb-8 tracking-tight"
+                className="text-2xl font-bold text-foreground px-2 mb-6 tracking-tight"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 transition={{ delay: 0.8 }}
@@ -127,7 +127,7 @@ export const InteractiveModulesSection = () => {
               {modules.map((module, index) => (
                 <motion.div
                   key={module.id}
-                  className="p-8 flex items-center justify-between rounded-2xl hover:bg-[hsl(var(--muted))/0.5] transition-all duration-300 border border-transparent hover:border-[hsl(var(--border))/0.3]"
+                  className="p-6 flex items-center justify-between rounded-2xl hover:bg-[hsl(var(--muted))/0.5] transition-all duration-300 border border-transparent hover:border-[hsl(var(--border))/0.3]"
                   initial={{ opacity: 0, x: -30 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{
@@ -157,8 +157,8 @@ export const InteractiveModulesSection = () => {
                       </motion.div>
                     </motion.div>
                     <div>
-                      <h4 className="font-semibold text-foreground text-xl">{module.name}</h4>
-                      <p className="text-lg text-muted-foreground">{module.description}</p>
+                      <h4 className="font-semibold text-foreground text-lg">{module.name}</h4>
+                      <p className="text-sm text-muted-foreground">{module.description}</p>
                     </div>
                   </div>
                   <motion.button

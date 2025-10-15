@@ -41,7 +41,7 @@ export const BeforeAfterSection = () => {
   return (
     <motion.div
       id="features"
-      className="bg-background py-24 sm:py-32"
+      className="bg-background py-16 sm:py-20"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.3 }}
@@ -75,7 +75,7 @@ export const BeforeAfterSection = () => {
         </motion.div>
 
         <motion.div
-          className="mt-28 grid grid-cols-1 gap-20 rounded-3xl lg:grid-cols-2 lg:gap-20 bg-gradient-to-br from-slate-50 to-white p-16 shadow-2xl border border-slate-200/50"
+          className="mt-20 grid grid-cols-1 gap-10 rounded-3xl lg:grid-cols-2 lg:gap-12 bg-gradient-to-br from-slate-50 to-white p-8 shadow-2xl border border-slate-200/50"
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
@@ -83,14 +83,14 @@ export const BeforeAfterSection = () => {
         >
           {/* Before Column */}
           <motion.div
-            className="p-12"
+            className="p-8"
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             viewport={{ once: true }}
           >
             <motion.h3
-              className="text-4xl font-bold text-slate-800 mb-10 tracking-tight"
+              className="text-3xl font-bold text-slate-800 mb-8 tracking-tight"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
@@ -98,11 +98,11 @@ export const BeforeAfterSection = () => {
             >
               Before...
             </motion.h3>
-            <div className="space-y-8">
+            <div className="space-y-6">
               {beforeItems.map((item, index) => (
                 <motion.div
                   key={index}
-                  className={`bg-white p-8 rounded-2xl shadow-lg border border-red-200/50 flex items-center gap-5 hover:shadow-xl hover:border-red-300/50 transition-all duration-300 ${
+                  className={`bg-white p-6 rounded-2xl shadow-lg border border-red-200/50 flex items-center gap-4 hover:shadow-xl hover:border-red-300/50 transition-all duration-300 ${
                     index % 2 === 0 ? '-rotate-1 hover:rotate-0' : 'rotate-1 hover:rotate-0'
                   }`}
                   initial={{ opacity: 0, x: -30, rotate: index % 2 === 0 ? -10 : 10 }}
@@ -131,7 +131,7 @@ export const BeforeAfterSection = () => {
                   >
                     <XCircle className="h-7 w-7 text-red-500 flex-shrink-0" />
                   </motion.div>
-                  <p className="text-slate-700 text-lg leading-relaxed">{item}</p>
+                  <p className="text-slate-700 text-base leading-relaxed">{item}</p>
                 </motion.div>
               ))}
             </div>
@@ -139,7 +139,7 @@ export const BeforeAfterSection = () => {
 
           {/* After Column */}
           <motion.div
-            className="relative rounded-2xl p-12 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200/50 shadow-2xl hover:shadow-3xl transition-shadow duration-300"
+            className="relative rounded-2xl p-8 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200/50 shadow-2xl hover:shadow-3xl transition-shadow duration-300"
             initial={{ opacity: 0, x: 50, scale: 0.9 }}
             whileInView={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}

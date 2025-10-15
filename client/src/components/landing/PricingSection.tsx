@@ -31,7 +31,7 @@ export const PricingSection = () => {
   return (
     <motion.div
       id="pricing"
-      className="bg-background py-28 sm:py-36"
+      className="bg-background py-16 sm:py-20"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
@@ -74,11 +74,11 @@ export const PricingSection = () => {
           </motion.p>
         </motion.div>
 
-        <div className="isolate mx-auto mt-16 grid max-w-6xl grid-cols-1 gap-10 lg:grid-cols-3">
+  <div className="isolate mx-auto mt-12 grid max-w-6xl grid-cols-1 gap-8 lg:grid-cols-3">
           {displayPlans.map((plan, index) => (
             <motion.div
               key={plan.name}
-              className={`rounded-3xl p-10 xl:p-12 ${
+              className={`rounded-3xl p-6 xl:p-8 ${
                 plan.primary || plan.id === 'pro_yearly'
                   ? 'bg-[hsl(var(--background))] ring-2 ring-[hsl(var(--primary))] shadow-2xl relative'
                   : 'bg-[hsl(var(--muted))/0.05] ring-1 ring-[hsl(var(--border))/0.3] shadow-xl'
