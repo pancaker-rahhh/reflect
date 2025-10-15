@@ -1,154 +1,58 @@
-import { CheckCircle, Rocket } from 'phosphor-react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
 
 export const CtaSection = () => {
-  const navigate = useNavigate()
-
-  const handleGetStarted = () => {
-    navigate('/login')
-  }
-
   return (
-    <section id="cta" className="bg-background py-20 sm:py-28">
-      <div className="container mx-auto px-6">
-        <motion.div
-          className="relative isolate overflow-hidden bg-gradient-to-r from-primary to-primary/80 shadow-2xl rounded-3xl"
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-        >
-      <div className="p-8 md:p-12 lg:p-16 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Text Content */}
-            <motion.div
-              className="text-white"
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight leading-tight">
-                Ready to 10x Your Feedback?
-              </h2>
-              <p className="mt-6 text-lg text-primary-foreground/80 leading-relaxed">
-                Join hundreds of innovative companies who set up in minutes and see immediate
-                results. No credit card required, ever.
-              </p>
-              <ul className="mt-10 space-y-5 text-primary-foreground/70">
-                <motion.li
-                  className="flex items-center gap-4"
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, delay: 0.4 }}
-                  viewport={{ once: true }}
-                >
-                  <CheckCircle className="text-success" size={22} />
-                  <span>
-                    <span className="font-semibold">Completely Free:</span> Get started without any
-                    cost.
-                  </span>
-                </motion.li>
-                <motion.li
-                  className="flex items-center gap-4"
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, delay: 0.5 }}
-                  viewport={{ once: true }}
-                >
-                  <CheckCircle className="text-success" size={22} />
-                  <span>
-                    <span className="font-semibold">Effortless 3-Min Setup:</span> A single line of
-                    code is all it takes.
-                  </span>
-                </motion.li>
-                <motion.li
-                  className="flex items-center gap-4"
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, delay: 0.6 }}
-                  viewport={{ once: true }}
-                >
-                  <CheckCircle className="text-success" size={22} />
-                  <span>
-                    <span className="font-semibold">Modular by Design:</span> Enable only the
-                    features you need.
-                  </span>
-                </motion.li>
-              </ul>
-              <motion.button
-                onClick={handleGetStarted}
-                className="mt-10 inline-flex items-center gap-4 rounded-2xl bg-background px-6 py-3 text-base font-semibold text-primary shadow-xl hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-background transition-all"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.7 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                viewport={{ once: true }}
-              >
-                Get Started for Free
-                <Rocket size={18} />
-              </motion.button>
-            </motion.div>
-
-            {/* Visual Representation */}
-            <motion.div
-              className="hidden lg:block relative w-full h-full"
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              viewport={{ once: true }}
-            >
-              <motion.div
-                className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300 overflow-hidden"
-                whileHover={{ scale: 1.02 }}
-              >
-                {/* Card Header */}
-                <div className="flex items-center justify-between p-6 bg-surface-2 border-b border-border">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl">👋</span>
-                    <p className="font-bold text-lg text-foreground">How can we help?</p>
-                  </div>
-                  <button className="text-muted-foreground hover:text-foreground transition-colors">
-                    &times;
-                  </button>
-                </div>
-
-                {/* Card Content */}
-                <div className="p-6 space-y-4">
-                  <div className="space-y-3">
-                    <div className="p-4 bg-muted/10 rounded-lg border border-border/20 hover:bg-muted/20 transition-colors cursor-pointer">
-                      <div className="flex items-center gap-3 text-foreground">
-                        <span className="text-lg">🐛</span>
-                        <span className="font-medium text-sm">Bug Report</span>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-muted/10 rounded-lg border border-border/20 hover:bg-muted/20 transition-colors cursor-pointer">
-                      <div className="flex items-center gap-3 text-foreground">
-                        <span className="text-lg">💡</span>
-                        <span className="font-medium text-sm">Feature Request</span>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-muted/10 rounded-lg border border-border/20 hover:bg-muted/20 transition-colors cursor-pointer">
-                      <div className="flex items-center gap-3 text-foreground">
-                        <span className="text-lg">⭐</span>
-                        <span className="font-medium text-sm">Review</span>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-muted/10 rounded-lg border border-border/20 hover:bg-muted/20 transition-colors cursor-pointer">
-                      <div className="flex items-center gap-3 text-foreground">
-                        <span className="text-lg">💬</span>
-                        <span className="font-medium text-sm">General</span>
-                      </div>
-                    </div>
+    <section id="cta" className="relative bg-background overflow-hidden py-28">
+      {/* Repeated outlined REFLECT rows as main content (not background) */}
+      <div className="relative z-10 max-w-7xl mx-auto px-6 text-center">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+          <div className="flex flex-col items-center gap-4">
+            {Array.from({ length: 5 }).map((_, row) => {
+              const rowOffsets = [-48, -18, 6, 30, 56]
+              const startOffset = rowOffsets[row] || 0
+              return (
+                <div key={row} className="relative w-full overflow-visible">
+                  {/* main repeated row */}
+                  <div className="flex items-center justify-center gap-8 whitespace-nowrap">
+                    {Array.from({ length: 6 }).map((__, col) => (
+                      <span
+                        key={col}
+                        className="inline-block outlined-primary font-extrabold tracking-tight font-londrina text-[clamp(72px,9.5vw,180px)] leading-none"
+                        style={{
+                          WebkitTextStroke: `${Math.max(3, 4 - row * 0.2)}px hsl(var(--primary))`,
+                          color: 'transparent',
+                          opacity: 0.32 - row * 0.04,
+                          transform: `translateX(${startOffset + col * 6 + row * 6}px)`,
+                        }}
+                      >
+                        REFLECT
+                      </span>
+                    ))}
                   </div>
 
-                  <div className="text-center text-sm text-muted-foreground">
-                    Choose a feedback type to get started
+                  {/* smeared ghost layer (faint, skewed) */}
+                  <div
+                    className="absolute inset-0 flex items-center justify-center gap-8 whitespace-nowrap pointer-events-none"
+                    style={{ transform: `translateX(${startOffset + 16 + row * 12}px) skewX(-10deg)`, opacity: 0.16 - row * 0.02 }}
+                  >
+                    {Array.from({ length: 6 }).map((__, col) => (
+                      <span
+                        key={`g-${col}`}
+                        className="inline-block outlined-primary font-extrabold tracking-tight font-londrina text-[clamp(72px,9.5vw,180px)] leading-none"
+                        style={{
+                          WebkitTextStroke: `${Math.max(1.5, 2 - row * 0.15)}px hsl(var(--primary))`,
+                          color: 'transparent',
+                          opacity: 0.12 - row * 0.01,
+                          transform: `translateX(${startOffset + col * 6}px)`,
+                        }}
+                      >
+                        REFLECT
+                      </span>
+                    ))}
                   </div>
                 </div>
-              </motion.div>
-            </motion.div>
+              )
+            })}
           </div>
         </motion.div>
       </div>
