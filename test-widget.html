@@ -1,16 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <h1>Test Widget</h1>
-    <p>This is a test widget</p>
-    <button id="test-button">Test Button</button>
-    <script>
-      window.reflectConfig = { key: "widget_85854cdacd1f4871", position: "bottom_right" };
-    </script>
-    <script async src="https://cdn.reflectfeedback.com/widgets/widget_85854cdacd1f4871/widget.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Kicks - The Ultimate Jordan Destination</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .hero-bg {
+            background: linear-gradient(45deg, #111827 0%, #dc2626 100%);
+        }
+        .cta-button {
+            transition: all 0.3s ease;
+        }
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px -10px rgba(220, 38, 38, 0.5);
+        }
+        .shoe-image {
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .shoe-image:hover {
+            transform: scale(1.05) rotate(-5deg);
+        }
+        .feature-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- Header Section -->
+    <header class="bg-white sticky top-0 z-50 shadow-md">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-3xl font-black text-red-600">RETRO<span class="text-gray-900">KICKS</span></a>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#home" class="text-gray-700 hover:text-red-600 transition">Home</a>
+                <a href="#featured" class="text-gray-700 hover:text-red-600 transition">Featured</a>
+                <a href="#testimonials" class="text-gray-700 hover:text-red-600 transition">Reviews</a>
+                <a href="#contact" class="text-gray-700 hover:text-red-600 transition">Contact</a>
+            </div>
+            <button class="md:hidden flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <main id="home">
+        <section class="hero-bg text-white">
+            <div class="container mx-auto px-6 py-20 md:py-32 flex flex-col md:flex-row items-center">
+                <!-- Left Content -->
+                <div class="md:w-1/2 text-center md:text-left mb-10 md:mb-0">
+                    <h1 class="text-5xl md:text-7xl font-black uppercase tracking-tight mb-4 leading-tight">Iconic Style.<br>Timeless Legacy.</h1>
+                    <p class="text-lg md:text-xl mb-8 max-w-lg mx-auto md:mx-0 text-gray-200">
+                        Experience the rebirth of a legend. The Jordan Retro in Black & White is back, blending classic design with modern comfort.
+                    </p>
+                    <button class="cta-button bg-white text-red-600 font-bold py-4 px-10 rounded-lg text-lg uppercase shadow-lg">
+                        Shop Now
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                    </button>
+                </div>
+                <!-- Right Image -->
+                <div class="md:w-1/2 flex justify-center items-center">
+                    <img src="nike-red-shoe.jpeg"
+                         onerror="this.onerror=null;this.src='https://placehold.co/600x400/FFFFFF/000000?text=Image+Not+Found';"
+                         alt="Black and White Jordan Retro Shoe"
+                         class="shoe-image w-full max-w-md lg:max-w-lg drop-shadow-2xl">
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Section -->
+        <section id="featured" class="py-20 bg-white">
+            <div class="container mx-auto px-6">
+                <h2 class="text-4xl font-black text-center text-gray-900 mb-12">Why Choose The Retro?</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Feature Card 1 -->
+                    <div class="feature-card bg-gray-50 p-8 rounded-xl shadow-sm text-center">
+                        <div class="mb-4 flex justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="text-red-600" viewBox="0 0 16 16">
+                                <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5 8 5.961 14.154 3.5 8.186 1.113zM15 4.239l-6.5 2.6v7.922l6.5-3.6V4.24zM1 4.239v7.288l6.5 3.6V6.839L1 4.239z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Premium Materials</h3>
+                        <p class="text-gray-600">Crafted with high-quality leather and textiles for durability and a premium feel.</p>
+                    </div>
+                    <!-- Feature Card 2 -->
+                    <div class="feature-card bg-gray-50 p-8 rounded-xl shadow-sm text-center">
+                       <div class="mb-4 flex justify-center">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="text-red-600" viewBox="0 0 16 16">
+                                <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1zm3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4h-3.5zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Heritage Design</h3>
+                        <p class="text-gray-600">The timeless silhouette pays homage to the golden era of basketball and sneaker culture.</p>
+                    </div>
+                    <!-- Feature Card 3 -->
+                    <div class="feature-card bg-gray-50 p-8 rounded-xl shadow-sm text-center">
+                        <div class="mb-4 flex justify-center">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="text-red-600" viewBox="0 0 16 16">
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Unmatched Comfort</h3>
+                        <p class="text-gray-600">Featuring encapsulated Air-Sole units for lightweight cushioning with every step.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section id="testimonials" class="py-20 bg-gray-100">
+            <div class="container mx-auto px-6">
+                <h2 class="text-4xl font-black text-center text-gray-900 mb-12">From The Community</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Testimonial 1 -->
+                    <div class="bg-white p-8 rounded-lg shadow-md">
+                        <p class="text-gray-600 mb-4">"The quality is insane. They look even better in person. Shipping was super fast too. Will definitely be back for more!"</p>
+                        <div class="flex items-center">
+                            <img src="https://placehold.co/40x40/f87171/ffffff?text=JD" alt="User Avatar" class="w-10 h-10 rounded-full mr-4">
+                            <div>
+                                <p class="font-bold text-gray-800">Jake D.</p>
+                                <p class="text-sm text-gray-500">Verified Buyer</p>
+                            </div>
+                        </div>
+                    </div>
+                     <!-- Testimonial 2 -->
+                    <div class="bg-white p-8 rounded-lg shadow-md">
+                        <p class="text-gray-600 mb-4">"A true classic. I've wanted these for years and finally pulled the trigger. No regrets! They're comfortable and stylish."</p>
+                        <div class="flex items-center">
+                            <img src="https://placehold.co/40x40/f87171/ffffff?text=MS" alt="User Avatar" class="w-10 h-10 rounded-full mr-4">
+                            <div>
+                                <p class="font-bold text-gray-800">Maria S.</p>
+                                <p class="text-sm text-gray-500">Verified Buyer</p>
+                            </div>
+                        </div>
+                    </div>
+                     <!-- Testimonial 3 -->
+                    <div class="bg-white p-8 rounded-lg shadow-md">
+                        <p class="text-gray-600 mb-4">"The black and white colorway is so versatile. I can wear these with anything. 10/10 would recommend RetroKicks."</p>
+                        <div class="flex items-center">
+                            <img src="https://placehold.co/40x40/f87171/ffffff?text=KB" alt="User Avatar" class="w-10 h-10 rounded-full mr-4">
+                            <div>
+                                <p class="font-bold text-gray-800">Kevin B.</p>
+                                <p class="text-sm text-gray-500">Verified Buyer</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer Section -->
+        <footer id="contact" class="bg-gray-900 text-white">
+            <div class="container mx-auto px-6 py-12">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 text-red-500">RETROKICKS</h3>
+                        <p class="text-gray-400">Your #1 source for the most iconic sneakers on the planet. Est. 2023.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-4">Quick Links</h3>
+                        <ul>
+                            <li class="mb-2"><a href="#" class="text-gray-400 hover:text-white transition">About Us</a></li>
+                            <li class="mb-2"><a href="#" class="text-gray-400 hover:text-white transition">Shipping Policy</a></li>
+                            <li class="mb-2"><a href="#" class="text-gray-400 hover:text-white transition">Returns</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-4">Follow Us</h3>
+                        <div class="flex space-x-4">
+                            <a href="#" class="text-gray-400 hover:text-white transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.494v-9.294h-3.128v-3.622h3.128v-2.671c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12v9.293h6.116c.73 0 1.323-.593 1.323-1.325v-21.35c0-.732-.593-1.325-1.323-1.325z"/>
+                                </svg>
+                            </a>
+                             <a href="#" class="text-gray-400 hover:text-white transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.85s-.011 3.584-.069 4.85c-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.148-4.771-1.691-4.919-4.919-.058-1.265-.069-1.645-.069-4.85s.011-3.584.069-4.85c.149-3.225 1.664-4.771 4.919-4.919 1.266-.058 1.644-.07 4.85-.07zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948s.014 3.667.072 4.947c.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072s3.667-.014 4.947-.072c4.358-.2 6.78-2.618 6.98-6.98.059-1.281.073-1.689.073-4.948s-.014-3.667-.072-4.947c-.2-4.358-2.618-6.78-6.98-6.98-1.281-.059-1.689-.073-4.948-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44 1.441-.645 1.441-1.44-.645-1.44-1.441-1.44z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-12 border-t border-gray-800 pt-6 text-center text-gray-500">
+                    <p>&copy; 2024 RetroKicks. All Rights Reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </main>
+    
 </html>
