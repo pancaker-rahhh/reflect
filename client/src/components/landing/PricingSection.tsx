@@ -31,13 +31,13 @@ export const PricingSection = () => {
   return (
     <motion.div
       id="pricing"
-      className="bg-background py-16 sm:py-20"
+      className="bg-background py-12 sm:py-16 lg:py-20"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
       viewport={{ once: true }}
     >
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           className="mx-auto max-w-4xl text-center"
           initial={{ opacity: 0, y: 30 }}
@@ -55,7 +55,7 @@ export const PricingSection = () => {
             Pricing
           </motion.p>
           <motion.h2
-            className="mt-4 text-5xl font-bold tracking-tight text-[hsl(var(--foreground))] sm:text-6xl leading-tight"
+            className="mt-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-[hsl(var(--foreground))] leading-tight"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
@@ -64,7 +64,7 @@ export const PricingSection = () => {
             The Right Plan for Your Needs
           </motion.h2>
           <motion.p
-            className="mx-auto mt-8 max-w-3xl text-xl leading-8 text-[hsl(var(--muted-foreground))]"
+            className="mx-auto mt-6 sm:mt-8 max-w-3xl text-base sm:text-lg md:text-xl leading-7 sm:leading-8 text-[hsl(var(--muted-foreground))] px-4 sm:px-0"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
@@ -74,11 +74,11 @@ export const PricingSection = () => {
           </motion.p>
         </motion.div>
 
-  <div className="isolate mx-auto mt-12 grid max-w-6xl grid-cols-1 gap-8 lg:grid-cols-3">
+  <div className="isolate mx-auto mt-8 sm:mt-12 grid max-w-6xl grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
           {displayPlans.map((plan, index) => (
             <motion.div
               key={plan.name}
-              className={`rounded-3xl p-6 xl:p-8 ${
+              className={`rounded-2xl sm:rounded-3xl p-5 sm:p-6 lg:p-8 ${
                 plan.primary || plan.id === 'pro_yearly'
                   ? 'bg-[hsl(var(--background))] ring-2 ring-[hsl(var(--primary))] shadow-2xl relative'
                   : 'bg-[hsl(var(--muted))/0.05] ring-1 ring-[hsl(var(--border))/0.3] shadow-xl'
@@ -95,13 +95,13 @@ export const PricingSection = () => {
             >
               {plan.id === 'pro_monthly' && (
                 <motion.div
-                  className="absolute -top-4 left-1/2 transform -translate-x-1/2"
+                  className="absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2"
                   initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8 + index * 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <div className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+                  <div className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold shadow-lg whitespace-nowrap">
                     ⚡ Most Popular
                   </div>
                 </motion.div>
@@ -109,13 +109,13 @@ export const PricingSection = () => {
 
               {plan.id === 'pro_yearly' && (
                 <motion.div
-                  className="absolute -top-4 left-1/2 transform -translate-x-1/2"
+                  className="absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2"
                   initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8 + index * 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <div className="bg-green-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+                  <div className="bg-green-500 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold shadow-lg whitespace-nowrap">
                     💰 10% Off
                   </div>
                 </motion.div>
@@ -129,7 +129,7 @@ export const PricingSection = () => {
                 viewport={{ once: true }}
               >
                 <h3
-                  className={`text-2xl font-bold leading-8 ${
+                  className={`text-xl sm:text-2xl font-bold leading-8 ${
                     plan.primary || plan.id === 'pro_yearly'
                       ? 'text-[hsl(var(--primary))]'
                       : 'text-[hsl(var(--foreground))]'
@@ -140,7 +140,7 @@ export const PricingSection = () => {
               </motion.div>
 
               <motion.p
-                className="mt-6 text-lg leading-7 text-[hsl(var(--muted-foreground))]"
+                className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 text-[hsl(var(--muted-foreground))]"
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8 + index * 0.1 }}
@@ -150,20 +150,20 @@ export const PricingSection = () => {
               </motion.p>
 
               <motion.p
-                className="mt-6 flex items-baseline gap-x-1"
+                className="mt-4 sm:mt-6 flex items-baseline gap-x-1"
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.9 + index * 0.1, type: 'spring', stiffness: 200 }}
                 viewport={{ once: true }}
               >
-                <span className="text-4xl font-bold tracking-tight text-[hsl(var(--foreground))]">
+                <span className="text-3xl sm:text-4xl font-bold tracking-tight text-[hsl(var(--foreground))]">
                   {plan.price}
                 </span>
               </motion.p>
 
               <motion.button
                 onClick={handleGetStarted}
-                className={`mt-10 block rounded-2xl px-6 py-4 text-center text-lg font-semibold leading-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 transition-all ${
+                className={`mt-8 sm:mt-10 block w-full rounded-xl sm:rounded-2xl px-5 sm:px-6 py-3 sm:py-4 text-center text-base sm:text-lg font-semibold leading-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 transition-all ${
                   plan.primary || plan.id === 'pro_yearly'
                     ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-sm hover:bg-red-600 focus-visible:outline-[hsl(var(--primary))]'
                     : 'bg-[hsl(var(--background))] text-[hsl(var(--primary))] ring-1 ring-inset ring-[hsl(var(--border))] hover:bg-gray-100 hover:text-red-600'
@@ -179,12 +179,12 @@ export const PricingSection = () => {
 
               <ul
                 role="list"
-                className="mt-10 space-y-5 text-lg leading-6 text-[hsl(var(--muted-foreground))] xl:mt-12"
+                className="mt-8 sm:mt-10 lg:mt-12 space-y-4 sm:space-y-5 text-base sm:text-lg leading-6 text-[hsl(var(--muted-foreground))]"
               >
                 {plan.features.map((feature, featureIndex) => (
                   <motion.li
                     key={feature}
-                    className="flex gap-x-4"
+                    className="flex gap-x-3 sm:gap-x-4"
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     transition={{
@@ -202,13 +202,14 @@ export const PricingSection = () => {
                         stiffness: 200,
                       }}
                       viewport={{ once: true }}
+                      className="flex-shrink-0"
                     >
                       <Check
-                        className="h-7 w-6 flex-none text-[hsl(var(--primary))]"
+                        className="h-6 w-5 sm:h-7 sm:w-6 text-[hsl(var(--primary))]"
                         aria-hidden="true"
                       />
                     </motion.div>
-                    {feature}
+                    <span className="text-sm sm:text-base lg:text-lg">{feature}</span>
                   </motion.li>
                 ))}
               </ul>

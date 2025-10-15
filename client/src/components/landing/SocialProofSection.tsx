@@ -24,16 +24,16 @@ const stats = [
 export const SocialProofSection = () => {
   return (
     <motion.section
-      className="bg-surface-2 py-16"
+      className="bg-surface-2 py-12 sm:py-16"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
       viewport={{ once: true }}
     >
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Stats */}
         <motion.div
-          className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16"
+          className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-12 sm:mb-16"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -48,9 +48,9 @@ export const SocialProofSection = () => {
               transition={{ duration: 0.6, delay: index * 0.1 }}
               viewport={{ once: true }}
             >
-              <stat.icon className={`h-8 w-8 ${stat.color} mx-auto mb-4`} />
-              <div className="text-3xl font-bold text-foreground mb-2">{stat.number}</div>
-              <div className="text-muted-foreground">{stat.label}</div>
+              <stat.icon className={`h-6 w-6 sm:h-8 sm:w-8 ${stat.color} mx-auto mb-3 sm:mb-4`} />
+              <div className="text-2xl sm:text-3xl font-bold text-foreground mb-2">{stat.number}</div>
+              <div className="text-muted-foreground text-sm sm:text-base">{stat.label}</div>
             </motion.div>
           ))}
         </motion.div>

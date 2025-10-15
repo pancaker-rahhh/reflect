@@ -80,9 +80,9 @@ export const FaqSection = () => {
       transition={{ duration: 0.8 }}
       viewport={{ once: true }}
     >
-  <div className="mx-auto max-w-7xl px-6 py-16 sm:py-20 lg:px-8 lg:py-24">
+  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
         <div className="mx-auto max-w-7xl">
-          <div className="lg:grid lg:grid-cols-12 lg:gap-16">
+          <div className="lg:grid lg:grid-cols-12 lg:gap-12 xl:gap-16">
             <motion.div
               className="lg:col-span-5"
               initial={{ opacity: 0, x: -50 }}
@@ -100,7 +100,7 @@ export const FaqSection = () => {
                 FAQ
               </motion.p>
               <motion.h2
-                className="mt-4 text-3xl font-bold leading-9 tracking-tight text-foreground sm:text-4xl"
+                className="mt-4 text-2xl sm:text-3xl lg:text-4xl font-bold leading-9 tracking-tight text-foreground"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
@@ -109,7 +109,7 @@ export const FaqSection = () => {
                 Frequently Asked Questions
               </motion.h2>
               <motion.p
-                className="mt-6 text-lg leading-7 text-muted-foreground"
+                className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 text-muted-foreground"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
@@ -120,7 +120,7 @@ export const FaqSection = () => {
               </motion.p>
               <motion.button
                 onClick={() => (window.location.href = '/login')}
-                className="mt-12 inline-flex items-center gap-4 rounded-2xl bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all"
+                className="mt-8 sm:mt-12 inline-flex items-center gap-3 sm:gap-4 rounded-xl sm:rounded-2xl bg-primary px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all w-full sm:w-auto justify-center"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.6 }}
@@ -134,20 +134,21 @@ export const FaqSection = () => {
                 <motion.div
                   animate={{ rotate: [0, 15, -15, 0] }}
                   transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                  className="flex-shrink-0"
                 >
                   <LifeBuoy className="h-5 w-5" />
                 </motion.div>
-                Contact Support
+                <span>Contact Support</span>
               </motion.button>
             </motion.div>
             <motion.div
-              className="mt-12 lg:col-span-7 lg:mt-0"
+              className="mt-10 sm:mt-12 lg:col-span-7 lg:mt-0"
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
               viewport={{ once: true }}
             >
-              <dl className="space-y-6">
+              <dl className="space-y-4 sm:space-y-6">
                 {faqData.map((faq, index) => (
                   <motion.div
                     key={index}

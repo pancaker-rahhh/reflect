@@ -128,13 +128,13 @@ export const PlatformSection = () => {
   return (
     <motion.div
       id="platform"
-      className="bg-background py-24 sm:py-32"
+      className="bg-background py-16 sm:py-20 lg:py-24"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
       viewport={{ once: true }}
     >
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           className="mx-auto max-w-3xl text-center"
           initial={{ opacity: 0, y: 30 }}
@@ -143,7 +143,7 @@ export const PlatformSection = () => {
           viewport={{ once: true }}
         >
           <motion.h2
-            className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl leading-tight"
+            className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-tight"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -152,7 +152,7 @@ export const PlatformSection = () => {
             One platform to handle your <span className="text-primary">feedback</span>
           </motion.h2>
           <motion.p
-            className="mt-6 text-lg leading-8 text-muted-foreground max-w-3xl mx-auto"
+            className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-muted-foreground max-w-3xl mx-auto px-4 sm:px-0"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
@@ -163,63 +163,63 @@ export const PlatformSection = () => {
           </motion.p>
         </motion.div>
 
-        <div className="mt-24 overflow-x-auto pb-4">
-          <div className="flex justify-center space-x-4 sm:space-x-6">
+        <div className="mt-12 sm:mt-16 lg:mt-24 overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="flex justify-start sm:justify-center space-x-3 sm:space-x-4 lg:space-x-6 min-w-max sm:min-w-0">
             {features.map((feature, index) => (
               <button
                 key={feature.name}
                 onClick={() => setActiveIndex(index)}
-                className={`flex-shrink-0 flex items-center gap-4 rounded-2xl px-8 py-4 text-base font-semibold transition-all duration-300 ${
+                className={`flex-shrink-0 flex items-center gap-2 sm:gap-4 rounded-xl sm:rounded-2xl px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-sm sm:text-base font-semibold transition-all duration-300 ${
                   activeIndex === index
                     ? 'bg-primary text-primary-foreground shadow-xl'
                     : 'bg-background text-muted-foreground hover:bg-muted ring-1 ring-inset ring-border/50 hover:shadow-lg'
                 }`}
               >
                 <feature.icon
-                  className={`h-5 w-5 ${
+                  className={`h-4 w-4 sm:h-5 sm:w-5 ${
                     activeIndex === index ? 'text-primary-foreground' : feature.color
                   }`}
                 />
-                {feature.name}
+                <span className="whitespace-nowrap">{feature.name}</span>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="mt-16 rounded-3xl bg-background p-8 sm:p-12 shadow-2xl ring-1 ring-border/30">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16 items-center">
-            <div className="relative aspect-video w-full rounded-2xl overflow-hidden group shadow-xl">
+        <div className="mt-12 sm:mt-16 rounded-2xl sm:rounded-3xl bg-background p-4 sm:p-8 lg:p-12 shadow-2xl ring-1 ring-border/30">
+          <div className="grid grid-cols-1 gap-8 sm:gap-12 lg:grid-cols-2 lg:gap-16 items-center">
+            <div className="relative aspect-video w-full rounded-xl sm:rounded-2xl overflow-hidden group shadow-xl">
               <img
                 src={activeFeature.image}
                 alt={`${activeFeature.name} UI`}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                <button className="h-20 w-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110 group-hover:bg-white/30">
-                  <Play className="h-10 w-10" fill="currentColor" />
+                <button className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110 group-hover:bg-white/30">
+                  <Play className="h-8 w-8 sm:h-10 sm:w-10" fill="currentColor" />
                 </button>
               </div>
             </div>
 
             <div>
               <div
-                className={`inline-flex items-center gap-3 rounded-full px-4 py-2 ${activeFeature.bgColor}`}
+                className={`inline-flex items-center gap-2 sm:gap-3 rounded-full px-3 py-1.5 sm:px-4 sm:py-2 ${activeFeature.bgColor}`}
               >
-                <activeFeature.icon className={`h-6 w-6 ${activeFeature.color}`} />
-                <h3 className={`text-base font-bold ${activeFeature.color}`}>
+                <activeFeature.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${activeFeature.color}`} />
+                <h3 className={`text-sm sm:text-base font-bold ${activeFeature.color}`}>
                   {activeFeature.name}
                 </h3>
               </div>
-              <h4 className="mt-8 text-2xl font-bold tracking-tight text-foreground">
+              <h4 className="mt-6 sm:mt-8 text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                 {activeFeature.title}
               </h4>
-              <p className="mt-6 text-lg leading-8 text-muted-foreground">
+              <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-muted-foreground">
                 {activeFeature.description}
               </p>
-              <ul className="mt-8 space-y-4">
+              <ul className="mt-6 sm:mt-8 space-y-3 sm:space-y-4">
                 {activeFeature.keyFeatures.map((kf) => (
-                  <li key={kf} className="flex items-center gap-4 text-base text-muted-foreground">
-                    <Check className="h-5 w-5 flex-none text-primary" />
+                  <li key={kf} className="flex items-center gap-3 sm:gap-4 text-sm sm:text-base text-muted-foreground">
+                    <Check className="h-4 w-4 sm:h-5 sm:w-5 flex-none text-primary" />
                     <span>{kf}</span>
                   </li>
                 ))}
@@ -227,29 +227,32 @@ export const PlatformSection = () => {
             </div>
           </div>
 
-          <div className="mt-8 flex items-center justify-between">
+          <div className="mt-6 sm:mt-8 flex items-center justify-between px-2 sm:px-0">
             <button
               onClick={handlePrev}
-              className="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              className="p-1.5 sm:p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Previous feature"
             >
-              <CaretLeft className="h-7 w-7" />
+              <CaretLeft className="h-6 w-6 sm:h-7 sm:w-7" />
             </button>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               {features.map((_, index) => (
                 <button
                   key={`dot-${index}`}
                   onClick={() => setActiveIndex(index)}
-                  className={`h-2.5 w-2.5 rounded-full transition-colors ${
+                  className={`h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full transition-colors ${
                     activeIndex === index ? 'bg-primary' : 'bg-muted hover:bg-muted-foreground'
                   }`}
+                  aria-label={`Go to feature ${index + 1}`}
                 />
               ))}
             </div>
             <button
               onClick={handleNext}
-              className="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              className="p-1.5 sm:p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Next feature"
             >
-              <CaretRight className="h-7 w-7" />
+              <CaretRight className="h-6 w-6 sm:h-7 sm:w-7" />
             </button>
           </div>
         </div>
