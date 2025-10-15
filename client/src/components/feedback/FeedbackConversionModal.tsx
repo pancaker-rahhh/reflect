@@ -176,7 +176,7 @@ export function FeedbackConversionModal({
               </div>
               <h4 className="font-medium">{feedback.title}</h4>
               {feedback.message && feedback.message !== feedback.title && (
-                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">
                   {feedback.message}
                 </p>
               )}

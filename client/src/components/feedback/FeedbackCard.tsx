@@ -39,9 +39,9 @@ export function FeedbackCard({
     if (isSelectionMode) {
       onToggleSelection(feedback.id)
     } else {
-      const surveyTypes = ['CES', 'NPS', 'CSAT', 'SURVEY', 'REVIEW']
+      const detailViewTypes = ['CES', 'NPS', 'CSAT', 'SURVEY', 'REVIEW', 'BUG_REPORT']
       const feedbackType = feedback.feedback_type?.toUpperCase()
-      if (surveyTypes.includes(feedbackType)) {
+      if (detailViewTypes.includes(feedbackType)) {
         setIsDetailModalOpen(true)
       }
     }
@@ -68,7 +68,23 @@ export function FeedbackCard({
     (!ratingBasedTypes.includes(feedbackType) ||
       (ratingBasedTypes.includes(feedbackType) && hasMessage))
 
-  const tintClass = getTintByScoreOutOfFive(feedback.overall_rating);
+  const tintClass = getTintByScoreOutOfFive(feedback.overall_rating)
+
+  const getSeverityStyles = (severity: string) => {
+    const level = severity?.toLowerCase()
+    switch (level) {
+      case 'low':
+        return 'bg-green-100 text-green-800 border-green-200'
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      case 'high':
+        return 'bg-orange-100 text-orange-800 border-orange-200'
+      case 'critical':
+        return 'bg-red-100 text-red-800 border-red-200'
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200'
+    }
+  }
 
   return (
     <>
@@ -97,7 +113,20 @@ export function FeedbackCard({
                 )}
               </div>
 
-              <h3 className="font-semibold text-lg mb-2">{feedback.title || 'No title'}</h3>
+              <h3
+                className="font-semibold text-lg mb-2"
+                style={{
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  whiteSpace: 'normal',
+                  overflow: 'visible',
+                  textOverflow: 'clip',
+                  display: 'block',
+                  width: '100%',
+                }}
+              >
+                {feedback.title || 'No title'}
+              </h3>
 
               {/* Metadata */}
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -145,7 +174,10 @@ export function FeedbackCard({
 
           {feedback.feedback_type === 'bug_report' && feedback.severity_level && (
             <div className="flex items-center gap-2 mt-2">
-              <Badge variant="destructive" className="text-xs">
+              <Badge
+                variant="outline"
+                className={cn('text-xs', getSeverityStyles(feedback.severity_level))}
+              >
                 {feedback.severity_level}
               </Badge>
             </div>

@@ -91,10 +91,7 @@ export function FeatureRequestForm({
     }
 
     try {
-      const apiBaseUrl =
-        process.env.NODE_ENV === 'production'
-          ? 'https://api.reflectfeedback.com/api/v1'
-          : 'http://localhost:8000/api/v1'
+      const apiBaseUrl = 'http://localhost:8000/api/v1'
 
       const response = await fetch(`${apiBaseUrl}/public/widgets/features/${widgetKey}`)
 
@@ -140,10 +137,7 @@ export function FeatureRequestForm({
     setVotingFeatures((prev) => new Set([...prev, featureId]))
 
     try {
-      const apiBaseUrl =
-        process.env.NODE_ENV === 'production'
-          ? 'https://api.reflectfeedback.com/api/v1'
-          : 'http://localhost:8000/api/v1'
+      const apiBaseUrl = 'http://localhost:8000/api/v1'
 
       const response = await fetch(`${apiBaseUrl}/public/vote`, {
         method: 'POST',
