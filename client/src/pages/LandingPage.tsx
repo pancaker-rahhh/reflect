@@ -30,7 +30,6 @@ export const LandingPage = () => {
         <PlatformSection />
         <InteractiveModulesSection />
         <SocialProofSection />
-        <TrustSection />
         <PricingSection />
         <FaqSection />
         <BrandingSection />
