@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 
 export const CtaSection = () => {
   return (
-    <section id="cta" className="relative bg-background overflow-hidden py-28">
+  <section id="cta" className="relative bg-background overflow-hidden py-12">
       {/* Repeated outlined REFLECT rows as main content (not background) */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 text-center">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
@@ -21,7 +21,7 @@ export const CtaSection = () => {
                             {Array.from({ length: 6 }).map((__, col) => (
                               <span
                                 key={col}
-                                className="inline-block outlined-primary font-extrabold tracking-tight font-bungee-outline text-[clamp(72px,9.5vw,180px)] leading-none"
+                                className="inline-block outlined-primary font-extrabold tracking-tight font-bungee-outline text-[clamp(40px,6vw,90px)] leading-none"
                                 style={{
                                   WebkitTextStroke: `${Math.max(3, 4 - row * 0.2)}px hsl(var(--primary))`,
                                   color: 'transparent',
@@ -45,7 +45,7 @@ export const CtaSection = () => {
                             {Array.from({ length: 6 }).map((__, col) => (
                               <span
                                 key={`g-${col}`}
-                                className="inline-block outlined-primary font-extrabold tracking-tight font-bungee-outline text-[clamp(72px,9.5vw,180px)] leading-none"
+                                className="inline-block outlined-primary font-extrabold tracking-tight font-bungee-outline text-[clamp(40px,6vw,90px)] leading-none"
                                 style={{
                                   WebkitTextStroke: `${Math.max(1.5, 2 - row * 0.15)}px hsl(var(--primary))`,
                                   color: 'transparent',
