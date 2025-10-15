@@ -59,10 +59,7 @@ export function PublicFeedbackDisplay({
         return
       }
 
-      const apiBaseUrl =
-        process.env.NODE_ENV === 'production'
-          ? 'https://api.reflectfeedback.com/api/v1'
-          : 'http://localhost:8000/api/v1'
+      const apiBaseUrl = 'http://localhost:8000/api/v1'
       let endpoint = ''
 
       switch (feedbackType) {
@@ -110,10 +107,7 @@ export function PublicFeedbackDisplay({
 
   const voteFeedback = async (feedbackId: string) => {
     try {
-      const apiBaseUrl =
-        process.env.NODE_ENV === 'production'
-          ? 'https://api.reflectfeedback.com/api/v1'
-          : 'http://localhost:8000/api/v1'
+      const apiBaseUrl = 'http://localhost:8000/api/v1'
 
       const itemType = feedbackType === 'FEATURE_REQUEST' ? 'feature_request' : 'general_feedback'
       const payload = {
@@ -380,7 +374,7 @@ export function PublicFeedbackDisplay({
               </div>
 
               {feedbackType === 'BUG_REPORT' || feedbackType === 'FEATURE_REQUEST' ? (
-                <div className="text-sm mb-2 line-clamp-3" style={{ color: colors.text }}>
+                <div className="text-sm mb-2" style={{ color: colors.text }}>
                   {item.message || item.description || item.title}
                 </div>
               ) : (
@@ -391,7 +385,7 @@ export function PublicFeedbackDisplay({
                     </h4>
                   )}
                   {item.message && (
-                    <p className="text-xs mb-2 line-clamp-2" style={{ color: colors.text }}>
+                    <p className="text-xs mb-2" style={{ color: colors.text }}>
                       {item.message}
                     </p>
                   )}

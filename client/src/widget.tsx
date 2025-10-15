@@ -250,11 +250,8 @@ declare global {
     return position.replace(/_/g, '-')
   }
 
-  // Use production API in production builds, localhost for development
-  const apiBaseUrl =
-    process.env.NODE_ENV === 'production'
-      ? 'https://api.reflectfeedback.com/api/v1'
-      : 'http://localhost:8000/api/v1'
+  // Always use localhost for testing
+  const apiBaseUrl = 'http://localhost:8000/api/v1'
   const apiUrl = `${apiBaseUrl}/public/widgets/${publicKey}`
 
   injectWidgetStyles()

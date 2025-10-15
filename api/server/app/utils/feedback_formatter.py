@@ -2,7 +2,6 @@ from app.models.feedback_model import Feedback
 
 
 class FeedbackFormatter:
-    TITLE_MAX_LENGTH = 50
     MESSAGE_PREVIEW_LENGTH = 30
     SCORE_TYPES = ['NPS', 'CSAT', 'CES']
 
@@ -18,9 +17,6 @@ class FeedbackFormatter:
 
         if content.startswith('New '):
             content = content[4:]
-
-        if len(content) > FeedbackFormatter.TITLE_MAX_LENGTH:
-            content = content[: FeedbackFormatter.TITLE_MAX_LENGTH] + '...'
 
         return content
 

@@ -20,7 +20,7 @@ _rate_limit_storage = defaultdict(list)
 limiter = Limiter(key_func=get_remote_address)
 
 RATE_LIMITS = {
-    'feedback_submission': {'calls': 5, 'period': 60},
+    'feedback_submission': {'calls': 50, 'period': 60},
     'widget_access': {'calls': 30, 'period': 60},
     'roadmap_access': {'calls': 50, 'period': 60},
     'voting': {'calls': 20, 'period': 60},
@@ -31,7 +31,7 @@ RATE_LIMITS = {
 }
 
 ANONYMOUS_IP_LIMITS = {
-    'feedback_submission': {'calls': 3, 'period': 300},
+    'feedback_submission': {'calls': 90, 'period': 300},
     'voting': {'calls': 10, 'period': 300},
     'roadmap_access': {'calls': 20, 'period': 60},
 }
