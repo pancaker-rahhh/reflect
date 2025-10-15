@@ -65,7 +65,7 @@ export const Navbar = () => {
       transition={{ duration: 0.6, delay: 0.2 }}
     >
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="flex h-28 items-center justify-between">
+        <div className="flex h-20 items-center justify-between">
           <motion.button
             onClick={() => navigate('/')}
             className="flex items-center gap-2"

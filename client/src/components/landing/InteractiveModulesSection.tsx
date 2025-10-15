@@ -55,13 +55,13 @@ export const InteractiveModulesSection = () => {
   return (
     <motion.div
       id="interactive-modules"
-      className="bg-surface-2 py-24 sm:py-32"
+      className="bg-surface-2 py-12 sm:py-16 lg:py-20"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
       viewport={{ once: true }}
     >
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           className="mx-auto max-w-3xl text-center"
           initial={{ opacity: 0, y: 30 }}
@@ -70,7 +70,7 @@ export const InteractiveModulesSection = () => {
           viewport={{ once: true }}
         >
           <motion.h2
-            className="text-5xl font-bold tracking-tight text-foreground sm:text-6xl leading-tight"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-tight"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -79,7 +79,7 @@ export const InteractiveModulesSection = () => {
             <span className="text-primary">4 powerful modules</span> in one widget
           </motion.h2>
           <motion.p
-            className="mt-8 text-xl leading-8 text-muted-foreground max-w-3xl mx-auto"
+            className="mt-6 sm:mt-8 text-base sm:text-lg md:text-xl leading-7 sm:leading-8 text-muted-foreground max-w-3xl mx-auto px-4 sm:px-0"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
@@ -100,23 +100,23 @@ export const InteractiveModulesSection = () => {
         </motion.div>
 
         <motion.div
-          className="mx-auto mt-24 max-w-6xl rounded-3xl bg-[hsl(var(--background))] p-8 sm:p-12 shadow-2xl border-2 border-[hsl(var(--border))/0.3]"
+          className="mx-auto mt-12 sm:mt-16 max-w-6xl rounded-2xl sm:rounded-3xl bg-[hsl(var(--background))] p-4 sm:p-6 lg:p-8 shadow-2xl border-2 border-[hsl(var(--border))/0.3]"
           initial={{ opacity: 0, y: 50, scale: 0.95 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.4 }}
           viewport={{ once: true }}
         >
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16 items-center">
+          <div className="grid grid-cols-1 gap-8 sm:gap-12 lg:grid-cols-2 lg:gap-16 items-start lg:items-center">
             {/* Module Controls */}
             <motion.div
-              className="space-y-4 bg-[hsl(var(--muted))/0.3] rounded-2xl p-6"
+              className="space-y-3 sm:space-y-4 bg-[hsl(var(--muted))/0.3] rounded-xl sm:rounded-2xl p-4 sm:p-6"
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.6 }}
               viewport={{ once: true }}
             >
               <motion.h3
-                className="text-3xl font-bold text-foreground px-4 mb-8 tracking-tight"
+                className="text-xl sm:text-2xl font-bold text-foreground px-2 mb-4 sm:mb-6 tracking-tight"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 transition={{ delay: 0.8 }}
@@ -127,7 +127,7 @@ export const InteractiveModulesSection = () => {
               {modules.map((module, index) => (
                 <motion.div
                   key={module.id}
-                  className="p-8 flex items-center justify-between rounded-2xl hover:bg-[hsl(var(--muted))/0.5] transition-all duration-300 border border-transparent hover:border-[hsl(var(--border))/0.3]"
+                  className="p-4 sm:p-6 flex items-center justify-between rounded-xl sm:rounded-2xl hover:bg-[hsl(var(--muted))/0.5] transition-all duration-300 border border-transparent hover:border-[hsl(var(--border))/0.3]"
                   initial={{ opacity: 0, x: -30 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{
@@ -143,9 +143,9 @@ export const InteractiveModulesSection = () => {
                   }}
                   viewport={{ once: true }}
                 >
-                  <div className="flex items-center gap-5">
+                  <div className="flex items-center gap-3 sm:gap-5 min-w-0 flex-1">
                     <motion.div
-                      className="bg-[hsl(var(--muted))] p-4 rounded-xl"
+                      className="bg-[hsl(var(--muted))] p-3 sm:p-4 rounded-lg sm:rounded-xl flex-shrink-0"
                       whileHover={{ scale: 1.1, rotate: 5 }}
                       transition={{ type: 'spring', stiffness: 300 }}
                     >
@@ -156,24 +156,25 @@ export const InteractiveModulesSection = () => {
                         {module.icon}
                       </motion.div>
                     </motion.div>
-                    <div>
-                      <h4 className="font-semibold text-foreground text-xl">{module.name}</h4>
-                      <p className="text-lg text-muted-foreground">{module.description}</p>
+                    <div className="min-w-0">
+                      <h4 className="font-semibold text-foreground text-base sm:text-lg truncate">{module.name}</h4>
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">{module.description}</p>
                     </div>
                   </div>
                   <motion.button
                     onClick={() => handleToggle(module.id)}
-                    className={`relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] focus:ring-offset-2 ${
+                    className={`relative inline-flex h-6 w-11 sm:h-7 sm:w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] focus:ring-offset-2 ${
                       activeModules[module.id]
                         ? 'bg-[hsl(var(--primary))]'
                         : 'bg-[hsl(var(--muted))]'
                     }`}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    aria-label={`Toggle ${module.name}`}
                   >
                     <motion.span
                       aria-hidden="true"
-                      className="pointer-events-none inline-block h-6 w-6 transform rounded-full bg-[hsl(var(--background))] shadow ring-0"
+                      className="pointer-events-none inline-block h-5 w-5 sm:h-6 sm:w-6 transform rounded-full bg-[hsl(var(--background))] shadow ring-0"
                       animate={{
                         x: activeModules[module.id] ? 20 : 0,
                         scale: activeModules[module.id] ? 1.05 : 1,
@@ -215,14 +216,14 @@ export const InteractiveModulesSection = () => {
 
             {/* Live Widget Preview */}
             <motion.div
-              className="sticky top-28 h-[500px] bg-slate-100 rounded-3xl p-8 shadow-xl border-2 border-[hsl(var(--border))/0.2]"
+              className="lg:sticky lg:top-28 h-[450px] sm:h-[500px] bg-slate-100 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-xl border-2 border-[hsl(var(--border))/0.2]"
               initial={{ opacity: 0, x: 50, scale: 0.9 }}
               whileInView={{ opacity: 1, x: 0, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.6 }}
               viewport={{ once: true }}
             >
               <motion.div
-                className="bg-white rounded-2xl shadow-lg h-[450px] flex flex-col overflow-hidden"
+                className="bg-white rounded-xl sm:rounded-2xl shadow-lg h-full flex flex-col overflow-hidden"
                 whileHover={{
                   scale: 1.02,
                   boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
@@ -231,48 +232,49 @@ export const InteractiveModulesSection = () => {
               >
                 {/* Header */}
                 <motion.div
-                  className="bg-primary p-6 text-primary-foreground rounded-t-2xl"
+                  className="bg-primary p-4 sm:p-6 text-primary-foreground rounded-t-xl sm:rounded-t-2xl flex-shrink-0"
                   initial={{ opacity: 0, y: -20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8 }}
                   viewport={{ once: true }}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                       <motion.div
                         animate={{ rotate: [0, 10, -10, 0] }}
                         transition={{ duration: 2, repeat: Infinity }}
+                        className="flex-shrink-0"
                       >
-                        <ChatCircle />
+                        <ChatCircle className="w-5 h-5 sm:w-6 sm:h-6" />
                       </motion.div>
-                      <h4 className="text-xl font-bold">How can we help you today?</h4>
+                      <h4 className="text-base sm:text-lg lg:text-xl font-bold truncate">How can we help you today?</h4>
                     </div>
-                    <button className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                      <X size={20} />
+                    <button className="text-primary-foreground/70 hover:text-primary-foreground transition-colors flex-shrink-0" aria-label="Close">
+                      <X size={18} className="sm:w-5 sm:h-5" />
                     </button>
                   </div>
                 </motion.div>
 
                 {/* Content */}
-                <div className="p-4 space-y-4 flex-grow overflow-y-auto">
+                <div className="p-3 sm:p-4 space-y-3 sm:space-y-4 flex-grow overflow-y-auto">
                   {/* Header */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">👏</span>
-                      <h3 className="text-base font-semibold text-foreground">How can we help?</h3>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <span className="text-lg sm:text-xl">👏</span>
+                      <h3 className="text-sm sm:text-base font-semibold text-foreground">How can we help?</h3>
                     </div>
-                    <button className="text-muted-foreground hover:text-foreground transition-colors">
-                      <X size={18} />
+                    <button className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Close">
+                      <X size={16} className="sm:w-[18px] sm:h-[18px]" />
                     </button>
                   </div>
 
                   {/* Instruction */}
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">
                     Choose a feedback type to get started
                   </p>
 
                   {/* Feedback Type Grid */}
-                  <div className="space-y-2">
+                  <div className="space-y-1.5 sm:space-y-2">
                     <AnimatePresence mode="popLayout">
                       {modules.map(
                         (module) =>
@@ -304,13 +306,13 @@ export const InteractiveModulesSection = () => {
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
                             >
-                              <div className="text-lg">
+                              <div className="text-base sm:text-lg">
                                 {module.id === 'bugs' && '🐛'}
                                 {module.id === 'features' && '💡'}
                                 {module.id === 'reviews' && '⭐'}
                                 {module.id === 'surveys' && '💬'}
                               </div>
-                              <span className="text-xs font-medium text-foreground">
+                              <span className="text-[11px] sm:text-xs font-medium text-foreground">
                                 {module.id === 'bugs'
                                   ? 'Bug Report'
                                   : module.id === 'features'
@@ -331,7 +333,7 @@ export const InteractiveModulesSection = () => {
         </motion.div>
 
         <motion.div
-          className="text-center mt-20"
+          className="text-center mt-12 sm:mt-16 lg:mt-20 px-4 sm:px-0"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.8 }}
@@ -339,7 +341,7 @@ export const InteractiveModulesSection = () => {
         >
           <motion.button
             onClick={() => (window.location.href = '/login')}
-            className="inline-block rounded-2xl bg-primary px-12 py-5 text-xl font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all border border-primary/20"
+            className="inline-block rounded-2xl bg-primary px-8 sm:px-12 py-4 sm:py-5 text-base sm:text-lg lg:text-xl font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all border border-primary/20 w-full sm:w-auto"
             whileHover={{
               scale: 1.02,
               boxShadow: '0 25px 50px rgba(220, 38, 38, 0.4)',

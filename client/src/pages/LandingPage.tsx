@@ -7,14 +7,16 @@ import { SocialProofSection } from '@/components/landing/SocialProofSection'
 import { TrustSection } from '@/components/landing/TrustSection'
 import { PricingSection } from '@/components/landing/PricingSection'
 import { FaqSection } from '@/components/landing/FaqSection'
-import { CtaSection } from '@/components/landing/CtaSection'
+import { BrandingSection } from '@/components/landing/BrandingSection'
 import { Footer } from '@/components/landing/Footer'
 import { SEOHead } from '@/components/common/SEOHead'
 import { Analytics } from '@/components/common/Analytics'
+import { CursorGlow } from '@/components/common/CursorGlow'
 
 export const LandingPage = () => {
   return (
     <>
+      <CursorGlow />
       <SEOHead
         title="User Feedback Platform - Bug Reports, Feature Requests & Surveys"
         description="Collect user feedback with Reflect's powerful widget. Bug reports, feature requests, surveys, and roadmaps in one platform. 3-minute setup, free plan available."
@@ -30,10 +32,9 @@ export const LandingPage = () => {
         <PlatformSection />
         <InteractiveModulesSection />
         <SocialProofSection />
-        <TrustSection />
         <PricingSection />
         <FaqSection />
-        <CtaSection />
+        <BrandingSection />
         <Footer />
       </main>
     </>

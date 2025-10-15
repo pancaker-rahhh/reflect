@@ -15,12 +15,12 @@ export const Footer = () => {
 
   return (
     <footer className="bg-background border-t border-border">
-      <div className="container mx-auto px-6 py-16">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-sm">
+      <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 sm:gap-8 text-sm">
           {/* Column 1: Brand */}
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-2 sm:col-span-3 md:col-span-1">
             <BrandWordmark />
-            <p className="mt-4 text-muted-foreground">
+            <p className="mt-4 text-muted-foreground text-sm sm:text-base">
               The simplest way to capture user feedback and build better products.
             </p>
             <div className="mt-6 flex items-center space-x-5">
@@ -51,10 +51,10 @@ export const Footer = () => {
 
           {/* Column 2: Product */}
           <div>
-            <h4 className="font-semibold text-[hsl(var(--foreground))] uppercase tracking-wider">
+            <h4 className="font-semibold text-[hsl(var(--foreground))] uppercase tracking-wider text-xs sm:text-sm">
               Product
             </h4>
-            <ul className="mt-4 space-y-3">
+            <ul className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
               <li>
                 <a
                   href="#features"
@@ -105,10 +105,10 @@ export const Footer = () => {
 
           {/* Column 3: Company */}
           <div>
-            <h4 className="font-semibold text-[hsl(var(--foreground))] uppercase tracking-wider">
+            <h4 className="font-semibold text-[hsl(var(--foreground))] uppercase tracking-wider text-xs sm:text-sm">
               Company
             </h4>
-            <ul className="mt-4 space-y-3">
+            <ul className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
               <li>
                 <a
                   href="#video-section"
@@ -157,10 +157,10 @@ export const Footer = () => {
 
           {/* Column 4: Legal */}
           <div>
-            <h4 className="font-semibold text-[hsl(var(--foreground))] uppercase tracking-wider">
+            <h4 className="font-semibold text-[hsl(var(--foreground))] uppercase tracking-wider text-xs sm:text-sm">
               Legal
             </h4>
-            <ul className="mt-4 space-y-3">
+            <ul className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
               <li>
                 <a
                   href="/terms"
@@ -188,8 +188,8 @@ export const Footer = () => {
             </ul>
           </div>
         </div>
-        <div className="mt-16 border-t border-[hsl(var(--border))] pt-8 flex justify-center items-center">
-          <p className="text-[hsl(var(--muted-foreground))] text-sm text-center">
+        <div className="mt-8 sm:mt-12 border-t border-[hsl(var(--border))] pt-6 flex justify-center items-center">
+          <p className="text-[hsl(var(--muted-foreground))] text-xs sm:text-sm text-center">
             &copy; {new Date().getFullYear()} Reflect Technologies, Inc. All rights reserved.
           </p>
         </div>
