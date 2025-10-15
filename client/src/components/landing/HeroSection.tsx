@@ -68,6 +68,21 @@ export const HeroSection = () => {
               <strong className="text-[hsl(var(--foreground))]"> No coding required.</strong> Free
               plan available.
             </motion.p>
+            {/* CTA Button */}
+            <motion.div
+              className="mt-8 flex justify-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.7 }}
+            >
+              <button
+                onClick={() => window.location.href = '/login'}
+                className="inline-block rounded-2xl bg-primary px-8 py-3 text-lg font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all border border-primary/20"
+                style={{ boxShadow: '0 8px 32px rgba(220,38,38,0.18)' }}
+              >
+              Get Started
+              </button>
+            </motion.div>
           </motion.div>
 
           {/* Video Section - Blended underneath */}
