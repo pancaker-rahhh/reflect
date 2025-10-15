@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import NotBackedBadge from '@/components/common/NotBackedBadge'
 
 export const HeroSection = () => {
   return (
@@ -19,11 +20,17 @@ export const HeroSection = () => {
         <div className="max-w-4xl mx-auto text-center space-y-12">
           {/* Slogan and Description */}
           <motion.div
-            className="space-y-8"
+            className="space-y-6"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
+            {/* Badge: centered directly above headline */}
+            <div className="mx-auto mb-2">
+              <NotBackedBadge
+                className="mx-auto px-4 py-2 text-sm shadow-2xl ring-2 ring-primary/20 bg-white text-[hsl(var(--foreground))] border border-[hsl(var(--border))/0.08]"
+              />
+            </div>
             <motion.h1
               className="text-4xl sm:text-5xl md:text-6xl font-bold text-[hsl(var(--foreground))] leading-[1.1] tracking-tight"
               initial={{ opacity: 0, y: 30 }}
