@@ -97,7 +97,9 @@ export function FeedbackCard({
                 )}
               </div>
 
-              <h3 className="font-semibold text-lg mb-2">{feedback.title || 'No title'}</h3>
+              <h3 className="font-semibold text-lg mb-2 line-clamp-1">
+                {feedback.message || feedback.title || 'No title'}
+              </h3>
 
               {/* Metadata */}
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
