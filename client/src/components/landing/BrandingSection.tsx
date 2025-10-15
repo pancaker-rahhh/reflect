@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 
-export const CtaSection = () => {
+export const BrandingSection = () => {
   return (
   <section id="cta" className="relative bg-background overflow-hidden py-12">
       {/* Repeated outlined REFLECT rows as main content (not background) */}

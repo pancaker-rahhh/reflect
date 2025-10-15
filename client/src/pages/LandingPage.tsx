@@ -7,7 +7,7 @@ import { SocialProofSection } from '@/components/landing/SocialProofSection'
 import { TrustSection } from '@/components/landing/TrustSection'
 import { PricingSection } from '@/components/landing/PricingSection'
 import { FaqSection } from '@/components/landing/FaqSection'
-import { CtaSection } from '@/components/landing/CtaSection'
+import { BrandingSection } from '@/components/landing/BrandingSection'
 import { Footer } from '@/components/landing/Footer'
 import { SEOHead } from '@/components/common/SEOHead'
 import { Analytics } from '@/components/common/Analytics'
@@ -33,7 +33,7 @@ export const LandingPage = () => {
         <TrustSection />
         <PricingSection />
         <FaqSection />
-        <CtaSection />
+        <BrandingSection />
         <Footer />
       </main>
     </>
