@@ -13,7 +13,7 @@ export const BrandWordmark: React.FC<BrandWordmarkProps> = ({ className = '', te
   return (
     <span className={`inline-flex items-end gap-0 ${className}`}>
       <img
-        src={new URL('../../assets/logo-bg-removed.svg', import.meta.url).toString()}
+        src={new URL('https://cdn.reflectfeedback.com/assets/logo-bg-removed.svg', import.meta.url).toString()}
         alt="R logo"
         width={logoSize}
         height={Math.round(logoSize * (419 / 365))}

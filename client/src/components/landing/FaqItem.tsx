@@ -33,7 +33,9 @@ export const FaqItem: React.FC<FaqItemProps> = ({ question, answer, icon, isOpen
       <dt>
         <motion.button
           onClick={onClick}
-          className={`flex w-full items-center justify-between text-left text-[hsl(var(--foreground))] p-8 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] focus:ring-inset`}
+          className={`flex w-full items-center justify-between text-left text-[hsl(var(--foreground))] p-8 focus:outline-none ${
+            isOpen ? 'rounded-t-2xl' : 'rounded-2xl'
+          }`}
           aria-expanded={isOpen}
           whileHover={{
             backgroundColor: isOpen ? 'hsl(var(--primary) / 0.05)' : 'hsl(var(--muted) / 0.05)',
@@ -129,7 +131,7 @@ export const FaqItem: React.FC<FaqItemProps> = ({ question, answer, icon, isOpen
               }}
             >
               <motion.div
-                className="border-t border-border pt-8 ml-12"
+                className="ml-12"
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
                 transition={{
