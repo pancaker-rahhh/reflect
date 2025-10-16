@@ -128,7 +128,7 @@ export const PlatformSection = () => {
   return (
     <motion.div
       id="platform"
-      className="bg-background py-16 sm:py-20 lg:py-24"
+      className="bg-background py-16 sm:py-20 lg:py-24 overflow-x-hidden"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.8 }}

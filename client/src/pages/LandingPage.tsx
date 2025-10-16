@@ -22,7 +22,7 @@ export const LandingPage = () => {
         ogImage="/og-image.jpg"
       />
       <Analytics />
-      <main className="min-h-screen">
+      <main className="min-h-screen overflow-x-hidden">
         <Navbar />
         <HeroSection />
         <BeforeAfterSection />
