@@ -142,7 +142,11 @@ export function JiraConfigureModal({
 
             <div>
               <Label>Default Project (Optional)</Label>
-              <Select value={defaultProject} onValueChange={setDefaultProject}>
+              <Select
+                value={defaultProject}
+                onValueChange={setDefaultProject}
+                disabled={projectsQuery.isLoading || projectsQuery.isError}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Choose a default project (optional)" />
                 </SelectTrigger>
@@ -155,16 +159,61 @@ export function JiraConfigureModal({
                   ))}
                 </SelectContent>
               </Select>
-              {defaultProject !== 'none' && projectsQuery.data?.projects && (
-                <p className="text-sm text-green-600 mt-1">
-                  Default project:{' '}
-                  {projectsQuery.data.projects.find((p) => p.key === defaultProject)?.name ||
-                    defaultProject}
+              {projectsQuery.isLoading && (
+                <div className="flex items-center gap-2 mt-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                  <p className="text-sm text-blue-600">Loading JIRA projects...</p>
+                </div>
+              )}
+              {projectsQuery.isError && (
+                <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <XCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-sm text-red-700 font-medium">Failed to load projects</p>
+                      <p className="text-xs text-red-600 mt-1">
+                        {projectsQuery.error?.message ||
+                          'Your API token may have expired or JIRA credentials are invalid. Please check your connection and try re-creating the integration.'}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => projectsQuery.refetch()}
+                    className="mt-2 w-full"
+                  >
+                    Retry Loading Projects
+                  </Button>
+                </div>
+              )}
+              {!projectsQuery.isLoading &&
+                !projectsQuery.isError &&
+                projectsQuery.data?.projects?.length === 0 && (
+                  <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-sm text-amber-700 font-medium">No projects found</p>
+                    <p className="text-xs text-amber-600 mt-1">
+                      Your API token might have expired or you don't have access to any JIRA
+                      projects. Try re-creating the integration with a fresh token.
+                    </p>
+                  </div>
+                )}
+              {!projectsQuery.isLoading &&
+                !projectsQuery.isError &&
+                defaultProject !== 'none' &&
+                projectsQuery.data?.projects &&
+                projectsQuery.data.projects.length > 0 && (
+                  <p className="text-sm text-green-600 mt-1">
+                    Default project:{' '}
+                    {projectsQuery.data.projects.find((p) => p.key === defaultProject)?.name ||
+                      defaultProject}
+                  </p>
+                )}
+              {!projectsQuery.isError && (
+                <p className="text-sm text-gray-600 mt-1">
+                  You can always choose the project when creating issues
                 </p>
               )}
-              <p className="text-sm text-gray-600 mt-1">
-                You can always choose the project when creating issues
-              </p>
             </div>
           </div>
 
