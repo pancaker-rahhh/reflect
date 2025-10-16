@@ -19,6 +19,7 @@ import { OrganizationDropdown } from './OrganizationDropdown'
 import { BrandWordmark } from '@/components/common/BrandWordmark'
 import { isFeatureEnabled } from '@/lib/featureFlags'
 import { useUser } from '@/contexts/AuthContext'
+import { useAppContext } from '@/context/AppContext'
 
 interface NavItem {
   label: string
@@ -72,8 +73,12 @@ export function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false)
   const collapseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const user = useUser()
+  const { currentOrganization } = useAppContext()
   const userEmail = user?.email ?? null
   const avatarSeed = userEmail ? encodeURIComponent(userEmail) : ''
+
+  const isFreeTier =
+    currentOrganization?.subscription_plan === 'free' || !currentOrganization?.subscription_plan
 
   const toggleExpanded = (label: string) => {
     setExpandedItems((prev) =>
@@ -135,12 +140,12 @@ export function Sidebar() {
             )}
           >
             <span className="truncate">{item.label}</span>
-              {/* Shortcut hints */}
-              {(item.label === 'Dashboard' || item.label === 'Widgets') && (
-                <span className="text-xs text-muted-foreground border rounded px-1 ml-2">
-                  ⌘⇧{item.label === 'Dashboard' ? '1' : item.label === 'Widgets' ? '2' : '3'}
-                </span>
-              )}
+            {/* Shortcut hints */}
+            {(item.label === 'Dashboard' || item.label === 'Widgets') && (
+              <span className="text-xs text-muted-foreground border rounded px-1 ml-2">
+                ⌘⇧{item.label === 'Dashboard' ? '1' : item.label === 'Widgets' ? '2' : '3'}
+              </span>
+            )}
             {hasChildren && (
               <div className="flex-shrink-0 ml-2">
                 {isItemExpanded ? (
@@ -174,10 +179,10 @@ export function Sidebar() {
         }
       }
     }
-  
+
     window.addEventListener('keydown', handleShortcut)
     return () => window.removeEventListener('keydown', handleShortcut)
-  }, [navigate])  
+  }, [navigate])
 
   return (
     <div
@@ -208,7 +213,7 @@ export function Sidebar() {
         {navigation.map((item) => renderNavItem(item))}
       </nav>
 
-      {isExpanded && (
+      {isExpanded && isFreeTier && (
         <div className="p-3 border-t border-border">
           <button
             onClick={() => navigate('/app/settings/account?tab=billing')}
