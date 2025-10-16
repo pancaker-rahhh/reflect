@@ -535,42 +535,13 @@ export function RoadmapSettings() {
                         </div>
                       )}
 
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <Input
-                          placeholder="https://example.com/logo.png"
-                          value={
-                            formData.logo_url?.startsWith('data:') ? '' : formData.logo_url || ''
-                          }
-                          onChange={(e) => handleInputChange('logo_url', e.target.value)}
-                          className="flex-1 focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                          disabled={formData.logo_url?.startsWith('data:')}
-                        />
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/*"
-                          onChange={handleFileInputChange}
-                          className="hidden"
-                        />
-                        <Button
-                          variant="outline"
-                          onClick={() => fileInputRef.current?.click()}
-                          disabled={isUploading}
-                          className="focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                        >
-                          {isUploading ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Uploading...
-                            </>
-                          ) : (
-                            <>
-                              <Upload className="mr-2 h-4 w-4" />
-                              Upload
-                            </>
-                          )}
-                        </Button>
-                      </div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileInputChange}
+                        className="hidden"
+                      />
 
                       {uploadError && (
                         <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
@@ -581,15 +552,23 @@ export function RoadmapSettings() {
                       <div
                         className={cn(
                           'border-2 border-dashed rounded-lg p-8 transition-all duration-200 cursor-pointer hover:border-primary/50 hover:bg-primary/5',
-                          isDragging ? 'border-primary bg-primary/10' : 'border-muted-foreground/25'
+                          isDragging
+                            ? 'border-primary bg-primary/10'
+                            : 'border-muted-foreground/25',
+                          isUploading && 'opacity-50 cursor-not-allowed'
                         )}
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
                         onDrop={handleDrop}
-                        onClick={() => fileInputRef.current?.click()}
+                        onClick={() => !isUploading && fileInputRef.current?.click()}
                       >
                         <div className="text-center pointer-events-none">
-                          {isDragging ? (
+                          {isUploading ? (
+                            <>
+                              <Loader2 className="mx-auto h-10 w-10 text-primary mb-3 animate-spin" />
+                              <p className="text-lg font-medium text-primary">Uploading...</p>
+                            </>
+                          ) : isDragging ? (
                             <>
                               <Image className="mx-auto h-10 w-10 text-primary mb-3" />
                               <p className="text-lg font-medium text-primary">
