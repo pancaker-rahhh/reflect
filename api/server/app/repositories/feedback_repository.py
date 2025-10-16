@@ -257,22 +257,10 @@ class FeedbackRepository(BaseRepository[Feedback]):
         total_feedback_count = total_result.scalar() or 0
 
         rating_query = f"""
-        SELECT AVG(rating_value) as avg_rating
-        FROM (
-            SELECT f.id, f.rating as rating_value FROM feedback f {base_where} AND f.rating IS NOT NULL
-            UNION ALL
-            SELECT f.id, rf.overall_rating as rating_value FROM feedback f
-            JOIN review_feedback rf ON f.id = rf.id {base_where} AND rf.overall_rating IS NOT NULL
-            UNION ALL
-            SELECT f.id, nf.nps_score as rating_value FROM feedback f
-            JOIN nps_feedback nf ON f.id = nf.id {base_where} AND nf.nps_score IS NOT NULL
-            UNION ALL
-            SELECT f.id, cf.csat_score as rating_value FROM feedback f
-            JOIN csat_feedback cf ON f.id = cf.id {base_where} AND cf.csat_score IS NOT NULL
-            UNION ALL
-            SELECT f.id, ces.ces_score as rating_value FROM feedback f
-            JOIN ces_feedback ces ON f.id = ces.id {base_where} AND ces.ces_score IS NOT NULL
-        ) all_ratings
+        SELECT COALESCE(AVG(rf.overall_rating), 0) as avg_rating
+        FROM feedback f
+        JOIN review_feedback rf ON f.id = rf.id 
+        {base_where} AND f.feedback_type = 'review' AND rf.overall_rating IS NOT NULL
         """
 
         rating_result = await db.execute(text(rating_query), params)
@@ -294,15 +282,11 @@ class FeedbackRepository(BaseRepository[Feedback]):
         )
         new_feature_requests = feature_result.scalar() or 0
 
-        # Since we removed the status column, we'll count all feedback as "pending review"
-        pending_feedback_review = total_feedback_count
-
         return {
             'totalFeedback': total_feedback_count,
             'averageRating': round(average_rating, 1),
             'newBugReports': new_bug_reports,
             'newFeatureRequests': new_feature_requests,
-            'pendingFeedbackReview': pending_feedback_review,
         }
 
     async def get_recent_activities(
