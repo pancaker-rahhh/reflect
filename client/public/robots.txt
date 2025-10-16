@@ -1,21 +1,71 @@
+# Reflect - User Feedback Platform
+# https://reflectfeedback.com/robots.txt
+
 User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://reflect.com/sitemap.xml
-
-# Disallow private areas
-Disallow: /app/
-Disallow: /api/
+# Disallow admin and private areas
 Disallow: /admin/
+Disallow: /api/
+Disallow: /app/
+Disallow: /dashboard/
+Disallow: /auth/
+Disallow: /settings/
 Disallow: /private/
 
-# Allow important pages
+# Allow important public pages
 Allow: /
+Allow: /pricing
+Allow: /features
 Allow: /login
+Allow: /signup
+Allow: /blog
+Allow: /docs
 Allow: /terms
 Allow: /privacy
 Allow: /cookies
 
-# Crawl delay
+# Sitemaps
+Sitemap: https://reflectfeedback.com/sitemap.xml
+Sitemap: https://reflectfeedback.com/sitemap-pages.xml
+Sitemap: https://reflectfeedback.com/sitemap-blog.xml
+
+# Crawl-delay (helps prevent server overload)
 Crawl-delay: 1
+
+# Specific rules for different bots
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+# Limit aggressive crawlers
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10
+
+User-agent: DotBot
+Crawl-delay: 10
+
+# Social media bots - allow for rich previews
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: Slackbot
+Allow: /
+
+User-agent: Discordbot
+Allow: /
+
