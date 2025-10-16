@@ -840,66 +840,36 @@ export function RoadmapSettings() {
         </div>
       </div>
 
-      {/* Enhanced Save Bar */}
+      {/* Save Changes Button - Only when edited */}
       {isEdited && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border/50 shadow-lg">
-          <div className="container mx-auto px-4 py-4 max-w-6xl">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">You have unsaved changes</p>
-                    <p className="text-sm text-muted-foreground">
-                      Save your changes to update the roadmap settings
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    if (roadmap) {
-                      setFormData(roadmap)
-                      setColumns(roadmap.columns || [])
-                    }
-                    setIsEdited(false)
-                  }}
-                  className="px-6 transition-all duration-200 hover:scale-105"
-                >
-                  Discard Changes
-                </Button>
-                <Button
-                  onClick={handleSave}
-                  disabled={
-                    createRoadmapMutation.isPending ||
-                    updateRoadmapMutation.isPending ||
-                    createColumnMutation.isPending ||
-                    updateColumnMutation.isPending ||
-                    deleteColumnMutation.isPending
-                  }
-                  className="px-8 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
-                >
-                  {createRoadmapMutation.isPending ||
-                  updateRoadmapMutation.isPending ||
-                  createColumnMutation.isPending ||
-                  updateColumnMutation.isPending ||
-                  deleteColumnMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Save Changes
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
+        <div className="flex justify-end pt-4">
+          <Button
+            onClick={handleSave}
+            disabled={
+              createRoadmapMutation.isPending ||
+              updateRoadmapMutation.isPending ||
+              createColumnMutation.isPending ||
+              updateColumnMutation.isPending ||
+              deleteColumnMutation.isPending
+            }
+            className="px-8 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+          >
+            {createRoadmapMutation.isPending ||
+            updateRoadmapMutation.isPending ||
+            createColumnMutation.isPending ||
+            updateColumnMutation.isPending ||
+            deleteColumnMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
+              </>
+            )}
+          </Button>
         </div>
       )}
     </div>

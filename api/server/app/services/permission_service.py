@@ -1,7 +1,7 @@
 from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_
+from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
 
 from app.models.organization_model import (
@@ -101,7 +101,9 @@ class PermissionService:
         if member:
             return member.role
 
-        stmt = select(Project).where(Project.id == project_id)
+        stmt = select(Project).where(
+            and_(Project.id == project_id, Project.deleted_at.is_(None))
+        )
         result = await db.execute(stmt)
         project = result.scalar_one_or_none()
 
@@ -203,7 +205,12 @@ class PermissionService:
                 )
                 stmt = (
                     select(Project)
-                    .where(Project.organization_id == organization_id)
+                    .where(
+                        and_(
+                            Project.organization_id == organization_id,
+                            Project.deleted_at.is_(None),
+                        )
+                    )
                     .options(selectinload(Project.members))
                 )
             else:
@@ -217,6 +224,7 @@ class PermissionService:
                         and_(
                             ProjectMember.user_id == user_id,
                             Project.organization_id == organization_id,
+                            Project.deleted_at.is_(None),
                         )
                     )
                     .options(selectinload(Project.members))
@@ -233,7 +241,9 @@ class PermissionService:
             stmt_direct = (
                 select(Project)
                 .join(ProjectMember, ProjectMember.project_id == Project.id)
-                .where(ProjectMember.user_id == user_id)
+                .where(
+                    and_(ProjectMember.user_id == user_id, Project.deleted_at.is_(None))
+                )
                 .options(selectinload(Project.members))
             )
             result_direct = await db.execute(stmt_direct)
@@ -250,6 +260,7 @@ class PermissionService:
                     and_(
                         OrganizationMember.user_id == user_id,
                         OrganizationMember.role.in_(['admin', 'owner']),
+                        Project.deleted_at.is_(None),
                     )
                 )
                 .options(selectinload(Project.members))

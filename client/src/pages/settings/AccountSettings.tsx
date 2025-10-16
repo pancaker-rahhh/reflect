@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Save, Mail, Info, User, CreditCard } from 'lucide-react'
+import { Save, Mail, Info, User, CreditCard, Loader2 } from 'lucide-react'
 import { BillingPageContent } from './BillingPageContent'
 
 type Tab = 'account' | 'billing'
@@ -104,28 +104,6 @@ export function AccountSettings() {
           </AlertDescription>
         </Alert>
       </div>
-
-      {isEdited && (
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4 border-t">
-          <Button
-            onClick={handleSave}
-            disabled={updateProfileMutation.isPending || !name.trim()}
-            className="min-w-[120px]"
-          >
-            <Save className="mr-2 h-4 w-4" />
-            {updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setName(user?.name || '')
-              setIsEdited(false)
-            }}
-          >
-            Cancel
-          </Button>
-        </div>
-      )}
     </div>
   )
 
@@ -213,6 +191,28 @@ export function AccountSettings() {
 
         <div className="min-h-[400px]">{renderTabContent()}</div>
       </div>
+
+      {activeTab === 'account' && isEdited && (
+        <div className="flex justify-end pt-4">
+          <Button
+            onClick={handleSave}
+            disabled={updateProfileMutation.isPending || !name.trim()}
+            className="px-8 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+          >
+            {updateProfileMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
+              </>
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

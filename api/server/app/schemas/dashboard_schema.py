@@ -8,7 +8,6 @@ class DashboardMetricsResponse(BaseModel):
     averageRating: float
     newBugReports: int
     newFeatureRequests: int
-    pendingFeedbackReview: int
 
 
 class RecentActivityResponse(BaseModel):

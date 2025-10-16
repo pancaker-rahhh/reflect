@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { Buildings, Users, Shield, FloppyDisk, Trash, Plus, X } from 'phosphor-react'
+import { Buildings, Users, Shield, Trash, Plus, X } from 'phosphor-react'
+import { Save, Loader2 } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { organizationApi, type OrganizationMember } from '../../lib/api/organization'
 import { useAppContext } from '../../context/AppContext'
 import { useToastNotifications } from '../../hooks/useToastNotifications'
 import { AnimatedInput, AnimatedTextarea } from '../onboarding/shared/AnimatedInput'
+import { Button } from '../ui/button'
 import { InviteMemberModal } from './InviteMemberModal'
 
 interface OrganizationSettingsPageProps {
@@ -142,23 +144,23 @@ export const OrganizationSettingsPage: React.FC<OrganizationSettingsPageProps> =
       </div>
 
       <div className="flex justify-end pt-4 border-t">
-        <button
+        <Button
           onClick={handleSaveGeneral}
           disabled={saving}
-          className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
+          className="px-8 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
         >
           {saving ? (
             <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Saving...
             </>
           ) : (
             <>
-              <FloppyDisk className="w-4 h-4" />
+              <Save className="mr-2 h-4 w-4" />
               Save Changes
             </>
           )}
-        </button>
+        </Button>
       </div>
     </div>
   )
