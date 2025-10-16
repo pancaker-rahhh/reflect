@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { ChevronDown, Building2, FolderOpen, Plus, Search, Clock, Info } from 'lucide-react'
+import { ChevronDown, Building2, FolderOpen, Plus, Search, Clock } from 'lucide-react'
 import { useAppContext } from '../../context/AppContext'
 import { projectApi } from '@/lib/api'
-import { Alert, AlertDescription } from '../ui/alert'
 import { useToastNotifications } from '@/hooks/useToastNotifications'
 import type { Project, Organization } from '@/types'
 
@@ -32,7 +31,6 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [recentProjects, setRecentProjects] = useState<string[]>([])
-  const [showOrgLimitMessage, setShowOrgLimitMessage] = useState(false)
   const [isCreatingProject, setIsCreatingProject] = useState(false)
   const [newProjectName, setNewProjectName] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -84,11 +82,6 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
     addToRecentProjects(project.id)
     onProjectChange?.(project)
     setIsOpen(false)
-  }
-
-  const handleCreateOrganization = () => {
-    setShowOrgLimitMessage(true)
-    setTimeout(() => setShowOrgLimitMessage(false), 4000) // Hide after 4 seconds
   }
 
   const handleCreateProject = async () => {
@@ -181,18 +174,6 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
 
       {isOpen && (
         <div className="absolute z-50 w-80 mt-2 bg-tertiary border border-border rounded-lg shadow-lg">
-          {showOrgLimitMessage && (
-            <div className="p-3 border-b border-border">
-              <Alert>
-                <Info className="h-4 w-4" />
-                <AlertDescription>
-                  We have limited users to only one organization as we are in beta. Thank you for
-                  your understanding!
-                </AlertDescription>
-              </Alert>
-            </div>
-          )}
-
           <div className="p-3 border-b border-gray-200">
             {isCreatingProject ? (
               <div className="space-y-2">
@@ -314,14 +295,6 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
                       )}
                     </div>
                   ))}
-
-                  <button
-                    onClick={handleCreateOrganization}
-                    className="w-full flex items-center gap-2 px-2 py-2 mt-2 text-sm text-left text-indigo-600 hover:bg-indigo-50 rounded"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Create New Organization</span>
-                  </button>
                 </div>
               </>
             )}
