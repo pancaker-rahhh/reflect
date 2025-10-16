@@ -35,9 +35,6 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="font-bold text-lg text-foreground truncate">{widget.name}</h3>
-                  <Badge variant="default" className="bg-primary/10 text-primary border-primary/20">
-                    Active
-                  </Badge>
                   <Badge variant="outline" className="text-xs">
                     {(widget.widget_type || '').replace('_', ' ').toUpperCase()}
                   </Badge>

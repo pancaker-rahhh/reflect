@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LogOut, User, Settings, ChevronDown } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useQuery } from '@tanstack/react-query'
+import { userApi } from '@/lib/api/user'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +20,12 @@ export function UserMenu() {
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
 
+  const { data: userProfile } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => userApi.getCurrentUser(),
+    enabled: !!user,
+  })
+
   if (!user) return null
 
   const handleSignOut = async () => {
@@ -30,8 +38,9 @@ export function UserMenu() {
   }
 
   const getUserInitials = () => {
-    if (user.user_metadata?.name) {
-      return user.user_metadata.name
+    const displayName = userProfile?.name || user.user_metadata?.name
+    if (displayName) {
+      return displayName
         .split(' ')
         .map((n: string) => n[0])
         .join('')
@@ -49,14 +58,18 @@ export function UserMenu() {
             <AvatarImage src={user.user_metadata?.avatar_url} />
             <AvatarFallback>{getUserInitials()}</AvatarFallback>
           </Avatar>
-          <span className="hidden md:block text-sm">{user.user_metadata?.name || user.email}</span>
+          <span className="hidden md:block text-sm">
+            {userProfile?.name || user.user_metadata?.name || user.email}
+          </span>
           <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.user_metadata?.name || 'User'}</p>
+            <p className="text-sm font-medium leading-none">
+              {userProfile?.name || user.user_metadata?.name || 'User'}
+            </p>
             <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
           </div>
         </DropdownMenuLabel>
