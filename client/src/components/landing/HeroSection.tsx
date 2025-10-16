@@ -121,7 +121,7 @@ export const HeroSection = () => {
                     transform: 'translateZ(0)',
                   }}
                 >
-                  <source src="https://cdn.reflectfeedback.com/assets/reflect-intro-720p.mp4" type="video/mp4" />
+                  <source src="https://cdn.reflectfeedback.com/assets/reflect-intro-1080p.mp4" type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
 
