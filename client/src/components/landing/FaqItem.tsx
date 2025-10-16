@@ -33,7 +33,7 @@ export const FaqItem: React.FC<FaqItemProps> = ({ question, answer, icon, isOpen
       <dt>
         <motion.button
           onClick={onClick}
-          className={`flex w-full items-center justify-between text-left text-[hsl(var(--foreground))] p-8 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] focus:ring-inset`}
+          className={`flex w-full items-center justify-between text-left text-[hsl(var(--foreground))] p-8 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] focus:ring-inset`}
           aria-expanded={isOpen}
           whileHover={{
             backgroundColor: isOpen ? 'hsl(var(--primary) / 0.05)' : 'hsl(var(--muted) / 0.05)',
