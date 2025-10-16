@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api, organizationApi } from '@/lib/api'
+import { api } from '@/lib/api'
+import { useAppContext } from '@/context/AppContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 
@@ -46,35 +47,22 @@ export function RoadmapSettings() {
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
-  const { data: organizations, isLoading: isLoadingOrgs } = useQuery({
-    queryKey: ['organizations'],
-    queryFn: () => organizationApi.getMy(),
-  })
-
-  const organizationId = organizations?.[0]?.id
-
-  const { data: projectsData, isLoading: isLoadingProjects } = useQuery({
-    queryKey: ['projects', organizationId],
-    queryFn: () => (organizationId ? api.getProjectsByOrganization(organizationId) : null),
-    enabled: !!organizationId,
-  })
-
-  const project = projectsData?.items?.[0]
+  const { currentProject } = useAppContext()
 
   const { data: roadmap, isLoading: isLoadingRoadmap } = useQuery({
-    queryKey: ['roadmap', project?.id],
-    queryFn: () => (project ? api.getRoadmap(project.id) : null),
-    enabled: !!project,
+    queryKey: ['roadmap', currentProject?.id],
+    queryFn: () => (currentProject ? api.getRoadmap(currentProject.id) : null),
+    enabled: !!currentProject,
   })
 
   useEffect(() => {
     if (roadmap) {
       setFormData(roadmap)
       setColumns(roadmap.columns || [])
-    } else if (project) {
+    } else if (currentProject) {
       setColumns([])
     }
-  }, [roadmap, project])
+  }, [roadmap, currentProject])
 
   const createRoadmapMutation = useMutation({
     mutationFn: (data: {
@@ -85,7 +73,7 @@ export function RoadmapSettings() {
       logo_url?: string
     }) => api.createRoadmap(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', currentProject?.id] })
       setIsEdited(false)
       toast({
         title: 'Roadmap created',
@@ -98,7 +86,7 @@ export function RoadmapSettings() {
     mutationFn: (data: Partial<Roadmap>) =>
       roadmap ? api.updateRoadmap(roadmap.id, data) : Promise.reject('No roadmap'),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', currentProject?.id] })
       setIsEdited(false)
     },
   })
@@ -164,13 +152,13 @@ export function RoadmapSettings() {
   const getDeletedColumnsCount = () => columns.filter((col) => col._markedForDeletion).length
 
   const handleSave = async () => {
-    if (!project) return
+    if (!currentProject) return
 
     try {
       if (!roadmap) {
         const newRoadmap = await createRoadmapMutation.mutateAsync({
           name: formData.name || 'Product Roadmap',
-          project_id: project.id,
+          project_id: currentProject.id,
           is_public: formData.is_public || false,
           ...(formData.subdomain && { subdomain: formData.subdomain }),
           ...(formData.logo_url && { logo_url: formData.logo_url }),
@@ -233,7 +221,7 @@ export function RoadmapSettings() {
         await Promise.all(columnPromises)
       }
 
-      queryClient.invalidateQueries({ queryKey: ['roadmap', project.id] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', currentProject.id] })
       setIsEdited(false)
     } catch (error) {
       console.error('Failed to save roadmap settings:', error)
@@ -346,7 +334,7 @@ export function RoadmapSettings() {
     }
   }
 
-  const isLoading = isLoadingOrgs || isLoadingProjects || isLoadingRoadmap
+  const isLoading = false || false || isLoadingRoadmap
 
   if (isLoading) {
     return (

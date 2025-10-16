@@ -126,8 +126,8 @@ export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChar
               <item.icon className="w-5 h-5" style={{ color: item.color }} />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium">{item.name}</p>
-              <p className="text-2xl font-bold">{item.value}</p>
+              <p className="text-sm font-medium text-foreground">{item.name}</p>
+              <p className="text-2xl font-bold text-foreground">{item.value}</p>
             </div>
           </div>
         ))}

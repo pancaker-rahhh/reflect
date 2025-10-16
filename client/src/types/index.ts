@@ -279,7 +279,6 @@ export interface DashboardMetrics {
   bugReportsChange: number
   newFeatureRequests: number
   featureRequestsChange: number
-  pendingFeedbackReview?: number
 }
 
 export interface RecentActivity {
