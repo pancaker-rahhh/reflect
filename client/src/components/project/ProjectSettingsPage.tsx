@@ -187,6 +187,12 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
       const id = projectId || currentProject?.id
       if (!id) return
 
+      if (formData.name.trim().length < 3) {
+        toast.showError('Project name must be at least 3 characters long')
+        setSaving(false)
+        return
+      }
+
       const updatedProject = await projectApi.updateProject(id, {
         name: formData.name,
         description: formData.description,
@@ -344,16 +350,23 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
         <h3 className="text-lg font-semibold text-foreground mb-4">Project Information</h3>
 
         <div className="space-y-4">
-          <AnimatedInput
-            label="Project Name"
-            value={formData.name}
-            onChange={(e) => {
-              setFormData({ ...formData, name: e.target.value })
-              setIsEdited(true)
-            }}
-            placeholder="Enter project name"
-            icon={<FolderOpen className="w-4 h-4" />}
-          />
+          <div className="space-y-2">
+            <AnimatedInput
+              label="Project Name"
+              value={formData.name}
+              onChange={(e) => {
+                setFormData({ ...formData, name: e.target.value })
+                setIsEdited(true)
+              }}
+              placeholder="Enter project name (minimum 3 characters)"
+              icon={<FolderOpen className="w-4 h-4" />}
+            />
+            {formData.name.trim().length > 0 && formData.name.trim().length < 3 && (
+              <p className="text-sm text-destructive">
+                Project name must be at least 3 characters long
+              </p>
+            )}
+          </div>
 
           <AnimatedTextarea
             label="Description"
@@ -646,7 +659,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
         <div className="flex justify-end pt-4">
           <Button
             onClick={handleSaveGeneral}
-            disabled={saving}
+            disabled={saving || formData.name.trim().length < 3}
             className="px-8 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
           >
             {saving ? (

@@ -154,10 +154,30 @@ export function RoadmapSettings() {
   const handleSave = async () => {
     if (!currentProject) return
 
+    if (!formData.name?.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Roadmap name cannot be empty',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const activeColumns = columns.filter((col) => !col._markedForDeletion)
+    const emptyColumnNames = activeColumns.filter((col) => !col.name.trim())
+    if (emptyColumnNames.length > 0) {
+      toast({
+        title: 'Error',
+        description: 'Column names cannot be empty',
+        variant: 'destructive',
+      })
+      return
+    }
+
     try {
       if (!roadmap) {
         const newRoadmap = await createRoadmapMutation.mutateAsync({
-          name: formData.name || 'Product Roadmap',
+          name: formData.name?.trim() || 'Product Roadmap',
           project_id: currentProject.id,
           is_public: formData.is_public || false,
           ...(formData.subdomain && { subdomain: formData.subdomain }),
@@ -439,6 +459,9 @@ export function RoadmapSettings() {
                           placeholder="Product Roadmap"
                           className="focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                         />
+                        {formData.name && !formData.name.trim() && (
+                          <p className="text-sm text-destructive">Roadmap name cannot be empty</p>
+                        )}
                       </div>
                     </div>
 
@@ -705,6 +728,13 @@ export function RoadmapSettings() {
                                     placeholder="Enter column name"
                                     disabled={column._markedForDeletion}
                                   />
+                                  {column.name &&
+                                    !column.name.trim() &&
+                                    !column._markedForDeletion && (
+                                      <p className="text-xs text-destructive mt-1">
+                                        Column name cannot be empty
+                                      </p>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">

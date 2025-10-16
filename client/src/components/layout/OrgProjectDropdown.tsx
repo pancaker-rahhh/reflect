@@ -87,6 +87,11 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
   const handleCreateProject = async () => {
     if (!newProjectName.trim() || !currentOrganization) return
 
+    if (newProjectName.trim().length < 3) {
+      toast.showError('Project name must be at least 3 characters long')
+      return
+    }
+
     try {
       const newProject = await projectApi.createProject({
         name: newProjectName.trim(),
@@ -179,7 +184,7 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
               <div className="space-y-2">
                 <input
                   type="text"
-                  placeholder="Enter project name..."
+                  placeholder="Enter project name (min. 3 characters)"
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -192,10 +197,15 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
                     }
                   }}
                 />
+                {newProjectName.trim().length > 0 && newProjectName.trim().length < 3 && (
+                  <p className="text-xs text-red-600">
+                    Project name must be at least 3 characters long
+                  </p>
+                )}
                 <div className="flex gap-2">
                   <button
                     onClick={handleCreateProject}
-                    disabled={!newProjectName.trim()}
+                    disabled={!newProjectName.trim() || newProjectName.trim().length < 3}
                     className="px-3 py-1 text-xs bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Create
