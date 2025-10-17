@@ -34,6 +34,7 @@ interface FeatureFormData {
   title: string
   description: string
   tagIds: string[]
+  priority: 'low' | 'medium' | 'high' | 'critical'
 }
 
 function RoadmapPageContent() {
@@ -183,6 +184,7 @@ function RoadmapPageContent() {
       description: string
       column_id: string
       tag_ids?: string[]
+      priority?: string
       submitter_name?: string
       submitter_email?: string
     }) => api.createRoadmapActionItem(data),
@@ -415,6 +417,7 @@ function RoadmapPageContent() {
       description: formData.description,
       column_id: selectedColumn.id,
       tag_ids: formData.tagIds,
+      priority: formData.priority,
       submitter_name: currentUser.name,
       submitter_email: currentUser.email,
     })
