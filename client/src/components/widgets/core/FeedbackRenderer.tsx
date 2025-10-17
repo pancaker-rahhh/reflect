@@ -117,7 +117,7 @@ export function FeedbackRenderer({
       response: data.description,
       feedbackType,
       typeSpecificData: {
-        severity_level: data.severity,
+        severity: data.severity,
       } as BugReportFeedbackData,
     })
   }
@@ -382,7 +382,7 @@ export function FeedbackRenderer({
               isSubmitting={isSubmitting}
               colors={colors}
               content={content}
-              showExistingFeatures={true}
+              showExistingFeatures={false}
             />
           </div>
         </div>

@@ -47,6 +47,7 @@ export function RoadmapCardDetail({
 }: RoadmapCardDetailProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isTextExpanded, setIsTextExpanded] = useState(false)
   const [formData, setFormData] = useState<{
     title: string
     description: string
@@ -86,6 +87,7 @@ export function RoadmapCardDetail({
           )
         }
       }
+      setIsTextExpanded(false) // Reset text expansion when feature changes
       setFormData({
         title: feature.title || '',
         description: feature.description || '',
@@ -187,7 +189,7 @@ export function RoadmapCardDetail({
 
   return (
     <Dialog open={isOpen} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300 min-w-0">
         <DialogHeader className="space-y-4">
           {isEditing ? (
             <div className="space-y-3">
@@ -221,8 +223,26 @@ export function RoadmapCardDetail({
           ) : (
             <div className="space-y-3">
               <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <DialogTitle className="text-2xl font-bold mb-2">{feature.title}</DialogTitle>
+                <div className="flex-1 min-w-0">
+                  <div className="space-y-2">
+                    <DialogTitle
+                      className={`text-2xl font-bold mb-2 break-all word-break-break-all overflow-wrap-anywhere ${
+                        !isTextExpanded && feature.title.length > 100 ? 'line-clamp-2' : ''
+                      }`}
+                      style={{ wordBreak: 'break-all', overflowWrap: 'anywhere' }}
+                    >
+                      {feature.title}
+                    </DialogTitle>
+                    {feature.title.length > 100 && (
+                      <button
+                        type="button"
+                        onClick={() => setIsTextExpanded(!isTextExpanded)}
+                        className="text-sm text-blue-600 hover:text-blue-800 underline"
+                      >
+                        {isTextExpanded ? 'Show less' : 'Show more'}
+                      </button>
+                    )}
+                  </div>
                   <div className="flex items-center gap-3">
                     <Badge
                       variant="outline"
@@ -574,7 +594,11 @@ export function RoadmapCardDetail({
         onClose={() => setShowDeleteConfirm(false)}
         onConfirm={handleConfirmDelete}
         title="Delete Feature"
-        description={`Are you sure you want to delete "${feature?.title}"? This action cannot be undone and will remove the feature from your roadmap.`}
+        description={`Are you sure you want to delete "${
+          feature?.title && feature.title.length > 30
+            ? feature.title.substring(0, 30) + '...'
+            : feature?.title
+        }"?\n\nThis action cannot be undone and will remove the feature from your roadmap.`}
         confirmText="Delete"
         cancelText="Cancel"
         variant="destructive"

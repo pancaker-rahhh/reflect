@@ -64,6 +64,7 @@ class ActionItemService:
         feedback_id: UUID,
         user_id: UUID,
         priority: Optional[str] = None,
+        title: Optional[str] = None,
         conversion_notes: Optional[str] = None,
         custom_tags: Optional[List[str]] = None,
         column_id: Optional[str] = None,
@@ -112,16 +113,23 @@ class ActionItemService:
         else:
             final_priority = self._suggest_priority(typed_feedback)
 
-        title = feedback.message or f'Feedback: {feedback.feedback_type.value}'
+        if title and title.strip():
+            final_title = title.strip()
+        else:
+            final_title = (
+                feedback.message or f'Feedback: {feedback.feedback_type.value}'
+            )
+            if len(final_title.strip()) < 3:
+                final_title = f'{feedback.feedback_type.value.title()} Feedback'
+                if len(final_title) < 3:
+                    final_title = 'User Feedback'
 
-        if len(title.strip()) < 3:
-            title = f'{feedback.feedback_type.value.title()} Feedback'
-            if len(title) < 3:
-                title = 'User Feedback'
+        if len(final_title) > 255:
+            final_title = final_title[:252] + '...'
 
         feature_data = {
             'column_id': target_column.id,
-            'title': title,
+            'title': final_title,
             'description': await self._generate_description_from_feedback(
                 db, typed_feedback, feedback.submitter_name, conversion_notes
             ),

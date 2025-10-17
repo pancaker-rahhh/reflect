@@ -29,6 +29,8 @@ class PublicFeedbackPayload(BaseModel):
     widgetType: Optional[str] = None
     overall_rating: Optional[int] = None
     severity: Optional[str] = None
+    priority: Optional[str] = None
+    useCase: Optional[str] = None
     submitter_name: Optional[str] = None
     submitter_email: Optional[str] = None
     context: Optional[Dict[str, Any]] = None
@@ -96,11 +98,16 @@ async def create_or_update_widget_feedback(
     elif widget_type == WidgetType.BUG_REPORT:
         feedback_data.update(
             {
-                'severity_level': payload.severity,
+                'severity': payload.severity,
             }
         )
     elif widget_type == WidgetType.FEATURE_REQUEST:
-        pass
+        feedback_data.update(
+            {
+                'priority': payload.priority,
+                'useCase': payload.useCase,
+            }
+        )
 
     if payload.submitter_name:
         sanitized_context['submitter_name'] = InputSanitizer.sanitize_text(

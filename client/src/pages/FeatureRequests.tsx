@@ -23,6 +23,7 @@ export function FeatureRequests() {
   const [startDate, setStartDate] = useState<Date | undefined>()
   const [endDate, setEndDate] = useState<Date | undefined>()
   const [sortBy, setSortBy] = useState<string>('newest')
+  const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
@@ -42,10 +43,12 @@ export function FeatureRequests() {
     setStartDate(undefined)
     setEndDate(undefined)
     setSortBy('newest')
+    setPriorityFilter('all')
     setSearchQuery('')
   }
 
-  const hasActiveFilters = startDate || endDate || sortBy !== 'newest' || searchQuery
+  const hasActiveFilters =
+    startDate || endDate || sortBy !== 'newest' || priorityFilter !== 'all' || searchQuery
 
   const convertMutation = useMutation({
     mutationFn: ({ feedbackId, conversionData }: { feedbackId: string; conversionData: any }) =>
@@ -114,6 +117,11 @@ export function FeatureRequests() {
       if (startDate && new Date(feature.created_at) < startDate) return false
       if (endDate && new Date(feature.created_at) > endDate) return false
 
+      if (priorityFilter !== 'all') {
+        const featurePriority = feature.feedback_metadata?.priority?.toLowerCase()
+        if (featurePriority !== priorityFilter.toLowerCase()) return false
+      }
+
       if (searchQuery) {
         const query = searchQuery.toLowerCase()
         const searchableText = [
@@ -179,11 +187,11 @@ export function FeatureRequests() {
         <CardHeader>
           <CardTitle>Filters</CardTitle>
           <CardDescription>
-            Filter feature requests by date, sort order, or search for specific features
+            Filter feature requests by date, priority, sort order, or search for specific features
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             <DatePicker
               date={startDate}
               onDateChange={setStartDate}
@@ -206,6 +214,18 @@ export function FeatureRequests() {
                 <SelectItem value="newest">Newest First</SelectItem>
                 <SelectItem value="oldest">Oldest First</SelectItem>
                 <SelectItem value="upvotes">Most Upvotes</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Priorities</SelectItem>
+                <SelectItem value="high">🚀 Critical</SelectItem>
+                <SelectItem value="medium">😊 Important</SelectItem>
+                <SelectItem value="low">😌 Nice to Have</SelectItem>
               </SelectContent>
             </Select>
 

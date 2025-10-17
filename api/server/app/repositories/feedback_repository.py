@@ -401,7 +401,7 @@ class FeedbackRepository(BaseRepository[Feedback]):
             }
 
             if item.feedback_metadata:
-                feedback_dict.update(item.feedback_metadata)
+                feedback_dict['feedback_metadata'] = item.feedback_metadata
 
             if item.feedback_type == 'review':
                 review_stmt = select(ReviewFeedback).where(ReviewFeedback.id == item.id)

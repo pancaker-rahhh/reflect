@@ -51,7 +51,15 @@ export function ConfirmationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        className="!max-w-[500px] max-w-[90vw]"
+        style={{
+          maxWidth: '500px',
+          width: '90vw',
+          wordWrap: 'break-word',
+          overflowWrap: 'break-word',
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {icon ||
@@ -60,7 +68,19 @@ export function ConfirmationModal({
               ) : null)}
             {title}
           </DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogDescription
+            className="text-sm text-muted-foreground"
+            style={{
+              wordBreak: 'break-all',
+              overflowWrap: 'anywhere',
+              whiteSpace: 'pre-line',
+              maxWidth: '100%',
+              overflow: 'hidden',
+              hyphens: 'auto',
+            }}
+          >
+            {description}
+          </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2">
           {showCancelButton && (

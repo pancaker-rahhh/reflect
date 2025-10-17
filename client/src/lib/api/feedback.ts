@@ -9,6 +9,7 @@ interface FeedbackPayload {
 
 interface ConversionData {
   column_id?: string
+  title?: string
   priority: 'low' | 'medium' | 'high' | 'critical'
   custom_tags?: string[]
   conversion_notes?: string

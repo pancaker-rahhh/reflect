@@ -202,7 +202,10 @@ export function RoadmapCard({
         <div className="p-4 space-y-4 relative z-10">
           {/* Header with Enhanced Drag Handle */}
           <div className="flex items-start justify-between gap-3">
-            <h4 className="font-semibold text-sm leading-tight text-foreground line-clamp-2 flex-1">
+            <h4
+              className="font-semibold text-sm leading-tight text-foreground line-clamp-2 flex-1 break-all word-break-break-all overflow-wrap-anywhere"
+              style={{ wordBreak: 'break-all', overflowWrap: 'anywhere' }}
+            >
               {feature.title}
             </h4>
             {!isSelectionMode && (
@@ -375,7 +378,15 @@ export function RoadmapCard({
       {/* Delete Confirmation Dialog */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-background rounded-lg p-6 max-w-sm mx-4 border border-border/50 shadow-xl">
+          <div
+            className="bg-background rounded-lg p-6 max-w-sm mx-4 border border-border/50 shadow-xl"
+            style={{
+              maxWidth: '400px',
+              width: '90vw',
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+            }}
+          >
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-destructive/10 rounded-full flex items-center justify-center">
                 <Trash2 className="h-5 w-5 text-destructive" />
@@ -388,7 +399,20 @@ export function RoadmapCard({
 
             <p className="text-sm text-muted-foreground mb-6">
               Are you sure you want to delete "
-              <span className="font-medium text-foreground">{feature.title}</span>"?
+              <span
+                className="font-medium text-foreground break-all word-break-break-all overflow-wrap-anywhere"
+                style={{
+                  wordBreak: 'break-all',
+                  overflowWrap: 'anywhere',
+                  maxWidth: '100%',
+                  display: 'inline-block',
+                }}
+              >
+                {feature.title && feature.title.length > 30
+                  ? feature.title.substring(0, 30) + '...'
+                  : feature.title}
+              </span>
+              "?
             </p>
 
             <div className="flex gap-3 justify-end">

@@ -269,7 +269,8 @@ export function FeedbackCard({
                   <p
                     className={cn(
                       'text-base font-semibold text-foreground leading-relaxed',
-                      !isExpanded && isLongMessage && 'line-clamp-3'
+                      !isExpanded && isLongMessage && 'line-clamp-3',
+                      isExpanded && 'break-words'
                     )}
                   >
                     {messageText}

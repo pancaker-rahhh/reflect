@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
+from typing import Optional, Dict, Any
 from datetime import datetime
 
 
@@ -36,6 +36,7 @@ class FeedbackDataResponse(BaseModel):
     is_anonymous: bool
     is_actionable: bool
     widget_name: Optional[str] = None
+    feedback_metadata: Dict[str, Any] = Field(default_factory=dict)
 
     overall_rating: Optional[int] = None
 
