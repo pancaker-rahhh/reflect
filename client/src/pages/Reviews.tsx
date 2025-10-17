@@ -25,6 +25,7 @@ export function Reviews() {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined)
   const [endDate, setEndDate] = useState<Date | undefined>(undefined)
   const [ratingFilter, setRatingFilter] = useState('all')
+  const [sortBy, setSortBy] = useState<string>('newest')
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const [isBulkConversionModalOpen, setIsBulkConversionModalOpen] = useState(false)
@@ -46,9 +47,11 @@ export function Reviews() {
     setStartDate(undefined)
     setEndDate(undefined)
     setRatingFilter('all')
+    setSortBy('newest')
   }
 
-  const hasActiveFilters = searchQuery || startDate || endDate || ratingFilter !== 'all'
+  const hasActiveFilters =
+    searchQuery || startDate || endDate || ratingFilter !== 'all' || sortBy !== 'newest'
 
   const convertMutation = useMutation({
     mutationFn: ({ feedbackId, conversionData }: { feedbackId: string; conversionData: any }) =>
@@ -111,35 +114,45 @@ export function Reviews() {
     setIsSelectionMode(false)
   }
 
-  const filteredReviews = reviews.filter((review) => {
-    if (startDate && new Date(review.created_at) < startDate) return false
-    if (endDate && new Date(review.created_at) > endDate) return false
+  const filteredReviews = reviews
+    .filter((review) => {
+      if (startDate && new Date(review.created_at) < startDate) return false
+      if (endDate && new Date(review.created_at) > endDate) return false
 
-    if (ratingFilter !== 'all') {
-      const rating = review.overall_rating || review.rating || 0
-      if (ratingFilter === 'promoters' && rating < 4) return false
-      if (ratingFilter === 'passives' && (rating < 3 || rating > 3)) return false
-      if (ratingFilter === 'detractors' && rating > 2) return false
-    }
+      if (ratingFilter !== 'all') {
+        const rating = review.overall_rating || review.rating || 0
+        if (ratingFilter === 'promoters' && rating < 4) return false
+        if (ratingFilter === 'passives' && (rating < 3 || rating > 3)) return false
+        if (ratingFilter === 'detractors' && rating > 2) return false
+      }
 
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase()
-      const searchableText = [
-        review.submitter_name,
-        review.submitter_email,
-        review.widget_name,
-        review.title,
-        review.message,
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase()
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase()
+        const searchableText = [
+          review.submitter_name,
+          review.submitter_email,
+          review.widget_name,
+          review.title,
+          review.message,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
 
-      if (!searchableText.includes(query)) return false
-    }
+        if (!searchableText.includes(query)) return false
+      }
 
-    return true
-  })
+      return true
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'oldest':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        case 'newest':
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      }
+    })
 
   const averageRating =
     reviews.length > 0
@@ -252,10 +265,20 @@ export function Reviews() {
           </p>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <DatePicker date={startDate} onDateChange={setStartDate} placeholder="Start date" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+            <DatePicker
+              date={startDate}
+              onDateChange={setStartDate}
+              placeholder="Start date"
+              maxDate={endDate}
+            />
 
-            <DatePicker date={endDate} onDateChange={setEndDate} placeholder="End date" />
+            <DatePicker
+              date={endDate}
+              onDateChange={setEndDate}
+              placeholder="End date"
+              minDate={startDate}
+            />
 
             <Select value={ratingFilter} onValueChange={setRatingFilter}>
               <SelectTrigger>
@@ -266,6 +289,16 @@ export function Reviews() {
                 <SelectItem value="promoters">Promoters (4-5)</SelectItem>
                 <SelectItem value="passives">Passives (3)</SelectItem>
                 <SelectItem value="detractors">Detractors (1-2)</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest First</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
               </SelectContent>
             </Select>
 
@@ -288,7 +321,15 @@ export function Reviews() {
               Reset filters
               {hasActiveFilters && (
                 <span className="ml-2 bg-tertiary/20 text-xs px-1.5 py-0.5 rounded-full">
-                  {[startDate, endDate, ratingFilter !== 'all', searchQuery].filter(Boolean).length}
+                  {
+                    [
+                      startDate,
+                      endDate,
+                      ratingFilter !== 'all',
+                      sortBy !== 'newest',
+                      searchQuery,
+                    ].filter(Boolean).length
+                  }
                 </span>
               )}
             </Button>

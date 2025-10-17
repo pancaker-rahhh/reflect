@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ArrowRight, CheckCircle, Loader2, Calendar, User } from 'lucide-react'
+import { ArrowRight, CheckCircle, Loader2, Calendar, User, ThumbsUp } from 'lucide-react'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { getTintByScoreOutOfFive } from '@/lib/tints'
@@ -68,7 +68,7 @@ export function FeedbackCard({
     (!ratingBasedTypes.includes(feedbackType) ||
       (ratingBasedTypes.includes(feedbackType) && hasMessage))
 
-  const tintClass = getTintByScoreOutOfFive(feedback.overall_rating);
+  const tintClass = getTintByScoreOutOfFive(feedback.overall_rating)
 
   return (
     <>
@@ -111,6 +111,26 @@ export function FeedbackCard({
                   <Calendar className="h-3 w-3" />
                   <span>{format(new Date(feedback.created_at), 'MMM d, yyyy')}</span>
                 </div>
+                {(feedback.feedback_type === 'feature_request' ||
+                  feedback.feedback_type === 'bug_report') &&
+                  feedback.feedback_votes !== undefined && (
+                    <div className="flex items-center gap-1">
+                      <ThumbsUp
+                        className={cn(
+                          'h-3 w-3',
+                          feedback.feedback_votes > 0 && 'text-primary fill-primary'
+                        )}
+                      />
+                      <span
+                        className={cn(
+                          feedback.feedback_votes > 0 ? 'text-primary font-medium' : ''
+                        )}
+                      >
+                        {feedback.feedback_votes || 0}{' '}
+                        {feedback.feedback_votes === 1 ? 'vote' : 'votes'}
+                      </span>
+                    </div>
+                  )}
               </div>
             </div>
 
@@ -147,8 +167,42 @@ export function FeedbackCard({
 
           {feedback.feedback_type === 'bug_report' && feedback.severity_level && (
             <div className="flex items-center gap-2 mt-2">
-              <Badge variant="destructive" className="text-xs">
+              <Badge
+                variant="outline"
+                className={cn(
+                  'text-xs font-medium px-2 py-1',
+                  feedback.severity_level.toLowerCase() === 'critical' &&
+                    'bg-destructive/10 text-destructive border-destructive/20',
+                  feedback.severity_level.toLowerCase() === 'high' &&
+                    'bg-orange-100 text-orange-700 border-orange-200',
+                  feedback.severity_level.toLowerCase() === 'medium' &&
+                    'bg-yellow-100 text-yellow-700 border-yellow-200',
+                  feedback.severity_level.toLowerCase() === 'low' &&
+                    'bg-green-100 text-green-700 border-green-200'
+                )}
+              >
                 {feedback.severity_level}
+              </Badge>
+            </div>
+          )}
+
+          {feedback.feedback_type === 'feature_request' && feedback.feedback_metadata?.priority && (
+            <div className="flex items-center gap-2 mt-2">
+              <Badge
+                variant="outline"
+                className={cn(
+                  'text-xs font-medium px-2 py-1',
+                  feedback.feedback_metadata.priority.toLowerCase() === 'high' &&
+                    'bg-destructive/10 text-destructive border-destructive/20',
+                  feedback.feedback_metadata.priority.toLowerCase() === 'medium' &&
+                    'bg-yellow-100 text-yellow-700 border-yellow-200',
+                  feedback.feedback_metadata.priority.toLowerCase() === 'low' &&
+                    'bg-green-100 text-green-700 border-green-200'
+                )}
+              >
+                {feedback.feedback_metadata.priority === 'low' && '😌 Nice to Have'}
+                {feedback.feedback_metadata.priority === 'medium' && '😊 Important'}
+                {feedback.feedback_metadata.priority === 'high' && '🚀 Critical'}
               </Badge>
             </div>
           )}

@@ -135,7 +135,7 @@ export function FeatureRequests() {
     .sort((a, b) => {
       switch (sortBy) {
         case 'upvotes':
-          return (b.upvotes || 0) - (a.upvotes || 0)
+          return (b.feedback_votes || 0) - (a.feedback_votes || 0)
         case 'oldest':
           return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
         case 'newest':
@@ -184,9 +184,19 @@ export function FeatureRequests() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <DatePicker date={startDate} onDateChange={setStartDate} placeholder="Start date" />
+            <DatePicker
+              date={startDate}
+              onDateChange={setStartDate}
+              placeholder="Start date"
+              maxDate={endDate}
+            />
 
-            <DatePicker date={endDate} onDateChange={setEndDate} placeholder="End date" />
+            <DatePicker
+              date={endDate}
+              onDateChange={setEndDate}
+              placeholder="End date"
+              minDate={startDate}
+            />
 
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger>

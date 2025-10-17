@@ -203,6 +203,15 @@ class FeedbackService:
         """Create feature request feedback"""
         user_description = data.get('message', '') or data.get('description', '')
 
+        # Capture priority and use case in metadata
+        priority = data.get('priority')
+        use_case = data.get('useCase')
+
+        if priority:
+            base_data['feedback_metadata']['priority'] = priority
+        if use_case:
+            base_data['feedback_metadata']['use_case'] = use_case
+
         return FeatureRequestFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.FEATURE_REQUEST,
