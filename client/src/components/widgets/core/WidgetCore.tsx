@@ -8,7 +8,6 @@ import { useFeedbackSubmission } from './useFeedbackSubmission'
 import type { WidgetCoreProps, FeedbackType } from './types'
 import { FEEDBACK_TYPE_INFO } from './types'
 
-// Helper function to convert hex to RGB
 function hexToRgb(hex: string) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
   return result
@@ -28,14 +27,12 @@ export function WidgetCore({
   onClose,
   onStateChange,
 }: WidgetCoreProps) {
-  // Use custom hooks for state management
   const { currentState, updateState, showConfetti, getAvailableFeedbackTypes } = useWidgetState({
     config,
     externalState,
     onStateChange,
   })
 
-  // Use custom hook for feedback submission
   const { isSubmitting, error, errorInfo, handleSubmit, handleScoreSubmission, clearError } =
     useFeedbackSubmission({
       mode,
@@ -48,26 +45,46 @@ export function WidgetCore({
   const theme = config.appearance
   const content = config.content
 
-  // Resolve content for a feedback type using per-type overrides when available
+  function getDefaultSubmitText(type: FeedbackType): string {
+    switch (type) {
+      case 'NPS':
+      case 'CSAT':
+      case 'CES':
+        return 'Submit Rating'
+      case 'BUG_REPORT':
+        return 'Report Bug'
+      case 'FEATURE_REQUEST':
+        return 'Submit Request'
+      case 'REVIEW':
+        return 'Submit Review'
+      case 'SURVEY':
+        return 'Complete Survey'
+      default:
+        return 'Submit Feedback'
+    }
+  }
+
   function resolveContentFor(type: FeedbackType) {
     const overrides = config.contentByType?.[type] || {}
+    const isPrimaryType = type === config.primaryType
+
     return {
-      headerTitle: overrides.headerTitle || content.headerTitle,
-      // Only fall back to primary content if the per-type content is undefined/null, not if it's an empty string
+      headerTitle: content.headerTitle,
       mainQuestion:
         overrides.mainQuestion !== undefined ? overrides.mainQuestion : content.mainQuestion,
-      submitButtonText: overrides.submitButtonText || content.submitButtonText,
-      thankYouTitle: overrides.thankYouTitle || content.thankYouTitle,
-      thankYouMessage: overrides.thankYouMessage || content.thankYouMessage,
+      submitButtonText:
+        overrides.submitButtonText ||
+        (isPrimaryType ? content.submitButtonText : undefined) ||
+        getDefaultSubmitText(type),
+      thankYouTitle: content.thankYouTitle,
+      thankYouMessage: content.thankYouMessage,
     }
   }
 
   const primaryColor = theme.colors.primary
   const backgroundColor = theme.colors.background
   const textColor = theme.colors.text
-  // Always use primary color for buttons, ignore any configured buttonColor
   const buttonColor = primaryColor
-  // Use text color for buttonTextColor to ensure consistency
   const buttonTextColor = theme.colors.buttonTextColor || textColor
 
   const colors = {
@@ -76,7 +93,6 @@ export function WidgetCore({
     buttonTextColor,
   }
 
-  // Clear selected score when feedback type changes
   const activeFeedbackType = currentState.type === 'active' ? currentState.feedbackType : null
   React.useEffect(() => {
     setSelectedScore(undefined)
@@ -87,17 +103,13 @@ export function WidgetCore({
     const currentFeedbackType =
       currentState.type === 'active' ? currentState.feedbackType : config.primaryType
 
-    // For NPS, CSAT, and CES, just set the score and show textbox
-    // For other types, submit immediately
     if (['NPS', 'CSAT', 'CES'].includes(currentFeedbackType)) {
-      // Don't submit immediately, let the user add additional feedback
       return
     }
 
     await handleScoreSubmission(score, currentFeedbackType)
   }
 
-  // Render loading state
   const renderLoading = () => (
     <div className="flex flex-col items-center justify-center h-full space-y-4 p-6">
       <LoadingSpinner size="lg" color={primaryColor} />
@@ -112,7 +124,6 @@ export function WidgetCore({
     </div>
   )
 
-  // Rate limiting countdown state
   const [timeLeft, setTimeLeft] = useState(errorInfo?.retryAfter || 0)
 
   React.useEffect(() => {
@@ -131,7 +142,6 @@ export function WidgetCore({
     return () => clearInterval(timer)
   }, [timeLeft])
 
-  // Render rate limiting error with countdown
   const renderRateLimitError = () => {
     const minutes = Math.floor(timeLeft / 60)
     const seconds = timeLeft % 60
@@ -185,14 +195,11 @@ export function WidgetCore({
     )
   }
 
-  // Render error state
   const renderError = () => {
-    // Show special rate limiting UI if it's a rate limit error
     if (errorInfo?.type === 'rate_limit') {
       return renderRateLimitError()
     }
 
-    // Default error UI for other errors
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-4 p-6 text-center">
         <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
@@ -235,14 +242,9 @@ export function WidgetCore({
     )
   }
 
-  // Render success state
   const renderSuccess = () => (
     <div className="flex flex-col items-center justify-center h-full space-y-4 p-6 text-center">
-      {showConfetti && (
-        <div className="absolute inset-0 pointer-events-none">
-          {/* Confetti animation would go here */}
-        </div>
-      )}
+      {showConfetti && <div className="absolute inset-0 pointer-events-none"></div>}
       <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
         <svg
           className="w-8 h-8 text-green-600"
@@ -294,11 +296,9 @@ export function WidgetCore({
     </div>
   )
 
-  // Render menu state
   const renderMenu = () => {
     const availableTypes = getAvailableFeedbackTypes()
 
-    // Use button color for all modules instead of hardcoded colors
     const buttonColorRgb = hexToRgb(buttonColor)
     const buttonColorLight = `rgba(${buttonColorRgb.r}, ${buttonColorRgb.g}, ${buttonColorRgb.b}, 0.1)`
     const buttonColorMedium = `rgba(${buttonColorRgb.r}, ${buttonColorRgb.g}, ${buttonColorRgb.b}, 0.2)`
@@ -381,13 +381,11 @@ export function WidgetCore({
     )
   }
 
-  // Check if we should show the back to menu button
   const shouldShowBackToMenu = () => {
     const availableTypes = getAvailableFeedbackTypes()
     return availableTypes.length > 1
   }
 
-  // Render content based on state
   const renderContent = () => {
     switch (currentState.type) {
       case 'loading':
@@ -399,7 +397,6 @@ export function WidgetCore({
       case 'active':
         return (
           <div className="px-4 pt-2 pb-4 space-y-4">
-            {/* Back button - only show if multiple modules are enabled */}
             {shouldShowBackToMenu() && (
               <div className="flex items-center mb-2">
                 <button
@@ -475,7 +472,6 @@ export function WidgetCore({
           : undefined,
       }}
     >
-      {/* Header */}
       <div
         className="p-3 text-center relative overflow-hidden"
         style={{
@@ -494,7 +490,6 @@ export function WidgetCore({
           </h2>
         </div>
 
-        {/* Close button */}
         <button
           onClick={() => {
             if (onClose) {
@@ -524,12 +519,10 @@ export function WidgetCore({
         </button>
       </div>
 
-      {/* Main content */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400">
         {renderContent()}
       </div>
 
-      {/* Branding */}
       {theme.showBranding && (
         <div className="p-3 text-center border-t border-gray-200/20">
           <div className="text-xs opacity-50" style={{ color: textColor }}>

@@ -1,48 +1,45 @@
-import React, { useState } from 'react';
-import { X, FolderOpen } from 'lucide-react';
-import { AnimatedInput, AnimatedTextarea } from '../onboarding/shared/AnimatedInput';
+import React, { useState } from 'react'
+import { X, FolderOpen } from 'lucide-react'
+import { AnimatedInput, AnimatedTextarea } from '../onboarding/shared/AnimatedInput'
 
 interface CreateProjectModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onCreate: (projectData: { name: string; description: string }) => Promise<void>;
+  isOpen: boolean
+  onClose: () => void
+  onCreate: (projectData: { name: string; description: string }) => Promise<void>
 }
 
 export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   isOpen,
   onClose,
-  onCreate
+  onCreate,
 }) => {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [isCreating, setIsCreating] = useState(false);
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [isCreating, setIsCreating] = useState(false)
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) return;
+    e.preventDefault()
+    if (!name.trim() || name.trim().length < 3) return
 
-    setIsCreating(true);
+    setIsCreating(true)
     try {
-      await onCreate({ name: name.trim(), description: description.trim() });
-      setName('');
-      setDescription('');
-      onClose();
+      await onCreate({ name: name.trim(), description: description.trim() })
+      setName('')
+      setDescription('')
+      onClose()
     } catch (error) {
-      console.error('Failed to create project:', error);
+      console.error('Failed to create project:', error)
     } finally {
-      setIsCreating(false);
+      setIsCreating(false)
     }
-  };
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+
       <div className="relative bg-background border border-border rounded-xl shadow-2xl max-w-md w-full mx-4 animate-fade-in">
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center gap-3">
@@ -51,23 +48,27 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
             </div>
             <h2 className="text-xl font-semibold text-foreground">Create New Project</h2>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-muted rounded-lg transition-colors"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-muted rounded-lg transition-colors">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <AnimatedInput
-            label="Project Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter project name"
-            icon={<FolderOpen className="w-4 h-4" />}
-            required
-          />
+          <div className="space-y-2">
+            <AnimatedInput
+              label="Project Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter project name (minimum 3 characters)"
+              icon={<FolderOpen className="w-4 h-4" />}
+              required
+            />
+            {name.trim().length > 0 && name.trim().length < 3 && (
+              <p className="text-sm text-destructive">
+                Project name must be at least 3 characters long
+              </p>
+            )}
+          </div>
 
           <AnimatedTextarea
             label="Description (Optional)"
@@ -87,7 +88,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
             </button>
             <button
               type="submit"
-              disabled={!name.trim() || isCreating}
+              disabled={!name.trim() || name.trim().length < 3 || isCreating}
               className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isCreating ? (
@@ -106,5 +107,5 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         </form>
       </div>
     </div>
-  );
-};
+  )
+}

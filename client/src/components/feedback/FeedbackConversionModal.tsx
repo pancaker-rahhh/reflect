@@ -27,6 +27,7 @@ import type { RoadmapColumn } from '@/types'
 
 interface ConversionData {
   column_id: string
+  title?: string
   priority?: 'low' | 'medium' | 'high' | 'critical'
   conversion_notes?: string
   custom_tags?: string[]
@@ -60,6 +61,7 @@ export function FeedbackConversionModal({
   const [customTags, setCustomTags] = useState<string[]>([])
   const [tagInput, setTagInput] = useState('')
   const [isConverting, setIsConverting] = useState(false)
+  const [isTextExpanded, setIsTextExpanded] = useState(false)
 
   const { toast } = useToast()
   const { currentProject } = useAppContext()
@@ -86,8 +88,9 @@ export function FeedbackConversionModal({
       setConversionNotes('')
       setCustomTags([])
       setTagInput('')
+      setIsTextExpanded(false)
     }
-  }, [isOpen])
+  }, [isOpen, feedback.title])
 
   const handleConvert = async () => {
     if (!selectedColumn) {
@@ -103,6 +106,7 @@ export function FeedbackConversionModal({
     try {
       await onConvert({
         column_id: selectedColumn,
+        title: feedback.title || undefined,
         priority: priority as 'low' | 'medium' | 'high' | 'critical',
         conversion_notes: conversionNotes || undefined,
         custom_tags: customTags.length > 0 ? customTags : undefined,
@@ -167,19 +171,43 @@ export function FeedbackConversionModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 min-w-0">
           {/* Feedback Preview */}
           {!isBulk && (
-            <div className="bg-muted/50 rounded-lg p-4">
+            <div className="bg-muted/50 rounded-lg p-4 overflow-hidden min-w-0">
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant="outline">{feedback.feedback_type}</Badge>
               </div>
-              <h4 className="font-medium">{feedback.title}</h4>
-              {feedback.message && feedback.message !== feedback.title && (
-                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                  {feedback.message}
-                </p>
-              )}
+              <div className="space-y-2 min-w-0">
+                <h4
+                  className={`font-medium leading-relaxed break-all word-break-break-all overflow-wrap-anywhere ${
+                    !isTextExpanded && feedback.title.length > 100 ? 'line-clamp-2' : ''
+                  }`}
+                  style={{ wordBreak: 'break-all', overflowWrap: 'anywhere' }}
+                >
+                  {feedback.title}
+                </h4>
+                {feedback.message && feedback.message !== feedback.title && (
+                  <p
+                    className={`text-sm text-muted-foreground break-all word-break-break-all overflow-wrap-anywhere ${
+                      !isTextExpanded ? 'line-clamp-2' : ''
+                    }`}
+                    style={{ wordBreak: 'break-all', overflowWrap: 'anywhere' }}
+                  >
+                    {feedback.message}
+                  </p>
+                )}
+                {(feedback.title.length > 100 ||
+                  (feedback.message && feedback.message.length > 100)) && (
+                  <button
+                    type="button"
+                    onClick={() => setIsTextExpanded(!isTextExpanded)}
+                    className="text-xs text-blue-600 hover:text-blue-800 underline"
+                  >
+                    {isTextExpanded ? 'Show less' : 'Show more'}
+                  </button>
+                )}
+              </div>
             </div>
           )}
 

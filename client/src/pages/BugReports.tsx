@@ -23,6 +23,7 @@ export function BugReports() {
   const [startDate, setStartDate] = useState<Date | undefined>()
   const [endDate, setEndDate] = useState<Date | undefined>()
   const [severityFilter, setSeverityFilter] = useState<string>('all')
+  const [sortBy, setSortBy] = useState<string>('newest')
   const [searchQuery, setSearchQuery] = useState('')
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
@@ -42,10 +43,12 @@ export function BugReports() {
     setStartDate(undefined)
     setEndDate(undefined)
     setSeverityFilter('all')
+    setSortBy('newest')
     setSearchQuery('')
   }
 
-  const hasActiveFilters = startDate || endDate || severityFilter !== 'all' || searchQuery
+  const hasActiveFilters =
+    startDate || endDate || severityFilter !== 'all' || sortBy !== 'newest' || searchQuery
 
   const convertMutation = useMutation({
     mutationFn: ({ feedbackId, conversionData }: { feedbackId: string; conversionData: any }) =>
@@ -141,6 +144,17 @@ export function BugReports() {
 
       return true
     })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'upvotes':
+          return (b.feedback_votes || 0) - (a.feedback_votes || 0)
+        case 'oldest':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        case 'newest':
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      }
+    })
 
   return (
     <div className="space-y-6">
@@ -181,10 +195,20 @@ export function BugReports() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <DatePicker date={startDate} onDateChange={setStartDate} placeholder="Start date" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+            <DatePicker
+              date={startDate}
+              onDateChange={setStartDate}
+              placeholder="Start date"
+              maxDate={endDate}
+            />
 
-            <DatePicker date={endDate} onDateChange={setEndDate} placeholder="End date" />
+            <DatePicker
+              date={endDate}
+              onDateChange={setEndDate}
+              placeholder="End date"
+              minDate={startDate}
+            />
 
             <Select value={severityFilter} onValueChange={setSeverityFilter}>
               <SelectTrigger>
@@ -196,6 +220,17 @@ export function BugReports() {
                 <SelectItem value="high">High</SelectItem>
                 <SelectItem value="medium">Medium</SelectItem>
                 <SelectItem value="low">Low</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest First</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+                <SelectItem value="upvotes">Most Upvotes</SelectItem>
               </SelectContent>
             </Select>
 
@@ -219,8 +254,13 @@ export function BugReports() {
               {hasActiveFilters && (
                 <span className="ml-2 bg-tertiary/20 text-xs px-1.5 py-0.5 rounded-full">
                   {
-                    [startDate, endDate, severityFilter !== 'all', searchQuery].filter(Boolean)
-                      .length
+                    [
+                      startDate,
+                      endDate,
+                      severityFilter !== 'all',
+                      sortBy !== 'newest',
+                      searchQuery,
+                    ].filter(Boolean).length
                   }
                 </span>
               )}

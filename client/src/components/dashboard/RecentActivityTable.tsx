@@ -11,16 +11,17 @@ const typeConfig: Record<
   {
     label: string
     variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning'
+    color: string
   }
 > = {
-  general: { label: 'General', variant: 'default' },
-  survey: { label: 'Survey', variant: 'default' },
-  review: { label: 'Review', variant: 'success' },
-  bug_report: { label: 'Bug Report', variant: 'destructive' },
-  feature_request: { label: 'Feature Request', variant: 'secondary' },
-  NPS: { label: 'NPS', variant: 'outline' },
-  CSAT: { label: 'CSAT', variant: 'outline' },
-  CES: { label: 'CES', variant: 'outline' },
+  general: { label: 'General', variant: 'default', color: '#3B82F6' },
+  survey: { label: 'Survey', variant: 'secondary', color: '#06B6D4' },
+  review: { label: 'Review', variant: 'success', color: '#10B981' },
+  bug_report: { label: 'Bug Report', variant: 'destructive', color: '#EF4444' },
+  feature_request: { label: 'Feature Request', variant: 'warning', color: '#F59E0B' },
+  NPS: { label: 'NPS', variant: 'outline', color: '#8B5CF6' },
+  CSAT: { label: 'CSAT', variant: 'outline', color: '#EC4899' },
+  CES: { label: 'CES', variant: 'outline', color: '#84CC16' },
 }
 
 export function RecentActivityTable({
@@ -42,6 +43,7 @@ export function RecentActivityTable({
           const typeConfigItem = typeConfig[activity.type] || {
             label: activity.type,
             variant: 'default',
+            color: 'hsl(var(--tint-primary))',
           }
 
           return (
@@ -55,14 +57,7 @@ export function RecentActivityTable({
                     <div
                       className="w-3 h-3 rounded-full"
                       style={{
-                        backgroundColor:
-                          typeConfigItem.variant === 'destructive'
-                            ? 'hsl(var(--tint-danger))'
-                            : typeConfigItem.variant === 'success'
-                              ? 'hsl(var(--tint-success))'
-                              : typeConfigItem.variant === 'secondary'
-                                ? 'hsl(var(--tint-info))'
-                                : 'hsl(var(--tint-primary))',
+                        backgroundColor: typeConfigItem.color,
                       }}
                     />
                     <span className="text-sm font-medium uppercase tracking-wide">

@@ -1,5 +1,5 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
-import { MessageSquare, Bug, Lightbulb, Star } from 'lucide-react'
+import { MessageSquare, Bug, Lightbulb, Star, ClipboardList } from 'lucide-react'
 
 interface FeedbackDistributionChartProps {
   feedback: Array<{
@@ -23,43 +23,49 @@ export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChar
     {
       name: 'General Feedback',
       value: feedback.filter((f) => f.type === 'general').length,
-      color: 'hsl(var(--tint-info))',
+      color: '#3B82F6',
       icon: MessageSquare,
     },
     {
       name: 'Bug Reports',
       value: feedback.filter((f) => f.type === 'bug_report').length,
-      color: 'hsl(var(--tint-danger))',
+      color: '#EF4444',
       icon: Bug,
     },
     {
       name: 'Feature Requests',
       value: feedback.filter((f) => f.type === 'feature_request').length,
-      color: 'hsl(var(--tint-primary))',
+      color: '#F59E0B',
       icon: Lightbulb,
     },
     {
       name: 'Reviews',
       value: feedback.filter((f) => f.type === 'review').length,
-      color: 'hsl(var(--tint-success))',
+      color: '#10B981',
       icon: Star,
+    },
+    {
+      name: 'Survey',
+      value: feedback.filter((f) => f.type === 'survey').length,
+      color: '#06B6D4',
+      icon: ClipboardList,
     },
     {
       name: 'NPS',
       value: feedback.filter((f) => f.type === 'NPS').length,
-      color: 'hsl(var(--tint-warning))',
+      color: '#8B5CF6',
       icon: MessageSquare,
     },
     {
       name: 'CSAT',
       value: feedback.filter((f) => f.type === 'CSAT').length,
-      color: 'hsl(var(--tint-info))',
+      color: '#EC4899',
       icon: MessageSquare,
     },
     {
       name: 'CES',
       value: feedback.filter((f) => f.type === 'CES').length,
-      color: 'hsl(var(--tint-neutral))',
+      color: '#84CC16',
       icon: MessageSquare,
     },
   ].filter((item) => item.value > 0)
@@ -126,8 +132,8 @@ export function FeedbackDistributionChart({ feedback }: FeedbackDistributionChar
               <item.icon className="w-5 h-5" style={{ color: item.color }} />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium">{item.name}</p>
-              <p className="text-2xl font-bold">{item.value}</p>
+              <p className="text-sm font-medium text-foreground">{item.name}</p>
+              <p className="text-2xl font-bold text-foreground">{item.value}</p>
             </div>
           </div>
         ))}

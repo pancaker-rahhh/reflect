@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Lightbulb, ChevronUp, Plus, List } from 'lucide-react'
+import { Lightbulb, ChevronUp, List } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ExistingFeature {
@@ -75,7 +75,6 @@ export function FeatureRequestForm({
 }: FeatureRequestFormProps) {
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState('')
-  const [view, setView] = useState<'list' | 'create'>('list')
   const [existingFeatures, setExistingFeatures] = useState<ExistingFeature[]>([])
   const [isLoadingFeatures, setIsLoadingFeatures] = useState(true)
   const [votingFeatures, setVotingFeatures] = useState<Set<string>>(new Set())
@@ -186,86 +185,65 @@ export function FeatureRequestForm({
   }
 
   const handleSubmit = async () => {
-    if (!description.trim()) return
+    if (!description.trim() || !priority) return
 
     await onSubmit({
       description: description.trim(),
-      priority: priority || 'medium',
+      priority: priority,
       useCase: description.trim(),
     })
   }
 
-  const isFormValid = description.trim()
+  const isFormValid = description.trim() && priority
 
   const getCategoryIcon = (categoryValue: string) => {
     const category = categoryOptions.find((opt) => opt.value === categoryValue)
     return category?.icon || '💡'
   }
 
-  const getPriorityColor = (priorityValue: string) => {
-    const colorMap = {
-      low: '#10B981',
-      medium: '#F59E0B',
-      high: '#EF4444',
+  // Render existing features list section
+  const renderFeatureList = () => {
+    if (isLoadingFeatures) {
+      return (
+        <div className="space-y-3 mb-6">
+          {[1, 2].map((i) => (
+            <div key={i} className="h-16 bg-gray-200 animate-pulse rounded-lg"></div>
+          ))}
+        </div>
+      )
     }
-    return colorMap[priorityValue as keyof typeof colorMap] || '#6B7280'
-  }
 
-  // Render feature list view
-  const renderFeatureList = () => (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <List className="w-5 h-5" style={{ color: colors.primary }} />
-          <h3 className="text-lg font-semibold" style={{ color: colors.text }}>
+    if (existingFeatures.length === 0) {
+      return null
+    }
+
+    return (
+      <div className="mb-6 pb-6 border-b" style={{ borderColor: '#E5E7EB' }}>
+        <div className="flex items-center gap-2 mb-3">
+          <List className="w-4 h-4" style={{ color: colors.primary }} />
+          <h3 className="text-sm font-semibold" style={{ color: colors.text }}>
             Requested Features
           </h3>
         </div>
-        <button
-          onClick={() => setView('create')}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105"
-          style={{ backgroundColor: colors.primary, color: colors.buttonTextColor }}
-        >
-          <Plus className="w-4 h-4" />
-          New Request
-        </button>
-      </div>
-
-      {isLoadingFeatures ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 bg-gray-200 animate-pulse rounded-lg"></div>
-          ))}
-        </div>
-      ) : existingFeatures.length > 0 ? (
-        <div className="space-y-3 max-h-80 overflow-y-auto">
+        <div className="space-y-2 max-h-80 overflow-y-auto">
           {existingFeatures.map((feature) => (
             <div
               key={feature.id}
-              className="p-4 border-2 rounded-xl transition-all hover:shadow-md"
+              className="p-3 border rounded-lg transition-all hover:shadow-sm"
               style={{
                 borderColor: '#E5E7EB',
                 backgroundColor: colors.background,
               }}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-lg">{getCategoryIcon(feature.category)}</span>
-                    <h4 className="font-semibold text-sm" style={{ color: colors.text }}>
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-base">{getCategoryIcon(feature.category)}</span>
+                    <h4 className="font-medium text-xs truncate" style={{ color: colors.text }}>
                       {feature.title}
                     </h4>
-                    <span
-                      className="px-2 py-1 rounded-full text-xs font-medium"
-                      style={{
-                        backgroundColor: `${getPriorityColor(feature.priority)}20`,
-                        color: getPriorityColor(feature.priority),
-                      }}
-                    >
-                      {feature.priority}
-                    </span>
                   </div>
-                  <p className="text-xs opacity-70 mb-3" style={{ color: colors.text }}>
+                  <p className="text-xs opacity-70 line-clamp-2" style={{ color: colors.text }}>
                     {feature.description}
                   </p>
                 </div>
@@ -273,9 +251,8 @@ export function FeatureRequestForm({
                   onClick={() => handleUpvote(feature.id)}
                   disabled={votingFeatures.has(feature.id)}
                   className={cn(
-                    'flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all',
+                    'flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-md transition-all flex-shrink-0',
                     !votingFeatures.has(feature.id) && 'hover:scale-105',
-                    feature.hasUserUpvoted ? 'bg-blue-100' : 'bg-gray-100',
                     votingFeatures.has(feature.id) && 'opacity-50 cursor-not-allowed'
                   )}
                   style={{
@@ -284,9 +261,9 @@ export function FeatureRequestForm({
                   }}
                 >
                   {votingFeatures.has(feature.id) ? (
-                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <ChevronUp className="w-4 h-4" />
+                    <ChevronUp className="w-3 h-3" />
                   )}
                   <span className="text-xs font-semibold">{feature.upvotes}</span>
                 </button>
@@ -294,18 +271,11 @@ export function FeatureRequestForm({
             </div>
           ))}
         </div>
-      ) : (
-        <div className="text-center py-8">
-          <Lightbulb className="w-12 h-12 mx-auto mb-3 opacity-50" style={{ color: colors.text }} />
-          <p className="text-sm opacity-70" style={{ color: colors.text }}>
-            No feature requests yet. Be the first to suggest one!
-          </p>
-        </div>
-      )}
-    </div>
-  )
+      </div>
+    )
+  }
 
-  // Render create form view
+  // Render create form
   const renderCreateForm = () => (
     <div className="space-y-4">
       <div className="mb-4">
@@ -347,7 +317,7 @@ export function FeatureRequestForm({
         {/* Priority */}
         <div>
           <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
-            Priority (Optional)
+            Priority *
           </label>
           <div className="space-y-2">
             {priorityOptions.map((option) => (
@@ -402,11 +372,10 @@ export function FeatureRequestForm({
     </div>
   )
 
-  if (!showExistingFeatures) {
-    return <div className="space-y-4">{renderCreateForm()}</div>
-  }
-
   return (
-    <div className="space-y-4">{view === 'list' ? renderFeatureList() : renderCreateForm()}</div>
+    <div className="space-y-4">
+      {showExistingFeatures && renderFeatureList()}
+      {renderCreateForm()}
+    </div>
   )
 }

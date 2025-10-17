@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { ChevronDown, Building2, FolderOpen, Plus, Search, Clock, Info } from 'lucide-react'
+import { ChevronDown, Building2, FolderOpen, Plus, Search, Clock } from 'lucide-react'
 import { useAppContext } from '../../context/AppContext'
 import { projectApi } from '@/lib/api'
-import { Alert, AlertDescription } from '../ui/alert'
 import { useToastNotifications } from '@/hooks/useToastNotifications'
 import type { Project, Organization } from '@/types'
 
@@ -32,7 +31,6 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [recentProjects, setRecentProjects] = useState<string[]>([])
-  const [showOrgLimitMessage, setShowOrgLimitMessage] = useState(false)
   const [isCreatingProject, setIsCreatingProject] = useState(false)
   const [newProjectName, setNewProjectName] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -86,13 +84,13 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
     setIsOpen(false)
   }
 
-  const handleCreateOrganization = () => {
-    setShowOrgLimitMessage(true)
-    setTimeout(() => setShowOrgLimitMessage(false), 4000) // Hide after 4 seconds
-  }
-
   const handleCreateProject = async () => {
     if (!newProjectName.trim() || !currentOrganization) return
+
+    if (newProjectName.trim().length < 3) {
+      toast.showError('Project name must be at least 3 characters long')
+      return
+    }
 
     try {
       const newProject = await projectApi.createProject({
@@ -181,24 +179,12 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
 
       {isOpen && (
         <div className="absolute z-50 w-80 mt-2 bg-tertiary border border-border rounded-lg shadow-lg">
-          {showOrgLimitMessage && (
-            <div className="p-3 border-b border-border">
-              <Alert>
-                <Info className="h-4 w-4" />
-                <AlertDescription>
-                  We have limited users to only one organization as we are in beta. Thank you for
-                  your understanding!
-                </AlertDescription>
-              </Alert>
-            </div>
-          )}
-
           <div className="p-3 border-b border-gray-200">
             {isCreatingProject ? (
               <div className="space-y-2">
                 <input
                   type="text"
-                  placeholder="Enter project name..."
+                  placeholder="Enter project name (min. 3 characters)"
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -211,10 +197,15 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
                     }
                   }}
                 />
+                {newProjectName.trim().length > 0 && newProjectName.trim().length < 3 && (
+                  <p className="text-xs text-red-600">
+                    Project name must be at least 3 characters long
+                  </p>
+                )}
                 <div className="flex gap-2">
                   <button
                     onClick={handleCreateProject}
-                    disabled={!newProjectName.trim()}
+                    disabled={!newProjectName.trim() || newProjectName.trim().length < 3}
                     className="px-3 py-1 text-xs bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Create
@@ -314,14 +305,6 @@ export const OrgProjectDropdown: React.FC<OrgProjectDropdownProps> = ({
                       )}
                     </div>
                   ))}
-
-                  <button
-                    onClick={handleCreateOrganization}
-                    className="w-full flex items-center gap-2 px-2 py-2 mt-2 text-sm text-left text-indigo-600 hover:bg-indigo-50 rounded"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Create New Organization</span>
-                  </button>
                 </div>
               </>
             )}

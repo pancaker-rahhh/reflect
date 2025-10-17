@@ -24,6 +24,7 @@ export function Responses() {
   const [endDate, setEndDate] = useState<Date | undefined>()
   const [submissionType, setSubmissionType] = useState<string>('all')
   const [scoreFilter, setScoreFilter] = useState<string>('all')
+  const [sortBy, setSortBy] = useState<string>('newest')
   const [searchQuery, setSearchQuery] = useState('')
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
@@ -47,11 +48,17 @@ export function Responses() {
     setEndDate(undefined)
     setSubmissionType('all')
     setScoreFilter('all')
+    setSortBy('newest')
     setSearchQuery('')
   }
 
   const hasActiveFilters =
-    startDate || endDate || submissionType !== 'all' || scoreFilter !== 'all' || searchQuery
+    startDate ||
+    endDate ||
+    submissionType !== 'all' ||
+    scoreFilter !== 'all' ||
+    sortBy !== 'newest' ||
+    searchQuery
 
   const convertMutation = useMutation({
     mutationFn: ({ feedbackId, conversionData }: { feedbackId: string; conversionData: any }) =>
@@ -114,61 +121,75 @@ export function Responses() {
     setIsSelectionMode(false)
   }
 
-  const filteredResponses = feedback.filter((item: any) => {
-    if (submissionType !== 'all' && item.feedback_type !== submissionType) {
-      return false
-    }
-
-    if (startDate && new Date(item.created_at) < startDate) return false
-    if (endDate && new Date(item.created_at) > endDate) return false
-
-    if (scoreFilter !== 'all') {
-      let score: number | null = null
-
-      if (item.feedback_type === 'NPS' && item.nps_score !== null && item.nps_score !== undefined) {
-        score = item.nps_score
-      } else if (
-        item.feedback_type === 'CSAT' &&
-        item.csat_score !== null &&
-        item.csat_score !== undefined
-      ) {
-        score = item.csat_score
-      } else if (
-        item.feedback_type === 'CES' &&
-        item.ces_score !== null &&
-        item.ces_score !== undefined
-      ) {
-        score = item.ces_score
-      } else if (item.rating !== null && item.rating !== undefined) {
-        score = item.rating
+  const filteredResponses = feedback
+    .filter((item: any) => {
+      if (submissionType !== 'all' && item.feedback_type !== submissionType) {
+        return false
       }
 
-      if (score !== null) {
-        if (scoreFilter === 'promoters' && score < 9) return false
-        if (scoreFilter === 'passives' && (score < 7 || score > 8)) return false
-        if (scoreFilter === 'detractors' && score > 6) return false
+      if (startDate && new Date(item.created_at) < startDate) return false
+      if (endDate && new Date(item.created_at) > endDate) return false
+
+      if (scoreFilter !== 'all') {
+        let score: number | null = null
+
+        if (
+          item.feedback_type === 'NPS' &&
+          item.nps_score !== null &&
+          item.nps_score !== undefined
+        ) {
+          score = item.nps_score
+        } else if (
+          item.feedback_type === 'CSAT' &&
+          item.csat_score !== null &&
+          item.csat_score !== undefined
+        ) {
+          score = item.csat_score
+        } else if (
+          item.feedback_type === 'CES' &&
+          item.ces_score !== null &&
+          item.ces_score !== undefined
+        ) {
+          score = item.ces_score
+        } else if (item.rating !== null && item.rating !== undefined) {
+          score = item.rating
+        }
+
+        if (score !== null) {
+          if (scoreFilter === 'promoters' && score < 9) return false
+          if (scoreFilter === 'passives' && (score < 7 || score > 8)) return false
+          if (scoreFilter === 'detractors' && score > 6) return false
+        }
       }
-    }
 
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase()
-      const searchableText = [
-        item.submitter_name,
-        item.submitter_email,
-        item.widget_name,
-        'title' in item ? item.title : '',
-        'message' in item ? item.message : '',
-        'description' in item ? item.description : '',
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase()
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase()
+        const searchableText = [
+          item.submitter_name,
+          item.submitter_email,
+          item.widget_name,
+          'title' in item ? item.title : '',
+          'message' in item ? item.message : '',
+          'description' in item ? item.description : '',
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
 
-      if (!searchableText.includes(query)) return false
-    }
+        if (!searchableText.includes(query)) return false
+      }
 
-    return true
-  })
+      return true
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'oldest':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        case 'newest':
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      }
+    })
 
   return (
     <div className="space-y-6">
@@ -209,9 +230,14 @@ export function Responses() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
             <div className="relative">
-              <DatePicker date={startDate} onDateChange={setStartDate} placeholder="Start date" />
+              <DatePicker
+                date={startDate}
+                onDateChange={setStartDate}
+                placeholder="Start date"
+                maxDate={endDate}
+              />
               {startDate && (
                 <button
                   onClick={() => setStartDate(undefined)}
@@ -224,7 +250,12 @@ export function Responses() {
             </div>
 
             <div className="relative">
-              <DatePicker date={endDate} onDateChange={setEndDate} placeholder="End date" />
+              <DatePicker
+                date={endDate}
+                onDateChange={setEndDate}
+                placeholder="End date"
+                minDate={startDate}
+              />
               {endDate && (
                 <button
                   onClick={() => setEndDate(undefined)}
@@ -261,6 +292,16 @@ export function Responses() {
               </SelectContent>
             </Select>
 
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest First</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+              </SelectContent>
+            </Select>
+
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
@@ -286,6 +327,7 @@ export function Responses() {
                       endDate,
                       submissionType !== 'all',
                       scoreFilter !== 'all',
+                      sortBy !== 'newest',
                       searchQuery,
                     ].filter(Boolean).length
                   }
@@ -316,13 +358,16 @@ export function Responses() {
             <MessageCircle className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No survey responses found</h3>
             <p className="text-muted-foreground text-center max-w-sm">
-              Survey responses will appear here once users complete your NPS, CSAT, CES, or general
-              feedback surveys
+              {hasActiveFilters
+                ? 'Try adjusting your filters to see more results'
+                : 'Survey responses will appear here once users complete your NPS, CSAT, CES, or general feedback surveys'}
             </p>
-            <Button variant="outline" onClick={resetFilters} className="mt-4">
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Reset Filters
-            </Button>
+            {hasActiveFilters && (
+              <Button variant="outline" onClick={resetFilters} className="mt-4">
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Reset Filters
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (

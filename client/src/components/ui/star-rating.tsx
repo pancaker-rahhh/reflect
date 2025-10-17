@@ -9,21 +9,21 @@ interface StarRatingProps {
   className?: string
 }
 
-export function StarRating({ 
-  rating, 
-  maxRating = 5, 
+export function StarRating({
+  rating,
+  maxRating = 5,
   size = 'md',
   showValue = false,
-  className 
+  className,
 }: StarRatingProps) {
   const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-5 w-5',
-    lg: 'h-6 w-6'
+    lg: 'h-6 w-6',
   }
 
   return (
-    <div className={cn("flex items-center gap-1", className)}>
+    <div className={cn('flex items-center gap-1', className)}>
       {Array.from({ length: maxRating }).map((_, index) => {
         const filled = index < Math.floor(rating)
         const partial = index === Math.floor(rating) && rating % 1 !== 0
@@ -31,35 +31,19 @@ export function StarRating({
 
         return (
           <div key={index} className="relative">
-            <Star 
-              className={cn(
-                sizeClasses[size],
-                "text-muted-foreground"
-              )}
-              fill="currentColor"
-            />
+            <Star className={cn(sizeClasses[size], 'text-muted-foreground')} fill="currentColor" />
             {(filled || partial) && (
-              <div 
+              <div
                 className="absolute inset-0 overflow-hidden"
                 style={{ width: filled ? '100%' : `${percentage}%` }}
               >
-                <Star 
-                  className={cn(
-                    sizeClasses[size],
-                    "text-warning"
-                  )}
-                  fill="currentColor"
-                />
+                <Star className={cn(sizeClasses[size], 'text-yellow-500')} fill="currentColor" />
               </div>
             )}
           </div>
         )
       })}
-      {showValue && (
-        <span className="ml-2 text-sm font-medium">
-          {rating.toFixed(1)}
-        </span>
-      )}
+      {showValue && <span className="ml-2 text-sm font-medium">{rating.toFixed(1)}</span>}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { DotsThreeVertical, Trash, Palette, PuzzlePiece, Calendar, TrendUp, Code } from 'phosphor-react'
+import { DotsThreeVertical, Trash, PuzzlePiece, Calendar, TrendUp, Code } from 'phosphor-react'
 import { useState } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -35,9 +35,6 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="font-bold text-lg text-foreground truncate">{widget.name}</h3>
-                  <Badge variant="default" className="bg-primary/10 text-primary border-primary/20">
-                    Active
-                  </Badge>
                   <Badge variant="outline" className="text-xs">
                     {(widget.widget_type || '').replace('_', ' ').toUpperCase()}
                   </Badge>
@@ -46,12 +43,6 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
                   <div className="flex items-center gap-1">
                     <PuzzlePiece className="h-4 w-4" />
                     <span>{moduleCount} modules</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Palette className="h-4 w-4" />
-                    <span className="capitalize">
-                      {(widget.theme_configuration?.theme_name || 'default').replace('-', ' ')}
-                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
@@ -110,15 +101,7 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
     <Card className="group relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 border-0 shadow-md hover:border-b-4 hover:border-b-foreground/20">
       <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-primary/60 to-accent/60" />
 
-      {/* Status indicator badge */}
-      <div className="absolute top-4 left-4 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
-        <div className="flex items-center gap-1">
-          <div className="h-1.5 w-1.5 rounded-full bg-primary"></div>
-          Active
-        </div>
-      </div>
-
-      <CardHeader className="pt-12 pb-4">
+      <CardHeader className="pt-6 pb-4">
         <div className="flex items-start justify-between">
           <div className="space-y-2 flex-1 min-w-0">
             <h3 className="font-bold text-lg text-foreground truncate" title={widget.name}>
@@ -179,16 +162,6 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
 
         {/* Widget details */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Palette className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">Theme</span>
-            </div>
-            <span className="text-sm font-medium text-foreground capitalize">
-              {(widget.theme_configuration?.theme_name || 'default').replace('-', ' ')}
-            </span>
-          </div>
-
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />

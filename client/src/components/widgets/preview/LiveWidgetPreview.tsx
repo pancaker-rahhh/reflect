@@ -16,7 +16,6 @@ import type {
 export type PreviewState = 'closed' | 'open' | 'menu' | 'interactive' | 'thankyou'
 export type DeviceType = 'desktop' | 'tablet' | 'mobile'
 
-// Use form colors directly - don't override with theme defaults
 function getFormColors(formColors: any) {
   return {
     primary: formColors?.primary || '#0066FF',
@@ -24,11 +23,10 @@ function getFormColors(formColors: any) {
     background: formColors?.background || '#FFFFFF',
     text: formColors?.text || '#000000',
     buttonColor: formColors?.buttonColor || '#0066FF',
-    buttonTextColor: formColors?.text || '#000000',
+    buttonTextColor: formColors?.buttonTextColor || '#FFFFFF',
   }
 }
 
-// Transform WidgetFormData to WidgetConfiguration for WidgetCore
 function transformFormDataToConfig(formData: WidgetFormData): WidgetConfiguration {
   return {
     modules: formData.modules || {
@@ -45,7 +43,6 @@ function transformFormDataToConfig(formData: WidgetFormData): WidgetConfiguratio
       thankYouTitle: 'Thank you!',
       thankYouMessage: 'Your feedback helps us improve.',
     },
-    // Include optional per-type overrides if present in the form
     contentByType: (formData as any).contentByType || {},
     appearance: {
       theme: formData.appearance?.theme || 'default',
@@ -61,7 +58,6 @@ function transformFormDataToConfig(formData: WidgetFormData): WidgetConfiguratio
   }
 }
 
-// Map preview state to widget state
 function mapPreviewStateToWidgetState(
   previewState: PreviewState,
   config: WidgetConfiguration
@@ -70,13 +66,12 @@ function mapPreviewStateToWidgetState(
     case 'closed':
       return { type: 'closed' }
     case 'open': {
-      // Check if multiple modules are enabled for initial menu display
       const enabledModules = Object.entries(config.modules || {}).filter(([, enabled]) => enabled)
       if (enabledModules.length > 1) {
         const availableTypes = enabledModules.map(([key]) => {
           switch (key) {
             case 'feedback':
-              return config.primaryType || ('FEEDBACK' as FeedbackType) // Use actual primary type
+              return config.primaryType || ('FEEDBACK' as FeedbackType)
             case 'reviews':
               return 'REVIEW' as FeedbackType
             case 'bugReporting':
@@ -89,12 +84,10 @@ function mapPreviewStateToWidgetState(
         })
         return { type: 'menu', availableTypes }
       } else {
-        // For single module, directly show the primary type
         return { type: 'active', feedbackType: config.primaryType }
       }
     }
     case 'menu': {
-      // Show menu state - get available types
       const enabledModules = Object.entries(config.modules || {}).filter(([, enabled]) => enabled)
       const availableTypes = enabledModules.map(([key]) => {
         switch (key) {
@@ -131,13 +124,10 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
   const [_widgetState, setWidgetState] = useState<WidgetState>({ type: 'closed' })
   const [selectedFeedbackType, setSelectedFeedbackType] = useState<FeedbackType | null>(null)
 
-  // Watch specific form fields to minimize re-renders (limit to schema-known keys)
   const formData = form.watch(['appearance', 'content', 'primaryType', 'modules'])
 
-  // Convert watched array to object structure
   const structuredFormData = useMemo(() => {
     if (!Array.isArray(formData) || formData.length < 4) return null
-    // Read optional per-type content without adding it to the watch list
     const contentByType = form.getValues('contentByType' as any)
     return {
       appearance: formData[0],
@@ -148,36 +138,29 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
     } as any
   }, [formData, form])
 
-  // Debounce form changes to prevent excessive re-renders
   const debouncedFormData = useDebounce(structuredFormData, 300)
 
-  // Memoize widget configuration to prevent recreation on every render
   const widgetConfig = useMemo(() => {
     if (!debouncedFormData || typeof debouncedFormData !== 'object') return null
-    // Ensure all required properties exist before transformation
     if (!Array.isArray(debouncedFormData) && typeof debouncedFormData === 'object') {
       return transformFormDataToConfig(debouncedFormData as unknown as WidgetFormData)
     }
     return null
   }, [debouncedFormData])
 
-  // Memoize widget state mapping
   const mappedWidgetState = useMemo(() => {
     if (!widgetConfig) return { type: 'closed' as const }
     return mapPreviewStateToWidgetState(previewState, widgetConfig)
   }, [previewState, widgetConfig])
 
-  // Use useCallback to memoize event handlers and prevent child re-renders
   const handleTriggerClick = useCallback(() => {
     setPreviewState((current) => (current === 'closed' ? 'open' : 'closed'))
   }, [])
 
   const handleWidgetSubmit = useCallback(
     async (_data: FeedbackData) => {
-      // Simulate submission delay for preview
       return new Promise<void>((resolve) => {
         setTimeout(() => {
-          // Check if widget has multiple modules to show menu or go to success
           if (
             widgetConfig &&
             widgetConfig.modules &&
@@ -201,12 +184,10 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
   const handleWidgetStateChange = useCallback((newState: WidgetState) => {
     setWidgetState(newState)
 
-    // Track the selected feedback type when going to active state
     if (newState.type === 'active' && newState.feedbackType) {
       setSelectedFeedbackType(newState.feedbackType)
     }
 
-    // Map widget state back to preview state for controls synchronization
     switch (newState.type) {
       case 'closed':
         setPreviewState('closed')
@@ -223,16 +204,14 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
     }
   }, [])
 
-  // For preview mode, let WidgetCore manage its own state when in interactive mode
   const effectiveWidgetState = useMemo(() => {
     if (previewState === 'interactive') {
-      // If we have a selected feedback type, pass it to the widget
       if (selectedFeedbackType) {
         return { type: 'active' as const, feedbackType: selectedFeedbackType }
       }
-      return undefined // Let WidgetCore manage its own state
+      return undefined
     }
-    return mappedWidgetState // Use mapped state for other cases
+    return mappedWidgetState
   }, [previewState, mappedWidgetState, selectedFeedbackType])
 
   const handleStateReset = useCallback(() => {
@@ -243,7 +222,6 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
 
   return (
     <div className="h-full flex flex-col bg-muted">
-      {/* Preview Controls */}
       <PreviewControls
         previewState={previewState}
         deviceType={deviceType}
@@ -252,11 +230,9 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
         onReset={handleStateReset}
       />
 
-      {/* Preview Area */}
       <div className="flex-1 p-4">
         <DeviceFrame deviceType={deviceType}>
           <div className="relative w-full h-full bg-background">
-            {/* Simulated Website Background */}
             <div className="absolute inset-0 bg-gradient-to-br from-muted/50 to-muted/30 opacity-50" />
             <div className="absolute top-4 left-4 right-4">
               <div className="h-12 bg-card rounded-lg shadow-sm flex items-center px-4 border border-border">
@@ -269,7 +245,6 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
               </div>
             </div>
 
-            {/* Page Content Simulation */}
             <div className="absolute top-20 left-4 right-4 bottom-20 bg-card rounded-lg shadow-sm p-6 border border-border">
               <div className="space-y-4">
                 <div className="h-4 bg-muted rounded w-3/4" />
@@ -280,7 +255,6 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
               </div>
             </div>
 
-            {/* Trigger Icon */}
             {debouncedFormData && (
               <TriggerIconPreview
                 formData={debouncedFormData as WidgetFormData}
@@ -289,7 +263,6 @@ export function LiveWidgetPreview({ form }: LiveWidgetPreviewProps) {
               />
             )}
 
-            {/* Widget Dialog */}
             {previewState !== 'closed' && widgetConfig && (
               <div className="absolute inset-0 flex items-center justify-center p-4">
                 <div className="w-full max-w-sm h-full max-h-[600px] bg-card rounded-2xl shadow-2xl overflow-hidden border border-border">

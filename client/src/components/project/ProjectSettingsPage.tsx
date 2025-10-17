@@ -17,12 +17,14 @@ import {
   Plus,
   Key,
   Webhook,
+  Loader2,
 } from 'lucide-react'
 import { projectApi, type ProjectMember } from '../../lib/api/project'
 import { organizationApi, type OrganizationMember } from '../../lib/api/organization'
 import { useAppContext } from '../../context/AppContext'
 import { useToastNotifications } from '../../hooks/useToastNotifications'
 import { AnimatedInput, AnimatedTextarea } from '../onboarding/shared/AnimatedInput'
+import { Button } from '../ui/button'
 import { ProjectMemberModal } from './ProjectMemberModal'
 import { ApiKeyModal } from './ApiKeyModal'
 import { DeleteProjectModal } from './DeleteProjectModal'
@@ -73,10 +75,8 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    visibility: 'private',
-    timezone: 'UTC',
-    language: 'en',
   })
+  const [isEdited, setIsEdited] = useState(false)
 
   const [apiKeys, setApiKeys] = useState([
     {
@@ -122,17 +122,15 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
       setFormData({
         name: projectData.name || '',
         description: projectData.description || '',
-        visibility: 'private',
-        timezone: 'UTC',
-        language: 'en',
       })
     } catch (error) {
       console.error('Failed to load project:', error)
       toast.showError('Failed to load project data')
+      setCurrentProject(null)
     } finally {
       setLoading(false)
     }
-  }, [currentProject?.id, projectId])
+  }, [currentProject?.id, projectId, setCurrentProject])
 
   const mergeTeamMembers = useCallback(
     (projectMems: ProjectMember[], orgMembers: OrganizationMember[]) => {
@@ -189,6 +187,12 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
       const id = projectId || currentProject?.id
       if (!id) return
 
+      if (formData.name.trim().length < 3) {
+        toast.showError('Project name must be at least 3 characters long')
+        setSaving(false)
+        return
+      }
+
       const updatedProject = await projectApi.updateProject(id, {
         name: formData.name,
         description: formData.description,
@@ -199,10 +203,8 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
       setFormData({
         name: updatedProject.name || '',
         description: updatedProject.description || '',
-        visibility: 'private',
-        timezone: 'UTC',
-        language: 'en',
       })
+      setIsEdited(false)
 
       toast.showSuccess('Project settings saved successfully!')
       refreshProjects()
@@ -220,11 +222,11 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
       if (!id) return
 
       await projectApi.deleteProject(id)
-      toast.showSuccess('Project deleted successfully')
-      refreshProjects()
 
-      // Set current project to null and stay on the same page
-      // The component will show "no projects" state if no projects remain
+      await refreshProjects()
+
+      toast.showSuccess('Project deleted successfully')
+
       const remainingProjects = projects.filter((p) => p.id !== id)
       if (remainingProjects.length > 0) {
         setCurrentProject(remainingProjects[0])
@@ -348,96 +350,36 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
         <h3 className="text-lg font-semibold text-foreground mb-4">Project Information</h3>
 
         <div className="space-y-4">
-          <AnimatedInput
-            label="Project Name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="Enter project name"
-            icon={<FolderOpen className="w-4 h-4" />}
-          />
+          <div className="space-y-2">
+            <AnimatedInput
+              label="Project Name"
+              value={formData.name}
+              onChange={(e) => {
+                setFormData({ ...formData, name: e.target.value })
+                setIsEdited(true)
+              }}
+              placeholder="Enter project name (minimum 3 characters)"
+              icon={<FolderOpen className="w-4 h-4" />}
+            />
+            {formData.name.trim().length > 0 && formData.name.trim().length < 3 && (
+              <p className="text-sm text-destructive">
+                Project name must be at least 3 characters long
+              </p>
+            )}
+          </div>
 
           <AnimatedTextarea
             label="Description"
             value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            onChange={(e) => {
+              setFormData({ ...formData, description: e.target.value })
+              setIsEdited(true)
+            }}
             placeholder="Describe your project"
             rows={3}
             className="placeholder:text-muted-foreground/70"
           />
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                Visibility
-              </label>
-              <select
-                value={formData.visibility}
-                onChange={(e) => setFormData({ ...formData, visibility: e.target.value })}
-                className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-primary"
-              >
-                <option value="private">Private</option>
-                <option value="public">Public</option>
-                <option value="team">Team Only</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                Timezone
-              </label>
-              <select
-                value={formData.timezone}
-                onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
-                className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-primary"
-              >
-                <option value="UTC">UTC</option>
-                <option value="America/New_York">Eastern Time</option>
-                <option value="America/Los_Angeles">Pacific Time</option>
-                <option value="Europe/London">London</option>
-                <option value="Asia/Tokyo">Tokyo</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                Language
-              </label>
-              <select
-                value={formData.language}
-                onChange={(e) => setFormData({ ...formData, language: e.target.value })}
-                className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-primary"
-              >
-                <option value="en">English</option>
-                <option value="es">Spanish</option>
-                <option value="fr">French</option>
-                <option value="de">German</option>
-                <option value="ja">Japanese</option>
-              </select>
-            </div>
-          </div>
         </div>
-      </div>
-
-      <div className="flex justify-end pt-4 border-t border-border">
-        <button
-          onClick={handleSaveGeneral}
-          disabled={saving}
-          className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2"
-        >
-          {saving ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground"></div>
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4" />
-              Save Changes
-            </>
-          )}
-        </button>
       </div>
     </div>
   )
@@ -712,6 +654,28 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
 
         <div className="min-h-[400px]">{renderTabContent()}</div>
       </div>
+
+      {activeTab === 'general' && isEdited && (
+        <div className="flex justify-end pt-4">
+          <Button
+            onClick={handleSaveGeneral}
+            disabled={saving || formData.name.trim().length < 3}
+            className="px-8 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+          >
+            {saving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
+              </>
+            )}
+          </Button>
+        </div>
+      )}
 
       {showMemberModal && (
         <ProjectMemberModal

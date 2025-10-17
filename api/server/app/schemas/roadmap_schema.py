@@ -300,7 +300,7 @@ class RoadmapBase(BaseModel):
         description='Custom subdomain for the roadmap (optional)',
     )
     logo_url: Optional[str] = Field(
-        None, max_length=100000, description='URL to the roadmap logo'
+        None, max_length=5000000, description='URL to the roadmap logo'
     )
 
     @validator('name')
@@ -356,7 +356,7 @@ class RoadmapUpdate(BaseModel):
         description='Custom subdomain for the roadmap (optional)',
     )
     logo_url: Optional[str] = Field(
-        None, max_length=100000, description='URL to the roadmap logo'
+        None, max_length=5000000, description='URL to the roadmap logo'
     )
 
     @validator('name')

@@ -1,4 +1,4 @@
-import { MessageSquare, Star, Bug, Lightbulb, Clock } from 'lucide-react'
+import { MessageSquare, Star, Bug, Lightbulb } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import type { DashboardMetrics } from '@/types'
@@ -57,7 +57,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       title: 'Total Feedback',
       value: metrics.totalFeedback,
       icon: MessageSquare,
-      color: 'text-primary',
+      color: 'text-blue-700',
       bgColor: 'bg-secondary/40',
       suffix: '',
     },
@@ -65,7 +65,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       title: 'Average Rating',
       value: metrics.averageRating,
       icon: Star,
-      color: 'text-foreground',
+      color: 'text-yellow-600',
       bgColor: 'bg-secondary/40',
       decimals: 1,
       suffix: '',
@@ -74,7 +74,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       title: 'New Bug Reports',
       value: metrics.newBugReports,
       icon: Bug,
-      color: 'text-foreground',
+      color: 'text-red-700',
       bgColor: 'bg-secondary/40',
       suffix: '',
     },
@@ -82,15 +82,7 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
       title: 'New Feature Requests',
       value: metrics.newFeatureRequests,
       icon: Lightbulb,
-      color: 'text-foreground',
-      bgColor: 'bg-secondary/40',
-      suffix: '',
-    },
-    {
-      title: 'Pending Feedback Review',
-      value: metrics.pendingFeedbackReview || 0,
-      icon: Clock,
-      color: 'text-foreground',
+      color: 'text-green-700',
       bgColor: 'bg-secondary/40',
       suffix: '',
     },
@@ -99,7 +91,13 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
       {cards.map((card) => (
-        <Card key={card.title} className={cn("hover:shadow-md transition-all duration-200 hover:border-b-4 hover:border-b-foreground/20", card.bgColor)}>
+        <Card
+          key={card.title}
+          className={cn(
+            'hover:shadow-md transition-all duration-200 hover:border-b-4 hover:border-b-foreground/20',
+            card.bgColor
+          )}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               {card.title}

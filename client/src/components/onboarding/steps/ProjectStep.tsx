@@ -89,6 +89,12 @@ export const ProjectStep: React.FC = () => {
         )
         return
       }
+
+      if (formData.name.trim().length < 3) {
+        toast.showError('Project name must be at least 3 characters long')
+        setIsCreating(false)
+        return
+      }
       if (projectId) {
         project = await projectApi.updateProject(projectId, {
           name: formData.name,
@@ -229,7 +235,7 @@ export const ProjectStep: React.FC = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
+        <div className="space-y-2">
           <label htmlFor="projectName" className="block text-sm font-medium mb-2">
             Project Name *
           </label>
@@ -240,15 +246,17 @@ export const ProjectStep: React.FC = () => {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-background"
-            placeholder="My App v2.0"
+            placeholder="My App v2.0 (minimum 3 characters)"
           />
+          {formData.name.trim().length > 0 && formData.name.trim().length < 3 && (
+            <p className="text-sm text-destructive">
+              Project name must be at least 3 characters long
+            </p>
+          )}
         </div>
 
         <div>
-          <label
-            htmlFor="projectDescription"
-            className="block text-sm font-medium mb-2"
-          >
+          <label htmlFor="projectDescription" className="block text-sm font-medium mb-2">
             Description (Optional)
           </label>
           <textarea

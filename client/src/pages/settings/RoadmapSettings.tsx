@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api, organizationApi } from '@/lib/api'
+import { api } from '@/lib/api'
+import { useAppContext } from '@/context/AppContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 
@@ -46,35 +47,22 @@ export function RoadmapSettings() {
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
-  const { data: organizations, isLoading: isLoadingOrgs } = useQuery({
-    queryKey: ['organizations'],
-    queryFn: () => organizationApi.getMy(),
-  })
-
-  const organizationId = organizations?.[0]?.id
-
-  const { data: projectsData, isLoading: isLoadingProjects } = useQuery({
-    queryKey: ['projects', organizationId],
-    queryFn: () => (organizationId ? api.getProjectsByOrganization(organizationId) : null),
-    enabled: !!organizationId,
-  })
-
-  const project = projectsData?.items?.[0]
+  const { currentProject } = useAppContext()
 
   const { data: roadmap, isLoading: isLoadingRoadmap } = useQuery({
-    queryKey: ['roadmap', project?.id],
-    queryFn: () => (project ? api.getRoadmap(project.id) : null),
-    enabled: !!project,
+    queryKey: ['roadmap', currentProject?.id],
+    queryFn: () => (currentProject ? api.getRoadmap(currentProject.id) : null),
+    enabled: !!currentProject,
   })
 
   useEffect(() => {
     if (roadmap) {
       setFormData(roadmap)
       setColumns(roadmap.columns || [])
-    } else if (project) {
+    } else if (currentProject) {
       setColumns([])
     }
-  }, [roadmap, project])
+  }, [roadmap, currentProject])
 
   const createRoadmapMutation = useMutation({
     mutationFn: (data: {
@@ -85,7 +73,7 @@ export function RoadmapSettings() {
       logo_url?: string
     }) => api.createRoadmap(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', currentProject?.id] })
       setIsEdited(false)
       toast({
         title: 'Roadmap created',
@@ -98,7 +86,7 @@ export function RoadmapSettings() {
     mutationFn: (data: Partial<Roadmap>) =>
       roadmap ? api.updateRoadmap(roadmap.id, data) : Promise.reject('No roadmap'),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', currentProject?.id] })
       setIsEdited(false)
     },
   })
@@ -111,14 +99,14 @@ export function RoadmapSettings() {
     mutationFn: ({ id, data }: { id: string; data: Partial<RoadmapColumn> }) =>
       api.updateRoadmapColumn(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', currentProject?.id] })
     },
   })
 
   const deleteColumnMutation = useMutation({
     mutationFn: (id: string) => api.deleteRoadmapColumn(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', currentProject?.id] })
     },
   })
 
@@ -164,13 +152,33 @@ export function RoadmapSettings() {
   const getDeletedColumnsCount = () => columns.filter((col) => col._markedForDeletion).length
 
   const handleSave = async () => {
-    if (!project) return
+    if (!currentProject) return
+
+    if (!formData.name?.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Roadmap name cannot be empty',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const activeColumns = columns.filter((col) => !col._markedForDeletion)
+    const emptyColumnNames = activeColumns.filter((col) => !col.name.trim())
+    if (emptyColumnNames.length > 0) {
+      toast({
+        title: 'Error',
+        description: 'Column names cannot be empty',
+        variant: 'destructive',
+      })
+      return
+    }
 
     try {
       if (!roadmap) {
         const newRoadmap = await createRoadmapMutation.mutateAsync({
-          name: formData.name || 'Product Roadmap',
-          project_id: project.id,
+          name: formData.name?.trim() || 'Product Roadmap',
+          project_id: currentProject.id,
           is_public: formData.is_public || false,
           ...(formData.subdomain && { subdomain: formData.subdomain }),
           ...(formData.logo_url && { logo_url: formData.logo_url }),
@@ -233,7 +241,7 @@ export function RoadmapSettings() {
         await Promise.all(columnPromises)
       }
 
-      queryClient.invalidateQueries({ queryKey: ['roadmap', project.id] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', currentProject.id] })
       setIsEdited(false)
     } catch (error) {
       console.error('Failed to save roadmap settings:', error)
@@ -346,7 +354,7 @@ export function RoadmapSettings() {
     }
   }
 
-  const isLoading = isLoadingOrgs || isLoadingProjects || isLoadingRoadmap
+  const isLoading = false || false || isLoadingRoadmap
 
   if (isLoading) {
     return (
@@ -451,6 +459,9 @@ export function RoadmapSettings() {
                           placeholder="Product Roadmap"
                           className="focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                         />
+                        {formData.name && !formData.name.trim() && (
+                          <p className="text-sm text-destructive">Roadmap name cannot be empty</p>
+                        )}
                       </div>
                     </div>
 
@@ -547,42 +558,13 @@ export function RoadmapSettings() {
                         </div>
                       )}
 
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <Input
-                          placeholder="https://example.com/logo.png"
-                          value={
-                            formData.logo_url?.startsWith('data:') ? '' : formData.logo_url || ''
-                          }
-                          onChange={(e) => handleInputChange('logo_url', e.target.value)}
-                          className="flex-1 focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                          disabled={formData.logo_url?.startsWith('data:')}
-                        />
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/*"
-                          onChange={handleFileInputChange}
-                          className="hidden"
-                        />
-                        <Button
-                          variant="outline"
-                          onClick={() => fileInputRef.current?.click()}
-                          disabled={isUploading}
-                          className="focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                        >
-                          {isUploading ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Uploading...
-                            </>
-                          ) : (
-                            <>
-                              <Upload className="mr-2 h-4 w-4" />
-                              Upload
-                            </>
-                          )}
-                        </Button>
-                      </div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileInputChange}
+                        className="hidden"
+                      />
 
                       {uploadError && (
                         <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
@@ -593,15 +575,23 @@ export function RoadmapSettings() {
                       <div
                         className={cn(
                           'border-2 border-dashed rounded-lg p-8 transition-all duration-200 cursor-pointer hover:border-primary/50 hover:bg-primary/5',
-                          isDragging ? 'border-primary bg-primary/10' : 'border-muted-foreground/25'
+                          isDragging
+                            ? 'border-primary bg-primary/10'
+                            : 'border-muted-foreground/25',
+                          isUploading && 'opacity-50 cursor-not-allowed'
                         )}
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
                         onDrop={handleDrop}
-                        onClick={() => fileInputRef.current?.click()}
+                        onClick={() => !isUploading && fileInputRef.current?.click()}
                       >
                         <div className="text-center pointer-events-none">
-                          {isDragging ? (
+                          {isUploading ? (
+                            <>
+                              <Loader2 className="mx-auto h-10 w-10 text-primary mb-3 animate-spin" />
+                              <p className="text-lg font-medium text-primary">Uploading...</p>
+                            </>
+                          ) : isDragging ? (
                             <>
                               <Image className="mx-auto h-10 w-10 text-primary mb-3" />
                               <p className="text-lg font-medium text-primary">
@@ -738,6 +728,13 @@ export function RoadmapSettings() {
                                     placeholder="Enter column name"
                                     disabled={column._markedForDeletion}
                                   />
+                                  {column.name &&
+                                    !column.name.trim() &&
+                                    !column._markedForDeletion && (
+                                      <p className="text-xs text-destructive mt-1">
+                                        Column name cannot be empty
+                                      </p>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">
@@ -852,66 +849,36 @@ export function RoadmapSettings() {
         </div>
       </div>
 
-      {/* Enhanced Save Bar */}
+      {/* Save Changes Button - Only when edited */}
       {isEdited && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border/50 shadow-lg">
-          <div className="container mx-auto px-4 py-4 max-w-6xl">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">You have unsaved changes</p>
-                    <p className="text-sm text-muted-foreground">
-                      Save your changes to update the roadmap settings
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    if (roadmap) {
-                      setFormData(roadmap)
-                      setColumns(roadmap.columns || [])
-                    }
-                    setIsEdited(false)
-                  }}
-                  className="px-6 transition-all duration-200 hover:scale-105"
-                >
-                  Discard Changes
-                </Button>
-                <Button
-                  onClick={handleSave}
-                  disabled={
-                    createRoadmapMutation.isPending ||
-                    updateRoadmapMutation.isPending ||
-                    createColumnMutation.isPending ||
-                    updateColumnMutation.isPending ||
-                    deleteColumnMutation.isPending
-                  }
-                  className="px-8 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
-                >
-                  {createRoadmapMutation.isPending ||
-                  updateRoadmapMutation.isPending ||
-                  createColumnMutation.isPending ||
-                  updateColumnMutation.isPending ||
-                  deleteColumnMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Save Changes
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
+        <div className="flex justify-end pt-4">
+          <Button
+            onClick={handleSave}
+            disabled={
+              createRoadmapMutation.isPending ||
+              updateRoadmapMutation.isPending ||
+              createColumnMutation.isPending ||
+              updateColumnMutation.isPending ||
+              deleteColumnMutation.isPending
+            }
+            className="px-8 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+          >
+            {createRoadmapMutation.isPending ||
+            updateRoadmapMutation.isPending ||
+            createColumnMutation.isPending ||
+            updateColumnMutation.isPending ||
+            deleteColumnMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
+              </>
+            )}
+          </Button>
         </div>
       )}
     </div>

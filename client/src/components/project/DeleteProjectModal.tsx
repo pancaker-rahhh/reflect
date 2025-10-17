@@ -1,45 +1,45 @@
-import React, { useState } from 'react';
-import { X, AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react'
+import { X, AlertTriangle } from 'lucide-react'
 
 interface DeleteProjectModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onDelete: () => void;
-  projectName: string;
+  isOpen: boolean
+  onClose: () => void
+  onDelete: () => void
+  projectName: string
 }
 
 export const DeleteProjectModal: React.FC<DeleteProjectModalProps> = ({
   isOpen,
   onClose,
   onDelete,
-  projectName
+  projectName,
 }) => {
-  const [confirmText, setConfirmText] = useState('');
-  const [isDeleting, setIsDeleting] = useState(false);
-  
-  const isConfirmed = confirmText === projectName;
+  const [confirmText, setConfirmText] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const isConfirmed = confirmText === 'DELETE'
 
   const handleDelete = async () => {
-    if (!isConfirmed) return;
-    
-    setIsDeleting(true);
+    if (!isConfirmed) return
+
+    setIsDeleting(true)
     try {
-      await onDelete();
-      onClose();
+      await onDelete()
+      onClose()
     } catch (error) {
-      console.error('Delete failed:', error);
+      console.error('Delete failed:', error)
     } finally {
-      setIsDeleting(false);
+      setIsDeleting(false)
     }
-  };
+  }
 
   const handleClose = () => {
-    setConfirmText('');
-    setIsDeleting(false);
-    onClose();
-  };
+    setConfirmText('')
+    setIsDeleting(false)
+    onClose()
+  }
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -63,11 +63,11 @@ export const DeleteProjectModal: React.FC<DeleteProjectModalProps> = ({
         <div className="p-6">
           <div className="mb-4">
             <p className="text-gray-600 mb-2">
-              This action <strong>cannot be undone</strong>. This will permanently delete the project{' '}
-              <strong>"{projectName}"</strong> and all of its data.
+              This action <strong>cannot be undone</strong>. This will permanently delete the
+              project <strong>"{projectName}"</strong> and all of its data.
             </p>
             <p className="text-gray-600">
-              Please type <strong>{projectName}</strong> to confirm deletion.
+              Please type <strong>DELETE</strong> to confirm deletion.
             </p>
           </div>
 
@@ -76,7 +76,7 @@ export const DeleteProjectModal: React.FC<DeleteProjectModalProps> = ({
               type="text"
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
-              placeholder={projectName}
+              placeholder="DELETE"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
               disabled={isDeleting}
             />
@@ -108,5 +108,5 @@ export const DeleteProjectModal: React.FC<DeleteProjectModalProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

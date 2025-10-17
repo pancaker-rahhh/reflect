@@ -75,6 +75,11 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ onProjectChang
   const handleCreateProject = async () => {
     if (!newProjectName.trim() || !currentOrganization) return
 
+    if (newProjectName.trim().length < 3) {
+      toast.showError('Project name must be at least 3 characters long')
+      return
+    }
+
     try {
       const newProject = await projectApi.createProject({
         name: newProjectName.trim(),
@@ -151,7 +156,7 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ onProjectChang
               <div className="space-y-2">
                 <input
                   type="text"
-                  placeholder="Enter project name..."
+                  placeholder="Enter project name (min. 3 characters)"
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
                   className="w-full px-3 py-2 text-sm text-foreground bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
@@ -164,10 +169,15 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ onProjectChang
                     }
                   }}
                 />
+                {newProjectName.trim().length > 0 && newProjectName.trim().length < 3 && (
+                  <p className="text-xs text-destructive">
+                    Project name must be at least 3 characters long
+                  </p>
+                )}
                 <div className="flex gap-2">
                   <button
                     onClick={handleCreateProject}
-                    disabled={!newProjectName.trim()}
+                    disabled={!newProjectName.trim() || newProjectName.trim().length < 3}
                     className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Create
@@ -246,7 +256,9 @@ export const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ onProjectChang
                   )}
 
                   {!currentOrganization && (
-                    <div className="px-2 py-2 text-sm text-muted-foreground">No organization selected</div>
+                    <div className="px-2 py-2 text-sm text-muted-foreground">
+                      No organization selected
+                    </div>
                   )}
                 </div>
               </>

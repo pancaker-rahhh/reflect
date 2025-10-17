@@ -10,7 +10,7 @@ async function getDashboardMetrics(
     params.append('time_range', timeRange)
   }
   if (projectId) {
-    params.append('project_id', projectId)
+    params.append('projectId', projectId)
   }
 
   return apiClient.get(`/dashboard/metrics?${params.toString()}`)
@@ -19,7 +19,7 @@ async function getDashboardMetrics(
 async function getRecentActivity(projectId?: string): Promise<RecentActivity[]> {
   const params = new URLSearchParams()
   if (projectId) {
-    params.append('project_id', projectId)
+    params.append('projectId', projectId)
   }
 
   return apiClient.get(`/dashboard/recent-activity?${params.toString()}`)
@@ -35,7 +35,7 @@ async function getFeedbackData(
     params.append('feedback_type', feedbackType)
   }
   if (projectId) {
-    params.append('project_id', projectId)
+    params.append('projectId', projectId)
   }
   if (timeRange && timeRange !== 'all') {
     params.append('timeRange', timeRange)

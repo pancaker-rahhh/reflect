@@ -387,7 +387,14 @@ class RoadmapColumnRepository(BaseRepository[RoadmapColumn]):
             stmt = (
                 select(RoadmapColumn)
                 .where(RoadmapColumn.id == id)
-                .options(selectinload(RoadmapColumn.action_items))
+                .options(
+                    selectinload(RoadmapColumn.action_items)
+                    .selectinload(RoadmapActionItem.action_item_tags)
+                    .selectinload(RoadmapActionItemTag.tag),
+                    selectinload(RoadmapColumn.action_items).selectinload(
+                        RoadmapActionItem.integrations
+                    ),
+                )
             )
             result = await db.execute(stmt)
             return result.scalar_one_or_none()

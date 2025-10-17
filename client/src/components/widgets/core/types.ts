@@ -107,7 +107,7 @@ export interface ReviewFeedbackData {
 }
 
 export interface BugReportFeedbackData {
-  severity_level: string
+  severity: string
 }
 
 export interface FeatureRequestFeedbackData {}

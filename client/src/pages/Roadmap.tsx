@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api, organizationApi, userApi } from '@/lib/api'
+import { api, userApi } from '@/lib/api'
+import { useAppContext } from '@/context/AppContext'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -33,6 +34,7 @@ interface FeatureFormData {
   title: string
   description: string
   tagIds: string[]
+  priority: 'low' | 'medium' | 'high' | 'critical'
 }
 
 function RoadmapPageContent() {
@@ -88,43 +90,25 @@ function RoadmapPageContent() {
     retry: 3,
   })
 
-  const { data: organizations, isLoading: isLoadingOrgs } = useQuery({
-    queryKey: ['organizations'],
-    queryFn: () => organizationApi.getMy(),
-  })
-
-  const organizationId = organizations?.[0]?.id
-
-  const { data: projectsData, isLoading: isLoadingProjects } = useQuery({
-    queryKey: ['projects', organizationId],
-    queryFn: () => {
-      if (!organizationId) {
-        return Promise.resolve(null)
-      }
-      return api.getProjectsByOrganization(organizationId)
-    },
-    enabled: !!organizationId,
-  })
-
-  const project = projectsData?.items?.[0]
+  const { currentProject, isLoading: isLoadingApp } = useAppContext()
 
   const {
     data: roadmap,
     isLoading: isLoadingRoadmap,
     error: roadmapError,
   } = useQuery({
-    queryKey: ['roadmap', project?.id],
+    queryKey: ['roadmap', currentProject?.id],
     queryFn: () => {
-      if (!project?.id) {
+      if (!currentProject?.id) {
         return Promise.resolve(null)
       }
-      return api.getRoadmap(project.id)
+      return api.getRoadmap(currentProject.id)
     },
-    enabled: !!project?.id,
+    enabled: !!currentProject?.id,
   })
 
   console.log('Roadmap Debug:', {
-    project,
+    currentProject,
     roadmap,
     isLoadingRoadmap,
     roadmapError,
@@ -152,7 +136,7 @@ function RoadmapPageContent() {
       await Promise.all(promises)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', currentProject?.id] })
       toast({
         title: 'Default columns created',
         description: 'Your roadmap now has the standard workflow columns.',
@@ -179,14 +163,14 @@ function RoadmapPageContent() {
     isLoading: _isLoadingIntegrations,
     error: _integrationsError,
   } = useQuery({
-    queryKey: ['integrations', project?.id],
+    queryKey: ['integrations', currentProject?.id],
     queryFn: () => {
-      if (!project?.id) {
+      if (!currentProject?.id) {
         return Promise.resolve([])
       }
-      return api.getIntegrations(project.id)
+      return api.getIntegrations(currentProject.id)
     },
-    enabled: !!project?.id,
+    enabled: !!currentProject?.id,
   })
 
   const jiraIntegrations = integrations.filter(
@@ -200,11 +184,12 @@ function RoadmapPageContent() {
       description: string
       column_id: string
       tag_ids?: string[]
+      priority?: string
       submitter_name?: string
       submitter_email?: string
     }) => api.createRoadmapActionItem(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', currentProject?.id] })
       setAddFeatureModalOpen(false)
     },
     onError: (error) => {
@@ -220,7 +205,7 @@ function RoadmapPageContent() {
     mutationFn: (updates: { id: string; order: number; column_id?: string }[]) =>
       api.updateFeaturesOrder(updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', currentProject?.id] })
     },
     onError: (error) => {
       console.error('Error updating feature order:', error)
@@ -235,7 +220,7 @@ function RoadmapPageContent() {
   const updateColumnOrderMutation = useMutation({
     mutationFn: (updates: { id: string; order: number }[]) => api.updateColumnsOrder(updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap', project?.id] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', currentProject?.id] })
     },
     onError: (error) => {
       console.error('Error updating column order:', error)
@@ -432,6 +417,7 @@ function RoadmapPageContent() {
       description: formData.description,
       column_id: selectedColumn.id,
       tag_ids: formData.tagIds,
+      priority: formData.priority,
       submitter_name: currentUser.name,
       submitter_email: currentUser.email,
     })
@@ -493,7 +479,7 @@ function RoadmapPageContent() {
     return [...features].sort((a, b) => a.order - b.order)
   }
 
-  const isLoading = isLoadingOrgs || isLoadingProjects || isLoadingRoadmap || isLoadingUser
+  const isLoading = false || false || isLoadingRoadmap || isLoadingUser
 
   if (isLoading) {
     return (
@@ -553,7 +539,16 @@ function RoadmapPageContent() {
     )
   }
 
-  if (!organizations?.length || !project) {
+  if (isLoadingApp) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[600px] text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+        <p className="text-muted-foreground">Loading project...</p>
+      </div>
+    )
+  }
+
+  if (!currentProject) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[600px] text-center">
         <MapPin className="h-12 w-12 text-muted-foreground mb-4" />
@@ -576,8 +571,8 @@ function RoadmapPageContent() {
         </div>
         <h2 className="text-2xl font-semibold mb-2">Create Your First Roadmap</h2>
         <p className="text-muted-foreground max-w-md">
-          Transform your "{project?.name || 'project'}" program with a visual roadmap. Organize
-          features, track progress, and keep stakeholders aligned.
+          Transform your "{currentProject?.name || 'currentProject'}" program with a visual roadmap.
+          Organize features, track progress, and keep stakeholders aligned.
         </p>
         <Button className="mt-6" size="lg" asChild>
           <a href="/settings/roadmap">

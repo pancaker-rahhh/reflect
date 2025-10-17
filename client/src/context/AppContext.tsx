@@ -15,7 +15,7 @@ import type { Organization, Project } from '@/types'
 
 interface AppContextType {
   currentOrganization: Organization | null
-  organization: Organization | null // Backward compatibility
+  organization: Organization | null
   projects: Project[]
   currentProject: Project | null
   setCurrentProject: (project: Project | null) => void
@@ -60,9 +60,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const organization = currentOrganization
 
-  const refreshProjects = useCallback(() => {
+  const refreshProjects = useCallback(async () => {
     if (currentOrganization?.id) {
-      queryClient.invalidateQueries({ queryKey: ['projects', currentOrganization.id] })
+      await queryClient.refetchQueries({
+        queryKey: ['projects', currentOrganization.id],
+        type: 'active',
+      })
     }
   }, [currentOrganization?.id, queryClient])
 
@@ -105,6 +108,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       projects,
       currentProject,
       handleSetCurrentProject,
+      refreshProjects,
       isLoadingOrganization,
       isLoadingProjects,
     ]

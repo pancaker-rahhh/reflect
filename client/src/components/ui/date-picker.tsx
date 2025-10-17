@@ -9,9 +9,17 @@ interface DatePickerProps {
   date?: Date
   onDateChange: (date: Date | undefined) => void
   placeholder?: string
+  minDate?: Date
+  maxDate?: Date
 }
 
-export function DatePicker({ date, onDateChange, placeholder = 'Pick a date' }: DatePickerProps) {
+export function DatePicker({
+  date,
+  onDateChange,
+  placeholder = 'Pick a date',
+  minDate,
+  maxDate,
+}: DatePickerProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -37,13 +45,19 @@ export function DatePicker({ date, onDateChange, placeholder = 'Pick a date' }: 
           captionLayout="dropdown"
           fromYear={1990}
           toYear={new Date().getFullYear() + 5}
+          disabled={(day) => {
+            if (minDate && day < minDate) return true
+            if (maxDate && day > maxDate) return true
+            return false
+          }}
           classNames={{
             months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
             month: 'space-y-4',
             caption: 'flex justify-center pt-1 relative items-center',
             caption_label: 'sr-only',
             caption_dropdowns: 'flex items-center gap-8',
-            dropdown: 'bg-popover text-popover-foreground border border-border rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary',
+            dropdown:
+              'bg-popover text-popover-foreground border border-border rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary',
             dropdown_month: 'bg-popover text-popover-foreground',
             dropdown_year: 'bg-popover text-popover-foreground',
             nav: 'space-x-1 flex items-center',

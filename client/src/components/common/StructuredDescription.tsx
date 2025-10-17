@@ -42,7 +42,8 @@ export function StructuredDescription({ description, className = '' }: Structure
   if (sections.length === 0) {
     return (
       <p
-        className={`text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed ${className}`}
+        className={`text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-all word-break-break-all overflow-wrap-anywhere ${className}`}
+        style={{ wordBreak: 'break-all', overflowWrap: 'anywhere' }}
       >
         {description}
       </p>
@@ -54,7 +55,10 @@ export function StructuredDescription({ description, className = '' }: Structure
       {sections.map((section, index) => (
         <div key={index} className="space-y-2">
           <h4 className="text-sm font-semibold text-foreground">{section.title}</h4>
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed ml-0">
+          <p
+            className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed ml-0 break-all word-break-break-all overflow-wrap-anywhere"
+            style={{ wordBreak: 'break-all', overflowWrap: 'anywhere' }}
+          >
             {section.content}
           </p>
         </div>
