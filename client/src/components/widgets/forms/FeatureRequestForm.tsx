@@ -185,16 +185,16 @@ export function FeatureRequestForm({
   }
 
   const handleSubmit = async () => {
-    if (!description.trim()) return
+    if (!description.trim() || !priority) return
 
     await onSubmit({
       description: description.trim(),
-      priority: priority || 'medium',
+      priority: priority,
       useCase: description.trim(),
     })
   }
 
-  const isFormValid = description.trim()
+  const isFormValid = description.trim() && priority
 
   const getCategoryIcon = (categoryValue: string) => {
     const category = categoryOptions.find((opt) => opt.value === categoryValue)
@@ -317,7 +317,7 @@ export function FeatureRequestForm({
         {/* Priority */}
         <div>
           <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
-            Priority (Optional)
+            Priority *
           </label>
           <div className="space-y-2">
             {priorityOptions.map((option) => (

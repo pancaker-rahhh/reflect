@@ -44,16 +44,16 @@ export function BugReportForm({ onSubmit, isSubmitting, colors, content }: BugRe
   const [severity, setSeverity] = useState('')
 
   const handleSubmit = async () => {
-    if (!description.trim()) return
+    if (!description.trim() || !severity) return
 
     await onSubmit({
       description: description.trim(),
-      severity: severity || 'medium',
+      severity: severity,
       stepsToReproduce: description.trim(),
     })
   }
 
-  const isFormValid = description.trim()
+  const isFormValid = description.trim() && severity
 
   return (
     <div className="space-y-6">

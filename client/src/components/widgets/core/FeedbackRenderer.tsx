@@ -130,7 +130,10 @@ export function FeedbackRenderer({
     await onSubmit({
       response: data.description,
       feedbackType,
-      typeSpecificData: {} as FeatureRequestFeedbackData,
+      typeSpecificData: {
+        priority: data.priority,
+        useCase: data.useCase,
+      } as FeatureRequestFeedbackData,
     })
   }
 
