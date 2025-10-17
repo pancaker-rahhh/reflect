@@ -385,7 +385,6 @@ export function FeedbackCard({
           id: feedback.id,
           feedback_type: feedback.feedback_type,
           title: feedback.title || feedback.message || 'No title',
-          message: feedback.title ? feedback.message : undefined,
         }}
       />
     </>

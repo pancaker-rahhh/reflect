@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { useAppContext } from '@/context/AppContext'
 import { RoadmapCardDetail } from './RoadmapCardDetail'
 import {
   ThumbsUp,
@@ -55,11 +56,12 @@ export function RoadmapCard({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const queryClient = useQueryClient()
   const { toast } = useToast()
+  const { currentProject } = useAppContext()
 
   const upvoteMutation = useMutation({
     mutationFn: (featureId: string) => api.upvoteFeature(featureId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', currentProject?.id] })
     },
     onError: (error) => {
       toast({
@@ -73,7 +75,7 @@ export function RoadmapCard({
   const deleteFeatureMutation = useMutation({
     mutationFn: (featureId: string) => api.deleteRoadmapActionItem(featureId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', currentProject?.id] })
       setShowDeleteConfirm(false)
     },
     onError: (error) => {

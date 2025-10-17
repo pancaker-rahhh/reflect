@@ -52,6 +52,7 @@ export function TagManager({ roadmapId }: TagManagerProps) {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmapTags', roadmapId] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
       setFormData({ name: '', color: '#6B7280' })
       setIsAddingTag(false)
       toast.showSuccess('New tag has been added successfully.', 'Tag created')
@@ -69,6 +70,7 @@ export function TagManager({ roadmapId }: TagManagerProps) {
     mutationFn: ({ id, data }: { id: string; data: TagFormData }) => api.updateRoadmapTag(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmapTags', roadmapId] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
       setEditingTagId(null)
       toast.showSuccess('Tag has been updated successfully.', 'Tag updated')
     },
@@ -84,6 +86,7 @@ export function TagManager({ roadmapId }: TagManagerProps) {
     mutationFn: (id: string) => api.deleteRoadmapTag(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmapTags', roadmapId] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
       toast.showSuccess('Tag has been removed successfully.', 'Tag deleted')
     },
     onError: (error) => {

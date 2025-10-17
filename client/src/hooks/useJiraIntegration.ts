@@ -132,7 +132,7 @@ export const useSyncFeatureToJira = () => {
       }
     }) => integrationsApi.syncFeatureToJira(featureId, jiraIntegrationId, forceSync, customConfig),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap'], exact: false })
       toast({
         title: 'Feature Synced',
         description: 'The feature has been successfully synced to JIRA.',
@@ -155,7 +155,7 @@ export const useBulkCreateJiraIssues = () => {
   return useMutation({
     mutationFn: (request: BulkJiraCreateRequest) => integrationsApi.bulkCreateJiraIssues(request),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap'], exact: false })
       const { successful_count, failed_count } = data.data
       toast({
         title: 'Bulk Creation Complete',

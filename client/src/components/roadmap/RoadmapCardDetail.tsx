@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
+import { useAppContext } from '@/context/AppContext'
 import { ConfirmationModal } from '@/components/common/ConfirmationModal'
 import {
   Dialog,
@@ -65,6 +66,7 @@ export function RoadmapCardDetail({
   })
 
   const queryClient = useQueryClient()
+  const { currentProject } = useAppContext()
 
   // Load tags for this roadmap
   const { data: tags = [], isLoading: isLoadingTags } = useQuery({
@@ -102,7 +104,8 @@ export function RoadmapCardDetail({
       return api.updateRoadmapActionItem(id, updateData)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', currentProject?.id] })
+      queryClient.invalidateQueries({ queryKey: ['roadmapTags', roadmapId] })
       setIsEditing(false)
     },
   })
@@ -110,7 +113,7 @@ export function RoadmapCardDetail({
   const deleteFeatureMutation = useMutation({
     mutationFn: (featureId: string) => api.deleteRoadmapActionItem(featureId),
     onSuccess: (_, featureId) => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', currentProject?.id] })
       if (onDelete) onDelete(featureId)
       onClose()
     },
@@ -119,7 +122,7 @@ export function RoadmapCardDetail({
   const upvoteMutation = useMutation({
     mutationFn: (featureId: string) => api.upvoteFeature(featureId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', currentProject?.id] })
     },
   })
 

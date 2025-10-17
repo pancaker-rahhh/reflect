@@ -99,14 +99,14 @@ export function RoadmapSettings() {
     mutationFn: ({ id, data }: { id: string; data: Partial<RoadmapColumn> }) =>
       api.updateRoadmapColumn(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', currentProject?.id] })
     },
   })
 
   const deleteColumnMutation = useMutation({
     mutationFn: (id: string) => api.deleteRoadmapColumn(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roadmap'] })
+      queryClient.invalidateQueries({ queryKey: ['roadmap', currentProject?.id] })
     },
   })
 

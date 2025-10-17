@@ -174,7 +174,7 @@ export function FeedbackConversionModal({
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant="outline">{feedback.feedback_type}</Badge>
               </div>
-              <h4 className="font-medium">{feedback.title}</h4>
+              <h4 className="font-medium leading-relaxed">{feedback.title}</h4>
               {feedback.message && feedback.message !== feedback.title && (
                 <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                   {feedback.message}
