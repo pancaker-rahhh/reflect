@@ -27,7 +27,6 @@ const themes = [
   { value: 'minimal-dark', label: 'Minimal Dark', description: 'Simple and dark' },
 ]
 
-// Get theme-specific colors
 function getThemeColors(theme: string) {
   switch (theme) {
     case 'midnight':
@@ -37,7 +36,7 @@ function getThemeColors(theme: string) {
         background: 'rgba(24, 24, 27, 0.95)',
         text: '#F4F4F5',
         buttonColor: '#9333EA',
-        buttonTextColor: '#F4F4F5',
+        buttonTextColor: '#FFFFFF',
       }
     case 'minimal-dark':
       return {
@@ -46,7 +45,7 @@ function getThemeColors(theme: string) {
         background: '#111827',
         text: '#F3F4F6',
         buttonColor: '#9CA3AF',
-        buttonTextColor: '#F3F4F6',
+        buttonTextColor: '#111827',
       }
     case 'minimal-light':
       return {
@@ -55,7 +54,7 @@ function getThemeColors(theme: string) {
         background: '#FFFFFF',
         text: '#111827',
         buttonColor: '#6B7280',
-        buttonTextColor: '#111827',
+        buttonTextColor: '#FFFFFF',
       }
     case 'default':
     default:
@@ -65,7 +64,7 @@ function getThemeColors(theme: string) {
         background: '#FFFFFF',
         text: '#000000',
         buttonColor: '#0066FF',
-        buttonTextColor: '#000000',
+        buttonTextColor: '#FFFFFF',
       }
   }
 }
@@ -84,7 +83,6 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
                 <RadioGroup
                   onValueChange={(value) => {
                     field.onChange(value)
-                    // Update colors when theme changes
                     const themeColors = getThemeColors(value)
                     form.setValue('appearance.colors.primary', themeColors.primary)
                     form.setValue(
@@ -201,25 +199,33 @@ export function Step3Appearance({ form }: Step3AppearanceProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Text Color</FormLabel>
+                  <FormDescription className="text-xs">
+                    Color for regular text content
+                  </FormDescription>
                   <FormControl>
                     <div className="flex gap-2">
-                      <Input
-                        type="color"
-                        className="w-16 p-1 h-10"
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e)
-                          form.setValue('appearance.colors.buttonTextColor', e.target.value)
-                        }}
-                      />
-                      <Input
-                        placeholder="#000000"
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e)
-                          form.setValue('appearance.colors.buttonTextColor', e.target.value)
-                        }}
-                      />
+                      <Input type="color" className="w-16 p-1 h-10" {...field} />
+                      <Input placeholder="#000000" {...field} />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="appearance.colors.buttonTextColor"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Button & Header Text Color</FormLabel>
+                  <FormDescription className="text-xs">
+                    Color for text on buttons and in the header
+                  </FormDescription>
+                  <FormControl>
+                    <div className="flex gap-2">
+                      <Input type="color" className="w-16 p-1 h-10" {...field} />
+                      <Input placeholder="#FFFFFF" {...field} />
                     </div>
                   </FormControl>
                   <FormMessage />

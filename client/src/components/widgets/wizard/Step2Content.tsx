@@ -33,7 +33,6 @@ export function Step2Content({ form }: Step2ContentProps) {
     featureRequests: false,
   }
 
-  // Build enabled types list based on modules (only those selected in Step 1)
   const enabledTypes = React.useMemo(() => {
     const typeLabel = (t: WidgetFormData['primaryType']) => {
       switch (t) {
@@ -70,11 +69,9 @@ export function Step2Content({ form }: Step2ContentProps) {
     if (modules.featureRequests)
       list.push({ value: 'FEATURE_REQUEST', label: typeLabel('FEATURE_REQUEST') })
 
-    // de-dup
     return Array.from(new Map(list.map((t) => [t.value, t])).values())
   }, [modules, primaryType])
 
-  // Active type selector state
   const [activeType, setActiveType] = React.useState<WidgetFormData['primaryType']>(primaryType)
 
   React.useEffect(() => {
@@ -156,12 +153,10 @@ export function Step2Content({ form }: Step2ContentProps) {
     [primaryType]
   )
 
-  // Update base content defaults when primaryType changes
   React.useEffect(() => {
     const currentValues = form.getValues('content')
     const defaults = getTypeDefaults()
 
-    // Only update if the current values appear to be defaults (to avoid overriding user changes)
     const isUsingDefaults =
       !currentValues?.headerTitle ||
       currentValues.headerTitle === 'We value your feedback' ||
@@ -181,21 +176,12 @@ export function Step2Content({ form }: Step2ContentProps) {
     }
   }, [primaryType, form, getTypeDefaults])
 
-  // Seed defaults for new per-type entries when switching active type
   React.useEffect(() => {
     const pathBase = activeType === primaryType ? 'content' : `contentByType.${activeType}`
     const cur = form.getValues(pathBase as any) as any
 
-    // Check if this type has any content configured
-    const hasContent =
-      cur &&
-      (cur.headerTitle ||
-        cur.mainQuestion ||
-        cur.submitButtonText ||
-        cur.thankYouTitle ||
-        cur.thankYouMessage)
+    const hasContent = cur && (cur.mainQuestion || cur.submitButtonText)
 
-    // If no content exists, seed with defaults for this type
     if (!hasContent) {
       const d = getTypeDefaults(activeType)
       if (activeType === primaryType) {
@@ -205,23 +191,18 @@ export function Step2Content({ form }: Step2ContentProps) {
         form.setValue('content.thankYouTitle', d.thankYouTitle)
         form.setValue('content.thankYouMessage', d.thankYouMessage)
       } else {
-        form.setValue(`contentByType.${activeType}.headerTitle` as any, d.headerTitle)
         form.setValue(`contentByType.${activeType}.mainQuestion` as any, d.mainQuestion)
         form.setValue(`contentByType.${activeType}.submitButtonText` as any, d.submitButtonText)
-        form.setValue(`contentByType.${activeType}.thankYouTitle` as any, d.thankYouTitle)
-        form.setValue(`contentByType.${activeType}.thankYouMessage` as any, d.thankYouMessage)
       }
     }
   }, [activeType, primaryType, form, getTypeDefaults])
 
-  // Helper to map field names for active type
   function fieldName(base: string) {
     return activeType === primaryType
       ? (`content.${base}` as const)
       : (`contentByType.${activeType}.${base}` as const)
   }
 
-  // Get current values for the active type
   function getCurrentValues() {
     if (activeType === primaryType) {
       return form.getValues('content')
@@ -233,7 +214,6 @@ export function Step2Content({ form }: Step2ContentProps) {
   return (
     <Form {...form}>
       <div className="space-y-6" key={activeType}>
-        {/* Type dropdown */}
         <div>
           <FormLabel className="text-lg font-semibold mb-2">Select Feedback Type</FormLabel>
           <FormDescription className="mb-2">
@@ -255,30 +235,32 @@ export function Step2Content({ form }: Step2ContentProps) {
             </SelectContent>
           </Select>
         </div>
-        <FormField
-          control={form.control}
-          name={fieldName('headerTitle') as any}
-          render={({ field }) => {
-            const currentValues = getCurrentValues()
-            return (
-              <FormItem>
-                <FormLabel className="text-lg font-semibold mb-4">Widget Header Title</FormLabel>
-                <FormDescription>The main title shown at the top of your widget</FormDescription>
-                <FormControl>
-                  <Input
-                    placeholder="We value your feedback"
-                    value={field.value || currentValues.headerTitle || ''}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    name={field.name}
-                    ref={field.ref}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )
-          }}
-        />
+
+        {activeType === primaryType && (
+          <FormField
+            control={form.control}
+            name="content.headerTitle"
+            render={({ field }) => {
+              return (
+                <FormItem>
+                  <FormLabel className="text-lg font-semibold mb-4">Widget Header Title</FormLabel>
+                  <FormDescription>The main title shown at the top of your widget</FormDescription>
+                  <FormControl>
+                    <Input
+                      placeholder="We value your feedback"
+                      value={field.value || ''}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )
+            }}
+          />
+        )}
 
         <FormField
           control={form.control}
@@ -331,64 +313,67 @@ export function Step2Content({ form }: Step2ContentProps) {
           }}
         />
 
-        <div className="space-y-4 rounded-lg border border-border p-4 bg-card">
-          <h4 className="font-medium">Thank You Screen</h4>
+        {activeType === primaryType && (
+          <div className="space-y-4 rounded-lg border border-border p-4 bg-card">
+            <h4 className="font-medium">Thank You Screen</h4>
+            <p className="text-sm text-muted-foreground">
+              This thank you screen applies to all feedback types
+            </p>
 
-          <FormField
-            control={form.control}
-            name={fieldName('thankYouTitle') as any}
-            render={({ field }) => {
-              const currentValues = getCurrentValues()
-              return (
-                <FormItem>
-                  <FormLabel>Thank You Title</FormLabel>
-                  <FormDescription className="text-sm">
-                    Title shown after submission
-                  </FormDescription>
-                  <FormControl>
-                    <Input
-                      placeholder="Thank you!"
-                      value={field.value || currentValues.thankYouTitle || ''}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      name={field.name}
-                      ref={field.ref}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )
-            }}
-          />
+            <FormField
+              control={form.control}
+              name="content.thankYouTitle"
+              render={({ field }) => {
+                return (
+                  <FormItem>
+                    <FormLabel>Thank You Title</FormLabel>
+                    <FormDescription className="text-sm">
+                      Title shown after submission
+                    </FormDescription>
+                    <FormControl>
+                      <Input
+                        placeholder="Thank you!"
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )
+              }}
+            />
 
-          <FormField
-            control={form.control}
-            name={fieldName('thankYouMessage') as any}
-            render={({ field }) => {
-              const currentValues = getCurrentValues()
-              return (
-                <FormItem>
-                  <FormLabel>Thank You Message</FormLabel>
-                  <FormDescription className="text-sm">
-                    Message shown after submission
-                  </FormDescription>
-                  <FormControl>
-                    <Textarea
-                      placeholder={getTypeDefaults(activeType).thankYouMessage}
-                      className="min-h-[80px]"
-                      value={field.value || currentValues.thankYouMessage || ''}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      name={field.name}
-                      ref={field.ref}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )
-            }}
-          />
-        </div>
+            <FormField
+              control={form.control}
+              name="content.thankYouMessage"
+              render={({ field }) => {
+                return (
+                  <FormItem>
+                    <FormLabel>Thank You Message</FormLabel>
+                    <FormDescription className="text-sm">
+                      Message shown after submission
+                    </FormDescription>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Your feedback helps us improve."
+                        className="min-h-[80px]"
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )
+              }}
+            />
+          </div>
+        )}
       </div>
     </Form>
   )

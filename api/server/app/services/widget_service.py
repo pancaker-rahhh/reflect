@@ -32,14 +32,21 @@ class WidgetService:
 
         # Convert position from enum format to frontend format
         position_map = {
+            # Uppercase enum values
             'BOTTOM_RIGHT': 'bottom_right',
             'BOTTOM_LEFT': 'bottom_left',
             'MID_RIGHT': 'mid_right',
             'MID_LEFT': 'mid_left',
+            # Enum with prefix
             'WidgetPosition.MID_RIGHT': 'mid_right',
             'WidgetPosition.MID_LEFT': 'mid_left',
             'WidgetPosition.BOTTOM_RIGHT': 'bottom_right',
             'WidgetPosition.BOTTOM_LEFT': 'bottom_left',
+            # Lowercase values (from frontend)
+            'bottom_right': 'bottom_right',
+            'bottom_left': 'bottom_left',
+            'mid_right': 'mid_right',
+            'mid_left': 'mid_left',
         }
         position_str = position_map.get(position, 'bottom_right')
 

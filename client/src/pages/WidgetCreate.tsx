@@ -16,7 +16,6 @@ import { useAppContext } from '@/context/AppContext'
 import { PageLoading } from '@/components/common/LoadingSpinner'
 import { useToastNotifications } from '@/hooks/useToastNotifications'
 
-// Production-grade widget schema supporting all widget types
 const widgetSchema = z
   .object({
     name: z
@@ -67,7 +66,6 @@ const widgetSchema = z
       requireUseCase: z.boolean().optional(),
     }),
 
-    // Optional per-type content. Only fields provided will override base content for that type
     contentByType: z
       .record(
         z.enum([
@@ -106,7 +104,6 @@ const widgetSchema = z
   })
   .refine(
     (data) => {
-      // Ensure primaryType matches the enabled module
       if (data.modules.feedback) {
         const validFeedbackTypes = ['FEEDBACK', 'NPS', 'CSAT', 'CES', 'SURVEY']
         return validFeedbackTypes.includes(data.primaryType)
@@ -134,7 +131,6 @@ const widgetSchema = z
 
 export type WidgetFormData = z.infer<typeof widgetSchema>
 
-// Get type-specific default content
 function getTypeSpecificDefaults(primaryType: WidgetFormData['primaryType']) {
   switch (primaryType) {
     case 'NPS':
@@ -250,14 +246,13 @@ export function WidgetCreate() {
               background: '#FFFFFF',
               text: '#000000',
               buttonColor: '#0066FF',
-              buttonTextColor: '#000000', // Use text color instead of hardcoded white
+              buttonTextColor: '#FFFFFF',
             },
             showBranding: true,
           },
         },
   })
 
-  // Auto-set primaryType when modules change to ensure validation consistency
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (name?.startsWith('modules.')) {
@@ -285,14 +280,12 @@ export function WidgetCreate() {
     return () => subscription.unsubscribe()
   }, [form])
 
-  // Update content defaults when primaryType changes
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (name === 'primaryType' && value.primaryType) {
         const currentContent = form.getValues('content')
         const newDefaults = getTypeSpecificDefaults(value.primaryType)
 
-        // Only update if the current values appear to be defaults (to avoid overriding user changes)
         const isUsingDefaults =
           !currentContent?.headerTitle ||
           currentContent.headerTitle === 'We value your feedback' ||
@@ -316,7 +309,6 @@ export function WidgetCreate() {
     return () => subscription.unsubscribe()
   }, [form])
 
-  // Load widget data for edit mode
   useEffect(() => {
     if (isEditMode && widgetId && currentProject) {
       setIsLoadingWidget(true)
@@ -332,7 +324,6 @@ export function WidgetCreate() {
               featureRequests: widget.configuration?.modules?.featureRequests ?? false,
             },
             primaryType: (() => {
-              // Map backend widget types to frontend primaryType
               const typeMapping: Record<string, WidgetFormData['primaryType']> = {
                 FEEDBACK: 'FEEDBACK',
                 SURVEY: 'SURVEY',
@@ -390,16 +381,15 @@ export function WidgetCreate() {
             appearance: {
               theme: widget.theme_configuration?.theme_name || 'default',
               position: (() => {
-                // Map old position values to new ones
                 const positionMapping: Record<
                   string,
                   'bottom_right' | 'bottom_left' | 'mid_right' | 'mid_left'
                 > = {
                   bottom_right: 'bottom_right',
                   bottom_left: 'bottom_left',
-                  top_right: 'mid_right', // Map old top_right to new mid_right
-                  top_left: 'mid_left', // Map old top_left to new mid_left
-                  center: 'bottom_right', // Map old center to bottom_right as fallback
+                  top_right: 'mid_right',
+                  top_left: 'mid_left',
+                  center: 'bottom_right',
                 }
                 return positionMapping[widget.position] || 'bottom_right'
               })(),
@@ -526,7 +516,6 @@ export function WidgetCreate() {
 
           <div className="flex-1 overflow-y-auto p-4 lg:p-6">
             <div className="w-full max-w-2xl mx-auto mb-6">
-              {/* Step indicator header */}
               <div className="flex items-center justify-between mb-4">
                 <span className="text-sm font-semibold text-primary">
                   Step {currentStep + 1} of {steps.length}
@@ -582,7 +571,7 @@ export function WidgetCreate() {
           <button
             className="bg-primary text-primary-foreground p-3 rounded-full shadow-lg hover:bg-primary/90 transition-colors"
             onClick={() => {
-              // TODO: Open mobile preview modal
+              // Open mobile preview modal
             }}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
