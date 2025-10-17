@@ -264,37 +264,39 @@ export function FeedbackCard({
               </div>
 
               {/* Message with expand/collapse */}
-              <div className="mb-3">
-                <p
-                  className={cn(
-                    'text-base font-semibold text-foreground leading-relaxed',
-                    !isExpanded && isLongMessage && 'line-clamp-3'
-                  )}
-                >
-                  {messageText || 'No message'}
-                </p>
-                {isLongMessage && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setIsExpanded(!isExpanded)
-                    }}
-                    className="text-xs text-primary hover:underline mt-2 flex items-center gap-1 font-medium"
-                  >
-                    {isExpanded ? (
-                      <>
-                        <ChevronUp className="h-3 w-3" />
-                        Show less
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown className="h-3 w-3" />
-                        Show more
-                      </>
+              {messageText && (
+                <div className="mb-3">
+                  <p
+                    className={cn(
+                      'text-base font-semibold text-foreground leading-relaxed',
+                      !isExpanded && isLongMessage && 'line-clamp-3'
                     )}
-                  </button>
-                )}
-              </div>
+                  >
+                    {messageText}
+                  </p>
+                  {isLongMessage && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setIsExpanded(!isExpanded)
+                      }}
+                      className="text-xs text-primary hover:underline mt-2 flex items-center gap-1 font-medium"
+                    >
+                      {isExpanded ? (
+                        <>
+                          <ChevronUp className="h-3 w-3" />
+                          Show less
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-3 w-3" />
+                          Show more
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              )}
 
               {/* Metadata */}
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground bg-muted/30 rounded-md px-3 py-2 border border-muted">
