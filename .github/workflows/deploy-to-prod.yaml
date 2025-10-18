@@ -48,6 +48,23 @@ jobs:
           echo "Using DATABASE_URL: ${DB_URL%%:*}://***@$(echo \"$DB_URL\" | sed -E 's|^[^@]*@([^/:?]+).*|\1|')/$(echo \"$DB_URL\" | sed -E 's|.*/([^/?]+)(\?.*)?$|\1|')"
           echo "::endgroup::"
 
+          # Check if alembic_version table exists
+          echo "::group::Checking Alembic state"
+          HAS_ALEMBIC_TABLE=$(psql "$DB_URL" -tAc "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'alembic_version');" 2>&1 || echo "false")
+          echo "Alembic version table exists: $HAS_ALEMBIC_TABLE"
+          
+          if [ "$HAS_ALEMBIC_TABLE" = "f" ] || [ "$HAS_ALEMBIC_TABLE" = "false" ]; then
+            # Check if any tables exist (meaning we have schema but no tracking)
+            TABLE_COUNT=$(psql "$DB_URL" -tAc "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';" 2>&1 || echo "0")
+            echo "Public tables count: $TABLE_COUNT"
+            
+            if [ "$TABLE_COUNT" -gt "0" ]; then
+              echo "::notice::Schema exists but not tracked by Alembic (Neon schema-only branch). Stamping to head..."
+              DATABASE_URL="$DB_URL" ALEMBIC_MIGRATION=1 alembic stamp head
+            fi
+          fi
+          echo "::endgroup::"
+          
           echo "::group::Alembic current (before)"
           (DATABASE_URL="$DB_URL" ALEMBIC_MIGRATION=1 alembic current || true)
           echo "::endgroup::"
