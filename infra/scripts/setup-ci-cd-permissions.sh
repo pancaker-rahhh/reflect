@@ -1,8 +1,13 @@
 #!/bin/bash
 set -e
 
-PROJECT_ID=""
-SERVICE_ACCOUNT_NAME=""
+if [ -z "$1" ] || [ -z "$2" ]; then
+  echo "Usage: ./setup-ci-cd-permissions.sh <gcp-project-id> <service-account-name>"
+  exit 1
+fi
+
+PROJECT_ID="$1"
+SERVICE_ACCOUNT_NAME="$2"
 SERVICE_ACCOUNT_EMAIL="${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"
 
 echo "=== Setting up CI/CD Service Account ==="
@@ -57,18 +62,24 @@ echo ""
 echo "✅ All permissions granted successfully!"
 echo ""
 echo "Summary of roles granted to ${SERVICE_ACCOUNT_EMAIL}:"
-echo "  - roles/artifactregistry.writer    (Push Docker images)"
-echo "  - roles/run.admin                  (Deploy Cloud Run services)"
-echo "  - roles/iam.serviceAccountUser     (Act as service accounts)"
-echo "  - roles/storage.admin              (Manage Terraform state)"
-echo "  - roles/secretmanager.secretAccessor (Bind secrets to Cloud Run)"
+echo "  - roles/artifactregistry.writer       (Push Docker images)"
+echo "  - roles/run.admin                     (Deploy Cloud Run services)"
+echo "  - roles/iam.serviceAccountUser        (Act as service accounts)"
+echo "  - roles/storage.admin                 (Manage Terraform state)"
+echo "  - roles/secretmanager.secretAccessor  (Bind secrets to Cloud Run)"
 echo ""
-echo "Next steps:"
+echo "========================================="
+echo "Next Steps:"
+echo "========================================="
+echo ""
 echo "1. Create service account key:"
 echo "   gcloud iam service-accounts keys create key.json --iam-account=${SERVICE_ACCOUNT_EMAIL}"
 echo ""
-echo "2. Add key to GitHub Secrets as '<ENV>_GCP_SERVICE_ACCOUNT_KEY'"
+echo "2. Add key to GitHub Secrets:"
+echo "   - Secret name: <ENV>_GCP_SERVICE_ACCOUNT_KEY (e.g., PROD_GCP_SERVICE_ACCOUNT_KEY)"
+echo "   - Secret value: Paste entire contents of key.json"
 echo ""
-echo "3. Delete the key file locally:"
+echo "3. Delete the key file locally (IMPORTANT for security):"
 echo "   rm key.json"
+echo ""
 
