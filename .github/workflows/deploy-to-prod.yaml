@@ -118,13 +118,18 @@ jobs:
         with:
           credentials_json: ${{ secrets.PROD_GCP_SERVICE_ACCOUNT_KEY }}
 
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.0
 
       - name: Ensure Terraform state bucket exists
-        run: |          
+        run: |
+          # Verify gcloud authentication
+          gcloud auth list
           gcloud config set project ${{ secrets.PROD_GCP_PROJECT_ID }}
           
           if ! gsutil ls gs://reflectfeedback-terraform-state &> /dev/null; then
