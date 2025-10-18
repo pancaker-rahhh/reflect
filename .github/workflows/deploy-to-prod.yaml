@@ -87,7 +87,7 @@ jobs:
         with:
           context: ./api
           file: ./api/Dockerfile
-          platforms: linux/arm64
+          platforms: linux/amd64
           push: true
           tags: |
             ${{ secrets.PROD_DOCKER_IMAGE_TAG }}:latest 
@@ -168,5 +168,5 @@ jobs:
           echo "::notice::Infrastructure deployed successfully via Terraform"
           echo "::notice::Service: reflectfeedback"
           echo "::notice::Region: us-east4"
-          echo "::notice::Architecture: ARM64"
+          echo "::notice::Architecture: AMD64"
           echo "::notice::Image: ${{ secrets.PROD_DOCKER_IMAGE_TAG }}:latest"
