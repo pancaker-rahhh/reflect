@@ -5,6 +5,7 @@ on:
     branches: [prod]
     paths:
       - 'api/**'
+      - '.github/workflows/deploy-to-prod.yaml'
   workflow_dispatch:
 
 jobs:
