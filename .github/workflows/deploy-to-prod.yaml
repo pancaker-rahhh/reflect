@@ -11,7 +11,7 @@ jobs:
   migrate:
     name: Run DB migrations
     runs-on: ubuntu-latest
-    environment: prod
+    environment: production
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
