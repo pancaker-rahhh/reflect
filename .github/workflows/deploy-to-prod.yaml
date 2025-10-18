@@ -39,7 +39,7 @@ jobs:
           cd api/server
 
           # Convert to standard PostgreSQL URL with sslmode for psycopg2
-          DB_URL="${{ secrets.DATABASE_URL }}"
+          DB_URL="${{ secrets.PROD_DATABASE_URL }}"
           # Convert postgresql+asyncpg:// to postgresql:// and ssl=true to sslmode=require
           DB_URL="$(echo "$DB_URL" | sed -E 's|^postgresql\+asyncpg://|postgresql://|')"
           DB_URL="$(echo "$DB_URL" | sed -E 's|[?&]ssl=true|?sslmode=require|')"
