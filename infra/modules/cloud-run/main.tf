@@ -9,6 +9,8 @@ resource "google_cloud_run_v2_service" "service" {
       max_instance_count = 1
     }
 
+    execution_environment = "EXECUTION_ENVIRONMENT_GEN2"
+
     containers {
       image = var.image
 
@@ -21,6 +23,8 @@ resource "google_cloud_run_v2_service" "service" {
           cpu    = "1"
           memory = "512Mi"
         }
+        cpu_idle          = true
+        startup_cpu_boost = true
       }
 
       dynamic "env" {
@@ -45,7 +49,7 @@ resource "google_cloud_run_v2_service" "service" {
       }
     }
 
-    timeout = "300s"
+    timeout                          = "300s"
     max_instance_request_concurrency = 80
   }
 

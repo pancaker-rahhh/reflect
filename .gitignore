@@ -55,3 +55,7 @@ venv.bak/
 # claude
 .claude/
 CLAUDE.md
+
+# gcloud
+super-service-account-key.json
+prod-cicd-service-account-key.json
