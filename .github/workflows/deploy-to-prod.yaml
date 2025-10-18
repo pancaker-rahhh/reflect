@@ -124,10 +124,12 @@ jobs:
           terraform_version: 1.6.0
 
       - name: Ensure Terraform state bucket exists
-        run: |
+        run: |          
+          gcloud config set project ${{ secrets.PROD_GCP_PROJECT_ID }}
+          
           if ! gsutil ls gs://reflectfeedback-terraform-state &> /dev/null; then
             echo "Creating Terraform state bucket..."
-            gsutil mb -p corded-nature-474915-q9 -l us-east4 gs://reflectfeedback-terraform-state
+            gsutil mb -p ${{ secrets.PROD_GCP_PROJECT_ID }} -l us-east4 gs://reflectfeedback-terraform-state
             gsutil versioning set on gs://reflectfeedback-terraform-state
             echo "::notice::Created Terraform state bucket"
           else
