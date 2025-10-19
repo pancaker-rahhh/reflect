@@ -1,8 +1,9 @@
-project_id   = "reflect-dev-473413"
-service_name = "reflectfeedback"
-region       = "us-east4"
-image        = "us-east4-docker.pkg.dev/reflect-dev-473413/reflectfeedback/app:latest"
-bucket_name = "reflectfeedback-dev-terraform-state"
+project_id            = "reflect-dev-473413"
+service_name          = "reflectfeedback"
+region                = "us-east4"
+image                 = "us-east4-docker.pkg.dev/reflect-dev-473413/reflectfeedback/app:latest"
+bucket_name           = "reflectfeedback-dev-terraform-state"
+service_account_email = "reflectfeedback-runtime@reflect-dev-473413.iam.gserviceaccount.com"
 
 env_vars = {
   DEBUG         = "true"

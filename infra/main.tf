@@ -35,6 +35,11 @@ variable "image" {
   type = string
 }
 
+variable "service_account_email" {
+  type        = string
+  description = "Service account for Cloud Run runtime"
+}
+
 variable "env_vars" {
   type    = map(string)
   default = {}
@@ -56,12 +61,13 @@ variable "bucket_name" {
 module "cloud_run_service" {
   source = "./modules/cloud-run"
 
-  project_id   = var.project_id
-  service_name = var.service_name
-  region       = var.region
-  image        = var.image
-  env_vars     = var.env_vars
-  secrets      = var.secrets
+  project_id            = var.project_id
+  service_name          = var.service_name
+  region                = var.region
+  image                 = var.image
+  service_account_email = var.service_account_email
+  env_vars              = var.env_vars
+  secrets               = var.secrets
 }
 
 output "service_url" {

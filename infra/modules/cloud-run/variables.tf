@@ -14,6 +14,11 @@ variable "image" {
   type = string
 }
 
+variable "service_account_email" {
+  type        = string
+  description = "Service account email for Cloud Run runtime"
+}
+
 variable "env_vars" {
   type    = map(string)
   default = {}
