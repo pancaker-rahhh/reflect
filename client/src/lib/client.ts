@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import { createApiError, handleApiError } from './errors'
-import { config, isNonProduction } from '@/config'
+import { config } from '@/config'
 
 const API_BASE_URL = config.apiBaseUrl
 
@@ -145,16 +145,16 @@ async function request<T>(endpoint: string, options: RequestInit & RequestConfig
 }
 
 export const apiClient = {
-  get: <T>(endpoint: string, config?: RequestConfig) =>
-    request<T>(endpoint, { ...config, method: 'GET' }),
+  get: <T>(endpoint: string, requestConfig?: RequestConfig) =>
+    request<T>(endpoint, { ...requestConfig, method: 'GET' }),
 
-  getBinary: async (endpoint: string, config?: RequestConfig & RequestInit): Promise<Blob> => {
+  getBinary: async (endpoint: string, requestConfig?: RequestConfig & RequestInit): Promise<Blob> => {
     const {
       timeout = DEFAULT_CONFIG.timeout,
       maxRetries = DEFAULT_CONFIG.maxRetries,
       skipRetry = false,
       ...fetchOptions
-    } = (config as RequestInit & RequestConfig) || {}
+    } = (requestConfig as RequestInit & RequestConfig) || {}
 
     const makeRequest = async (attempt: number = 0): Promise<Blob> => {
       try {
@@ -164,8 +164,7 @@ export const apiClient = {
         const token = session?.access_token
 
         if (config.features.debug) {
-          console.log(`🌐 API Request (binary): GET ${API_BASE_URL}${endpoint}`)
-          console.log(`🎫 Token present: ${token ? 'Yes' : 'No'}`)
+          console.log(`🌐 GET (binary) ${API_BASE_URL}${endpoint}`)
         }
 
         const headers = new Headers(fetchOptions.headers)
@@ -194,8 +193,7 @@ export const apiClient = {
         if (!response.ok) {
           const errorText = await response.text().catch(() => '')
           if (config.features.debug) {
-            console.error(`❌ API Error (binary): ${response.status} ${response.statusText}`)
-            console.error(`❌ Error details:`, errorText)
+            console.error(`❌ ${response.status} (binary)`, errorText)
           }
           throw createApiError(
             errorText || `Request failed with status ${response.status}`,
@@ -217,26 +215,26 @@ export const apiClient = {
     return makeRequest()
   },
 
-  post: <T>(endpoint: string, data?: unknown, config?: RequestConfig) =>
+  post: <T>(endpoint: string, data?: unknown, requestConfig?: RequestConfig) =>
     request<T>(endpoint, {
-      ...config,
+      ...requestConfig,
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
     }),
 
-  put: <T>(endpoint: string, data?: unknown, config?: RequestConfig) =>
+  put: <T>(endpoint: string, data?: unknown, requestConfig?: RequestConfig) =>
     request<T>(endpoint, {
-      ...config,
+      ...requestConfig,
       method: 'PUT',
       body: data ? JSON.stringify(data) : undefined,
     }),
 
-  delete: <T>(endpoint: string, config?: RequestConfig) =>
-    request<T>(endpoint, { ...config, method: 'DELETE' }),
+  delete: <T>(endpoint: string, requestConfig?: RequestConfig) =>
+    request<T>(endpoint, { ...requestConfig, method: 'DELETE' }),
 
-  patch: <T>(endpoint: string, data?: unknown, config?: RequestConfig) =>
+  patch: <T>(endpoint: string, data?: unknown, requestConfig?: RequestConfig) =>
     request<T>(endpoint, {
-      ...config,
+      ...requestConfig,
       method: 'PATCH',
       body: data ? JSON.stringify(data) : undefined,
     }),
