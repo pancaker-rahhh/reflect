@@ -3,13 +3,10 @@ import { localConfig } from './local'
 import { developmentConfig } from './development'
 import { productionConfig } from './production'
 
-
 function validateEnvironment(env: string | undefined): asserts env is Environment {
   if (!env) {
     throw new Error(
-      '❌ VITE_ENVIRONMENT is not set.\n' +
-        'Please create a .env file with VITE_ENVIRONMENT=local\n' +
-        'Valid values: local, development, production'
+      'VITE_ENVIRONMENT is not set. Please create a .env file with VITE_ENVIRONMENT=local'
     )
   }
 
@@ -17,9 +14,7 @@ function validateEnvironment(env: string | undefined): asserts env is Environmen
   
   if (!validEnvironments.includes(env as Environment)) {
     throw new Error(
-      `❌ Invalid VITE_ENVIRONMENT value: "${env}"\n` +
-        `Valid values are: ${validEnvironments.join(', ')}\n` +
-        'Please check your .env file.'
+      `Invalid VITE_ENVIRONMENT: "${env}". Valid values: ${validEnvironments.join(', ')}`
     )
   }
 }
@@ -38,6 +33,7 @@ function validateConfig(config: EnvironmentConfig): void {
   const requiredFields = [
     'environment',
     'apiBaseUrl',
+    'frontendUrl',
     'supabase.url',
     'supabase.anonKey',
   ]
@@ -52,7 +48,7 @@ function validateConfig(config: EnvironmentConfig): void {
 
     if (!value) {
       throw new Error(
-        `❌ Configuration error: Missing required field "${field}" in ${config.environment} config`
+        `Missing required field "${field}" in ${config.environment} config`
       )
     }
   }
@@ -60,20 +56,15 @@ function validateConfig(config: EnvironmentConfig): void {
 
 function initializeConfig(): EnvironmentConfig {
   const environment = import.meta.env.VITE_ENVIRONMENT
-
   validateEnvironment(environment)
-
+  
   const config = loadEnvironmentConfig(environment)
-
   validateConfig(config)
 
   if (config.features.debug) {
-    console.log('🔧 Environment Configuration Loaded:', {
-      environment: config.environment,
-      apiBaseUrl: config.apiBaseUrl,
-      supabaseUrl: config.supabase.url,
-      features: config.features,
-    })
+    console.log('Environment:', config.environment)
+    console.log('API:', config.apiBaseUrl)
+    console.log('Frontend:', config.frontendUrl)
   }
   
   return config
@@ -84,7 +75,16 @@ export const config = initializeConfig()
 export const isLocal = config.environment === 'local'
 export const isDevelopment = config.environment === 'development'
 export const isProduction = config.environment === 'production'
-
 export const isNonProduction = isLocal || isDevelopment
+
+export const urlBuilder = {
+  publicRoadmap: (subdomain?: string, publicSlug?: string): string => {
+    if (subdomain) return `${config.frontendUrl}/public/r/${subdomain}`
+    if (publicSlug) return `${config.frontendUrl}/public/roadmap/${publicSlug}`
+    throw new Error('Either subdomain or publicSlug must be provided')
+  },
+  
+  frontend: (path: string): string => `${config.frontendUrl}${path}`,
+}
 
 export type { Environment, EnvironmentConfig, SupabaseConfig, FeatureFlags } from './types'

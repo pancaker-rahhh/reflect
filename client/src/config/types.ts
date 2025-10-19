@@ -1,4 +1,4 @@
-export type Environment = 'dev' | 'staging' | 'production'
+export type Environment = 'local' | 'development' | 'production'
 
 export interface SupabaseConfig {
   url: string
@@ -15,6 +15,7 @@ export interface FeatureFlags {
 export interface EnvironmentConfig {
   environment: Environment
   apiBaseUrl: string
+  frontendUrl: string
   supabase: SupabaseConfig
   features: FeatureFlags
 }

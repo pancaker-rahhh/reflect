@@ -1,10 +1,10 @@
-// VITE_ENVIRONMENT=production
 import type { EnvironmentConfig } from './types'
 
 export const productionConfig: EnvironmentConfig = {
   environment: 'production',
   
   apiBaseUrl: 'https://api.reflectfeedback.com/api/v1',
+  frontendUrl: 'https://app.reflectfeedback.com',
   
   supabase: {
     url: 'https://ioyccqfjzobfwmailfzb.supabase.co',

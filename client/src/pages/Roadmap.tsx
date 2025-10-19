@@ -23,6 +23,7 @@ import { BulkJiraModal } from '@/components/roadmap/BulkJiraModal'
 import { IndividualJiraModal } from '@/components/roadmap/IndividualJiraModal'
 import { useToast } from '@/components/ui/use-toast'
 import { supabase } from '@/lib/supabase'
+import { urlBuilder } from '@/config'
 import type { RoadmapColumn, RoadmapActionItem, Integration } from '@/types'
 
 interface DragItem {
@@ -585,9 +586,7 @@ function RoadmapPageContent() {
   }
 
   const publicUrl = roadmap?.is_public
-    ? roadmap.subdomain
-      ? `http://localhost:5173/public/r/${roadmap.subdomain}`
-      : `http://localhost:5173/public/roadmap/${roadmap.public_slug}`
+    ? urlBuilder.publicRoadmap(roadmap.subdomain, roadmap.public_slug)
     : null
 
   return (

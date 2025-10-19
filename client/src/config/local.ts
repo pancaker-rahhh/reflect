@@ -1,11 +1,10 @@
-// VITE_ENVIRONMENT=dev
-
 import type { EnvironmentConfig } from './types'
 
-export const devConfig: EnvironmentConfig = {
-  environment: 'dev',
+export const localConfig: EnvironmentConfig = {
+  environment: 'local',
   
   apiBaseUrl: 'http://localhost:8000/api/v1',
+  frontendUrl: 'http://localhost:5173',
   
   supabase: {
     url: 'https://ioyccqfjzobfwmailfzb.supabase.co',

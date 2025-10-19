@@ -1,4 +1,6 @@
-const API_BASE_URL = '/api/v1'
+import { config } from '@/config'
+
+const API_BASE_URL = config.apiBaseUrl
 
 interface ApiConfig {
   timeout: number
