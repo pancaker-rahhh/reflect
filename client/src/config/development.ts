@@ -3,7 +3,7 @@ import type { EnvironmentConfig } from './types'
 export const developmentConfig: EnvironmentConfig = {
   environment: 'development',
   
-  apiBaseUrl: 'https://api-dev.reflectfeedback.com/api/v1',
+  apiBaseUrl: 'https://api.reflectfeedback.com/api/v1',
   frontendUrl: 'https://dev.reflectfeedback.com',
   
   supabase: {
