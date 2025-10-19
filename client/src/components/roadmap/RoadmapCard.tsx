@@ -23,6 +23,12 @@ import type { RoadmapActionItem, RoadmapColumn } from '@/types'
 import { Checkbox } from '@/components/ui/checkbox'
 import { StructuredDescription } from '@/components/common/StructuredDescription'
 
+function decodeHtmlEntities(text: string): string {
+  const textarea = document.createElement('textarea')
+  textarea.innerHTML = text
+  return textarea.value
+}
+
 interface RoadmapCardProps {
   feature: RoadmapActionItem
   columnId: string
@@ -206,7 +212,7 @@ export function RoadmapCard({
               className="font-semibold text-sm leading-tight text-foreground line-clamp-2 flex-1 break-all word-break-break-all overflow-wrap-anywhere"
               style={{ wordBreak: 'break-all', overflowWrap: 'anywhere' }}
             >
-              {feature.title}
+              {decodeHtmlEntities(feature.title)}
             </h4>
             {!isSelectionMode && (
               <GripVertical className="h-4 w-4 text-muted-foreground/60 flex-shrink-0" />
@@ -235,7 +241,7 @@ export function RoadmapCard({
           {feature.description && (
             <div className="line-clamp-3">
               <StructuredDescription
-                description={feature.description}
+                description={decodeHtmlEntities(feature.description)}
                 className="text-sm text-muted-foreground leading-relaxed"
               />
             </div>
@@ -409,8 +415,8 @@ export function RoadmapCard({
                 }}
               >
                 {feature.title && feature.title.length > 30
-                  ? feature.title.substring(0, 30) + '...'
-                  : feature.title}
+                  ? decodeHtmlEntities(feature.title.substring(0, 30)) + '...'
+                  : decodeHtmlEntities(feature.title)}
               </span>
               "?
             </p>

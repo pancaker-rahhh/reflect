@@ -476,7 +476,23 @@ function RoadmapPageContent() {
     if (!column) return []
 
     const features = column.action_items || []
-    return [...features].sort((a, b) => a.order - b.order)
+
+    const priorityOrder: Record<string, number> = {
+      critical: 4,
+      high: 3,
+      medium: 2,
+      low: 1,
+    }
+
+    return [...features].sort((a, b) => {
+      const aPriority = priorityOrder[a.priority || ''] || 0
+      const bPriority = priorityOrder[b.priority || ''] || 0
+
+      if (aPriority !== bPriority) {
+        return bPriority - aPriority
+      }
+      return a.order - b.order
+    })
   }
 
   const isLoading = false || false || isLoadingRoadmap || isLoadingUser

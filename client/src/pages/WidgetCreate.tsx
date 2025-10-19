@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -217,6 +217,7 @@ export function WidgetCreate() {
   const [isLoadingWidget, setIsLoadingWidget] = useState(false)
   const [widgetDataLoaded, setWidgetDataLoaded] = useState(false)
   const { currentProject, currentOrganization, isLoading } = useAppContext()
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const isEditMode = !!widgetId
 
@@ -452,6 +453,9 @@ export function WidgetCreate() {
     if (isValid) {
       if (currentStep < steps.length - 1) {
         setCurrentStep(currentStep + 1)
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' })
+        }
       } else {
         handleSubmit()
       }
@@ -461,6 +465,10 @@ export function WidgetCreate() {
   const handlePrevious = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1)
+
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' })
+      }
     }
   }
 
@@ -514,7 +522,7 @@ export function WidgetCreate() {
             </p>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 lg:p-6">
+          <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 lg:p-6">
             <div className="w-full max-w-2xl mx-auto mb-6">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-sm font-semibold text-primary">

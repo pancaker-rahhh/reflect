@@ -18,7 +18,7 @@ const effortLevels = [
   { value: 1, label: 'Hard', emoji: '😤', color: 'bg-red-500 hover:bg-red-600' },
   { value: 2, label: 'Difficult', emoji: '😔', color: 'bg-orange-500 hover:bg-orange-600' },
   { value: 3, label: 'OK', emoji: '😐', color: 'bg-yellow-500 hover:bg-yellow-600' },
-  { value: 4, label: 'Easy', emoji: '😌', color: 'bg-blue-500 hover:bg-blue-600' },
+  { value: 4, label: 'Easy', emoji: '😌', color: 'bg-lime-500 hover:bg-lime-600' },
   { value: 5, label: 'Very Easy', emoji: '😊', color: 'bg-green-500 hover:bg-green-600' },
 ]
 

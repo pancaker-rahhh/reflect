@@ -22,6 +22,12 @@ import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { FeedbackConversionModal } from './FeedbackConversionModal'
 
+function decodeHtmlEntities(text: string): string {
+  const textarea = document.createElement('textarea')
+  textarea.innerHTML = text
+  return textarea.value
+}
+
 interface FeedbackCardProps {
   feedback: any
   isSelectionMode: boolean
@@ -164,10 +170,10 @@ export function FeedbackCard({
                       'text-xs font-semibold',
                       score >= (feedback.feedback_type?.toLowerCase() === 'nps' ? 9 : 4) &&
                         'bg-green-50 text-green-700 border-green-300',
-                      score >= (feedback.feedback_type?.toLowerCase() === 'nps' ? 7 : 3) &&
+                      score >= (feedback.feedback_type?.toLowerCase() === 'nps' ? 4 : 3) &&
                         score < (feedback.feedback_type?.toLowerCase() === 'nps' ? 9 : 4) &&
                         'bg-yellow-50 text-yellow-700 border-yellow-300',
-                      score < (feedback.feedback_type?.toLowerCase() === 'nps' ? 7 : 3) &&
+                      score < (feedback.feedback_type?.toLowerCase() === 'nps' ? 4 : 3) &&
                         'bg-red-50 text-red-700 border-red-300'
                     )}
                   >
@@ -273,7 +279,7 @@ export function FeedbackCard({
                       isExpanded && 'break-words'
                     )}
                   >
-                    {messageText}
+                    {decodeHtmlEntities(messageText)}
                   </p>
                   {isLongMessage && (
                     <button
@@ -303,7 +309,11 @@ export function FeedbackCard({
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground bg-muted/30 rounded-md px-3 py-2 border border-muted">
                 <div className="flex items-center gap-1.5">
                   <User className="h-3.5 w-3.5" />
-                  <span className="font-medium">{feedback.submitter_name || 'Anonymous'}</span>
+                  <span className="font-medium">
+                    {feedback.submitter_name
+                      ? decodeHtmlEntities(feedback.submitter_name)
+                      : 'Anonymous'}
+                  </span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5" />
