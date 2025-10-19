@@ -7,8 +7,8 @@ export const productionConfig: EnvironmentConfig = {
   frontendUrl: 'https://app.reflectfeedback.com',
   
   supabase: {
-    url: 'https://ioyccqfjzobfwmailfzb.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlveWNjcWZqem9iZndtYWlsZnpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg5NjUyMjAsImV4cCI6MjA3NDU0MTIyMH0.y2es_QYPQRdNt54mqLeXHa4JfixI4jwYSws5xMIubIM',
+    url: 'https://wrwyqrxczlkjgprinfwd.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indyd3lxcnhjemxramdwcmluZndkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMjM2MDAsImV4cCI6MjA2MzU5OTYwMH0.mbAKxivSmUs_n14bBs1fA6QRTSFZpvCGmCoydczeZio',
   },
   
   features: {
