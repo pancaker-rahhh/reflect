@@ -74,7 +74,7 @@ export function WidgetGetCode() {
         </div>
 
         <div className="bg-muted rounded-md p-4 relative">
-          <pre className="text-sm overflow-x-auto">
+          <pre className="text-sm overflow-x-auto pr-32">
             <code>{widget.embed_code}</code>
           </pre>
           <Button variant="ghost" size="sm" className="absolute top-2 right-2" onClick={handleCopy}>
@@ -93,17 +93,28 @@ export function WidgetGetCode() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="border rounded-lg p-4">
             <h4 className="text-lg font-semibold mb-2">Deploy Your Widget</h4>
-            <p className="text-sm text-muted-foreground mb-3">Add the embed code to your website. Works with any platform.</p>
-            <p className="text-xs text-blue-600">💡 Place before &lt;/body&gt; tag for best performance</p>
+            <p className="text-sm text-muted-foreground mb-3">
+              Add the embed code to your website. Works with any platform.
+            </p>
+            <p className="text-xs text-blue-600">
+              💡 Place before &lt;/body&gt; tag for best performance
+            </p>
           </div>
           <div className="border rounded-lg p-4">
             <h4 className="text-lg font-semibold mb-2">Create More Widgets</h4>
-            <p className="text-sm text-muted-foreground mb-3">Build different widgets for different purposes - feedback, reviews, bug reports, or feature requests.</p>
-            <p className="text-xs text-green-600">🎯 Each widget can target specific pages or user segments</p>
+            <p className="text-sm text-muted-foreground mb-3">
+              Build different widgets for different purposes - feedback, reviews, bug reports, or
+              feature requests.
+            </p>
+            <p className="text-xs text-green-600">
+              🎯 Each widget can target specific pages or user segments
+            </p>
           </div>
           <div className="border rounded-lg p-4">
             <h4 className="text-lg font-semibold mb-2">Monitor & Improve</h4>
-            <p className="text-sm text-muted-foreground mb-3">Track responses in your dashboard and adjust your widgets based on user feedback.</p>
+            <p className="text-sm text-muted-foreground mb-3">
+              Track responses in your dashboard and adjust your widgets based on user feedback.
+            </p>
             <p className="text-xs text-purple-600">📊 A/B test different questions and styles</p>
           </div>
         </div>

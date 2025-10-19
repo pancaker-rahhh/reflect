@@ -301,9 +301,9 @@ export function PublicFeedbackDisplay({
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as 'upvotes' | 'newest' | 'oldest')}
-            className="px-3 py-1 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
+            className="px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex-1 max-w-xs ml-2"
             style={{
-              borderColor: '#E5E7EB',
+              borderColor: colors.primary,
               backgroundColor: colors.background,
               color: colors.text,
             }}
@@ -313,7 +313,7 @@ export function PublicFeedbackDisplay({
             <option value="oldest">Oldest First</option>
           </select>
 
-          <div className="text-sm" style={{ color: colors.text }}>
+          <div className="text-sm ml-4" style={{ color: colors.text }}>
             {filteredData.length} {filteredData.length === 1 ? 'item' : 'items'}
           </div>
         </div>
