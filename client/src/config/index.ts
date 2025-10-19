@@ -78,10 +78,10 @@ export const isProduction = config.environment === 'production'
 export const isNonProduction = isLocalDev || isDevelopment
 
 export const urlBuilder = {
-  publicRoadmap: (subdomain?: string, publicSlug?: string): string => {
+  publicRoadmap: (subdomain?: string, publicSlug?: string): string | null => {
     if (subdomain) return `${config.frontendUrl}/public/r/${subdomain}`
     if (publicSlug) return `${config.frontendUrl}/public/roadmap/${publicSlug}`
-    throw new Error('Either subdomain or publicSlug must be provided')
+    return null
   },
   
   frontend: (path: string): string => `${config.frontendUrl}${path}`,
