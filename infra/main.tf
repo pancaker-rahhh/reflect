@@ -9,7 +9,7 @@ terraform {
   }
 
   backend "gcs" {
-    bucket = "reflectfeedback-terraform-state"
+    # Bucket name will be provided via -backend-config during terraform init
     prefix = "cloud-run"
   }
 }
@@ -46,6 +46,11 @@ variable "secrets" {
     version     = string
   }))
   default = {}
+}
+
+variable "bucket_name" {
+  type        = string
+  description = "GCS bucket name for Terraform state"
 }
 
 module "cloud_run_service" {

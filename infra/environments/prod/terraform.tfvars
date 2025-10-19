@@ -2,6 +2,7 @@ project_id   = "corded-nature-474915-q9"
 service_name = "reflectfeedback"
 region       = "us-east4"
 image        = "us-east4-docker.pkg.dev/corded-nature-474915-q9/reflectfeedback/app:latest"
+bucket_name  = "reflectfeedback-terraform-state"
 
 env_vars = {
   DEBUG         = "false"
