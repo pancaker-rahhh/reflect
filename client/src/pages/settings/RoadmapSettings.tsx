@@ -488,8 +488,8 @@ export function RoadmapSettings() {
                               </Label>
                             </div>
 
-                            <div className="flex items-center gap-2">
-                              <div className="flex-1 p-3 bg-background rounded-md border font-mono text-sm text-foreground">
+                            <div className="flex items-center gap-2 w-full">
+                              <div className="flex-1 p-3 bg-background rounded-md border font-mono text-sm text-foreground break-all overflow-hidden">
                                 {publicRoadmapUrl}
                               </div>
                               <Button

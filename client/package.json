@@ -4,8 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "dev": "vite --mode local-dev",
+    "dev:staging": "vite --mode development",
+    "build": "tsc -b && vite build --mode production",
+    "build:dev": "tsc -b && vite build --mode development",
+    "build:local": "tsc -b && vite build --mode local-dev",
     "build:widget": "node build-widget-with-css.js",
     "build:widget-base": "vite build --mode production --config vite.config.widget.js",
     "dev:widget": "vite --mode development --config vite.config.widget.js",
