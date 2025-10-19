@@ -1,16 +1,16 @@
 import type { Environment, EnvironmentConfig } from './types'
-import { localConfig } from './local'
+import { localDevConfig } from './local'
 import { developmentConfig } from './development'
 import { productionConfig } from './production'
 
 function validateEnvironment(env: string | undefined): asserts env is Environment {
   if (!env) {
     throw new Error(
-      'VITE_ENVIRONMENT is not set. Please create a .env file with VITE_ENVIRONMENT=local'
+      'VITE_ENVIRONMENT is not set. Please create a .env file with VITE_ENVIRONMENT=local-dev'
     )
   }
 
-  const validEnvironments: Environment[] = ['local', 'development', 'production']
+  const validEnvironments: Environment[] = ['local-dev', 'development', 'production']
   
   if (!validEnvironments.includes(env as Environment)) {
     throw new Error(
@@ -21,7 +21,7 @@ function validateEnvironment(env: string | undefined): asserts env is Environmen
 
 function loadEnvironmentConfig(environment: Environment): EnvironmentConfig {
   const configMap: Record<Environment, EnvironmentConfig> = {
-    local: localConfig,
+    'local-dev': localDevConfig,
     development: developmentConfig,
     production: productionConfig,
   }
@@ -72,10 +72,10 @@ function initializeConfig(): EnvironmentConfig {
 
 export const config = initializeConfig()
 
-export const isLocal = config.environment === 'local'
+export const isLocalDev = config.environment === 'local-dev'
 export const isDevelopment = config.environment === 'development'
 export const isProduction = config.environment === 'production'
-export const isNonProduction = isLocal || isDevelopment
+export const isNonProduction = isLocalDev || isDevelopment
 
 export const urlBuilder = {
   publicRoadmap: (subdomain?: string, publicSlug?: string): string => {

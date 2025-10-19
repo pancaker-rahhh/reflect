@@ -1,4 +1,4 @@
-export type Environment = 'local' | 'development' | 'production'
+export type Environment = 'local-dev' | 'development' | 'production'
 
 export interface SupabaseConfig {
   url: string

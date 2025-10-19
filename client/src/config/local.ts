@@ -1,7 +1,7 @@
 import type { EnvironmentConfig } from './types'
 
-export const localConfig: EnvironmentConfig = {
-  environment: 'local',
+export const localDevConfig: EnvironmentConfig = {
+  environment: 'local-dev',
   
   apiBaseUrl: 'http://localhost:8000/api/v1',
   frontendUrl: 'http://localhost:5173',
