@@ -285,10 +285,11 @@ async def convert_feedback_to_roadmap_item(
             db,
             feedback_id,
             UUID(current_user.user_id),
-            sanitized_priority,
-            sanitized_notes,
-            sanitized_tags,
-            conversion_data.column_id,
+            priority=sanitized_priority,
+            title=None,
+            conversion_notes=sanitized_notes,
+            custom_tags=sanitized_tags,
+            column_id=conversion_data.column_id,
         )
         return {
             'message': 'Feedback successfully converted to roadmap item',

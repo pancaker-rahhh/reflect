@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react'
 
+function decodeHtmlEntities(text: string): string {
+  const textarea = document.createElement('textarea')
+  textarea.innerHTML = text
+  return textarea.value
+}
+
 interface PublicFeedbackData {
   id: string
   feedback_type?: string
@@ -381,18 +387,18 @@ export function PublicFeedbackDisplay({
 
               {feedbackType === 'BUG_REPORT' || feedbackType === 'FEATURE_REQUEST' ? (
                 <div className="text-sm mb-2 line-clamp-3" style={{ color: colors.text }}>
-                  {item.message || item.description || item.title}
+                  {decodeHtmlEntities(item.message || item.description || item.title || '')}
                 </div>
               ) : (
                 <>
                   {item.title && (
                     <h4 className="font-medium mb-1 text-sm" style={{ color: colors.text }}>
-                      {item.title}
+                      {decodeHtmlEntities(item.title)}
                     </h4>
                   )}
                   {item.message && (
                     <p className="text-xs mb-2 line-clamp-2" style={{ color: colors.text }}>
-                      {item.message}
+                      {decodeHtmlEntities(item.message)}
                     </p>
                   )}
                 </>

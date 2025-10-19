@@ -36,7 +36,7 @@ export function Reviews() {
   const { data: feedback = [], isLoading } = useQuery({
     queryKey: ['reviews', currentProject?.id],
     queryFn: () => api.getFeedbackData('review', currentProject?.id, 'all'),
-    refetchInterval: 30000,
+    refetchInterval: 5000,
     enabled: !!currentProject?.id,
   })
 
@@ -286,9 +286,9 @@ export function Reviews() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Ratings</SelectItem>
-                <SelectItem value="promoters">Promoters (4-5)</SelectItem>
-                <SelectItem value="passives">Passives (3)</SelectItem>
-                <SelectItem value="detractors">Detractors (1-2)</SelectItem>
+                <SelectItem value="promoters">Positive (4-5 ⭐)</SelectItem>
+                <SelectItem value="passives">Neutral (3 ⭐)</SelectItem>
+                <SelectItem value="detractors">Negative (1-2 ⭐)</SelectItem>
               </SelectContent>
             </Select>
 

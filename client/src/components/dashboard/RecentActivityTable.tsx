@@ -6,6 +6,12 @@ interface RecentActivityTableProps {
   projectId?: string
 }
 
+function decodeHtmlEntities(text: string): string {
+  const textarea = document.createElement('textarea')
+  textarea.innerHTML = text
+  return textarea.value
+}
+
 const typeConfig: Record<
   string,
   {
@@ -72,10 +78,12 @@ export function RecentActivityTable({
                     )}
                   </div>
 
-                  <h3 className="text-base font-medium mb-2 leading-relaxed">{activity.summary}</h3>
+                  <h3 className="text-base font-medium mb-2 leading-relaxed">
+                    {decodeHtmlEntities(activity.summary)}
+                  </h3>
 
                   <div className="flex items-center gap-4 text-sm">
-                    <span>By {activity.submittedBy}</span>
+                    <span>By {decodeHtmlEntities(activity.submittedBy)}</span>
                     <span>•</span>
                     <span>
                       {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}

@@ -43,7 +43,7 @@ export function Dashboard() {
   } = useQuery({
     queryKey: ['dashboard-metrics', timeRange, currentProject?.id],
     queryFn: () => api.getDashboardMetrics(timeRange, currentProject?.id),
-    refetchInterval: 30000,
+    refetchInterval: 5000,
     enabled: !!currentProject?.id,
     retry: 3,
     retryDelay: 1000,
@@ -57,7 +57,7 @@ export function Dashboard() {
   } = useQuery({
     queryKey: ['recent-activity', currentProject?.id],
     queryFn: () => api.getRecentActivity(currentProject?.id),
-    refetchInterval: 30000,
+    refetchInterval: 5000,
     enabled: !!currentProject?.id,
     retry: 3,
     retryDelay: 1000,
@@ -71,7 +71,7 @@ export function Dashboard() {
   } = useQuery({
     queryKey: ['feedback-data', timeRange, currentProject?.id],
     queryFn: () => api.getFeedbackData(undefined, currentProject?.id, timeRange),
-    refetchInterval: 30000,
+    refetchInterval: 5000,
     enabled: !!currentProject?.id,
     retry: 3,
     retryDelay: 1000,
@@ -112,9 +112,7 @@ export function Dashboard() {
           !currentOrganization?.subscription_plan
         if (isFreeTier && responseUsage.percentage >= 80) {
           return (
-            <Alert
-              className={`border-warning/20 bg-warning/10`}
-            >
+            <Alert className={`border-warning/20 bg-warning/10`}>
               <Warning className="h-4 w-4 text-warning" />
               <AlertDescription className="text-warning flex items-center justify-between">
                 <span>
@@ -155,7 +153,9 @@ export function Dashboard() {
           <div className="bg-tertiary rounded-xl border border-border p-8">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-xl font-semibold text-foreground">Recent Activity</h2>
-              <div className="text-sm text-muted-foreground">{recentActivity?.length || 0} items</div>
+              <div className="text-sm text-muted-foreground">
+                {recentActivity?.length || 0} items
+              </div>
             </div>
 
             {activityError && renderErrorState(activityError, refetchActivity, 'recent activity')}

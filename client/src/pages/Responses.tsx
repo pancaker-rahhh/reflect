@@ -36,7 +36,7 @@ export function Responses() {
   const { data: allFeedback = [], isLoading } = useQuery({
     queryKey: ['feedback', currentProject?.id],
     queryFn: () => api.getFeedbackData(undefined, currentProject?.id, 'all'),
-    refetchInterval: 30000,
+    refetchInterval: 5000,
     enabled: !!currentProject?.id,
   })
 
@@ -131,34 +131,38 @@ export function Responses() {
       if (endDate && new Date(item.created_at) > endDate) return false
 
       if (scoreFilter !== 'all') {
-        let score: number | null = null
+        const isGeneralFeedback =
+          item.feedback_type === 'general' || item.feedback_type === 'FEEDBACK'
+        if (isGeneralFeedback && submissionType !== 'general') {
+          return false
+        }
 
-        if (
-          item.feedback_type === 'NPS' &&
-          item.nps_score !== null &&
-          item.nps_score !== undefined
-        ) {
+        let score: number | null = null
+        let isNPSType = false
+
+        if (item.feedback_type === 'NPS') {
           score = item.nps_score
-        } else if (
-          item.feedback_type === 'CSAT' &&
-          item.csat_score !== null &&
-          item.csat_score !== undefined
-        ) {
+          isNPSType = true
+        } else if (item.feedback_type === 'CSAT') {
           score = item.csat_score
-        } else if (
-          item.feedback_type === 'CES' &&
-          item.ces_score !== null &&
-          item.ces_score !== undefined
-        ) {
+        } else if (item.feedback_type === 'CES') {
           score = item.ces_score
         } else if (item.rating !== null && item.rating !== undefined) {
           score = item.rating
         }
 
-        if (score !== null) {
-          if (scoreFilter === 'promoters' && score < 9) return false
-          if (scoreFilter === 'passives' && (score < 7 || score > 8)) return false
-          if (scoreFilter === 'detractors' && score > 6) return false
+        if (score !== null && score !== undefined) {
+          if (isNPSType) {
+            if (scoreFilter === 'high' && score < 9) return false
+            if (scoreFilter === 'medium' && (score < 7 || score > 8)) return false
+            if (scoreFilter === 'low' && score > 6) return false
+          } else {
+            if (scoreFilter === 'high' && score < 4) return false
+            if (scoreFilter === 'medium' && score !== 3) return false
+            if (scoreFilter === 'low' && score > 2) return false
+          }
+        } else if (!isGeneralFeedback) {
+          return false
         }
       }
 
@@ -280,15 +284,43 @@ export function Responses() {
               </SelectContent>
             </Select>
 
-            <Select value={scoreFilter} onValueChange={setScoreFilter}>
+            <Select
+              value={scoreFilter}
+              onValueChange={setScoreFilter}
+              disabled={submissionType === 'general'}
+            >
               <SelectTrigger>
-                <SelectValue placeholder="Score/Rating" />
+                <SelectValue
+                  placeholder={submissionType === 'general' ? 'No scores' : 'Score Filter'}
+                />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Scores</SelectItem>
-                <SelectItem value="promoters">Promoters (9-10)</SelectItem>
-                <SelectItem value="passives">Passives (7-8)</SelectItem>
-                <SelectItem value="detractors">Detractors (0-6)</SelectItem>
+                {submissionType === 'all' || submissionType === 'NPS' ? (
+                  <>
+                    <SelectItem value="high">
+                      {submissionType === 'NPS'
+                        ? 'Promoters (9-10)'
+                        : 'High Scores (NPS 9-10 / Others 4-5)'}
+                    </SelectItem>
+                    <SelectItem value="medium">
+                      {submissionType === 'NPS'
+                        ? 'Passives (7-8)'
+                        : 'Medium Scores (NPS 7-8 / Others 3)'}
+                    </SelectItem>
+                    <SelectItem value="low">
+                      {submissionType === 'NPS'
+                        ? 'Detractors (0-6)'
+                        : 'Low Scores (NPS 0-6 / Others 1-2)'}
+                    </SelectItem>
+                  </>
+                ) : (
+                  <>
+                    <SelectItem value="high">Positive (4-5 ⭐)</SelectItem>
+                    <SelectItem value="medium">Neutral (3 ⭐)</SelectItem>
+                    <SelectItem value="low">Negative (1-2 ⭐)</SelectItem>
+                  </>
+                )}
               </SelectContent>
             </Select>
 
