@@ -1,30 +1,8 @@
 import { supabase } from './supabase'
 import { createApiError, handleApiError } from './errors'
+import { config, isNonProduction } from '@/config'
 
-const API_BASE_URL: string = (() => {
-  const configured = import.meta.env.VITE_API_BASE_URL as string | undefined
-  if (configured && typeof configured === 'string' && configured.trim().length > 0) {
-    return configured
-  }
-
-  if (typeof window === 'undefined') {
-    return 'http://localhost:8000/api/v1'
-  }
-
-  const { hostname, protocol } = window.location
-  const isLocalhost =
-    hostname === 'localhost' || hostname.startsWith('127.') || hostname.endsWith('.local')
-
-  if (isLocalhost) {
-    return 'http://localhost:8000/api/v1'
-  }
-
-  // Infer api subdomain for production, e.g. reflectfeedback.com -> api.reflectfeedback.com
-  const parts = hostname.split('.')
-  const baseDomain = parts.length >= 2 ? parts.slice(-2).join('.') : hostname
-  const apiHost = `api.${baseDomain}`
-  return `${protocol}//${apiHost}/api/v1`
-})()
+const API_BASE_URL = config.apiBaseUrl
 
 interface RequestConfig {
   timeout?: number
@@ -94,8 +72,8 @@ async function request<T>(endpoint: string, options: RequestInit & RequestConfig
       } = await supabase.auth.getSession()
       const token = session?.access_token
 
-      // TODO - Remove this once we have a proper logging system
-      if (import.meta.env.DEV) {
+      // Debug logging in development
+      if (config.features.debug) {
         console.log(`🌐 API Request: ${fetchOptions.method || 'GET'} ${API_BASE_URL}${endpoint}`)
         console.log(`🎫 Token present: ${token ? 'Yes' : 'No'}`)
       }
@@ -129,7 +107,7 @@ async function request<T>(endpoint: string, options: RequestInit & RequestConfig
         const detail = errorData?.detail || `Request failed with status ${response.status}`
 
         // Debug logging in development
-        if (import.meta.env.DEV) {
+        if (config.features.debug) {
           console.error(`❌ API Error: ${response.status} ${response.statusText}`)
           console.error(`❌ Error details:`, errorData)
         }
@@ -144,7 +122,7 @@ async function request<T>(endpoint: string, options: RequestInit & RequestConfig
       const result = await response.json()
 
       // Debug logging in development
-      if (import.meta.env.DEV) {
+      if (config.features.debug) {
         console.log(`✅ API Success: ${response.status}`, result)
       }
 
@@ -185,7 +163,7 @@ export const apiClient = {
         } = await supabase.auth.getSession()
         const token = session?.access_token
 
-        if (import.meta.env.DEV) {
+        if (config.features.debug) {
           console.log(`🌐 API Request (binary): GET ${API_BASE_URL}${endpoint}`)
           console.log(`🎫 Token present: ${token ? 'Yes' : 'No'}`)
         }
@@ -215,7 +193,7 @@ export const apiClient = {
 
         if (!response.ok) {
           const errorText = await response.text().catch(() => '')
-          if (import.meta.env.DEV) {
+          if (config.features.debug) {
             console.error(`❌ API Error (binary): ${response.status} ${response.statusText}`)
             console.error(`❌ Error details:`, errorText)
           }

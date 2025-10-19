@@ -1,7 +1,9 @@
 import type { User, Organization, Widget } from '@/types'
 import { supabase } from '../lib/supabase'
+import { config } from '@/config'
 
-const API_BASE_URL = 'http://localhost:8000/api/v1'
+const API_BASE_URL = config.apiBaseUrl
+
 
 class ApiService {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
