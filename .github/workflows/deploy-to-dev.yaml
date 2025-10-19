@@ -132,10 +132,10 @@ jobs:
           gcloud auth list
           gcloud config set project ${{ secrets.DEV_GCP_PROJECT_ID }}
           
-          if ! gsutil ls gs://reflectfeedback-dev-terraform-state &> /dev/null; then
+          if ! gsutil ls gs://reflectfeedback-terraform-state &> /dev/null; then
             echo "Creating Terraform state bucket..."
-            gsutil mb -p ${{ secrets.DEV_GCP_PROJECT_ID }} -l us-east4 gs://reflectfeedback-dev-terraform-state
-            gsutil versioning set on gs://reflectfeedback-dev-terraform-state
+            gsutil mb -p ${{ secrets.DEV_GCP_PROJECT_ID }} -l us-east4 gs://reflectfeedback-terraform-state
+            gsutil versioning set on gs://reflectfeedback-terraform-state
             echo "::notice::Created Terraform state bucket"
           else
             echo "::notice::Terraform state bucket already exists"
