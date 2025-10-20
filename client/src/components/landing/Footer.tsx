@@ -116,7 +116,7 @@ export const Footer = () => {
                   href="/about"
                   className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
                 >
-                  About Us
+                  Meet the Team
                 </a>
               </li>
               <li>

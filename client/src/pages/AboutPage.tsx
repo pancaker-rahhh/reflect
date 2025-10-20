@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Navbar } from '@/components/landing/Navbar'
 import { Footer } from '@/components/landing/Footer'
 import { founders } from '@/components/landing/data/founders'
+import { teamMembers } from '@/components/landing/data/team-members'
 
 export const AboutPage = () => {
   return (
@@ -90,7 +91,7 @@ export const AboutPage = () => {
               className="text-center mb-12"
             >
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-                Meet the Founders
+                Meet the Team
               </h2>
               <p className="mt-4 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
                 The team behind Reflect is dedicated to transforming how companies gather and act on
@@ -99,7 +100,7 @@ export const AboutPage = () => {
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10 max-w-6xl mx-auto">
-              {founders.map((founder, index) => (
+              {[...founders, ...teamMembers].map((founder, index) => (
                 <motion.div
                   key={founder.name}
                   initial={{ opacity: 0, y: 40 }}
