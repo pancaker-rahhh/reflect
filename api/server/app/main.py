@@ -31,20 +31,7 @@ def create_application() -> FastAPI:
         redirect_slashes=False,
     )
 
-    # Add middleware (last added is executed first on requests)
-    app.add_middleware(RequestLoggingMiddleware)
-    app.add_middleware(CorrelationIDMiddleware)
-
-    # Setup rate limiting
-    setup_rate_limiting(app)
-
-    # CORS must be the outermost middleware to properly handle preflight and
-    # attach CORS headers to all responses, including errors from upstream.
-
-    logger.info(f'CORS_ORIGINS raw: {settings.CORS_ORIGINS}')
-    logger.info(f'cors_origins_list: {settings.cors_origins_list}')
-    logger.info(f'ENV: {settings.ENV}')
-
+    # Add middleware in correct order (bottom to top execution)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins_list,
@@ -54,6 +41,11 @@ def create_application() -> FastAPI:
         allow_headers=settings.cors_headers_list,
         expose_headers=['X-Correlation-ID', 'X-Process-Time'],
     )
+    app.add_middleware(RequestLoggingMiddleware)
+    app.add_middleware(CorrelationIDMiddleware)
+
+    # Setup rate limiting (must be after other middleware)
+    setup_rate_limiting(app)
 
     app.add_exception_handler(AuthenticationError, authentication_error_handler)
     app.add_exception_handler(Exception, general_error_handler)
