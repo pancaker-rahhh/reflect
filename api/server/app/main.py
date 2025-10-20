@@ -8,7 +8,7 @@ from app.core.exceptions import AuthenticationError
 from app.core.settings import get_settings
 from app.core.middleware import CorrelationIDMiddleware, RequestLoggingMiddleware
 from app.core.rate_limiting import setup_rate_limiting
-from app.core.logging import setup_logging
+from app.core.logging import setup_logging, get_logger
 from app.core.lifespan import lifespan
 from app.router.api_router import api_router
 from app.router.v1.health_router import health_router
@@ -18,6 +18,7 @@ setup_logging()
 
 def create_application() -> FastAPI:
     settings = get_settings()
+    logger = get_logger(__name__)
 
     app = FastAPI(
         title=settings.APP_NAME,
@@ -39,11 +40,17 @@ def create_application() -> FastAPI:
 
     # CORS must be the outermost middleware to properly handle preflight and
     # attach CORS headers to all responses, including errors from upstream.
+
+    logger.info(f'CORS_ORIGINS raw: {settings.CORS_ORIGINS}')
+    logger.info(f'cors_origins_list: {settings.cors_origins_list}')
+    logger.info(f'ENV: {settings.ENV}')
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins_list,
+        allow_origin_regex=r'https://.*\\.reflectfeedback\.com$|^https://reflectfeedback\.com$',
         allow_credentials=True,
-        allow_methods=['*'],
+        allow_methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         allow_headers=settings.cors_headers_list,
         expose_headers=['X-Correlation-ID', 'X-Process-Time'],
     )
