@@ -94,13 +94,14 @@ jobs:
       #       us-east4-docker.pkg.dev/reflect-dev-473413/reflectfeedback/app:${{ github.sha }}
       #     cache-from: type=gha
       #     cache-to: type=gha,mode=max
-      
+
       - name: Build and push Docker image with Cloud Build
         run: |
           gcloud builds submit ./api \
             --tag us-east4-docker.pkg.dev/reflect-dev-473413/reflectfeedback/app:latest \
             --tag us-east4-docker.pkg.dev/reflect-dev-473413/reflectfeedback/app:${{ github.sha }} \
-            --timeout=20m
+            --timeout=20m \
+            --async
 
   deploy:
     name: Deploy to Cloud Run via Terraform
