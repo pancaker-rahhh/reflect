@@ -1,30 +1,8 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BrandWordmark } from '@/components/common/BrandWordmark'
+import { founders } from '@/components/landing/data/founders'
 
-const founders = [
-  {
-    name: 'Indira Kumar',
-    role: 'Co-Founder',
-    twitter: 'theluckiestman',
-    image: 'https://pbs.twimg.com/profile_images/1971218773488041984/3SYICmQ-_400x400.jpg',
-    bio: 'Building the future of feedback management.',
-  },
-  {
-    name: 'Keshav',
-    role: 'Co-Founder',
-    twitter: 'keshaha08',
-    image: 'https://pbs.twimg.com/profile_images/1968301563799379968/29gcKWRn_400x400.jpg',
-    bio: 'Full-stack engineer passionate about creating delightful user experiences.',
-  },
-  {
-    name: 'Kameel',
-    role: 'Co-Founder',
-    twitter: 'skameel2020',
-    image: 'https://pbs.twimg.com/profile_images/1709957992556281856/oDzn6eNU_400x400.jpg',
-    bio: 'Product visionary focused on solving real user problems.',
-  },
-]
 
 export const Footer = () => {
   const navigate = useNavigate()
