@@ -14,7 +14,6 @@ from app.core.lifespan import lifespan
 from app.router.api_router import api_router
 from app.router.v1.health_router import health_router
 
-logger = logging.getLogger("cors_debug")
 setup_logging()
 
 
@@ -32,8 +31,6 @@ def create_application() -> FastAPI:
         redirect_slashes=False,
     )
 
-    logger.info(f"CORS_ORIGINS: {settings.cors_origins_list}")
-    logger.info(f"CORS_HEADERS: {settings.cors_headers_list}")
 
     # Add middleware in correct order (bottom to top execution)
     app.add_middleware(
@@ -44,12 +41,11 @@ def create_application() -> FastAPI:
         allow_headers=settings.cors_headers_list,
         expose_headers=['X-Correlation-ID', 'X-Process-Time'],
     )
-    logger.info("CORSMiddleware added.")
 
     app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(CorrelationIDMiddleware)
 
-    # Setup rate limiting (must be after other middleware)
+    # Setup rate limiting (done after middleware)
     setup_rate_limiting(app)
 
     app.add_exception_handler(AuthenticationError, authentication_error_handler)
@@ -58,18 +54,8 @@ def create_application() -> FastAPI:
     app.include_router(api_router)
     app.include_router(health_router)
 
-    @app.api_route("/{full_path:path}", methods=["OPTIONS", "GET", "POST", "PUT", "DELETE", "PATCH"])
-    async def catch_all(request: Request, full_path: str):
-        logger.info(f"Request caught: method={request.method}, path={full_path}, origin={request.headers.get('origin')}")
-        return {
-            "method": request.method,
-            "path": full_path,
-            "origin": request.headers.get("origin"),
-        }
-
     @app.get('/')
     async def root():
-        logger.info("Root endpoint called.")
         return {
             'name': settings.APP_NAME,
             'version': settings.APP_VERSION,
