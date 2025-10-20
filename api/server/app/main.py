@@ -8,13 +8,12 @@ from app.core.exceptions import AuthenticationError
 from app.core.settings import get_settings
 from app.core.middleware import CorrelationIDMiddleware, RequestLoggingMiddleware
 from app.core.rate_limiting import setup_rate_limiting
-from app.core.logging import setup_logging
+from app.core.logging import get_logger, setup_logging
 from app.core.lifespan import lifespan
 from app.router.api_router import api_router
 from app.router.v1.health_router import health_router
 
 setup_logging()
-
 
 def create_application() -> FastAPI:
     settings = get_settings()
@@ -29,6 +28,11 @@ def create_application() -> FastAPI:
         lifespan=lifespan,
         redirect_slashes=False,
     )
+
+    logger = get_logger(__name__)
+    logger.info(f"CORS_ORIGINS raw: {settings.CORS_ORIGINS}")
+    logger.info(f"cors_origins_list: {settings.cors_origins_list}")
+    logger.info(f"ENV: {settings.ENV}")
 
     # Add middleware in correct order (bottom to top execution)
     app.add_middleware(
