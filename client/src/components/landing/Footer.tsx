@@ -2,6 +2,24 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BrandWordmark } from '@/components/common/BrandWordmark'
 
+const founders = [
+  {
+    name: 'Karthik',
+    twitter: 'theluckiestman',
+    image: 'https://pbs.twimg.com/profile_images/1844751302026153984/ntpFmBj8_400x400.jpg',
+  },
+  {
+    name: 'Keshav',
+    twitter: 'keshaha08',
+    image: 'https://pbs.twimg.com/profile_images/1841117696756654080/Hg3oV9kN_400x400.jpg',
+  },
+  {
+    name: 'Shakil',
+    twitter: 'skameel2020',
+    image: 'https://pbs.twimg.com/profile_images/1709957992556281856/oDzn6eNU_400x400.jpg',
+  },
+]
+
 export const Footer = () => {
   const navigate = useNavigate()
 
@@ -16,7 +34,7 @@ export const Footer = () => {
   return (
     <footer className="bg-background border-t border-border">
       <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-10">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 sm:gap-8 text-sm">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6 sm:gap-8 text-sm">
           {/* Column 1: Brand */}
           <div className="col-span-2 sm:col-span-3 md:col-span-1">
             <BrandWordmark />
@@ -28,7 +46,7 @@ export const Footer = () => {
                 href="https://x.com/Reflectfeedback"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Follow us on Twitter"
+                aria-label="Follow us on X"
                 className="text-muted-foreground hover:text-primary transition-colors"
               >
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -185,6 +203,46 @@ export const Footer = () => {
                 </a>
               </li>
             </ul>
+          </div>
+
+          {/* Column 5: Founders */}
+          <div className="col-span-2 sm:col-span-3 md:col-span-1">
+            <h4 className="font-semibold text-[hsl(var(--foreground))] uppercase tracking-wider text-xs sm:text-sm mb-3 sm:mb-4">
+              Founders
+            </h4>
+            <div className="space-y-3">
+              {founders.map((founder) => (
+                <a
+                  key={founder.twitter}
+                  href={`https://x.com/${founder.twitter}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 group hover:bg-muted/50 p-2 rounded-lg transition-all duration-200"
+                >
+                  <div className="relative flex-shrink-0">
+                    <img
+                      src={founder.image}
+                      alt={founder.name}
+                      className="w-10 h-10 rounded-full object-cover ring-2 ring-border group-hover:ring-primary transition-all duration-200"
+                      onError={(e) => {
+                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(founder.name)}&size=40&background=random`
+                      }}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">
+                      {founder.name}
+                    </p>
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                      </svg>
+                      <span className="truncate">@{founder.twitter}</span>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
           </div>
         </div>
         <div className="mt-8 sm:mt-12 border-t border-[hsl(var(--border))] pt-6 flex justify-center items-center">
