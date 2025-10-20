@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'api/**'
-      - '.github/workflows/deploy-to-dev.yaml'
+      - "api/**"
+      - ".github/workflows/deploy-to-dev.yaml"
   workflow_dispatch:
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
       - name: Setup Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Alembic upgrade head
         run: |
@@ -44,7 +44,7 @@ jobs:
           # Convert postgresql+asyncpg:// to postgresql:// and ssl=true to sslmode=require
           DB_URL="$(echo "$DB_URL" | sed -E 's|^postgresql\+asyncpg://|postgresql://|')"
           DB_URL="$(echo "$DB_URL" | sed -E 's|[?&]ssl=true|?sslmode=require|')"
-          
+
           echo "::group::DB connection target"
           echo "Using DATABASE_URL: ${DB_URL%%:*}://***@$(echo \"$DB_URL\" | sed -E 's|^[^@]*@([^/:?]+).*|\1|')/$(echo \"$DB_URL\" | sed -E 's|.*/([^/?]+)(\?.*)?$|\1|')"
           echo "::endgroup::"
@@ -79,30 +79,28 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker us-east4-docker.pkg.dev
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: |
-            image=ghcr.io/moby/buildkit:v0.13.2
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v3
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./api
-          file: ./api/Dockerfile
-          platforms: linux/amd64
-          push: true
-          tags: |
-            us-east4-docker.pkg.dev/reflect-dev-473413/reflectfeedback/app:latest 
-            us-east4-docker.pkg.dev/reflect-dev-473413/reflectfeedback/app:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Output image details
+      # - name: Build and push Docker image
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: ./api
+      #     file: ./api/Dockerfile
+      #     platforms: linux/amd64
+      #     push: true
+      #     tags: |
+      #       us-east4-docker.pkg.dev/reflect-dev-473413/reflectfeedback/app:latest
+      #       us-east4-docker.pkg.dev/reflect-dev-473413/reflectfeedback/app:${{ github.sha }}
+      #     cache-from: type=gha
+      #     cache-to: type=gha,mode=max
+      
+      - name: Build and push Docker image with Cloud Build
         run: |
-          echo "::notice::Image pushed to Artifact Registry"
-          echo "::notice::Latest tag: us-east4-docker.pkg.dev/reflect-dev-473413/reflectfeedback/app:latest"
-          echo "::notice::Commit tag: us-east4-docker.pkg.dev/reflect-dev-473413/reflectfeedback/app:${{ github.sha }}"
+          gcloud builds submit ./api \
+            --tag us-east4-docker.pkg.dev/reflect-dev-473413/reflectfeedback/app:latest \
+            --tag us-east4-docker.pkg.dev/reflect-dev-473413/reflectfeedback/app:${{ github.sha }} \
+            --timeout=20m
 
   deploy:
     name: Deploy to Cloud Run via Terraform
@@ -134,7 +132,7 @@ jobs:
           # Verify gcloud authentication
           gcloud auth list
           gcloud config set project ${{ secrets.DEV_GCP_PROJECT_ID }}
-          
+
           if ! gsutil ls gs://reflectfeedback-dev-terraform-state &> /dev/null; then
             echo "Creating Terraform state bucket..."
             gsutil mb -p ${{ secrets.DEV_GCP_PROJECT_ID }} -l us-east4 gs://reflectfeedback-dev-terraform-state
