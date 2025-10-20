@@ -10,9 +10,12 @@ export const Navbar = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const isDocsPage = location.pathname.startsWith('/docs')
+  const isStaticPage = ['/about', '/contact', '/terms', '/privacy', '/cookies'].includes(
+    location.pathname
+  )
 
   useEffect(() => {
-    if (isDocsPage) {
+    if (isDocsPage || isStaticPage) {
       setIsScrolled(true)
       return
     }
@@ -21,11 +24,11 @@ export const Navbar = () => {
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [isDocsPage])
+  }, [isDocsPage, isStaticPage])
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     e.preventDefault()
-    if (location.pathname.startsWith('/docs')) {
+    if (location.pathname !== '/') {
       navigate('/#' + targetId)
     } else {
       const targetElement = document.getElementById(targetId)

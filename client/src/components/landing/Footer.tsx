@@ -111,8 +111,7 @@ export const Footer = () => {
             <ul className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
               <li>
                 <a
-                  href="#video-section"
-                  onClick={(e) => handleNavClick(e, 'video-section')}
+                  href="/about"
                   className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
                 >
                   About Us
@@ -120,7 +119,7 @@ export const Footer = () => {
               </li>
               <li>
                 <a
-                  href="mailto:hello@reflect.com"
+                  href="/contact"
                   className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
                 >
                   Contact
@@ -146,7 +145,7 @@ export const Footer = () => {
               </li>
               <li>
                 <a
-                  href="mailto:partners@reflect.com"
+                  href="mailto:partners@reflectfeedback.com"
                   className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
                 >
                   Affiliates

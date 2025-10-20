@@ -64,6 +64,12 @@ const PrivacyPolicy = lazy(() =>
 const CookiePolicy = lazy(() =>
   import('@/pages/legal/CookiePolicy').then((m) => ({ default: m.CookiePolicy }))
 )
+const AboutPage = lazy(() =>
+  import('@/pages/AboutPage').then((m) => ({ default: m.AboutPage }))
+)
+const ContactPage = lazy(() =>
+  import('@/pages/ContactPage').then((m) => ({ default: m.ContactPage }))
+)
 const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m.NotFound })))
 
 function App() {
@@ -91,6 +97,8 @@ function App() {
                       <Route path="/terms" element={<TermsOfService />} />
                       <Route path="/privacy" element={<PrivacyPolicy />} />
                       <Route path="/cookies" element={<CookiePolicy />} />
+                      <Route path="/about" element={<AboutPage />} />
+                      <Route path="/contact" element={<ContactPage />} />
 
                       {/* Onboarding route */}
                       <Route
