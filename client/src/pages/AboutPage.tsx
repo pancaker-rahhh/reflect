@@ -5,22 +5,22 @@ import { Footer } from '@/components/landing/Footer'
 
 const founders = [
   {
-    name: 'Karthik',
-    role: 'Co-Founder & CEO',
+    name: 'Indira Kumar',
+    role: 'Co-Founder',
     twitter: 'theluckiestman',
-    image: 'https://pbs.twimg.com/profile_images/1844751302026153984/ntpFmBj8_400x400.jpg',
-    bio: 'Building the future of feedback management. Previously at tech startups.',
+    image: 'https://pbs.twimg.com/profile_images/1971218773488041984/3SYICmQ-_400x400.jpg',
+    bio: 'Building the future of feedback management.',
   },
   {
     name: 'Keshav',
-    role: 'Co-Founder & CTO',
+    role: 'Co-Founder',
     twitter: 'keshaha08',
-    image: 'https://pbs.twimg.com/profile_images/1841117696756654080/Hg3oV9kN_400x400.jpg',
+    image: 'https://pbs.twimg.com/profile_images/1968301563799379968/29gcKWRn_400x400.jpg',
     bio: 'Full-stack engineer passionate about creating delightful user experiences.',
   },
   {
-    name: 'Shakil Kameel',
-    role: 'Co-Founder & CPO',
+    name: 'Kameel',
+    role: 'Co-Founder',
     twitter: 'skameel2020',
     image: 'https://pbs.twimg.com/profile_images/1709957992556281856/oDzn6eNU_400x400.jpg',
     bio: 'Product visionary focused on solving real user problems.',
