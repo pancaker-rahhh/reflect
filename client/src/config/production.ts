@@ -4,7 +4,7 @@ export const productionConfig: EnvironmentConfig = {
   environment: 'production',
   
   apiBaseUrl: 'https://reflectfeedback-5dko4w6pja-uk.a.run.app/api/v1',
-  frontendUrl: 'https://app.reflectfeedback.com',
+  frontendUrl: 'https://www.reflectfeedback.com',
   
   supabase: {
     url: 'https://wrwyqrxczlkjgprinfwd.supabase.co',
