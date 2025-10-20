@@ -1,6 +1,5 @@
 import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
-import { TwitterLogo } from 'phosphor-react'
 import { Navbar } from '@/components/landing/Navbar'
 import { Footer } from '@/components/landing/Footer'
 
@@ -42,7 +41,7 @@ export const AboutPage = () => {
       <Navbar />
       <div className="min-h-screen bg-background pt-20">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-primary/5 via-primary/3 to-background py-20 sm:py-32">
+        <section className="relative overflow-hidden bg-gradient-to-b from-primary/5 via-primary/3 to-background py-16 sm:py-20 lg:py-24">
           <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
             <motion.div
@@ -74,7 +73,7 @@ export const AboutPage = () => {
         </section>
 
         {/* Mission Section */}
-        <section className="py-16 sm:py-24">
+        <section className="py-12 sm:py-16 lg:py-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-5xl">
               <motion.div
@@ -82,7 +81,7 @@ export const AboutPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
                 viewport={{ once: true }}
-                className="text-center mb-16"
+                className="text-center"
               >
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
                   Our Mission
@@ -104,14 +103,14 @@ export const AboutPage = () => {
         </section>
 
         {/* Team Section */}
-        <section className="py-16 sm:py-24 bg-gradient-to-b from-muted/30 to-background">
+        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-muted/30 to-background">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="text-center mb-16"
+              className="text-center mb-12"
             >
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
                 Meet the Founders
@@ -145,7 +144,7 @@ export const AboutPage = () => {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     </div>
-                    <div className="p-6 sm:p-8">
+                    <div className="p-6">
                       <h3 className="text-xl sm:text-2xl font-bold text-foreground">
                         {founder.name}
                       </h3>
@@ -155,15 +154,17 @@ export const AboutPage = () => {
                       <p className="mt-4 text-sm sm:text-base text-muted-foreground leading-relaxed">
                         {founder.bio}
                       </p>
-                      <div className="mt-6 flex items-center gap-3">
+                      <div className="mt-5 flex items-center gap-3">
                         <a
                           href={`https://x.com/${founder.twitter}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-110"
-                          aria-label={`${founder.name} on Twitter`}
+                          aria-label={`${founder.name} on X`}
                         >
-                          <TwitterLogo className="h-5 w-5" weight="fill" />
+                          <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                          </svg>
                         </a>
                       </div>
                     </div>
@@ -175,7 +176,7 @@ export const AboutPage = () => {
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 sm:py-28 bg-gradient-to-b from-primary/5 to-background relative overflow-hidden">
+        <section className="py-16 sm:py-20 lg:py-24 bg-gradient-to-b from-primary/5 to-background relative overflow-hidden">
           <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
             <motion.div
@@ -188,7 +189,7 @@ export const AboutPage = () => {
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
                 Want to Join Our Journey?
               </h2>
-              <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
                 <motion.a
                   href="/contact"
                   whileHover={{ scale: 1.05 }}
