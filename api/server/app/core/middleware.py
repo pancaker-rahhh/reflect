@@ -11,6 +11,9 @@ logger = get_logger(__name__)
 
 class CorrelationIDMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        if request.method == 'OPTIONS':
+            return await call_next(request)
+
         correlation_id = request.headers.get('X-Correlation-ID', str(uuid.uuid4()))
         request.state.correlation_id = correlation_id
 
@@ -44,6 +47,9 @@ class CorrelationIDMiddleware(BaseHTTPMiddleware):
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        if request.method == 'OPTIONS':
+            return await call_next(request)
+
         request_info = {
             'method': request.method,
             'url': str(request.url),
