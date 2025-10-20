@@ -52,7 +52,7 @@ export const SEOHead = ({
         {
           '@type': 'Offer',
           name: 'Startup Plan',
-          price: '19',
+          price: '29',
           priceCurrency: 'USD',
           description: 'Perfect for growing teams',
         },
@@ -107,7 +107,7 @@ export const SEOHead = ({
       contactPoint: {
         '@type': 'ContactPoint',
         contactType: 'Customer Support',
-        email: 'support@reflect.com',
+        email: 'support@reflectfeedback.com',
         availableLanguage: ['English'],
       },
     },
@@ -188,8 +188,8 @@ export const SEOHead = ({
       <meta name="revisit-after" content="7 days" />
       <meta name="rating" content="General" />
       <meta name="distribution" content="global" />
-      <meta name="geo.region" content="US" />
-      <meta name="geo.placename" content="United States" />
+      <meta name="geo.region" content="IN-KA" />
+      <meta name="geo.placename" content="Bengaluru, India" />
 
       {/* Canonical URL */}
       {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}

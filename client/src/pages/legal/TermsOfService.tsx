@@ -2,6 +2,8 @@ import { motion } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { SEOHead } from '@/components/common/SEOHead'
+import { Navbar } from '@/components/landing/Navbar'
+import { Footer } from '@/components/landing/Footer'
 
 export const TermsOfService = () => {
   const navigate = useNavigate()
@@ -11,14 +13,14 @@ export const TermsOfService = () => {
     '@type': 'WebPage',
     name: 'Terms of Service',
     description: 'Terms of Service for Reflect - User Feedback Platform',
-    url: 'https://reflect.com/terms',
+    url: 'https://reflectfeedback.com/terms',
     mainEntity: {
       '@type': 'Organization',
       name: 'Reflect Technologies, Inc.',
-      url: 'https://reflect.com',
+      url: 'https://reflectfeedback.com',
       contactPoint: {
         '@type': 'ContactPoint',
-        email: 'legal@reflect.com',
+        email: 'support@reflectfeedback.com',
         contactType: 'Legal Department',
       },
     },
@@ -30,10 +32,11 @@ export const TermsOfService = () => {
         title="Terms of Service"
         description="Read our comprehensive Terms of Service for using Reflect, the user feedback platform. Learn about your rights, responsibilities, and our service terms."
         keywords="terms of service, user agreement, legal terms, feedback platform, SaaS terms, service agreement"
-        canonicalUrl="https://reflect.com/terms"
+        canonicalUrl="https://reflectfeedback.com/terms"
         structuredData={structuredData}
       />
-      <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="min-h-screen bg-gray-50 pt-20">
         {/* Header */}
         <div className="bg-tertiary border-b border-border">
           <div className="max-w-4xl mx-auto px-6 py-8">
@@ -306,21 +309,18 @@ export const TermsOfService = () => {
               </p>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-gray-700">
-                  <strong>Email:</strong> legal@reflect.com
+                  <strong>Email:</strong> support@reflectfeedback.com
                   <br />
-                  <strong>Address:</strong> Reflect Technologies, Inc.
+                  <strong>Location:</strong> Bengaluru, KA, India
                   <br />
-                  1234 Innovation Drive, Suite 200
-                  <br />
-                  San Francisco, CA 94105
-                  <br />
-                  <strong>Phone:</strong> +1 (555) 123-4567
+                  <strong>Support Hours:</strong> Monday - Friday, 5:00 PM - 12:00 AM IST
                 </p>
               </div>
             </div>
           </motion.div>
         </div>
       </div>
+      <Footer />
     </>
   )
 }

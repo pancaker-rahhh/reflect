@@ -2,6 +2,8 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, Shield, Eye, Lock, Database } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { SEOHead } from '@/components/common/SEOHead'
+import { Navbar } from '@/components/landing/Navbar'
+import { Footer } from '@/components/landing/Footer'
 
 export const PrivacyPolicy = () => {
   const navigate = useNavigate()
@@ -11,14 +13,14 @@ export const PrivacyPolicy = () => {
     '@type': 'WebPage',
     name: 'Privacy Policy',
     description: 'Privacy Policy for Reflect - User Feedback Platform',
-    url: 'https://reflect.com/privacy',
+    url: 'https://reflectfeedback.com/privacy',
     mainEntity: {
       '@type': 'Organization',
       name: 'Reflect Technologies, Inc.',
-      url: 'https://reflect.com',
+      url: 'https://reflectfeedback.com',
       contactPoint: {
         '@type': 'ContactPoint',
-        email: 'privacy@reflect.com',
+        email: 'support@reflectfeedback.com',
         contactType: 'Privacy Department',
       },
     },
@@ -30,10 +32,11 @@ export const PrivacyPolicy = () => {
         title="Privacy Policy"
         description="Learn how Reflect protects your privacy and handles your data. Our comprehensive privacy policy covers data collection, usage, and your rights under GDPR and CCPA."
         keywords="privacy policy, data protection, GDPR, CCPA, user privacy, data security, personal information"
-        canonicalUrl="https://reflect.com/privacy"
+        canonicalUrl="https://reflectfeedback.com/privacy"
         structuredData={structuredData}
       />
-      <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="min-h-screen bg-gray-50 pt-20">
         {/* Header */}
         <div className="bg-tertiary border-b border-border">
           <div className="max-w-4xl mx-auto px-6 py-8">
@@ -227,23 +230,18 @@ export const PrivacyPolicy = () => {
               </p>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-gray-700">
-                  <strong>Email:</strong> privacy@reflect.com
+                  <strong>Email:</strong> support@reflectfeedback.com
                   <br />
-                  <strong>Data Protection Officer:</strong> dpo@reflect.com
+                  <strong>Location:</strong> Bengaluru, KA, India
                   <br />
-                  <strong>Address:</strong> Reflect Technologies, Inc.
-                  <br />
-                  1234 Innovation Drive, Suite 200
-                  <br />
-                  San Francisco, CA 94105
-                  <br />
-                  <strong>Phone:</strong> +1 (555) 123-4567
+                  <strong>Support Hours:</strong> Monday - Friday, 5:00 PM - 12:00 AM IST
                 </p>
               </div>
             </div>
           </motion.div>
         </div>
       </div>
+      <Footer />
     </>
   )
 }

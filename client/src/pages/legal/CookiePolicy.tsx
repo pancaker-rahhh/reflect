@@ -2,6 +2,8 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, Cookie, Settings, BarChart3, Shield } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { SEOHead } from '@/components/common/SEOHead'
+import { Navbar } from '@/components/landing/Navbar'
+import { Footer } from '@/components/landing/Footer'
 
 export const CookiePolicy = () => {
   const navigate = useNavigate()
@@ -11,14 +13,14 @@ export const CookiePolicy = () => {
     '@type': 'WebPage',
     name: 'Cookie Policy',
     description: 'Cookie Policy for Reflect - User Feedback Platform',
-    url: 'https://reflect.com/cookies',
+    url: 'https://reflectfeedback.com/cookies',
     mainEntity: {
       '@type': 'Organization',
       name: 'Reflect Technologies, Inc.',
-      url: 'https://reflect.com',
+      url: 'https://reflectfeedback.com',
       contactPoint: {
         '@type': 'ContactPoint',
-        email: 'privacy@reflect.com',
+        email: 'support@reflectfeedback.com',
         contactType: 'Privacy Department',
       },
     },
@@ -30,10 +32,11 @@ export const CookiePolicy = () => {
         title="Cookie Policy"
         description="Learn about how Reflect uses cookies and similar technologies to enhance your experience. Understand cookie types, purposes, and how to manage your preferences."
         keywords="cookie policy, cookies, tracking, analytics, user preferences, website cookies, data collection"
-        canonicalUrl="https://reflect.com/cookies"
+        canonicalUrl="https://reflectfeedback.com/cookies"
         structuredData={structuredData}
       />
-      <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="min-h-screen bg-gray-50 pt-20">
         {/* Header */}
         <div className="bg-tertiary border-b border-border">
           <div className="max-w-4xl mx-auto px-6 py-8">
@@ -230,23 +233,18 @@ export const CookiePolicy = () => {
               </p>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-gray-700">
-                  <strong>Email:</strong> privacy@reflect.com
+                  <strong>Email:</strong> support@reflectfeedback.com
                   <br />
-                  <strong>Subject Line:</strong> Cookie Policy Inquiry
+                  <strong>Location:</strong> Bengaluru, KA, India
                   <br />
-                  <strong>Address:</strong> Reflect Technologies, Inc.
-                  <br />
-                  1234 Innovation Drive, Suite 200
-                  <br />
-                  San Francisco, CA 94105
-                  <br />
-                  <strong>Phone:</strong> +1 (555) 123-4567
+                  <strong>Support Hours:</strong> Monday - Friday, 5:00 PM - 12:00 AM IST
                 </p>
               </div>
             </div>
           </motion.div>
         </div>
       </div>
+      <Footer />
     </>
   )
 }
