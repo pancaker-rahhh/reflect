@@ -81,7 +81,7 @@ export const ContactPage = () => {
                     <div>
                       <h3 className="font-semibold text-foreground mb-2 text-lg">Email</h3>
                       <a
-                        href="mailto:hello@reflectfeedback.com"
+                        href="mailto:support@reflectfeedback.com"
                         className="text-muted-foreground hover:text-primary transition-colors text-base"
                       >
                         support@reflectfeedback.com
