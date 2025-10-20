@@ -36,7 +36,10 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # CORS
-    CORS_ORIGINS: str = 'http://localhost:3000,http://localhost:5173,http://localhost:5174,https://reflectfeedback.com,https://ui-dev.reflectfeedback.com'
+    CORS_ORIGINS: str = (
+        'http://localhost:3000,http://localhost:5173,http://localhost:5174,'
+        'https://reflectfeedback.com,https://ui-dev.reflectfeedback.com'
+    )
     CORS_HEADERS: str = '*'
 
     # Frontend & Email Configuration
