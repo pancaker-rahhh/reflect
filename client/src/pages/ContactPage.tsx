@@ -1,46 +1,10 @@
-import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { EnvelopeSimple, MapPin, Phone, InstagramLogo } from 'phosphor-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { useToast } from '@/components/ui/use-toast'
 import { Navbar } from '@/components/landing/Navbar'
 import { Footer } from '@/components/landing/Footer'
 
 export const ContactPage = () => {
-  const { toast } = useToast()
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    toast({
-      title: 'Message sent!',
-      description: "We'll get back to you as soon as possible.",
-    })
-
-    setFormData({ name: '', email: '', subject: '', message: '' })
-    setIsSubmitting(false)
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }))
-  }
 
   return (
     <>
@@ -86,116 +50,16 @@ export const ContactPage = () => {
           </div>
         </section>
 
-        {/* Contact Form & Info Section */}
+        {/* Contact Info Section */}
         <section className="py-16 sm:py-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 max-w-7xl mx-auto">
-              {/* Contact Form */}
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="order-2 lg:order-1"
-              >
-                <div className="rounded-3xl bg-background p-8 sm:p-10 shadow-2xl ring-1 ring-border/50 hover:ring-primary/20 transition-all duration-300">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-8">
-                    Send us a message
-                  </h2>
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                      <label
-                        htmlFor="name"
-                        className="block text-sm font-semibold text-foreground mb-2"
-                      >
-                        Name
-                      </label>
-                      <Input
-                        id="name"
-                        name="name"
-                        type="text"
-                        required
-                        value={formData.name}
-                        onChange={handleChange}
-                        placeholder="Your name"
-                        className="w-full h-12 text-base"
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="email"
-                        className="block text-sm font-semibold text-foreground mb-2"
-                      >
-                        Email
-                      </label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        required
-                        value={formData.email}
-                        onChange={handleChange}
-                        placeholder="you@example.com"
-                        className="w-full h-12 text-base"
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="subject"
-                        className="block text-sm font-semibold text-foreground mb-2"
-                      >
-                        Subject
-                      </label>
-                      <Input
-                        id="subject"
-                        name="subject"
-                        type="text"
-                        required
-                        value={formData.subject}
-                        onChange={handleChange}
-                        placeholder="How can we help?"
-                        className="w-full h-12 text-base"
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="message"
-                        className="block text-sm font-semibold text-foreground mb-2"
-                      >
-                        Message
-                      </label>
-                      <Textarea
-                        id="message"
-                        name="message"
-                        required
-                        value={formData.message}
-                        onChange={handleChange}
-                        placeholder="Tell us more about your inquiry..."
-                        rows={6}
-                        className="w-full text-base"
-                      />
-                    </div>
-
-                    <Button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="w-full h-12 text-base font-semibold"
-                      size="lg"
-                    >
-                      {isSubmitting ? 'Sending...' : 'Send Message'}
-                    </Button>
-                  </form>
-                </div>
-              </motion.div>
-
+            <div className="max-w-3xl mx-auto">
               {/* Contact Info */}
               <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                className="order-1 lg:order-2 space-y-8"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="space-y-8"
               >
                 <div>
                   <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">
@@ -220,7 +84,7 @@ export const ContactPage = () => {
                         href="mailto:hello@reflectfeedback.com"
                         className="text-muted-foreground hover:text-primary transition-colors text-base"
                       >
-                        hello@reflectfeedback.com
+                        support@reflectfeedback.com
                       </a>
                     </div>
                   </motion.div>
@@ -235,9 +99,9 @@ export const ContactPage = () => {
                     <div>
                       <h3 className="font-semibold text-foreground mb-2 text-lg">Location</h3>
                       <p className="text-muted-foreground text-base">
-                        San Francisco, CA
+                        Bengaluru, KA
                         <br />
-                        United States
+                        India
                       </p>
                     </div>
                   </motion.div>
@@ -254,7 +118,7 @@ export const ContactPage = () => {
                       <p className="text-muted-foreground text-base">
                         Available Monday - Friday
                         <br />
-                        9:00 AM - 5:00 PM PST
+                        5:00 PM - 12:00 AM IST
                       </p>
                     </div>
                   </motion.div>
