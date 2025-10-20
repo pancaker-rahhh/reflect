@@ -40,6 +40,10 @@ variable "service_account_email" {
   description = "Service account for Cloud Run runtime"
 }
 
+variable "custom_domain" {
+  type        = string
+}
+
 variable "env_vars" {
   type    = map(string)
   default = {}
@@ -66,6 +70,7 @@ module "cloud_run_service" {
   region                = var.region
   image                 = var.image
   service_account_email = var.service_account_email
+  custom_domain         = var.custom_domain
   env_vars              = var.env_vars
   secrets               = var.secrets
 }

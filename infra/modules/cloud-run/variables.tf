@@ -19,6 +19,10 @@ variable "service_account_email" {
   description = "Service account email for Cloud Run runtime"
 }
 
+variable "custom_domain" {
+  type        = string
+}
+
 variable "env_vars" {
   type    = map(string)
   default = {}
