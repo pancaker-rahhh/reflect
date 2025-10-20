@@ -81,15 +81,7 @@ Create a blank migration file for custom changes:
 ```bash
 alembic revision -m "custom database changes"
 ```
-## To Run Migrations on Railway environments
-Run:
-```
-railway ssh --project=c8fe1a98-b07e-4953-8406-4317af775b70 --environment=14ad1a12-f93f-426b-8307-718d4ac0b3f2 --service=effe37bb-05cd-48a4-9f1f-9a1f4479e47d
-```
-And finally:
-```
-/app/.venv/bin/alembic upgrade head
-```
+
 ## Best Practices
 
 1. **Always review auto-generated migrations** before applying them

@@ -142,9 +142,6 @@ Go to **Settings → Environments** and create two environments:
 - `DEV_GCP_PROJECT_ID` - Your dev GCP project ID (e.g., `reflect-dev-473413`)
 - `DEV_DOCKER_IMAGE_TAG` - Format: `us-east4-docker.pkg.dev/<dev-project-id>/reflectfeedback/api`
 
-**Optional (if using Railway for dev):**
-- `RAILWAY_DEPLOYMENT_TOKEN` - Railway deployment token
-- `RAILWAY_SERVICE_NAME` - Railway service name
 
 ### 4. Initialize Terraform
 
@@ -184,11 +181,6 @@ Triggers on push to `main` branch:
 2. Builds Docker image for AMD64
 3. Pushes to GCP Artifact Registry (dev project)
 4. Deploys to Cloud Run via Terraform (dev environment)
-
-### Railway Deployment (main branch)
-Legacy workflow - triggers on push to `main` branch:
-1. Runs Alembic migrations on dev database
-2. Deploys to Railway
 
 ---
 
