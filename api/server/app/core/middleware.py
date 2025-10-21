@@ -66,3 +66,20 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         logger.debug('response.details', **response_info)
 
         return response
+
+
+class CORSOptionsMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        if request.method == 'OPTIONS':
+            response = Response(status_code=200)
+            response.headers['Access-Control-Allow-Origin'] = request.headers.get(
+                'origin', '*'
+            )
+            response.headers['Access-Control-Allow-Methods'] = '*'
+            response.headers['Access-Control-Allow-Headers'] = '*'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Max-Age'] = '3600'
+            return response
+
+        response = await call_next(request)
+        return response
