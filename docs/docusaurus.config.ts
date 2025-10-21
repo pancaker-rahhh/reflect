@@ -79,26 +79,19 @@ const config: Config = {
       title: 'Reflect',
       logo: {
         alt: 'Reflect Logo',
-        src: 'img/logo.svg',
+        src: 'https://cdn.reflectfeedback.com/assets/logo-bg-removed.svg',
       },
       items: [
         {
           type: 'docSidebar',
           sidebarId: 'tutorialSidebar',
           position: 'left',
-          label: 'Documentation',
+          label: 'Docs',
         },
         {
-          type: 'docSidebar',
-          sidebarId: 'widgetSidebar',
-          position: 'left',
-          label: 'Widget Guide',
-        },
-        {
-          type: 'docSidebar',
-          sidebarId: 'apiSidebar',
-          position: 'left',
-          label: 'API Reference',
+          to: '/blog', 
+          label: 'Blog', 
+          position: 'left'
         },
         {
           href: 'https://github.com/pancaker-rahhh/reflect',
@@ -111,28 +104,36 @@ const config: Config = {
       style: 'dark',
       links: [
         {
-          title: 'Docs',
+          title: 'Documentation',
           items: [
             {
-              label: 'Tutorial',
-              to: '/docs/intro',
+              label: 'Getting Started',
+              to: '/docs/getting-started/quick-start',
+            },
+            {
+              label: 'Widget Integration',
+              to: '/docs/widgets/intro',
+            },
+            {
+              label: 'API Reference',
+              to: '/docs/api/intro',
             },
           ],
         },
         {
-          title: 'Community',
+          title: 'Resources',
           items: [
             {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/docusaurus',
+              label: 'GitHub',
+              href: 'https://github.com/pancaker-rahhh/reflect',
             },
             {
-              label: 'Discord',
-              href: 'https://discordapp.com/invite/docusaurus',
+              label: 'Issues',
+              href: 'https://github.com/pancaker-rahhh/reflect/issues',
             },
             {
-              label: 'X',
-              href: 'https://x.com/docusaurus',
+              label: 'Contribute',
+              href: 'https://github.com/pancaker-rahhh/reflect/blob/main/CONTRIBUTING.md',
             },
           ],
         },
@@ -140,21 +141,22 @@ const config: Config = {
           title: 'More',
           items: [
             {
-              label: 'Blog',
-              to: '/blog',
+              label: 'Widget Architecture',
+              to: '/docs/widgets/architecture',
             },
             {
-              label: 'GitHub',
-              href: 'https://github.com/facebook/docusaurus',
+              label: 'CDN Deployment',
+              to: '/docs/architecture/cdn-deployment',
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} Reflect. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Reflect. Built with ❤️ and Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,
-      darkTheme: prismThemes.dracula,
+      darkTheme: prismThemes.vsDark,
+      additionalLanguages: ['bash', 'typescript', 'javascript', 'jsx', 'tsx', 'json', 'markdown', 'css', 'python'],
     },
   } satisfies Preset.ThemeConfig,
 };
