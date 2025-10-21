@@ -11,13 +11,13 @@ export const founders = [
     role: 'Co-Founder',
     twitter: 'keshaha08',
     image: 'https://pbs.twimg.com/profile_images/1968301563799379968/29gcKWRn_400x400.jpg',
-    bio: 'Full-stack engineer passionate about creating delightful user experiences.',
+    bio: 'Full-stack engineer that solves ambiguous problems for the fun of it',
   },
   {
     name: 'Kameel',
     role: 'Co-Founder',
     twitter: 'skameel2020',
-    image: 'https://pbs.twimg.com/profile_images/1980214361806278656/0ciNKOJ0_400x400.jpg',
+    image: 'https://pbs.twimg.com/profile_images/1980312086245732352/3fTSyKqY_400x400.jpg',
     bio: 'Product visionary focused on solving real user problems.',
   },
 ]

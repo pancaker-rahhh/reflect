@@ -127,37 +127,6 @@ export const SEOHead = ({
         'query-input': 'required name=search_term_string',
       },
     },
-    // FAQ Schema (if applicable)
-    {
-      '@context': 'https://schema.org',
-      '@type': 'FAQPage',
-      mainEntity: [
-        {
-          '@type': 'Question',
-          name: 'What is Reflect?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Reflect is a comprehensive user feedback platform that helps you collect bug reports, feature requests, and customer insights through customizable widgets and forms.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'How long does it take to set up Reflect?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Reflect can be set up in just 3 minutes. Simply create an account, customize your widget, and add a simple code snippet to your website.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'Is there a free plan available?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Yes, Reflect offers a free plan with essential features including unlimited feedback collection, basic analytics, and widget customization.',
-          },
-        },
-      ],
-    },
     // BreadcrumbList Schema
     {
       '@context': 'https://schema.org',
