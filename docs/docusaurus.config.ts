@@ -7,7 +7,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'Reflect Documentation',
   tagline: 'Build powerful feedback widgets for your applications',
-  favicon: 'img/favicon.ico',
+  favicon: 'https://cdn.reflectfeedback.com/assets/logo-bg-removed.svg',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
@@ -55,8 +55,6 @@ const config: Config = {
           },
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
           // Useful options to enforce blogging best practices
           onInlineTags: 'warn',
           onInlineAuthors: 'warn',
@@ -70,8 +68,7 @@ const config: Config = {
   ],
 
   themeConfig: {
-    // Replace with your project's social card
-    image: 'img/docusaurus-social-card.jpg',
+    image: 'https://cdn.reflectfeedback.com/assets/logo-bg-removed.svg',
     colorMode: {
       defaultMode: 'light',
       disableSwitch: false,

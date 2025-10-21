@@ -51,7 +51,6 @@ export default function Home() {
   const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
-      title={`${siteConfig.title} Documentation`}
       description="Build powerful feedback widgets for your applications">
       <main>
         <div style={{ padding: '4rem 2rem', textAlign: 'center' }}>
