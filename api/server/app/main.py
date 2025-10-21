@@ -1,16 +1,13 @@
-import sys
 import logging
 from fastapi import FastAPI
-import fastapi
 from fastapi.middleware.cors import CORSMiddleware
-import starlette
 from app.core.exception_handlers import (
     authentication_error_handler,
     general_error_handler,
 )
 from app.core.exceptions import AuthenticationError
 from app.core.settings import get_settings
-from app.core.middleware import CORSOptionsMiddleware, CorrelationIDMiddleware, RequestLoggingMiddleware
+from app.core.middleware import CorrelationIDMiddleware, RequestLoggingMiddleware
 from app.core.rate_limiting import setup_rate_limiting
 from app.core.logging import setup_logging
 from app.core.lifespan import lifespan
@@ -18,7 +15,6 @@ from app.router.api_router import api_router
 from app.router.v1.health_router import health_router
 
 setup_logging()
-logger = logging.getLogger(__name__)
 
 def create_application() -> FastAPI:
     settings = get_settings()
@@ -33,28 +29,10 @@ def create_application() -> FastAPI:
         lifespan=lifespan,
         redirect_slashes=False,
     )
-    
-    @app.options("/{full_path:path}")
-    async def options_handler(full_path: str):
-        return {"message": "OPTIONS OK"}
-    
-    print(f"Python: {sys.version}")
-    print(f"FastAPI: {fastapi.__version__}")
-    print(f"Starlette: {starlette.__version__}")
-    print(f"CORS Origins: {settings.cors_origins_list}")
-    print(f"CORS Headers: {settings.cors_headers_list}")
-    
-    logger.info(f"Python: {sys.version}")
-    logger.info(f"FastAPI: {fastapi.__version__}")
-    logger.info(f"Starlette: {starlette.__version__}")
-    logger.info(f"CORS Origins: {settings.cors_origins_list}")
-    logger.info(f"CORS Headers: {settings.cors_headers_list}")
-
     # Add middleware in correct order (bottom to top execution)
-    app.add_middleware(CORSOptionsMiddleware)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.cors_origins_list,
+        allow_origins=['https://ui-dev.reflectfeedback.com', 'https://reflectfeedback.com'],
         allow_credentials=True,
         allow_methods=['*'],
         allow_headers=['*'],
@@ -73,6 +51,16 @@ def create_application() -> FastAPI:
 
     app.include_router(api_router)
     app.include_router(health_router)
+
+    @app.get('/debug/cors')
+    async def debug_cors():
+        settings = get_settings()
+        return {
+            'CORS_ORIGINS_RAW': settings.CORS_ORIGINS,
+            'cors_origins_list': settings.cors_origins_list,
+            'cors_headers_list': settings.cors_headers_list,
+            'ENV': settings.ENV,
+        }
 
     @app.get('/')
     async def root():
