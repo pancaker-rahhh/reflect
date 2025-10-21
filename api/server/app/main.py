@@ -1,4 +1,5 @@
 import sys
+import logging
 from fastapi import FastAPI
 import fastapi
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,7 +18,7 @@ from app.router.api_router import api_router
 from app.router.v1.health_router import health_router
 
 setup_logging()
-
+logger = logging.getLogger(__name__)
 
 def create_application() -> FastAPI:
     settings = get_settings()
@@ -42,6 +43,12 @@ def create_application() -> FastAPI:
     print(f"Starlette: {starlette.__version__}")
     print(f"CORS Origins: {settings.cors_origins_list}")
     print(f"CORS Headers: {settings.cors_headers_list}")
+    
+    logger.info(f"Python: {sys.version}")
+    logger.info(f"FastAPI: {fastapi.__version__}")
+    logger.info(f"Starlette: {starlette.__version__}")
+    logger.info(f"CORS Origins: {settings.cors_origins_list}")
+    logger.info(f"CORS Headers: {settings.cors_headers_list}")
 
     # Add middleware in correct order (bottom to top execution)
     app.add_middleware(
