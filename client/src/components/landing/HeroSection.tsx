@@ -11,9 +11,7 @@ export const HeroSection = () => {
       transition={{ duration: 1.2 }}
     >
       {/* Clean Background */}
-      <motion.div
-        className="absolute inset-0 bg-gradient-to-br from-background via-background to-background/95"
-      />
+      <motion.div className="absolute inset-0 bg-gradient-to-br from-background via-background to-background/95" />
 
       {/* Main Content - Centered */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8 py-16 sm:py-20 pt-24 sm:pt-32 pb-8 sm:pb-12">
@@ -27,9 +25,7 @@ export const HeroSection = () => {
           >
             {/* Badge: centered directly above headline */}
             <div className="mx-auto mb-2">
-              <NotBackedBadge
-                className="mx-auto px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm shadow-2xl ring-2 ring-primary/20 bg-white text-[hsl(var(--foreground))] border border-[hsl(var(--border))/0.08]"
-              />
+              <NotBackedBadge className="mx-auto px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm shadow-2xl ring-2 ring-primary/20 bg-white text-[hsl(var(--foreground))] border border-[hsl(var(--border))/0.08]" />
             </div>
             <motion.h1
               className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[hsl(var(--foreground))] leading-[1.1] tracking-tight px-4 sm:px-0"
@@ -52,10 +48,8 @@ export const HeroSection = () => {
                   backgroundClip: 'text',
                 }}
               >
-                Collect User Feedback
+                Turn Every User Into Your Product Manager
               </motion.span>
-              <br />
-              <span className="text-[hsl(var(--muted-foreground))]">in 3 Minutes</span>
             </motion.h1>
 
             <motion.p
@@ -64,9 +58,14 @@ export const HeroSection = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
             >
-              The fastest way to collect bug reports, feature requests, and user insights.
-              <strong className="text-[hsl(var(--foreground))]"> No coding required.</strong> Free
-              plan available.
+              Get real user feedback with voting, bug reports, and insights—all from one beautiful
+              widget.
+              <strong className="text-[hsl(var(--foreground))]">
+                {' '}
+                See exactly what users want
+              </strong>{' '}
+              so you can build features that get adopted.
+              <strong className="text-[hsl(var(--foreground))]"> Free forever.</strong>
             </motion.p>
             {/* CTA Button */}
             <motion.div
@@ -76,11 +75,11 @@ export const HeroSection = () => {
               transition={{ duration: 0.8, delay: 0.7 }}
             >
               <button
-                onClick={() => window.location.href = '/login'}
+                onClick={() => (window.location.href = '/login')}
                 className="inline-block rounded-2xl bg-primary px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all border border-primary/20 w-full sm:w-auto"
                 style={{ boxShadow: '0 8px 32px rgba(220,38,38,0.18)' }}
               >
-              Get Started
+                Start Building What Users Want
               </button>
             </motion.div>
           </motion.div>
@@ -121,7 +120,10 @@ export const HeroSection = () => {
                     transform: 'translateZ(0)',
                   }}
                 >
-                  <source src="https://cdn.reflectfeedback.com/assets/reflect-intro-1080p.mp4" type="video/mp4" />
+                  <source
+                    src="https://cdn.reflectfeedback.com/assets/reflect-intro-1080p.mp4"
+                    type="video/mp4"
+                  />
                   Your browser does not support the video tag.
                 </video>
 

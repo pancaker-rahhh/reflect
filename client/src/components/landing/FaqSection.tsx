@@ -1,51 +1,43 @@
 import { useState } from 'react'
 import { FaqItem } from './FaqItem'
-import {
-  LifeBuoy,
-  Timer,
-  BadgeCheck,
-  MessageSquare,
-  Paintbrush,
-  Smartphone,
-  BarChart3,
-} from 'lucide-react'
+import { LifeBuoy, Timer, BadgeCheck, Zap, Paintbrush, Smartphone, BarChart3 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const faqData = [
   {
-    question: 'How long does installation take?',
+    question: 'How fast can I start collecting feedback?',
     answer:
-      "Installation is incredibly fast and takes less than 30 seconds. It just involves copying a single line of code into your website's HTML.",
+      '3 minutes from signup to live. One line of code, zero configuration, no developer needed. Your first user feedback could arrive before you finish your coffee.',
     icon: <Timer size={24} />,
   },
   {
-    question: 'Is there really a free plan?',
+    question: "What's the catch with the free plan?",
     answer:
-      'Yes, absolutely! Our free plan includes core features to start collecting valuable feedback from your users, with the option to upgrade for more features.',
+      "No catch. It's free forever—1 widget, 20 responses/month, full customization. No credit card, no surprise charges. When you outgrow it, Pro is $29/month for unlimited everything.",
     icon: <BadgeCheck size={24} />,
   },
   {
-    question: 'What types of feedback can I collect?',
+    question: 'Why not just use a Google Form?',
     answer:
-      'You can collect various types of feedback, including bug reports, feature suggestions, general comments, and reviews. Our widget is flexible to suit your needs.',
-    icon: <MessageSquare size={24} />,
+      'Google Forms take users away from your site to fill out a separate page. Reflect lives directly in your app where users already are. Plus, you get voting on feature requests and a public roadmap—not just a spreadsheet of responses.',
+    icon: <Zap size={24} />,
   },
   {
-    question: "Can I customize the widget's appearance?",
+    question: "Can I make it look like it's part of my app?",
     answer:
-      "Yes, you can customize the colors, position, and text of the widget to perfectly match your brand's look and feel directly from your dashboard.",
+      "Absolutely. Match your exact brand colors, choose your position, write your own copy. On Pro, remove our badge entirely—it'll look like you built it in-house.",
     icon: <Paintbrush size={24} />,
   },
   {
     question: 'Does it work on mobile?',
     answer:
-      'Of course. The Reflect widget is fully responsive and designed to work flawlessly on all devices, including desktops, tablets, and smartphones.',
+      'Flawlessly. Your users on iPhone, Android, tablets, desktops—everyone gets the same smooth experience.',
     icon: <Smartphone size={24} />,
   },
   {
-    question: 'What kind of analytics do you provide?',
+    question: 'How do I know what users actually want?',
     answer:
-      'We provide a comprehensive analytics dashboard that shows you trends in your feedback, common themes, and user satisfaction scores over time.',
+      'See exactly which features get the most upvotes, track feedback trends over time, and spot patterns in your dashboard. Filter by week, month, or year. No more guessing—build what users are literally voting for.',
     icon: <BarChart3 size={24} />,
   },
 ]
@@ -80,7 +72,7 @@ export const FaqSection = () => {
       transition={{ duration: 0.8 }}
       viewport={{ once: true }}
     >
-  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
         <div className="mx-auto max-w-7xl">
           <div className="lg:grid lg:grid-cols-12 lg:gap-12 xl:gap-16">
             <motion.div

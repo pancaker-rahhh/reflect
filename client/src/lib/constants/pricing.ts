@@ -44,8 +44,8 @@ export const PRICING_PLANS: PricingPlan[] = [
       projects: 1,
       widgets: 1,
       responses: 20,
-      bug_reports: 20,
-      feature_requests: 20,
+      bug_reports: 0,
+      feature_requests: 0,
     },
     features: {
       advanced_targeting: false,
@@ -75,14 +75,14 @@ export const PRICING_PLANS: PricingPlan[] = [
       feature_requests: 999999, // Unlimited
     },
     features: {
-      advanced_targeting: true,
+      advanced_targeting: false,
       branding_removal: true,
       priority_support: true,
-      dofollow_backlink: true,
+      dofollow_backlink: false,
       jira_integration: true,
       public_roadmap: true,
     },
-    description: 'The ultimate toolkit for growing businesses.',
+    description: 'For teams ready to scale. Everything you need to turn feedback into growth.',
     is_active: true,
     is_popular: true,
   },
@@ -103,14 +103,14 @@ export const PRICING_PLANS: PricingPlan[] = [
       feature_requests: 999999, // Unlimited
     },
     features: {
-      advanced_targeting: true,
+      advanced_targeting: false,
       branding_removal: true,
       priority_support: true,
-      dofollow_backlink: true,
+      dofollow_backlink: false,
       jira_integration: true,
       public_roadmap: true,
     },
-    description: 'The same crazies but pay for a year and get 10% off.',
+    description: 'For serious builders. Same power, better value. Save $88/year.',
     is_active: true,
     is_popular: false,
   },
@@ -155,7 +155,7 @@ export const calculateYearlyDiscount = (monthlyPrice: number, yearlyPrice: numbe
 export const getFeatureList = (plan: PricingPlan): string[] => {
   const features: string[] = []
 
-  // Limits
+  // Basic limits (all plans)
   if (plan.limits.projects === 999999) {
     features.push('Unlimited projects')
   } else {
@@ -174,41 +174,21 @@ export const getFeatureList = (plan: PricingPlan): string[] => {
     features.push(`${plan.limits.responses} responses/month`)
   }
 
-  if (plan.limits.bug_reports === 999999) {
-    features.push('Unlimited bug reports')
-  } else {
-    features.push(`${plan.limits.bug_reports} bug reports/month`)
-  }
-
-  if (plan.limits.feature_requests === 999999) {
-    features.push('Unlimited feature requests')
-  } else {
-    features.push(`${plan.limits.feature_requests} feature requests/month`)
-  }
-
-  // Features
-  if (plan.features.public_roadmap) {
-    features.push('Public roadmap page')
-  }
-
-  if (plan.features.dofollow_backlink) {
-    features.push('Get a dofollow backlink')
-  }
-
+  // Pro-only features
   if (plan.features.priority_support) {
     features.push('Priority email support')
   }
 
-  if (plan.features.branding_removal) {
-    features.push('Option to remove branding')
-  }
-
-  if (plan.features.advanced_targeting) {
-    features.push('Advanced user targeting')
-  }
-
   if (plan.features.jira_integration) {
     features.push('JIRA integration')
+  }
+
+  if (plan.features.branding_removal) {
+    features.push('Remove Reflect branding')
+  }
+
+  if (plan.features.public_roadmap) {
+    features.push('Public roadmap page')
   }
 
   return features

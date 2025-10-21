@@ -1,25 +1,16 @@
 import { useState } from 'react'
-import {
-  Bug,
-  ChartBar,
-  FileText,
-  Lightbulb,
-  GitMerge,
-  Play,
-  X,
-  Palette,
-} from 'phosphor-react'
+import { Bug, ChartBar, FileText, Lightbulb, GitMerge, Play, X, Palette } from 'phosphor-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const features = [
-    {
-    name: 'Create Widget',
+  {
+    name: 'Widget Studio',
     icon: Palette,
     color: 'text-info',
     bgColor: 'bg-info/10',
-    title: 'Customize Your Feedback Widget',
+    title: 'Design Once, Deploy Everywhere',
     description:
-      'Design and configure your feedback widget to match your brand. Easily embed it in your application and start collecting valuable user insights.',
+      'Pick from 4 pre-built themes or customize every color, position, and text field. Enable multiple feedback types (NPS, CSAT, reviews, bugs) in one widget. Your users get a menu, your dashboard gets organized data. No CSS required.',
     videoUrl: 'https://cdn.reflectfeedback.com/assets/create-widget-showcase.mp4',
     thumbnail: 'https://cdn.reflectfeedback.com/assets/create-widget-showcase.mp4',
   },
@@ -28,53 +19,53 @@ const features = [
     icon: Bug,
     color: 'text-destructive',
     bgColor: 'bg-destructive/10',
-    title: 'Streamline Your Bug Tracking',
+    title: 'Severity Levels That Actually Get Fixed',
     description:
-      'Track and manage bug reports with detailed information, screenshots, and priority levels. Users can easily report issues directly from your application.',
+      'Users describe the bug, pick severity (Low, Medium, High, Critical), and submit. You get structured reports in your dashboard with no more hunting through Slack threads. Filter by severity, assign priorities, close the loop faster.',
     videoUrl: 'https://cdn.reflectfeedback.com/assets/bug-report-showcase.mp4',
     thumbnail: 'https://cdn.reflectfeedback.com/assets/bug-report-showcase.mp4',
   },
   {
-    name: 'Dashboard',
+    name: 'Analytics Hub',
     icon: ChartBar,
     color: 'text-info',
     bgColor: 'bg-info/10',
-    title: 'Get a Complete Overview',
+    title: 'Your Feedback At a Glance',
     description:
-      'Our comprehensive analytics dashboard gives you real-time insights and performance metrics to track your user engagement and feedback trends.',
+      'See total feedback count, average rating, new bugs, and feature requests in real-time. Visual pie charts show distribution by type (NPS, bugs, requests). Filter recent activity by date. Turn data into decisions, not spreadsheets.',
     videoUrl: 'https://cdn.reflectfeedback.com/assets/dashboard-showcase.mp4',
     thumbnail: 'https://cdn.reflectfeedback.com/assets/dashboard-showcase.mp4',
   },
   {
-    name: 'Survey Responses',
+    name: 'Survey Engine',
     icon: FileText,
     color: 'text-success',
     bgColor: 'bg-success/10',
-    title: 'Analyze Survey Results',
+    title: 'NPS, CSAT, CES. All In-App',
     description:
-      'Build custom surveys, NPS, and CSAT forms to gather targeted feedback. View detailed response analytics and insights to understand your users better.',
+      'Deploy Net Promoter Score (0-10), Customer Satisfaction (emoji or star ratings), or Customer Effort Score surveys without leaving your product. Users respond in seconds, you track trends over time. Higher completion rates when surveys feel native.',
     videoUrl: 'https://cdn.reflectfeedback.com/assets/survey-responses-showcase.mp4',
     thumbnail: 'https://cdn.reflectfeedback.com/assets/survey-responses-showcase.mp4',
   },
   {
-    name: 'Feature Requests',
+    name: 'Feature Voting',
     icon: Lightbulb,
     color: 'text-warning',
     bgColor: 'bg-warning/10',
-    title: 'Prioritize Your Roadmap',
+    title: 'Let Users Vote, You Build Smarter',
     description:
-      'Let your users submit ideas and vote on their favorite features. Our voting system helps you build a data-driven roadmap your users will love.',
+      'Users submit feature ideas with priority levels, then upvote existing requests they want most. See which features have 50+ votes vs. 2. Your roadmap becomes data-driven, not opinion-driven. Democracy for product decisions.',
     videoUrl: 'https://cdn.reflectfeedback.com/assets/feature-request-showcase.mp4',
     thumbnail: 'https://cdn.reflectfeedback.com/assets/feature-request-showcase.mp4',
   },
   {
-    name: 'Roadmap',
+    name: 'Public Roadmap',
     icon: GitMerge,
     color: 'text-primary',
     bgColor: 'bg-primary/10',
-    title: 'Share Your Vision',
+    title: 'Show Progress, Build Trust',
     description:
-      "Keep your users in the loop with a beautiful, public-facing roadmap. Show them what you're working on and what's coming next to build trust and excitement.",
+      'Create columns like "Planned," "In Progress," "Shipped." Drag features between stages. Users see what you\'re working on in real-time. Convert feedback directly into roadmap items, add tags, set priorities. Transparency equals retention.',
     videoUrl: 'https://cdn.reflectfeedback.com/assets/roadmap-showcase.mp4',
     thumbnail: 'https://cdn.reflectfeedback.com/assets/roadmap-showcase.mp4',
   },
@@ -119,7 +110,7 @@ export const PlatformSection = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}
             >
-              One platform to handle your <span className="text-primary">feedback</span>
+              Every Tool You Need to <span className="text-primary">Close the Loop</span>
             </motion.h2>
             <motion.p
               className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-muted-foreground max-w-3xl mx-auto px-4 sm:px-0"
@@ -128,8 +119,8 @@ export const PlatformSection = () => {
               transition={{ duration: 0.6, delay: 0.3 }}
               viewport={{ once: true }}
             >
-              Explore our key features through videos showcasing the platform. See how Reflect can
-              streamline your entire feedback lifecycle.
+              Watch how teams collect, organize, analyze, and act on feedback. All without leaving
+              their workflow. Click any demo to see the full feature in action.
             </motion.p>
           </motion.div>
 
@@ -161,20 +152,18 @@ export const PlatformSection = () => {
                   </div>
                 </button>
 
-                <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-4 ${feature.bgColor}`}>
+                <div
+                  className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-4 ${feature.bgColor}`}
+                >
                   <feature.icon className={`h-5 w-5 ${feature.color}`} />
-                  <h3 className={`text-sm font-bold ${feature.color}`}>
-                    {feature.name}
-                  </h3>
+                  <h3 className={`text-sm font-bold ${feature.color}`}>{feature.name}</h3>
                 </div>
 
                 <h4 className="text-xl font-bold tracking-tight text-foreground mb-3">
                   {feature.title}
                 </h4>
 
-                <p className="text-sm leading-6 text-muted-foreground">
-                  {feature.description}
-                </p>
+                <p className="text-sm leading-6 text-muted-foreground">{feature.description}</p>
               </motion.div>
             ))}
           </div>

@@ -15,25 +15,25 @@ const modules: Module[] = [
   {
     id: 'reviews',
     name: 'Reviews & Surveys',
-    description: 'Customer feedback & ratings',
+    description: 'Turn 5-star reviews into sales',
     icon: <Star className="text-success" />,
   },
   {
     id: 'surveys',
     name: 'Custom Surveys',
-    description: 'NPS, CSAT & custom forms',
+    description: 'Measure satisfaction, boost retention',
     icon: <FileText className="text-info" />,
   },
   {
     id: 'bugs',
     name: 'Bug Reports',
-    description: 'Issue reporting with screenshots',
+    description: 'Fix bugs 3x faster with context',
     icon: <Bug className="text-destructive" />,
   },
   {
     id: 'features',
     name: 'Feature Requests',
-    description: 'Ideas with voting system',
+    description: 'Build what users actually want',
     icon: <Lightbulb className="text-primary" />,
   },
 ]
@@ -76,7 +76,9 @@ export const InteractiveModulesSection = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: true }}
           >
-            <span className="text-primary">4 powerful modules</span> in one widget
+            <span className="text-foreground">4 Feedback Tools</span>,{' '}
+            <span className="text-primary">1 Widget</span>,{' '}
+            <span className="text-foreground">$200/Month Saved</span>
           </motion.h2>
           <motion.p
             className="mt-6 sm:mt-8 text-base sm:text-lg md:text-xl leading-7 sm:leading-8 text-muted-foreground max-w-3xl mx-auto px-4 sm:px-0"
@@ -92,10 +94,10 @@ export const InteractiveModulesSection = () => {
               transition={{ duration: 0.4, delay: 0.5 }}
               viewport={{ once: true }}
             >
-              Save $200/month
+              Toggle any module on/off
             </motion.span>{' '}
-            by replacing separate tools. Toggle modules on/off to see how your widget adapts in
-            real-time.
+            and watch your widget adapt instantly. One code snippet powers all feedback types. The
+            only widget that grows with your business.
           </motion.p>
         </motion.div>
 
@@ -157,8 +159,12 @@ export const InteractiveModulesSection = () => {
                       </motion.div>
                     </motion.div>
                     <div className="min-w-0">
-                      <h4 className="font-semibold text-foreground text-base sm:text-lg truncate">{module.name}</h4>
-                      <p className="text-xs sm:text-sm text-muted-foreground truncate">{module.description}</p>
+                      <h4 className="font-semibold text-foreground text-base sm:text-lg truncate">
+                        {module.name}
+                      </h4>
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                        {module.description}
+                      </p>
                     </div>
                   </div>
                   <motion.button
@@ -247,9 +253,14 @@ export const InteractiveModulesSection = () => {
                       >
                         <ChatCircle className="w-5 h-5 sm:w-6 sm:h-6" />
                       </motion.div>
-                      <h4 className="text-base sm:text-lg lg:text-xl font-bold truncate">How can we help you today?</h4>
+                      <h4 className="text-base sm:text-lg lg:text-xl font-bold truncate">
+                        How can we help you today?
+                      </h4>
                     </div>
-                    <button className="text-primary-foreground/70 hover:text-primary-foreground transition-colors flex-shrink-0" aria-label="Close">
+                    <button
+                      className="text-primary-foreground/70 hover:text-primary-foreground transition-colors flex-shrink-0"
+                      aria-label="Close"
+                    >
                       <X size={18} className="sm:w-5 sm:h-5" />
                     </button>
                   </div>
@@ -261,9 +272,14 @@ export const InteractiveModulesSection = () => {
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 sm:gap-2">
                       <span className="text-lg sm:text-xl">👏</span>
-                      <h3 className="text-sm sm:text-base font-semibold text-foreground">How can we help?</h3>
+                      <h3 className="text-sm sm:text-base font-semibold text-foreground">
+                        How can we help?
+                      </h3>
                     </div>
-                    <button className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Close">
+                    <button
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      aria-label="Close"
+                    >
                       <X size={16} className="sm:w-[18px] sm:h-[18px]" />
                     </button>
                   </div>
@@ -348,7 +364,7 @@ export const InteractiveModulesSection = () => {
             }}
             whileTap={{ scale: 0.98 }}
           >
-            Try it Free - Setup in 3 minutes
+            Start Saving $200/Month Today
           </motion.button>
         </motion.div>
       </div>

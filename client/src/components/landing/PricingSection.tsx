@@ -20,7 +20,7 @@ export const PricingSection = () => {
           ? formatPrice(plan!.price.yearly) + '/year'
           : formatPrice(plan!.price.monthly) + '/month',
       features: getFeatureList(plan!),
-      buttonText: plan!.id === 'free' ? 'Start for Free' : 'Start Your Free Trial',
+      buttonText: plan!.id === 'free' ? 'Start Building Today' : 'Unlock Full Power',
       primary: plan!.is_popular || false,
     }))
 
@@ -61,7 +61,7 @@ export const PricingSection = () => {
             transition={{ duration: 0.6, delay: 0.3 }}
             viewport={{ once: true }}
           >
-            The Right Plan for Your Needs
+            Choose Your Growth Path
           </motion.h2>
           <motion.p
             className="mx-auto mt-6 sm:mt-8 max-w-3xl text-base sm:text-lg md:text-xl leading-7 sm:leading-8 text-[hsl(var(--muted-foreground))] px-4 sm:px-0"
@@ -70,11 +70,12 @@ export const PricingSection = () => {
             transition={{ duration: 0.6, delay: 0.4 }}
             viewport={{ once: true }}
           >
-            Start for free, and unlock more power as you grow. No hidden fees, ever.
+            Pick the plan that matches your ambition. Whether you're validating an idea or scaling
+            to millions, we've got you covered. Transparent pricing, no surprises.
           </motion.p>
         </motion.div>
 
-  <div className="isolate mx-auto mt-8 sm:mt-12 grid max-w-6xl grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <div className="isolate mx-auto mt-8 sm:mt-12 grid max-w-6xl grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
           {displayPlans.map((plan, index) => (
             <motion.div
               key={plan.name}
