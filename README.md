@@ -67,5 +67,25 @@ Widgets are served from static URLs:
 
 ---
 
+## 📚 Documentation
+
+Comprehensive documentation is available at the `/docs` directory. To view locally:
+
+```bash
+cd docs
+npm install
+npm start
+```
+
+The documentation site will be available at http://localhost:3000
+
+Documentation includes:
+- **Getting Started** - Quick start guides and installation instructions
+- **Widget Integration** - Framework-specific guides (React, Vue, Angular, Next.js, etc.)
+- **API Reference** - Complete API documentation
+- **Architecture** - System architecture and design decisions
+
+---
+
 ## Client Setup
 
