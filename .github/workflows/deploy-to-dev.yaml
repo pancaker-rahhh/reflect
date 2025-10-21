@@ -149,7 +149,10 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: |
-          terraform plan -var-file=environments/dev/terraform.tfvars -out=tfplan -no-color
+          terraform plan \
+            -var-file=environments/dev/terraform.tfvars \
+            -var="image=us-east4-docker.pkg.dev/reflect-dev-473413/reflectfeedback/app:${{ github.sha }}" \
+            -out=tfplan -no-color
           terraform show -no-color tfplan > plan.txt
           echo "::group::Terraform Plan"
           cat plan.txt
@@ -157,9 +160,7 @@ jobs:
 
       - name: Terraform Apply
         run: |
-          terraform apply -auto-approve \
-            -var="image=us-east4-docker.pkg.dev/reflect-dev-473413/reflectfeedback/app:${{ github.sha }}" \
-            tfplan
+          terraform apply -auto-approve tfplan
 
       - name: Get Service URL
         id: output
