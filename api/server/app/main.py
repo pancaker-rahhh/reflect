@@ -1,5 +1,4 @@
-import logging
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.exception_handlers import (
     authentication_error_handler,
@@ -30,7 +29,10 @@ def create_application() -> FastAPI:
         lifespan=lifespan,
         redirect_slashes=False,
     )
-
+    
+    @app.options("/{full_path:path}")
+    async def options_handler(full_path: str):
+        return {"message": "OPTIONS OK"}
 
     # Add middleware in correct order (bottom to top execution)
     app.add_middleware(
