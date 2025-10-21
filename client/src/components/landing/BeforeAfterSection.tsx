@@ -2,20 +2,23 @@ import { XCircle, CheckCircle } from 'phosphor-react'
 import { motion } from 'framer-motion'
 
 const beforeItems = [
-  'Hard to identify friction points',
-  '$189/months and 4 tools to handle all kind of feedback',
-  'Blind decisions based on assumptions',
-  'Annoying email surveys that disrupt users',
-  'Back and forth emails exchange to understand the client context (OS, broken urls, etc.)',
-  'Missed opportunities to improve customer experience',
+  'Spending $189/month on 4 different tools (Typeform, Hotjar, UserVoice, Jira)',
+  'The loudest voice wins - not the majority',
+  'No idea what your NPS actually is - never measured it',
+  'Bugs reported via Slack DMs, emails, everywhere',
+  'Support keeps answering the same questions',
+  'Building features based on assumptions, not votes',
 ]
 
 const afterItems = [
-  'User context provided in all bug reports (browser, device, screen size, etc.)',
-  'Engage visitors with targeted, non-intrusive feedback widgets',
-  'Centralized dashboard for all feedback',
-  '3-minute setup with no-code installation',
-  'Shareable public roadmap',
+  'One widget at $29/month - all feedback types',
+  'Every voice counts - see which ideas get 100+ votes',
+  'Track NPS, CSAT, CES over time',
+  'Organized bug reports with priority levels',
+  'Public roadmap shows users you listen',
+  '3-minute setup - no developer needed',
+  'Real-time analytics dashboard',
+  'Custom branding - looks like your app',
 ]
 
 const containerVariants = {
@@ -69,8 +72,9 @@ export const BeforeAfterSection = () => {
             variants={itemVariants}
             transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            Move from scattered feedback and blind decisions to a clear, centralized hub of user
-            insights. See the difference Reflect makes.
+            Most teams are flying blind - scattered tools for reviews, bugs, surveys, and feature
+            requests. Missing insights, losing customers, making decisions based on gut feeling.
+            What if you could see everything in one place, backed by real data?
           </motion.p>
         </motion.div>
 
@@ -103,7 +107,9 @@ export const BeforeAfterSection = () => {
                 <motion.div
                   key={index}
                   className={`bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-lg border border-red-200/50 flex items-start sm:items-center gap-3 sm:gap-4 hover:shadow-xl hover:border-red-300/50 transition-all duration-300 ${
-                    index % 2 === 0 ? 'sm:-rotate-1 sm:hover:rotate-0' : 'sm:rotate-1 sm:hover:rotate-0'
+                    index % 2 === 0
+                      ? 'sm:-rotate-1 sm:hover:rotate-0'
+                      : 'sm:rotate-1 sm:hover:rotate-0'
                   }`}
                   initial={{ opacity: 0, x: -30, rotate: index % 2 === 0 ? -10 : 10 }}
                   whileInView={{
@@ -198,7 +204,9 @@ export const BeforeAfterSection = () => {
                     >
                       <CheckCircle className="h-6 w-6 sm:h-7 sm:w-7 text-green-500" />
                     </motion.div>
-                    <p className="text-base sm:text-lg text-slate-700 leading-relaxed font-medium">{item}</p>
+                    <p className="text-base sm:text-lg text-slate-700 leading-relaxed font-medium">
+                      {item}
+                    </p>
                   </motion.li>
                 ))}
               </ul>
@@ -222,7 +230,7 @@ export const BeforeAfterSection = () => {
             }}
             whileTap={{ scale: 0.98 }}
           >
-            Ready to improve your customer experience?
+            See Your Feedback Transform in 3 Minutes
           </motion.button>
         </motion.div>
       </div>
