@@ -148,7 +148,10 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: |
-          terraform plan -var-file=environments/prod/terraform.tfvars -out=tfplan -no-color
+          terraform plan \
+            -var-file=environments/prod/terraform.tfvars \
+            -var="image=${{ secrets.PROD_DOCKER_IMAGE_TAG }}:${{ github.sha }}" \
+            -out=tfplan -no-color
           terraform show -no-color tfplan > plan.txt
           echo "::group::Terraform Plan"
           cat plan.txt
