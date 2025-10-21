@@ -51,16 +51,6 @@ def create_application() -> FastAPI:
     app.include_router(api_router)
     app.include_router(health_router)
 
-    @app.get('/debug/cors')
-    async def debug_cors():
-        settings = get_settings()
-        return {
-            'CORS_ORIGINS_RAW': settings.CORS_ORIGINS,
-            'cors_origins_list': settings.cors_origins_list,
-            'cors_headers_list': settings.cors_headers_list,
-            'ENV': settings.ENV,
-        }
-
     @app.get('/')
     async def root():
         return {
