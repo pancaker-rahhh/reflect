@@ -78,10 +78,9 @@ const config: Config = {
       respectPrefersColorScheme: false,
     },
     navbar: {
-      title: 'Reflect',
       logo: {
         alt: 'Reflect Logo',
-        src: 'https://cdn.reflectfeedback.com/assets/logo-bg-removed.svg',
+        src: 'https://cdn.reflectfeedback.com/assets/reflect-brand-bgremoved.svg',
       },
       items: [
         {
@@ -94,11 +93,6 @@ const config: Config = {
           to: '/blog', 
           label: 'Blog', 
           position: 'left'
-        },
-        {
-          href: 'https://github.com/pancaker-rahhh/reflect',
-          label: 'GitHub',
-          position: 'right',
         },
       ],
     },
@@ -119,36 +113,6 @@ const config: Config = {
             {
               label: 'API Reference',
               to: '/docs/api/intro',
-            },
-          ],
-        },
-        {
-          title: 'Resources',
-          items: [
-            {
-              label: 'GitHub',
-              href: 'https://github.com/pancaker-rahhh/reflect',
-            },
-            {
-              label: 'Issues',
-              href: 'https://github.com/pancaker-rahhh/reflect/issues',
-            },
-            {
-              label: 'Contribute',
-              href: 'https://github.com/pancaker-rahhh/reflect/blob/main/CONTRIBUTING.md',
-            },
-          ],
-        },
-        {
-          title: 'More',
-          items: [
-            {
-              label: 'Widget Architecture',
-              to: '/docs/widgets/architecture',
-            },
-            {
-              label: 'CDN Deployment',
-              to: '/docs/architecture/cdn-deployment',
             },
           ],
         },
