@@ -142,7 +142,8 @@ jobs:
           fi
 
       - name: Terraform Init
-        run: terraform init \
+        run: |
+          terraform init \
             -backend-config="bucket=reflectfeedback-terraform-state"
 
       - name: Terraform Plan
