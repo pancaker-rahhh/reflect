@@ -1,5 +1,8 @@
+import sys
 from fastapi import FastAPI
+import fastapi
 from fastapi.middleware.cors import CORSMiddleware
+import starlette
 from app.core.exception_handlers import (
     authentication_error_handler,
     general_error_handler,
@@ -33,6 +36,12 @@ def create_application() -> FastAPI:
     @app.options("/{full_path:path}")
     async def options_handler(full_path: str):
         return {"message": "OPTIONS OK"}
+    
+    print(f"Python: {sys.version}")
+    print(f"FastAPI: {fastapi.__version__}")
+    print(f"Starlette: {starlette.__version__}")
+    print(f"CORS Origins: {settings.cors_origins_list}")
+    print(f"CORS Headers: {settings.cors_headers_list}")
 
     # Add middleware in correct order (bottom to top execution)
     app.add_middleware(
@@ -40,8 +49,9 @@ def create_application() -> FastAPI:
         allow_origins=settings.cors_origins_list,
         allow_credentials=True,
         allow_methods=['*'],
-        allow_headers=settings.cors_headers_list,
+        allow_headers=['*'],
         expose_headers=['X-Correlation-ID', 'X-Process-Time'],
+        max_age=3600,
     )
 
     app.add_middleware(RequestLoggingMiddleware)
