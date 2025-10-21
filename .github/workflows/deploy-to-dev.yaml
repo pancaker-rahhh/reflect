@@ -141,7 +141,10 @@ jobs:
           echo "::endgroup::"
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+        run: |
+          terraform apply -auto-approve \
+            -var="image=us-east4-docker.pkg.dev/reflect-dev-473413/reflectfeedback/app:${{ github.sha }}" \
+            tfplan
 
       - name: Get Service URL
         id: output
