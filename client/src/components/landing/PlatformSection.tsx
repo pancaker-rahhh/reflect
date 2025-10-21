@@ -154,7 +154,7 @@ export const PlatformSection = () => {
                     muted
                     playsInline
                   />
-                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center transition-opacity duration-300">
                     <div className="h-14 w-14 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-foreground transition-all duration-300 group-hover:scale-110">
                       <Play className="h-6 w-6 ml-1" fill="currentColor" />
                     </div>
