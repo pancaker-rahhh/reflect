@@ -22,7 +22,7 @@ const config: Config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'pancaker-rahhh', // Usually your GitHub org/user name.
+  organizationName: 'Reflect', // Usually your GitHub org/user name.
   projectName: 'reflect', // Usually your repo name.
 
   onBrokenLinks: 'warn',
@@ -41,25 +41,10 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/pancaker-rahhh/reflect/tree/main/docs/',
-          routeBasePath: 'docs',
+          routeBasePath: '/', // Make docs the root
+          breadcrumbs: true,
         },
-        blog: {
-          showReadingTime: true,
-          feedOptions: {
-            type: ['rss', 'atom'],
-            xslt: true,
-          },
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          // Useful options to enforce blogging best practices
-          onInlineTags: 'warn',
-          onInlineAuthors: 'warn',
-          onUntruncatedBlogPosts: 'warn',
-        },
+        blog: false, // Disable blog since docs is now the root
         theme: {
           customCss: './src/css/custom.css',
         },
@@ -78,43 +63,8 @@ const config: Config = {
       logo: {
         alt: 'Reflect Logo',
         src: 'https://cdn.reflectfeedback.com/assets/reflect-brand-bgremoved.svg',
+        href: '/', // Link to home (intro page)
       },
-      items: [
-        {
-          type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
-          position: 'left',
-          label: 'Docs',
-        },
-        {
-          to: '/blog', 
-          label: 'Blog', 
-          position: 'left'
-        },
-      ],
-    },
-    footer: {
-      style: 'dark',
-      links: [
-        {
-          title: 'Documentation',
-          items: [
-            {
-              label: 'Getting Started',
-              to: '/docs/getting-started/quick-start',
-            },
-            {
-              label: 'Widget Integration',
-              to: '/docs/widgets/intro',
-            },
-            {
-              label: 'API Reference',
-              to: '/docs/api/intro',
-            },
-          ],
-        },
-      ],
-      copyright: `Copyright © ${new Date().getFullYear()} Reflect. Built with ❤️ and Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,

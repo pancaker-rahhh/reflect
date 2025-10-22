@@ -1,5 +1,6 @@
 ---
 sidebar_position: 1
+slug: /
 ---
 
 # Welcome to Reflect Documentation
@@ -42,7 +43,7 @@ That's it! Your feedback widget is now live on your site.
 
 ## Getting Started
 
-Ready to collect better feedback? Check out our [Quick Start Guide](/docs/getting-started/quick-start) or explore the [Widget Integration Guides](/docs/widgets/intro).
+Ready to collect better feedback? Explore our [Widget Integration Guides](/widgets/integration/vanilla-js) to get started.
 
 ## Why Choose Reflect?
 
@@ -60,6 +61,4 @@ GDPR compliant, no tracking cookies, and user data protection built-in.
 
 ## Community & Support
 
-- **GitHub**: [github.com/pancaker-rahhh/reflect](https://github.com/pancaker-rahhh/reflect)
 - **Documentation**: You're here! 📖
-- **Issues**: Report bugs and request features on GitHub
