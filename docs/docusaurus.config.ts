@@ -42,6 +42,7 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
           routeBasePath: 'docs',
+          breadcrumbs: true,
         },
         blog: {
           showReadingTime: true,
