@@ -25,7 +25,6 @@ Follow these steps to run the entire Reflect platform locally for development.
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/pancaker-rahhh/reflect.git
 cd reflect
 ```
 

@@ -61,6 +61,4 @@ GDPR compliant, no tracking cookies, and user data protection built-in.
 
 ## Community & Support
 
-- **GitHub**: [github.com/pancaker-rahhh/reflect](https://github.com/pancaker-rahhh/reflect)
 - **Documentation**: You're here! 📖
-- **Issues**: Report bugs and request features on GitHub

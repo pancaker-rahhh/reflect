@@ -90,4 +90,3 @@ Now that you have a basic widget working, explore:
 
 - Check our [FAQ](/docs/getting-started/faq)
 - Review the [Widget Architecture](/docs/widgets/architecture)
-- Open an issue on [GitHub](https://github.com/pancaker-rahhh/reflect/issues)

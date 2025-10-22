@@ -22,7 +22,7 @@ const config: Config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'pancaker-rahhh', // Usually your GitHub org/user name.
+  organizationName: 'Reflect', // Usually your GitHub org/user name.
   projectName: 'reflect', // Usually your repo name.
 
   onBrokenLinks: 'warn',
