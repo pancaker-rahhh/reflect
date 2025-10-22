@@ -1,11 +1,8 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
 import { BrandWordmark } from '@/components/common/BrandWordmark'
 import { founders } from '@/components/landing/data/founders'
 
 export const Footer = () => {
-  const navigate = useNavigate()
-
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     e.preventDefault()
     const targetElement = document.getElementById(targetId)
@@ -149,12 +146,14 @@ export const Footer = () => {
                 </a>
               </li>
               <li>
-                <button
-                  onClick={() => navigate('/docs')}
+                <a
+                  href="https://docs.reflectfeedback.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Docs
-                </button>
+                </a>
               </li>
               <li>
                 <a
