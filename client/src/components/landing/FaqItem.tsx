@@ -14,7 +14,7 @@ interface FaqItemProps {
 export const FaqItem: React.FC<FaqItemProps> = ({ question, answer, icon, isOpen, onClick }) => {
   return (
     <motion.div
-      className="bg-[hsl(var(--background))] border border-[hsl(var(--border))/0.3] rounded-2xl shadow-lg overflow-hidden"
+      className="bg-background border border-border/30 rounded-2xl shadow-lg overflow-hidden"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       whileHover={{
@@ -33,7 +33,7 @@ export const FaqItem: React.FC<FaqItemProps> = ({ question, answer, icon, isOpen
       <dt>
         <motion.button
           onClick={onClick}
-          className={`flex w-full items-center justify-between text-left text-[hsl(var(--foreground))] p-8 focus:outline-none ${
+          className={`flex w-full items-center justify-between text-left text-foreground p-8 focus:outline-none ${
             isOpen ? 'rounded-t-2xl' : 'rounded-2xl'
           }`}
           aria-expanded={isOpen}
@@ -47,7 +47,7 @@ export const FaqItem: React.FC<FaqItemProps> = ({ question, answer, icon, isOpen
           <div className="flex items-center gap-5">
             <motion.span
               className={`transition-colors duration-200 ${
-                isOpen ? 'text-[hsl(var(--primary))]' : 'text-[hsl(var(--muted-foreground))]'
+                isOpen ? 'text-primary' : 'text-muted-foreground'
               }`}
               animate={{
                 scale: isOpen ? 1.1 : 1,
@@ -64,7 +64,7 @@ export const FaqItem: React.FC<FaqItemProps> = ({ question, answer, icon, isOpen
             </motion.span>
             <motion.span
               className={`text-lg font-semibold leading-7 transition-colors duration-200 ${
-                isOpen ? 'text-[hsl(var(--primary))]' : 'text-[hsl(var(--foreground))]'
+                isOpen ? 'text-primary' : 'text-foreground'
               }`}
               animate={{ x: isOpen ? 5 : 0 }}
               transition={{ duration: 0.2 }}

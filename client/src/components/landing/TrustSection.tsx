@@ -41,8 +41,8 @@ const trustItems = [
     icon: Globe,
     text: 'Global',
     description: 'Works everywhere',
-    color: 'text-teal-600',
-    bgColor: 'bg-teal-50',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
   },
 ]
 
@@ -58,7 +58,7 @@ const securityFeatures = [
 export const TrustSection = () => {
   return (
     <motion.section
-      className="bg-background py-8 sm:py-10 lg:py-12 border-t border-border/50"
+      className="bg-background py-12 sm:py-16 lg:py-20 border-t border-border/50"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
@@ -113,7 +113,9 @@ export const TrustSection = () => {
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10 lg:gap-12">
             <div>
-              <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6">Security Features</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6">
+                Security Features
+              </h3>
               <ul className="space-y-3 sm:space-y-4">
                 {securityFeatures.map((feature, index) => (
                   <motion.li
@@ -132,7 +134,9 @@ export const TrustSection = () => {
             </div>
 
             <div>
-              <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6">Platform Features</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6">
+                Platform Features
+              </h3>
               <div className="space-y-4 sm:space-y-6">
                 <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-6 bg-background rounded-xl sm:rounded-2xl shadow-lg">
                   <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-success flex-shrink-0" />
@@ -148,7 +152,9 @@ export const TrustSection = () => {
                 <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-6 bg-background rounded-xl sm:rounded-2xl shadow-lg">
                   <Lock className="h-6 w-6 sm:h-8 sm:w-8 text-info flex-shrink-0" />
                   <div>
-                    <div className="font-semibold text-foreground text-base sm:text-lg">Privacy Focused</div>
+                    <div className="font-semibold text-foreground text-base sm:text-lg">
+                      Privacy Focused
+                    </div>
                     <div className="text-sm sm:text-base text-muted-foreground">
                       Respects user privacy and data rights
                     </div>
@@ -157,7 +163,9 @@ export const TrustSection = () => {
                 <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-6 bg-background rounded-xl sm:rounded-2xl shadow-lg">
                   <Award className="h-6 w-6 sm:h-8 sm:w-8 text-primary flex-shrink-0" />
                   <div>
-                    <div className="font-semibold text-foreground text-base sm:text-lg">Reliable Service</div>
+                    <div className="font-semibold text-foreground text-base sm:text-lg">
+                      Reliable Service
+                    </div>
                     <div className="text-sm sm:text-base text-muted-foreground">
                       Consistent uptime and performance
                     </div>

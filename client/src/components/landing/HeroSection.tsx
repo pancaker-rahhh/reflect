@@ -25,10 +25,10 @@ export const HeroSection = () => {
           >
             {/* Badge: centered directly above headline */}
             <div className="mx-auto mb-2">
-              <NotBackedBadge className="mx-auto px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm shadow-2xl ring-2 ring-primary/20 bg-white text-[hsl(var(--foreground))] border border-[hsl(var(--border))/0.08]" />
+              <NotBackedBadge className="mx-auto px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm shadow-2xl ring-2 ring-primary/20 bg-white text-foreground border border-border/8" />
             </div>
             <motion.h1
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[hsl(var(--foreground))] leading-[1.1] tracking-tight px-4 sm:px-0"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] tracking-tight px-4 sm:px-0"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
@@ -53,19 +53,15 @@ export const HeroSection = () => {
             </motion.h1>
 
             <motion.p
-              className="text-base sm:text-lg md:text-xl text-[hsl(var(--muted-foreground))] leading-relaxed max-w-2xl mx-auto font-light px-4 sm:px-0"
+              className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto font-light px-4 sm:px-0"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
             >
               Get real user feedback with voting, bug reports, and insights—all from one beautiful
               widget.
-              <strong className="text-[hsl(var(--foreground))]">
-                {' '}
-                See exactly what users want
-              </strong>{' '}
-              so you can build features that get adopted.
-              <strong className="text-[hsl(var(--foreground))]"> Free forever.</strong>
+              <strong className="text-foreground"> See exactly what users want</strong> so you can
+              build features that get adopted.
             </motion.p>
             {/* CTA Button */}
             <motion.div
@@ -76,7 +72,7 @@ export const HeroSection = () => {
             >
               <button
                 onClick={() => (window.location.href = '/login')}
-                className="inline-block rounded-2xl bg-primary px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all border border-primary/20 w-full sm:w-auto"
+                className="inline-block rounded-2xl bg-primary px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all border border-primary/20 w-full sm:w-auto"
                 style={{ boxShadow: '0 8px 32px rgba(220,38,38,0.18)' }}
               >
                 Start Building What Users Want
@@ -94,7 +90,7 @@ export const HeroSection = () => {
             <div className="relative">
               {/* Video Container with nice blending */}
               <motion.div
-                className="relative aspect-video w-full rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-2xl overflow-hidden border border-[hsl(var(--primary))]/20 backdrop-blur-sm"
+                className="relative aspect-video w-full rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-2xl overflow-hidden border border-primary/20 backdrop-blur-sm"
                 whileHover={{
                   scale: 1.02,
                   boxShadow: '0 30px 60px -12px rgba(220, 38, 38, 0.3)',

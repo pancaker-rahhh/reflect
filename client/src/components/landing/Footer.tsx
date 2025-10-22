@@ -74,7 +74,7 @@ export const Footer = () => {
 
           {/* Column 2: Product */}
           <div>
-            <h4 className="font-semibold text-[hsl(var(--foreground))] uppercase tracking-wider text-xs sm:text-sm">
+            <h4 className="font-semibold text-foreground uppercase tracking-wider text-xs sm:text-sm">
               Product
             </h4>
             <ul className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
@@ -82,7 +82,7 @@ export const Footer = () => {
                 <a
                   href="#features"
                   onClick={(e) => handleNavClick(e, 'features')}
-                  className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
+                  className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Features
                 </a>
@@ -91,7 +91,7 @@ export const Footer = () => {
                 <a
                   href="#platform"
                   onClick={(e) => handleNavClick(e, 'platform')}
-                  className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
+                  className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Platform
                 </a>
@@ -100,7 +100,7 @@ export const Footer = () => {
                 <a
                   href="#interactive-modules"
                   onClick={(e) => handleNavClick(e, 'interactive-modules')}
-                  className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
+                  className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Modules
                 </a>
@@ -109,7 +109,7 @@ export const Footer = () => {
                 <a
                   href="#pricing"
                   onClick={(e) => handleNavClick(e, 'pricing')}
-                  className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
+                  className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Pricing
                 </a>
@@ -118,7 +118,7 @@ export const Footer = () => {
                 <a
                   href="#faq"
                   onClick={(e) => handleNavClick(e, 'faq')}
-                  className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
+                  className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   FAQ
                 </a>
@@ -128,14 +128,14 @@ export const Footer = () => {
 
           {/* Column 3: Company */}
           <div>
-            <h4 className="font-semibold text-[hsl(var(--foreground))] uppercase tracking-wider text-xs sm:text-sm">
+            <h4 className="font-semibold text-foreground uppercase tracking-wider text-xs sm:text-sm">
               Company
             </h4>
             <ul className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
               <li>
                 <a
                   href="/about"
-                  className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
+                  className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Meet the Team
                 </a>
@@ -143,7 +143,7 @@ export const Footer = () => {
               <li>
                 <a
                   href="/contact"
-                  className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
+                  className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Contact
                 </a>
@@ -151,7 +151,7 @@ export const Footer = () => {
               <li>
                 <button
                   onClick={() => navigate('/docs')}
-                  className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
+                  className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Docs
                 </button>
@@ -161,7 +161,7 @@ export const Footer = () => {
                   href="https://github.com/reflect/roadmap"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
+                  className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Roadmap
                 </a>
@@ -171,14 +171,14 @@ export const Footer = () => {
 
           {/* Column 4: Blog */}
           <div>
-            <h4 className="font-semibold text-[hsl(var(--foreground))] uppercase tracking-wider text-xs sm:text-sm">
+            <h4 className="font-semibold text-foreground uppercase tracking-wider text-xs sm:text-sm">
               Blog
             </h4>
             <ul className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
               <li>
                 <a
                   href="/blog"
-                  className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
+                  className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Latest Posts
                 </a>
@@ -188,14 +188,14 @@ export const Footer = () => {
 
           {/* Column 5: Legal */}
           <div>
-            <h4 className="font-semibold text-[hsl(var(--foreground))] uppercase tracking-wider text-xs sm:text-sm">
+            <h4 className="font-semibold text-foreground uppercase tracking-wider text-xs sm:text-sm">
               Legal
             </h4>
             <ul className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
               <li>
                 <a
                   href="/terms"
-                  className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
+                  className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Terms of Service
                 </a>
@@ -203,7 +203,7 @@ export const Footer = () => {
               <li>
                 <a
                   href="/privacy"
-                  className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
+                  className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Privacy Policy
                 </a>
@@ -213,7 +213,7 @@ export const Footer = () => {
 
           {/* Column 6: Founders */}
           <div className="col-span-2 sm:col-span-3 md:col-span-1">
-            <h4 className="font-semibold text-[hsl(var(--foreground))] uppercase tracking-wider text-xs sm:text-sm mb-3 sm:mb-4">
+            <h4 className="font-semibold text-foreground uppercase tracking-wider text-xs sm:text-sm mb-3 sm:mb-4">
               Founders
             </h4>
             <div className="space-y-3">
@@ -253,8 +253,8 @@ export const Footer = () => {
             </div>
           </div>
         </div>
-        <div className="mt-8 sm:mt-12 border-t border-[hsl(var(--border))] pt-6 flex justify-center items-center">
-          <p className="text-[hsl(var(--muted-foreground))] text-xs sm:text-sm text-center">
+        <div className="mt-8 sm:mt-12 border-t border-border pt-6 flex justify-center items-center">
+          <p className="text-muted-foreground text-xs sm:text-sm text-center">
             &copy; {new Date().getFullYear()} Reflect Technologies, Inc. All rights reserved.
           </p>
         </div>
