@@ -43,7 +43,7 @@ That's it! Your feedback widget is now live on your site.
 
 ## Getting Started
 
-Ready to collect better feedback? Check out our [Quick Start Guide](/getting-started/quick-start) or explore the [Widget Integration Guides](/widgets/intro).
+Ready to collect better feedback? Explore our [Widget Integration Guides](/widgets/integration/vanilla-js) to get started.
 
 ## Why Choose Reflect?
 

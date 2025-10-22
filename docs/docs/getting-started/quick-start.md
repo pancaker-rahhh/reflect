@@ -72,10 +72,10 @@ window.reflectConfig = {
 
 Now that you have a basic widget working, explore:
 
-- [Framework-specific integrations](/docs/widgets/integration/react) (React, Vue, Angular, etc.)
-- [Widget configuration options](/docs/widgets/configuration/basic)
-- [Different widget types](/docs/widgets/types/feedback)
-- [Styling and theming](/docs/widgets/configuration/styling)
+- [Framework-specific integrations](/widgets/integration/react) (React, Vue, Angular, etc.)
+- [Widget configuration options](/widgets/configuration/basic)
+- [Different widget types](/widgets/types/feedback)
+- [Styling and theming](/widgets/configuration/styling)
 
 ## Troubleshooting
 
@@ -88,5 +88,4 @@ Now that you have a basic widget working, explore:
 
 ### Need help?
 
-- Check our [FAQ](/docs/getting-started/faq)
-- Review the [Widget Architecture](/docs/widgets/architecture)
+- Review the [Widget Architecture](/widgets/architecture)
