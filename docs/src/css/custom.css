@@ -275,13 +275,17 @@ pre code {
 }
 
 /* ========================================
-   NAVBAR - Standard 60px height
+   NAVBAR - Fixed at top, no overlap
    ======================================== */
 
 .navbar {
   height: 60px;
   padding: 0 1rem;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--ifm-navbar-background-color);
 }
 
 .navbar__inner {
@@ -304,42 +308,68 @@ pre code {
 }
 
 /* ========================================
-   SIDEBAR - Fixed position like standard docs
+   LAYOUT - Proper spacing for fixed sidebar
    ======================================== */
 
-.theme-doc-sidebar-container {
-  border-right: 1px solid var(--ifm-color-emphasis-300);
-  width: 280px !important;
-  position: fixed !important;
-  top: var(--ifm-navbar-height);
-  left: 0;
-  height: calc(100vh - var(--ifm-navbar-height));
-  overflow-y: auto;
-  overflow-x: hidden;
-  z-index: 1;
+.main-wrapper {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
 }
 
-/* Offset main content to account for fixed sidebar */
-.docMainContainer_gTbr {
-  margin-left: 280px;
+/* Desktop layout */
+@media (min-width: 997px) {
+  .docPage {
+    display: flex;
+    width: 100%;
+  }
+  
+  .theme-doc-sidebar-container {
+    border-right: 1px solid var(--ifm-color-emphasis-300);
+    width: 280px;
+    flex-shrink: 0;
+    height: calc(100vh - var(--ifm-navbar-height));
+    position: sticky;
+    top: var(--ifm-navbar-height);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  
+  .docMainContainer {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
-/* Hide sidebar on mobile */
+/* Mobile layout */
 @media (max-width: 996px) {
   .theme-doc-sidebar-container {
     position: fixed;
-    left: -280px;
-    transition: left 0.3s ease;
+    top: var(--ifm-navbar-height);
+    left: 0;
+    width: 280px;
+    height: calc(100vh - var(--ifm-navbar-height));
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 50;
+    background-color: var(--ifm-background-color);
+    border-right: 1px solid var(--ifm-color-emphasis-300);
+    overflow-y: auto;
   }
   
   .theme-doc-sidebar-container[data-hidden="false"] {
-    left: 0;
+    transform: translateX(0);
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
   }
   
-  .docMainContainer_gTbr {
-    margin-left: 0;
+  .docMainContainer {
+    width: 100%;
   }
 }
+
+/* ========================================
+   SIDEBAR - Clean navigation
+   ======================================== */
 
 .menu {
   padding: 1.5rem 1rem;
@@ -352,11 +382,13 @@ pre code {
   line-height: 1.5;
   font-weight: 400;
   transition: all 0.15s ease;
+  color: var(--ifm-font-color-base);
 }
 
 .menu__link:hover {
   background-color: var(--ifm-color-emphasis-100);
   text-decoration: none;
+  color: var(--ifm-font-color-base);
 }
 
 .menu__link--active {
@@ -412,32 +444,29 @@ pre code {
 }
 
 /* ========================================
-   MAIN CONTENT - Standard width
+   MAIN CONTENT - Proper width and padding
    ======================================== */
 
-.main-wrapper {
-  max-width: 100%;
-  margin: 0 auto;
-}
-
 .container {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 1rem;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .theme-doc-markdown {
   max-width: 840px;
-  padding: 2rem 0;
+  padding: 2rem 2rem 4rem 2rem;
 }
 
 @media (min-width: 997px) {
-  .container {
-    padding: 0 2rem;
-  }
-  
   .theme-doc-markdown {
-    padding: 2rem 3rem;
+    padding: 2rem 3rem 4rem 3rem;
+  }
+}
+
+@media (min-width: 1440px) {
+  .theme-doc-markdown {
+    padding: 2rem 4rem 4rem 4rem;
   }
 }
 
@@ -494,8 +523,17 @@ article {
 }
 
 /* ========================================
-   TABLE OF CONTENTS
+   TABLE OF CONTENTS - Fixed on right
    ======================================== */
+
+@media (min-width: 1440px) {
+  .theme-doc-toc-desktop {
+    position: sticky;
+    top: calc(var(--ifm-navbar-height) + 2rem);
+    max-height: calc(100vh - var(--ifm-navbar-height) - 4rem);
+    overflow-y: auto;
+  }
+}
 
 .table-of-contents {
   font-size: 0.875rem;
@@ -589,11 +627,14 @@ article {
 .pagination-nav__label {
   font-size: 0.875rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .pagination-nav__sublabel {
   font-size: 1rem;
   margin-top: 0.25rem;
+  font-weight: 500;
 }
 
 /* ========================================
@@ -615,12 +656,8 @@ article {
     margin-top: 1.5rem;
   }
   
-  .container {
-    padding: 0 1rem;
-  }
-  
   .theme-doc-markdown {
-    padding: 1.5rem 0;
+    padding: 1.5rem 1rem 3rem 1rem;
   }
   
   .navbar {
@@ -628,7 +665,7 @@ article {
   }
   
   .footer {
-    padding: 1.5rem 0;
+    padding: 1.5rem 1rem;
   }
 }
 
@@ -645,7 +682,7 @@ article {
     font-size: 1.375rem;
   }
   
-  .container {
-    padding: 0 0.75rem;
+  .theme-doc-markdown {
+    padding: 1.5rem 0.75rem 3rem 0.75rem;
   }
 }
