@@ -55,7 +55,7 @@ export const PricingSection = () => {
             Pricing
           </motion.p>
           <motion.h2
-            className="mt-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-[hsl(var(--foreground))] leading-tight"
+            className="mt-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-tight"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
@@ -64,7 +64,7 @@ export const PricingSection = () => {
             Choose Your Growth Path
           </motion.h2>
           <motion.p
-            className="mx-auto mt-6 sm:mt-8 max-w-3xl text-base sm:text-lg md:text-xl leading-7 sm:leading-8 text-[hsl(var(--muted-foreground))] px-4 sm:px-0"
+            className="mx-auto mt-6 sm:mt-8 max-w-3xl text-base sm:text-lg md:text-xl leading-7 sm:leading-8 text-muted-foreground px-4 sm:px-0"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
@@ -81,8 +81,8 @@ export const PricingSection = () => {
               key={plan.name}
               className={`rounded-2xl sm:rounded-3xl p-5 sm:p-6 lg:p-8 ${
                 plan.primary || plan.id === 'pro_yearly'
-                  ? 'bg-[hsl(var(--background))] ring-2 ring-[hsl(var(--primary))] shadow-2xl relative'
-                  : 'bg-[hsl(var(--muted))/0.05] ring-1 ring-[hsl(var(--border))/0.3] shadow-xl'
+                  ? 'bg-background ring-2 ring-primary shadow-2xl relative'
+                  : 'bg-muted/5 ring-1 ring-border/30 shadow-xl'
               }`}
               initial={{ opacity: 0, y: 50, scale: 0.9 }}
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -102,7 +102,7 @@ export const PricingSection = () => {
                   transition={{ delay: 0.8 + index * 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <div className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold shadow-lg whitespace-nowrap">
+                  <div className="bg-primary text-primary-foreground px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold shadow-lg whitespace-nowrap">
                     ⚡ Most Popular
                   </div>
                 </motion.div>
@@ -131,9 +131,7 @@ export const PricingSection = () => {
               >
                 <h3
                   className={`text-xl sm:text-2xl font-bold leading-8 ${
-                    plan.primary || plan.id === 'pro_yearly'
-                      ? 'text-[hsl(var(--primary))]'
-                      : 'text-[hsl(var(--foreground))]'
+                    plan.primary || plan.id === 'pro_yearly' ? 'text-primary' : 'text-foreground'
                   }`}
                 >
                   {plan.display_name}
@@ -141,7 +139,7 @@ export const PricingSection = () => {
               </motion.div>
 
               <motion.p
-                className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 text-[hsl(var(--muted-foreground))]"
+                className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 text-muted-foreground"
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8 + index * 0.1 }}
@@ -157,7 +155,7 @@ export const PricingSection = () => {
                 transition={{ delay: 0.9 + index * 0.1, type: 'spring', stiffness: 200 }}
                 viewport={{ once: true }}
               >
-                <span className="text-3xl sm:text-4xl font-bold tracking-tight text-[hsl(var(--foreground))]">
+                <span className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
                   {plan.price}
                 </span>
               </motion.p>
@@ -166,8 +164,8 @@ export const PricingSection = () => {
                 onClick={handleGetStarted}
                 className={`mt-8 sm:mt-10 block w-full rounded-xl sm:rounded-2xl px-5 sm:px-6 py-3 sm:py-4 text-center text-base sm:text-lg font-semibold leading-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 transition-all ${
                   plan.primary || plan.id === 'pro_yearly'
-                    ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-sm hover:bg-red-600 focus-visible:outline-[hsl(var(--primary))]'
-                    : 'bg-[hsl(var(--background))] text-[hsl(var(--primary))] ring-1 ring-inset ring-[hsl(var(--border))] hover:bg-gray-100 hover:text-red-600'
+                    ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline-primary'
+                    : 'bg-background text-primary ring-1 ring-inset ring-border hover:bg-muted hover:text-primary'
                 }`}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -180,7 +178,7 @@ export const PricingSection = () => {
 
               <ul
                 role="list"
-                className="mt-8 sm:mt-10 lg:mt-12 space-y-4 sm:space-y-5 text-base sm:text-lg leading-6 text-[hsl(var(--muted-foreground))]"
+                className="mt-8 sm:mt-10 lg:mt-12 space-y-4 sm:space-y-5 text-base sm:text-lg leading-6 text-muted-foreground"
               >
                 {plan.features.map((feature, featureIndex) => (
                   <motion.li
@@ -205,10 +203,7 @@ export const PricingSection = () => {
                       viewport={{ once: true }}
                       className="flex-shrink-0"
                     >
-                      <Check
-                        className="h-6 w-5 sm:h-7 sm:w-6 text-[hsl(var(--primary))]"
-                        aria-hidden="true"
-                      />
+                      <Check className="h-6 w-5 sm:h-7 sm:w-6 text-primary" aria-hidden="true" />
                     </motion.div>
                     <span className="text-sm sm:text-base lg:text-lg">{feature}</span>
                   </motion.li>

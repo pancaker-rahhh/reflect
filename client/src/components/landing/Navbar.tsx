@@ -111,7 +111,7 @@ export const Navbar = () => {
           <div className="hidden lg:flex items-center gap-6">
             <motion.button
               onClick={handleLogin}
-              className="text-base font-medium text-muted-foreground hover:text-primary transition-all duration-300 px-5 py-3 rounded-xl hover:bg-primary/8"
+              className="text-base font-medium text-muted-foreground hover:text-primary transition-all duration-300 px-5 py-3 rounded-2xl hover:bg-primary/8"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.8 }}
@@ -121,7 +121,7 @@ export const Navbar = () => {
             </motion.button>
             <motion.button
               onClick={handleGetStarted}
-              className="rounded-xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all duration-300 border border-primary/20"
+              className="rounded-2xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all duration-300 border border-primary/20"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.9 }}
@@ -140,11 +140,7 @@ export const Navbar = () => {
             <motion.button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className={`${
-                isScrolled
-                  ? 'text-[hsl(var(--foreground))]'
-                  : isDocsPage
-                    ? 'text-[hsl(var(--foreground))]'
-                    : 'text-[hsl(var(--foreground))]'
+                isScrolled ? 'text-foreground' : isDocsPage ? 'text-foreground' : 'text-foreground'
               }`}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -203,10 +199,10 @@ export const Navbar = () => {
                   onClick={(e) => handleNavClick(e, link.targetId)}
                   className={`block text-base font-semibold transition-colors ${
                     isScrolled
-                      ? 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))]'
+                      ? 'text-muted-foreground hover:text-primary'
                       : isDocsPage
-                        ? 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))]'
-                        : 'text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))]'
+                        ? 'text-muted-foreground hover:text-primary'
+                        : 'text-foreground hover:text-primary'
                   }`}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -225,17 +221,17 @@ export const Navbar = () => {
                   onClick={handleLogin}
                   className={`text-base font-semibold transition-colors ${
                     isScrolled
-                      ? 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))]'
+                      ? 'text-muted-foreground hover:text-primary'
                       : isDocsPage
-                        ? 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))]'
-                        : 'text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))]'
+                        ? 'text-muted-foreground hover:text-primary'
+                        : 'text-foreground hover:text-primary'
                   }`}
                 >
                   Log in
                 </button>
                 <motion.button
                   onClick={handleGetStarted}
-                  className="rounded-md bg-primary px-4 py-2 text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 text-center transition-all"
+                  className="rounded-2xl bg-primary px-4 py-2 text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 text-center transition-all"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >

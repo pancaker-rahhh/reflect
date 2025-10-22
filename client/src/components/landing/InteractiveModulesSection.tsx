@@ -78,7 +78,7 @@ export const InteractiveModulesSection = () => {
           >
             <span className="text-foreground">4 Feedback Tools</span>,{' '}
             <span className="text-primary">1 Widget</span>,{' '}
-            <span className="text-foreground">$200/Month Saved</span>
+            <span className="text-foreground">$160/Month Saved</span>
           </motion.h2>
           <motion.p
             className="mt-6 sm:mt-8 text-base sm:text-lg md:text-xl leading-7 sm:leading-8 text-muted-foreground max-w-3xl mx-auto px-4 sm:px-0"
@@ -102,7 +102,7 @@ export const InteractiveModulesSection = () => {
         </motion.div>
 
         <motion.div
-          className="mx-auto mt-12 sm:mt-16 max-w-6xl rounded-2xl sm:rounded-3xl bg-[hsl(var(--background))] p-4 sm:p-6 lg:p-8 shadow-2xl border-2 border-[hsl(var(--border))/0.3]"
+          className="mx-auto mt-12 sm:mt-16 max-w-6xl rounded-2xl sm:rounded-3xl bg-background p-4 sm:p-6 lg:p-8 shadow-2xl border-2 border-border/30"
           initial={{ opacity: 0, y: 50, scale: 0.95 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.4 }}
@@ -111,7 +111,7 @@ export const InteractiveModulesSection = () => {
           <div className="grid grid-cols-1 gap-8 sm:gap-12 lg:grid-cols-2 lg:gap-16 items-start lg:items-center">
             {/* Module Controls */}
             <motion.div
-              className="space-y-3 sm:space-y-4 bg-[hsl(var(--muted))/0.3] rounded-xl sm:rounded-2xl p-4 sm:p-6"
+              className="space-y-3 sm:space-y-4 bg-muted/30 rounded-xl sm:rounded-2xl p-4 sm:p-6"
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.6 }}
@@ -129,7 +129,7 @@ export const InteractiveModulesSection = () => {
               {modules.map((module, index) => (
                 <motion.div
                   key={module.id}
-                  className="p-4 sm:p-6 flex items-center justify-between rounded-xl sm:rounded-2xl hover:bg-[hsl(var(--muted))/0.5] transition-all duration-300 border border-transparent hover:border-[hsl(var(--border))/0.3]"
+                  className="p-4 sm:p-6 flex items-center justify-between rounded-xl sm:rounded-2xl hover:bg-muted/50 transition-all duration-300 border border-transparent hover:border-border/30"
                   initial={{ opacity: 0, x: -30 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{
@@ -147,7 +147,7 @@ export const InteractiveModulesSection = () => {
                 >
                   <div className="flex items-center gap-3 sm:gap-5 min-w-0 flex-1">
                     <motion.div
-                      className="bg-[hsl(var(--muted))] p-3 sm:p-4 rounded-lg sm:rounded-xl flex-shrink-0"
+                      className="bg-muted p-3 sm:p-4 rounded-lg sm:rounded-xl flex-shrink-0"
                       whileHover={{ scale: 1.1, rotate: 5 }}
                       transition={{ type: 'spring', stiffness: 300 }}
                     >
@@ -169,10 +169,8 @@ export const InteractiveModulesSection = () => {
                   </div>
                   <motion.button
                     onClick={() => handleToggle(module.id)}
-                    className={`relative inline-flex h-6 w-11 sm:h-7 sm:w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] focus:ring-offset-2 ${
-                      activeModules[module.id]
-                        ? 'bg-[hsl(var(--primary))]'
-                        : 'bg-[hsl(var(--muted))]'
+                    className={`relative inline-flex h-6 w-11 sm:h-7 sm:w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                      activeModules[module.id] ? 'bg-primary' : 'bg-muted'
                     }`}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -180,7 +178,7 @@ export const InteractiveModulesSection = () => {
                   >
                     <motion.span
                       aria-hidden="true"
-                      className="pointer-events-none inline-block h-5 w-5 sm:h-6 sm:w-6 transform rounded-full bg-[hsl(var(--background))] shadow ring-0"
+                      className="pointer-events-none inline-block h-5 w-5 sm:h-6 sm:w-6 transform rounded-full bg-background shadow ring-0"
                       animate={{
                         x: activeModules[module.id] ? 20 : 0,
                         scale: activeModules[module.id] ? 1.05 : 1,
@@ -202,7 +200,7 @@ export const InteractiveModulesSection = () => {
                 viewport={{ once: true }}
               >
                 <motion.div
-                  className="bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] font-semibold p-4 rounded-xl text-center flex items-center justify-center gap-2"
+                  className="bg-accent text-accent-foreground font-semibold p-4 rounded-xl text-center flex items-center justify-center gap-2"
                   key={activeCount}
                   initial={{ scale: 0.9 }}
                   animate={{ scale: 1 }}
@@ -222,7 +220,7 @@ export const InteractiveModulesSection = () => {
 
             {/* Live Widget Preview */}
             <motion.div
-              className="lg:sticky lg:top-28 h-[450px] sm:h-[500px] bg-slate-100 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-xl border-2 border-[hsl(var(--border))/0.2]"
+              className="lg:sticky lg:top-28 h-[450px] sm:h-[500px] bg-slate-100 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-xl border-2 border-border/20"
               initial={{ opacity: 0, x: 50, scale: 0.9 }}
               whileInView={{ opacity: 1, x: 0, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.6 }}
@@ -357,14 +355,14 @@ export const InteractiveModulesSection = () => {
         >
           <motion.button
             onClick={() => (window.location.href = '/login')}
-            className="inline-block rounded-2xl bg-primary px-8 sm:px-12 py-4 sm:py-5 text-base sm:text-lg lg:text-xl font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all border border-primary/20 w-full sm:w-auto"
+            className="inline-block rounded-2xl bg-primary px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all border border-primary/20 w-full sm:w-auto"
             whileHover={{
               scale: 1.02,
               boxShadow: '0 25px 50px rgba(220, 38, 38, 0.4)',
             }}
             whileTap={{ scale: 0.98 }}
           >
-            Start Saving $200/Month Today
+            Start Saving $160/Month Today
           </motion.button>
         </motion.div>
       </div>

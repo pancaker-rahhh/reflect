@@ -54,14 +54,14 @@ export const BeforeAfterSection = () => {
           <motion.h2
             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-tight"
             variants={itemVariants}
-            transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            Stop guessing, start{' '}
+            Stop Guessing, Start{' '}
             <motion.span
               className="text-primary"
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
               viewport={{ once: true }}
             >
               listening
@@ -70,7 +70,7 @@ export const BeforeAfterSection = () => {
           <motion.p
             className="mt-6 sm:mt-8 text-base sm:text-lg md:text-xl leading-7 sm:leading-8 text-muted-foreground max-w-3xl mx-auto px-4 sm:px-0"
             variants={itemVariants}
-            transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             Most teams are flying blind - scattered tools for reviews, bugs, surveys, and feature
             requests. Missing insights, losing customers, making decisions based on gut feeling.
@@ -94,7 +94,7 @@ export const BeforeAfterSection = () => {
             viewport={{ once: true }}
           >
             <motion.h3
-              className="text-2xl sm:text-3xl font-bold text-slate-800 mb-6 sm:mb-8 tracking-tight"
+              className="text-2xl sm:text-3xl font-bold text-foreground mb-6 sm:mb-8 tracking-tight"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
@@ -118,7 +118,7 @@ export const BeforeAfterSection = () => {
                     rotate: index % 2 === 0 ? -1 : 1,
                   }}
                   transition={{
-                    duration: 0.6,
+                    duration: 0.8,
                     delay: 0.7 + index * 0.1,
                     ease: 'easeOut',
                   }}
@@ -136,9 +136,11 @@ export const BeforeAfterSection = () => {
                     viewport={{ once: true }}
                     className="flex-shrink-0 mt-0.5 sm:mt-0"
                   >
-                    <XCircle className="h-6 w-6 sm:h-7 sm:w-7 text-red-500" />
+                    <XCircle className="h-6 w-6 sm:h-7 sm:w-7 text-destructive" />
                   </motion.div>
-                  <p className="text-slate-700 text-sm sm:text-base leading-relaxed">{item}</p>
+                  <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
+                    {item}
+                  </p>
                 </motion.div>
               ))}
             </div>
@@ -153,7 +155,7 @@ export const BeforeAfterSection = () => {
             viewport={{ once: true }}
           >
             <motion.div
-              className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 bg-red-500 text-white font-bold py-1.5 px-3 sm:py-2 sm:px-4 rounded-full text-xs sm:text-sm shadow-lg"
+              className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 bg-destructive text-destructive-foreground font-bold py-1.5 px-3 sm:py-2 sm:px-4 rounded-full text-xs sm:text-sm shadow-lg"
               initial={{ opacity: 0, scale: 0, rotate: -45 }}
               whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
               transition={{ delay: 0.8, type: 'spring', stiffness: 200 }}
@@ -162,7 +164,7 @@ export const BeforeAfterSection = () => {
               RECOMMENDED
             </motion.div>
             <motion.h3
-              className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 sm:mb-8 lg:mb-10 tracking-tight text-slate-800"
+              className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 sm:mb-8 lg:mb-10 tracking-tight text-foreground"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
@@ -177,7 +179,7 @@ export const BeforeAfterSection = () => {
               transition={{ delay: 0.7 }}
               viewport={{ once: true }}
             >
-              <ul className="space-y-6 sm:space-y-8">
+              <ul className="grid grid-cols-1 md:grid-cols-1 gap-6 sm:gap-8">
                 {afterItems.map((item, index) => (
                   <motion.li
                     key={index}
@@ -185,7 +187,7 @@ export const BeforeAfterSection = () => {
                     initial={{ opacity: 0, x: 30 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     transition={{
-                      duration: 0.6,
+                      duration: 0.8,
                       delay: 0.8 + index * 0.1,
                       ease: 'easeOut',
                     }}
@@ -204,7 +206,7 @@ export const BeforeAfterSection = () => {
                     >
                       <CheckCircle className="h-6 w-6 sm:h-7 sm:w-7 text-green-500" />
                     </motion.div>
-                    <p className="text-base sm:text-lg text-slate-700 leading-relaxed font-medium">
+                    <p className="text-base sm:text-lg text-muted-foreground leading-relaxed font-medium">
                       {item}
                     </p>
                   </motion.li>
@@ -218,19 +220,19 @@ export const BeforeAfterSection = () => {
           className="text-center mt-12 sm:mt-16 lg:mt-20 px-4 sm:px-0"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
           viewport={{ once: true }}
         >
           <motion.button
             onClick={() => (window.location.href = '/login')}
-            className="inline-block rounded-2xl bg-red-500 px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg lg:text-xl font-semibold text-white shadow-xl hover:bg-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 transition-all duration-300 border border-red-500/20 w-full sm:w-auto"
+            className="inline-block rounded-2xl bg-destructive px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg lg:text-xl font-semibold text-destructive-foreground shadow-xl hover:bg-destructive/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destructive transition-all duration-300 border border-destructive/20 w-full sm:w-auto"
             whileHover={{
               scale: 1.02,
               boxShadow: '0 25px 50px rgba(220, 38, 38, 0.4)',
             }}
             whileTap={{ scale: 0.98 }}
           >
-            See Your Feedback Transform in 3 Minutes
+            See Your Feedback Transform In 3 Minutes
           </motion.button>
         </motion.div>
       </div>

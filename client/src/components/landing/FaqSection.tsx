@@ -92,7 +92,7 @@ export const FaqSection = () => {
                 FAQ
               </motion.p>
               <motion.h2
-                className="mt-4 text-2xl sm:text-3xl lg:text-4xl font-bold leading-9 tracking-tight text-foreground"
+                className="mt-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-9 tracking-tight text-foreground"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
@@ -112,7 +112,7 @@ export const FaqSection = () => {
               </motion.p>
               <motion.button
                 onClick={() => (window.location.href = '/login')}
-                className="mt-8 sm:mt-12 inline-flex items-center gap-3 sm:gap-4 rounded-xl sm:rounded-2xl bg-primary px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all w-full sm:w-auto justify-center"
+                className="mt-8 sm:mt-12 inline-flex items-center gap-3 sm:gap-4 rounded-2xl bg-primary px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all w-full sm:w-auto justify-center"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.6 }}
