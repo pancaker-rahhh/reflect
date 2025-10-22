@@ -280,14 +280,26 @@ pre code {
    NAVBAR - Fixed at top, no overlap
    ======================================== */
 
+/* Fallback for older browsers: use fixed positioning if sticky is not supported */
 .navbar {
   height: 60px;
   padding: 0 1rem;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
   background-color: var(--ifm-navbar-background-color);
+}
+
+/* Use sticky positioning if supported */
+@supports (position: sticky) {
+  .navbar {
+    position: sticky;
+    left: unset;
+    right: unset;
+  }
 }
 
 .navbar__inner {
