@@ -109,7 +109,7 @@ export const HeroSection = () => {
                   playsInline
                   preload="metadata"
                   className="w-full h-full object-cover"
-                  poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1080'%3E%3Crect width='1920' height='1080' fill='%231a202c'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23dc2626' font-family='Inter, sans-serif' font-size='48' font-weight='bold'%3EReflect Demo%3C/text%3E%3C/svg%3E"
+                  poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1080'%3E%3Crect width='1920' height='1080' fill='%23111827'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle' fill='%23dc2626' font-family='system-ui, sans-serif' font-size='48' font-weight='600'%3EDemo Loading...%3C/text%3E%3C/svg%3E"
                   style={{
                     willChange: 'transform',
                     backfaceVisibility: 'hidden',
