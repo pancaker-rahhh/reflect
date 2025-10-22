@@ -85,29 +85,6 @@ const config: Config = {
         },
       ],
     },
-    footer: {
-      style: 'dark',
-      links: [
-        {
-          title: 'Documentation',
-          items: [
-            {
-              label: 'Getting Started',
-              to: '/docs/getting-started/quick-start',
-            },
-            {
-              label: 'Widget Integration',
-              to: '/docs/widgets/intro',
-            },
-            {
-              label: 'API Reference',
-              to: '/docs/api/intro',
-            },
-          ],
-        },
-      ],
-      copyright: `Copyright © ${new Date().getFullYear()} Reflect. Built with ❤️ and Docusaurus.`,
-    },
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.vsDark,
