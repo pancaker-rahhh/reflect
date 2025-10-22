@@ -19,6 +19,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Frameworks',
+      collapsed: false,
       items: [
         'widgets/integration/vanilla-js',
         'widgets/integration/react',
