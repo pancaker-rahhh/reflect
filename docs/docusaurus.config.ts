@@ -41,22 +41,10 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          routeBasePath: 'docs',
+          routeBasePath: '/', // Make docs the root
           breadcrumbs: true,
         },
-        blog: {
-          showReadingTime: true,
-          feedOptions: {
-            type: ['rss', 'atom'],
-            xslt: true,
-          },
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          // Useful options to enforce blogging best practices
-          onInlineTags: 'warn',
-          onInlineAuthors: 'warn',
-          onUntruncatedBlogPosts: 'warn',
-        },
+        blog: false, // Disable blog since docs is now the root
         theme: {
           customCss: './src/css/custom.css',
         },
@@ -75,15 +63,8 @@ const config: Config = {
       logo: {
         alt: 'Reflect Logo',
         src: 'https://cdn.reflectfeedback.com/assets/reflect-brand-bgremoved.svg',
+        href: '/', // Link to home (intro page)
       },
-      items: [
-        {
-          type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
-          position: 'left',
-          label: 'Docs',
-        },
-      ],
     },
     prism: {
       theme: prismThemes.github,

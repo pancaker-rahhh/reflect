@@ -1,5 +1,6 @@
 ---
 sidebar_position: 1
+slug: /
 ---
 
 # Welcome to Reflect Documentation
@@ -42,7 +43,7 @@ That's it! Your feedback widget is now live on your site.
 
 ## Getting Started
 
-Ready to collect better feedback? Check out our [Quick Start Guide](/docs/getting-started/quick-start) or explore the [Widget Integration Guides](/docs/widgets/intro).
+Ready to collect better feedback? Check out our [Quick Start Guide](/getting-started/quick-start) or explore the [Widget Integration Guides](/widgets/intro).
 
 ## Why Choose Reflect?
 
