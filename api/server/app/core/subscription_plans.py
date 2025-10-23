@@ -3,9 +3,10 @@ from app.core.settings import get_settings
 
 settings = get_settings()
 
+
 DODO_PRODUCT_IDS = {
-    'pro_monthly': settings.DODO_TEST_PRODUCT_ID_PRO_MONTHLY,
-    'pro_yearly': settings.DODO_TEST_PRODUCT_ID_PRO_YEARLY,
+    'pro_monthly': settings.DODO_PRODUCT_ID_PRO_MONTHLY,
+    'pro_yearly': settings.DODO_PRODUCT_ID_PRO_YEARLY,
 }
 
 PLAN_LIMITS = {

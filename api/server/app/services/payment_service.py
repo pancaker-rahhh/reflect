@@ -5,16 +5,16 @@ from typing import Dict, Any, Optional
 from uuid import UUID
 from datetime import datetime, timezone, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
+from enum import Enum
 from app.core.settings import get_settings
 from app.core.logging import get_logger
 from app.core.subscription_plans import (
     get_plan_by_id,
     get_plan_by_dodo_product_id,
-    PAYMENT_STATUS,
     SUBSCRIPTION_STATUS,
 )
 from app.services.subscription_service import subscription_service
-from app.models.organization_model import SubscriptionPlanEnum
+from app.models.organization_model import SubscriptionPlanEnum, PaymentStatusEnum
 from dodopayments import DodoPayments
 from app.services.notification_service import notification_service
 import base64
@@ -23,21 +23,17 @@ logger = get_logger(__name__)
 settings = get_settings()
 
 
+class ProrationBillingMode(str, Enum):
+    PRORATED_IMMEDIATELY = 'prorated_immediately'
+    FULL_IMMEDIATELY = 'full_immediately'
+    DIFFERENCE_IMMEDIATELY = 'difference_immediately'
+
+
 class PaymentService:
     def __init__(self):
         self.client = None
-        if DodoPayments:
-            api_key: Optional[str] = None
-            if settings.DODO_TEST_API_KEY and settings.DODO_TEST_API_KEY.strip():
-                api_key = settings.DODO_TEST_API_KEY
-                # Use test environment only when test key is present
-                self.client = DodoPayments(
-                    bearer_token=api_key,
-                    environment='test_mode',
-                )
-            elif settings.DODO_API_KEY and settings.DODO_API_KEY.strip():
-                api_key = settings.DODO_API_KEY
-                self.client = DodoPayments(bearer_token=api_key)
+        if DodoPayments and settings.DODO_API_KEY and settings.DODO_API_KEY.strip():
+            self.client = DodoPayments(bearer_token=settings.DODO_API_KEY)
 
     async def create_payment_link(
         self,
@@ -62,10 +58,9 @@ class PaymentService:
 
         try:
             # Construct the Dodo Payments checkout URL directly
-            # Use test environment for testing
             base_url = (
                 'https://test.checkout.dodopayments.com'
-                if settings.DODO_TEST_API_KEY
+                if settings.ENV != 'production'
                 else 'https://checkout.dodopayments.com'
             )
             checkout_url = f'{base_url}/buy/{plan["dodo_product_id"]}?quantity=1&redirect_url={settings.DODO_RETURN_URL}'
@@ -168,16 +163,7 @@ class PaymentService:
         webhook_id: Optional[str] = None,
         raw_body: Optional[str] = None,
     ) -> bool:
-        secret: Optional[str] = None
-        if (
-            getattr(settings, 'DODO_TEST_API_KEY', None)
-            and getattr(settings, 'DODO_TEST_API_KEY').strip()
-        ):
-            test_secret = getattr(settings, 'DODO_TEST_WEBHOOK_SECRET', '')
-            if isinstance(test_secret, str) and test_secret.strip():
-                secret = test_secret
-        if not secret:
-            secret = settings.DODO_WEBHOOK_SECRET
+        secret = settings.DODO_WEBHOOK_SECRET
 
         if not secret or not str(secret).strip():
             logger.warning('Webhook secret not configured')
@@ -248,10 +234,7 @@ class PaymentService:
                 'secret_has_whsec_prefix': secret.startswith('whsec_')
                 if secret
                 else False,
-                'using_test_secret': bool(
-                    getattr(settings, 'DODO_TEST_API_KEY', None)
-                    and getattr(settings, 'DODO_TEST_API_KEY').strip()
-                ),
+                'using_test_secret': settings.ENV != 'production',
             },
         )
         return False
@@ -313,7 +296,7 @@ class PaymentService:
 
         organization.subscription_status = SUBSCRIPTION_STATUS['ACTIVE']
         organization.dodo_subscription_id = subscription_id
-        organization.payment_status = PAYMENT_STATUS['SUCCEEDED']
+        organization.payment_status = PaymentStatusEnum.SUCCEEDED
         organization.last_payment_date = datetime.now(timezone.utc)
         organization.updated_at = datetime.now(timezone.utc)
 
@@ -352,7 +335,7 @@ class PaymentService:
             )
             return
 
-        organization.payment_status = PAYMENT_STATUS['FAILED']
+        organization.payment_status = PaymentStatusEnum.FAILED
         organization.updated_at = datetime.now(timezone.utc)
 
         await db.commit()
@@ -391,7 +374,7 @@ class PaymentService:
             )
             return
 
-        organization.payment_status = PAYMENT_STATUS['CANCELLED']
+        organization.payment_status = PaymentStatusEnum.CANCELLED
         organization.updated_at = datetime.now(timezone.utc)
 
         await db.commit()
@@ -422,7 +405,7 @@ class PaymentService:
             )
             return
 
-        organization.payment_status = PAYMENT_STATUS['PROCESSING']
+        organization.payment_status = PaymentStatusEnum.PROCESSING
         organization.updated_at = datetime.now(timezone.utc)
 
         await db.commit()
@@ -518,7 +501,7 @@ class PaymentService:
             'trialing': SUBSCRIPTION_STATUS['TRIALING'],
         }
 
-        organization.subscription_status = status_mapping.get(status, status)
+        organization.subscription_status = status_mapping.get(str(status), str(status))
         organization.updated_at = datetime.now(timezone.utc)
 
         await db.commit()
@@ -550,7 +533,7 @@ class PaymentService:
             return
 
         organization.subscription_status = SUBSCRIPTION_STATUS['CANCELLED']
-        organization.subscription_plan = 'free'
+        organization.subscription_plan = SubscriptionPlanEnum.FREE
         organization.updated_at = datetime.now(timezone.utc)
 
         await db.commit()
@@ -614,7 +597,7 @@ class PaymentService:
             return
 
         organization.subscription_status = SUBSCRIPTION_STATUS['EXPIRED']
-        organization.subscription_plan = 'free'
+        organization.subscription_plan = SubscriptionPlanEnum.FREE
         organization.updated_at = datetime.now(timezone.utc)
 
         await db.commit()
@@ -646,7 +629,7 @@ class PaymentService:
             return
 
         organization.subscription_status = SUBSCRIPTION_STATUS['CANCELLED']
-        organization.subscription_plan = 'free'
+        organization.subscription_plan = SubscriptionPlanEnum.FREE
         organization.updated_at = datetime.now(timezone.utc)
 
         await db.commit()
@@ -786,7 +769,7 @@ class PaymentService:
             )
 
             organization.subscription_status = SUBSCRIPTION_STATUS['CANCELLED']
-            organization.subscription_plan = 'free'
+            organization.subscription_plan = SubscriptionPlanEnum.FREE
             organization.updated_at = datetime.now(timezone.utc)
 
             await db.commit()
@@ -865,36 +848,9 @@ class PaymentService:
 
         # Check if we can reach Dodo
         if not self.client or not organization.dodo_subscription_id:
-            # Only use fallback in development/test - fail in production
-            if settings.ENV in ['development', 'test']:
-                logger.warning(
-                    'Dodo client not initialized or no subscription ID - using fallback cancellation (DEV MODE)',
-                    extra={'organization_id': str(organization_id)},
-                )
-                # Calculate next billing date as 30 days from now for monthly, or 1 year for yearly
-                plan = organization.subscription_plan
-                if 'yearly' in plan.lower():
-                    next_billing_date = datetime.now(timezone.utc) + timedelta(days=365)
-                else:
-                    next_billing_date = datetime.now(timezone.utc) + timedelta(days=30)
-
-                organization.subscription_status = SUBSCRIPTION_STATUS['CANCELLED']
-                organization.subscription_ends_at = next_billing_date
-                organization.updated_at = datetime.now(timezone.utc)
-                await db.commit()
-
-                logger.info(
-                    'Fallback cancellation scheduled (DEV MODE)',
-                    extra={
-                        'organization_id': str(organization_id),
-                        'subscription_ends_at': next_billing_date.isoformat(),
-                    },
-                )
-                return next_billing_date
-            else:
-                raise ValueError(
-                    'Dodo Payments client not initialized or no active subscription'
-                )
+            raise ValueError(
+                'Dodo Payments client not initialized or no active subscription'
+            )
 
         try:
             response = self.client.subscriptions.update(
@@ -922,46 +878,15 @@ class PaymentService:
 
             return next_billing_date
         except Exception as e:
-            # Only use fallback in development/test - fail loudly in production
-            if settings.ENV in ['development', 'test']:
-                logger.warning(
-                    'Dodo API call failed, using fallback cancellation (DEV MODE)',
-                    extra={
-                        'organization_id': str(organization_id),
-                        'dodo_subscription_id': organization.dodo_subscription_id,
-                        'error': str(e),
-                    },
-                )
-                # Fallback: set local cancellation date
-                plan = organization.subscription_plan
-                if 'yearly' in plan.lower():
-                    next_billing_date = datetime.now(timezone.utc) + timedelta(days=365)
-                else:
-                    next_billing_date = datetime.now(timezone.utc) + timedelta(days=30)
-
-                organization.subscription_status = SUBSCRIPTION_STATUS['CANCELLED']
-                organization.subscription_ends_at = next_billing_date
-                organization.updated_at = datetime.now(timezone.utc)
-                await db.commit()
-
-                logger.info(
-                    'Fallback cancellation scheduled after Dodo failure (DEV MODE)',
-                    extra={
-                        'organization_id': str(organization_id),
-                        'subscription_ends_at': next_billing_date.isoformat(),
-                    },
-                )
-                return next_billing_date
-            else:
-                logger.error(
-                    'Failed to cancel subscription via Dodo Payments',
-                    extra={
-                        'organization_id': str(organization_id),
-                        'dodo_subscription_id': organization.dodo_subscription_id,
-                        'error': str(e),
-                    },
-                )
-                raise
+            logger.error(
+                'Failed to cancel subscription via Dodo Payments',
+                extra={
+                    'organization_id': str(organization_id),
+                    'dodo_subscription_id': organization.dodo_subscription_id,
+                    'error': str(e),
+                },
+            )
+            raise
 
     def _extract_next_billing_date(self, response: Any) -> Optional[datetime]:
         """Parse next billing date from Dodo's base64-encoded response.data."""
@@ -994,7 +919,7 @@ class PaymentService:
         db: AsyncSession,
         organization_id: UUID,
         new_plan_id: str,
-        proration_billing_mode: str = 'difference_immediately',
+        proration_billing_mode: ProrationBillingMode = ProrationBillingMode.DIFFERENCE_IMMEDIATELY,
         quantity: int = 1,
     ) -> bool:
         """Change Dodo subscription plan for an organization."""
@@ -1017,7 +942,7 @@ class PaymentService:
             self.client.subscriptions.change_plan(
                 subscription_id=organization.dodo_subscription_id,
                 product_id=plan['dodo_product_id'],
-                proration_billing_mode=proration_billing_mode,
+                proration_billing_mode=proration_billing_mode.value,
                 quantity=quantity,
             )
 
@@ -1076,17 +1001,24 @@ class PaymentService:
         )
 
         try:
-            page = self.client.payments.list(
-                created_at_gte=created_at_gte if created_at_gte else None,
-                created_at_lte=created_at_lte if created_at_lte else None,
-                page_size=page_size if page_size is not None else None,
-                page_number=page_number if page_number is not None else None,
-                subscription_id=final_subscription_id
-                if final_subscription_id
-                else None,
-                customer_id=final_customer_id if final_customer_id else None,
-                status=status if status else None,
-            )
+            # Build parameters dict, only including non-None values
+            params = {}
+            if created_at_gte:
+                params['created_at_gte'] = created_at_gte
+            if created_at_lte:
+                params['created_at_lte'] = created_at_lte
+            if page_size is not None:
+                params['page_size'] = page_size
+            if page_number is not None:
+                params['page_number'] = page_number
+            if final_subscription_id:
+                params['subscription_id'] = final_subscription_id
+            if final_customer_id:
+                params['customer_id'] = final_customer_id
+            if status:
+                params['status'] = status
+
+            page = self.client.payments.list(**params)
 
             items = getattr(page, 'items', []) or []
             return {
