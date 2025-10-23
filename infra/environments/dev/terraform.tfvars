@@ -70,24 +70,24 @@ secrets = {
     secret_name = "cdn-api-token"
     version     = "latest"
   }
-  DODO_TEST_API_KEY = {
-    secret_name = "dodo-test-api-key"
+  DODO_API_KEY = {
+    secret_name = "dodo-api-key"
     version     = "latest"
   }
   DODO_RETURN_URL = {
     secret_name = "dodo-return-url"
     version     = "latest"
   }
-  DODO_TEST_WEBHOOK_SECRET = {
-    secret_name = "dodo-test-webhook-secret"
+  DODO_WEBHOOK_SECRET = {
+    secret_name = "dodo-webhook-secret"
     version     = "latest"
   }
-  DODO_TEST_PRODUCT_ID_PRO_MONTHLY = {
-    secret_name = "dodo-test-product-id-pro-monthly"
+  DODO_PRODUCT_ID_PRO_MONTHLY = {
+    secret_name = "dodo-product-id-pro-monthly"
     version     = "latest"
   }
-  DODO_TEST_PRODUCT_ID_PRO_YEARLY = {
-    secret_name = "dodo-test-product-id-pro-yearly"
+  DODO_PRODUCT_ID_PRO_YEARLY = {
+    secret_name = "dodo-product-id-pro-yearly"
     version     = "latest"
   }
 }
