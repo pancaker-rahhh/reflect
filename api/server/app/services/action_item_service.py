@@ -231,7 +231,7 @@ class ActionItemService:
             FeedbackType.CSAT,
             FeedbackType.CES,
         ]:
-            rating = getattr(feedback, 'rating', None)
+            rating = self._get_effective_rating(feedback)
             if rating:
                 if rating <= 2:
                     return FeedbackPriority.HIGH
@@ -239,6 +239,20 @@ class ActionItemService:
                     return FeedbackPriority.LOW
 
         return base_priority
+
+    def _get_effective_rating(self, feedback: Feedback) -> Optional[int]:
+        try:
+            if feedback.feedback_type == FeedbackType.REVIEW:
+                return getattr(feedback, 'overall_rating', feedback.rating)
+            elif feedback.feedback_type == FeedbackType.NPS:
+                return getattr(feedback, 'nps_score', feedback.rating)
+            elif feedback.feedback_type == FeedbackType.CSAT:
+                return getattr(feedback, 'csat_score', feedback.rating)
+            elif feedback.feedback_type == FeedbackType.CES:
+                return getattr(feedback, 'ces_score', feedback.rating)
+            return feedback.rating
+        except Exception:
+            return feedback.rating
 
     async def _generate_description_from_feedback(
         self,

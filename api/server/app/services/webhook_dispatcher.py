@@ -3,7 +3,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.webhook_model import WebhookEventType
-from app.models.feedback_model import Feedback
+from app.models.feedback_model import Feedback, FeedbackType
 from app.models.roadmap_model import RoadmapActionItem
 from app.models.project_model import Project
 from app.services.webhook_service import webhook_service
@@ -27,7 +27,7 @@ class WebhookEventDispatcher:
             'feedback_type': feedback.feedback_type.value,
             'title': feedback.title,
             'message': feedback.message,
-            'rating': feedback.rating,
+            'rating': self._get_effective_rating(feedback),
             'submitter_name': feedback.submitter_name,
             'submitter_email': feedback.submitter_email,
             'is_anonymous': feedback.is_anonymous,
@@ -234,6 +234,20 @@ class WebhookEventDispatcher:
                 f'Failed to dispatch project.updated webhooks for project {project.id}: {str(e)}'
             )
             return None
+
+    def _get_effective_rating(self, feedback: Feedback) -> Optional[int]:
+        try:
+            if feedback.feedback_type == FeedbackType.REVIEW:
+                return getattr(feedback, 'overall_rating', feedback.rating)
+            elif feedback.feedback_type == FeedbackType.NPS:
+                return getattr(feedback, 'nps_score', feedback.rating)
+            elif feedback.feedback_type == FeedbackType.CSAT:
+                return getattr(feedback, 'csat_score', feedback.rating)
+            elif feedback.feedback_type == FeedbackType.CES:
+                return getattr(feedback, 'ces_score', feedback.rating)
+            return feedback.rating
+        except Exception:
+            return feedback.rating
 
 
 webhook_dispatcher = WebhookEventDispatcher()

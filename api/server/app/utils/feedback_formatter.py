@@ -1,4 +1,5 @@
-from app.models.feedback_model import Feedback
+from app.models.feedback_model import Feedback, FeedbackType
+from typing import Optional
 
 
 class FeedbackFormatter:
@@ -11,8 +12,9 @@ class FeedbackFormatter:
         content = item.message
 
         if not content or content.strip() == '':
-            if item.rating is not None:
-                return f'Rating: {item.rating}'
+            rating = FeedbackFormatter._get_effective_rating(item)
+            if rating is not None:
+                return f'Rating: {rating}'
             else:
                 return f'{item.feedback_type.value.replace("_", " ").title()} Submitted'
 
@@ -40,3 +42,18 @@ class FeedbackFormatter:
             'feedback_votes': item.feedback_votes,
             'is_actionable': item.is_actionable,
         }
+
+    @staticmethod
+    def _get_effective_rating(item: Feedback) -> Optional[int]:
+        try:
+            if item.feedback_type == FeedbackType.REVIEW:
+                return getattr(item, 'overall_rating', item.rating)
+            elif item.feedback_type == FeedbackType.NPS:
+                return getattr(item, 'nps_score', item.rating)
+            elif item.feedback_type == FeedbackType.CSAT:
+                return getattr(item, 'csat_score', item.rating)
+            elif item.feedback_type == FeedbackType.CES:
+                return getattr(item, 'ces_score', item.rating)
+            return item.rating
+        except Exception:
+            return item.rating

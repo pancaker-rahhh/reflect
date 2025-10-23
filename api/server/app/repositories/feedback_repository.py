@@ -26,6 +26,20 @@ class FeedbackRepository(BaseRepository[Feedback]):
     def __init__(self):
         super().__init__(Feedback)
 
+    def _get_effective_rating(self, item: Feedback) -> Optional[int]:
+        try:
+            if item.feedback_type == FeedbackType.REVIEW:
+                return getattr(item, 'overall_rating', item.rating)
+            elif item.feedback_type == FeedbackType.NPS:
+                return getattr(item, 'nps_score', item.rating)
+            elif item.feedback_type == FeedbackType.CSAT:
+                return getattr(item, 'csat_score', item.rating)
+            elif item.feedback_type == FeedbackType.CES:
+                return getattr(item, 'ces_score', item.rating)
+            return item.rating
+        except Exception:
+            return item.rating
+
     async def get_by_project(
         self, db: AsyncSession, project_id: UUID, skip: int = 0, limit: int = 100
     ) -> List[Feedback]:
@@ -257,10 +271,27 @@ class FeedbackRepository(BaseRepository[Feedback]):
         total_feedback_count = total_result.scalar() or 0
 
         rating_query = f"""
-        SELECT COALESCE(AVG(rf.overall_rating), 0) as avg_rating
+        SELECT COALESCE(AVG(
+            CASE 
+                WHEN f.feedback_type = 'review' THEN rf.overall_rating
+                WHEN f.feedback_type = 'NPS' THEN nf.nps_score
+                WHEN f.feedback_type = 'CSAT' THEN cf.csat_score
+                WHEN f.feedback_type = 'CES' THEN ef.ces_score
+                ELSE f.rating
+            END
+        ), 0) as avg_rating
         FROM feedback f
-        JOIN review_feedback rf ON f.id = rf.id 
-        {base_where} AND f.feedback_type = 'review' AND rf.overall_rating IS NOT NULL
+        LEFT JOIN review_feedback rf ON f.id = rf.id AND f.feedback_type = 'review'
+        LEFT JOIN nps_feedback nf ON f.id = nf.id AND f.feedback_type = 'NPS'
+        LEFT JOIN csat_feedback cf ON f.id = cf.id AND f.feedback_type = 'CSAT'
+        LEFT JOIN ces_feedback ef ON f.id = ef.id AND f.feedback_type = 'CES'
+        {base_where} AND (
+            (f.feedback_type = 'review' AND rf.overall_rating IS NOT NULL) OR
+            (f.feedback_type = 'NPS' AND nf.nps_score IS NOT NULL) OR
+            (f.feedback_type = 'CSAT' AND cf.csat_score IS NOT NULL) OR
+            (f.feedback_type = 'CES' AND ef.ces_score IS NOT NULL) OR
+            (f.feedback_type NOT IN ('review', 'NPS', 'CSAT', 'CES') AND f.rating IS NOT NULL)
+        )
         """
 
         rating_result = await db.execute(text(rating_query), params)
@@ -327,7 +358,7 @@ class FeedbackRepository(BaseRepository[Feedback]):
                     if item.is_actionable is not None
                     else True,
                     'widget_name': widget_name,
-                    'rating': item.rating,
+                    'rating': self._get_effective_rating(item),
                 }
             )
 
@@ -386,7 +417,7 @@ class FeedbackRepository(BaseRepository[Feedback]):
                 'feedback_type': item.feedback_type,
                 'title': display_title,
                 'message': item.message,
-                'rating': item.rating,
+                'rating': self._get_effective_rating(item),
                 'created_at': item.created_at,
                 'submitter_name': item.submitter_name,
                 'submitter_email': item.submitter_email,
