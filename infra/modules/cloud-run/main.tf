@@ -11,7 +11,7 @@ resource "google_cloud_run_v2_service" "service" {
       max_instance_count = 1
     }
 
-    execution_environment = "EXECUTION_ENVIRONMENT_GEN2"
+    execution_environment = "EXECUTION_ENVIRONMENT_GEN1"
 
     containers {
       image = var.image
