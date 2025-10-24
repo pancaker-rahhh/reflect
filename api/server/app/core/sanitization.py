@@ -37,7 +37,6 @@ class InputSanitizer:
         'category': 50,
         'priority': 20,
         'severity': 20,
-        'rating': 10,  # Add rating field for proper sanitization
     }
 
     @classmethod
@@ -117,7 +116,7 @@ class InputSanitizer:
             if len(url) > 2048:
                 return None
             return url
-        except:
+        except Exception:
             return None
 
     @classmethod
@@ -180,7 +179,13 @@ class InputSanitizer:
 
                 if field == 'submitter_email':
                     sanitized[field] = cls.sanitize_email(value)
-                elif field in ['rating', 'score', 'overall_rating']:
+                elif field in [
+                    'score',
+                    'overall_rating',
+                    'nps_score',
+                    'csat_score',
+                    'ces_score',
+                ]:
                     sanitized[field] = cls.sanitize_rating(value)
                 elif field == 'severity':
                     sanitized[field] = cls.sanitize_severity(value)

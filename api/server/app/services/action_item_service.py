@@ -231,7 +231,33 @@ class ActionItemService:
             FeedbackType.CSAT,
             FeedbackType.CES,
         ]:
-            rating = self._get_effective_rating(feedback)
+            if (
+                feedback.feedback_type == FeedbackType.REVIEW
+                and hasattr(feedback, 'overall_rating')
+                and feedback.overall_rating
+            ):
+                rating = feedback.overall_rating
+            elif (
+                feedback.feedback_type == FeedbackType.NPS
+                and hasattr(feedback, 'nps_score')
+                and feedback.nps_score
+            ):
+                rating = feedback.nps_score
+            elif (
+                feedback.feedback_type == FeedbackType.CSAT
+                and hasattr(feedback, 'csat_score')
+                and feedback.csat_score
+            ):
+                rating = feedback.csat_score
+            elif (
+                feedback.feedback_type == FeedbackType.CES
+                and hasattr(feedback, 'ces_score')
+                and feedback.ces_score
+            ):
+                rating = feedback.ces_score
+            else:
+                rating = None
+
             if rating:
                 if rating <= 2:
                     return FeedbackPriority.HIGH
@@ -239,20 +265,6 @@ class ActionItemService:
                     return FeedbackPriority.LOW
 
         return base_priority
-
-    def _get_effective_rating(self, feedback: Feedback) -> Optional[int]:
-        try:
-            if feedback.feedback_type == FeedbackType.REVIEW:
-                return getattr(feedback, 'overall_rating', feedback.rating)
-            elif feedback.feedback_type == FeedbackType.NPS:
-                return getattr(feedback, 'nps_score', feedback.rating)
-            elif feedback.feedback_type == FeedbackType.CSAT:
-                return getattr(feedback, 'csat_score', feedback.rating)
-            elif feedback.feedback_type == FeedbackType.CES:
-                return getattr(feedback, 'ces_score', feedback.rating)
-            return feedback.rating
-        except Exception:
-            return feedback.rating
 
     async def _generate_description_from_feedback(
         self,

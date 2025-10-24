@@ -6,7 +6,7 @@ This guide explains how to use the enhanced widget feedback system that properly
 
 The widget feedback system now supports different widget types with specialized data storage:
 
-1. **Review Widgets** - 5-star rating system with pros/cons
+1. **Review Widgets** - 5-star rating system with pros/cons (use `overall_rating` field)
 2. **Bug Report Widgets** - Detailed bug reporting with steps to reproduce
 3. **Feature Request Widgets** - Feature requests with solution suggestions and benefits
 4. **NPS Widgets** - Net Promoter Score (0-10 scale)
@@ -20,7 +20,7 @@ The widget feedback system now supports different widget types with specialized 
 **Purpose**: Collect product reviews with 5-star ratings
 
 **Required Data**:
-- `rating`: Integer (1-5) - Overall rating
+- `overall_rating`: Integer (1-5) - Overall rating
 - `title`: String (optional) - Review title
 - `message`: String (optional) - Review content
 - `pros`: String (optional) - What the user liked
@@ -31,7 +31,7 @@ The widget feedback system now supports different widget types with specialized 
 {
   "widgetKey": "widget_abc123",
   "widgetType": "REVIEW",
-  "rating": 5,
+  "overall_rating": 5,
   "title": "Great Product!",
   "message": "This product exceeded my expectations.",
   "pros": "Easy to use, great features, excellent support",
@@ -180,7 +180,7 @@ feedback = await feedback_service.create_feedback_from_widget(
     project_id=widget.project_id,
     widget_type=WidgetType.REVIEW,
     data={
-        'rating': 5,
+        'overall_rating': 5,
         'title': 'Great Product!',
         'message': 'Excellent experience'
     }
@@ -200,7 +200,7 @@ feedback = await widget_feedback_handler.handle_review_widget(
     widget_id=widget.id,
     project_id=widget.project_id,
     data={
-        'rating': 5,
+        'overall_rating': 5,
         'title': 'Great Product!',
         'message': 'Excellent experience',
         'pros': 'Easy to use',

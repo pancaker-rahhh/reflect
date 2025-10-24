@@ -26,29 +26,37 @@ class FeedbackRepository(BaseRepository[Feedback]):
     def __init__(self):
         super().__init__(Feedback)
 
-    def _get_effective_rating(self, item: Feedback) -> Optional[int]:
-        try:
-            if item.feedback_type == FeedbackType.REVIEW:
-                return getattr(item, 'overall_rating', item.rating)
-            elif item.feedback_type == FeedbackType.NPS:
-                return getattr(item, 'nps_score', item.rating)
-            elif item.feedback_type == FeedbackType.CSAT:
-                return getattr(item, 'csat_score', item.rating)
-            elif item.feedback_type == FeedbackType.CES:
-                return getattr(item, 'ces_score', item.rating)
-            return item.rating
-        except Exception:
-            return item.rating
+    async def get_multi_with_ratings(
+        self, db: AsyncSession, skip: int = 0, limit: int = 100, **filters
+    ) -> List[Feedback]:
+        """Get feedback with specialized rating fields loaded"""
+        stmt = select(Feedback)
+
+        # Automatically filter out soft-deleted records
+        if hasattr(Feedback, 'deleted_at'):
+            stmt = stmt.where(Feedback.deleted_at.is_(None))
+
+        for key, value in filters.items():
+            if hasattr(Feedback, key) and value is not None:
+                stmt = stmt.where(getattr(Feedback, key) == value)
+
+        stmt = stmt.offset(skip).limit(limit)
+        result = await db.execute(stmt)
+        return list(result.scalars().all())
 
     async def get_by_project(
         self, db: AsyncSession, project_id: UUID, skip: int = 0, limit: int = 100
     ) -> List[Feedback]:
-        return await self.get_multi(db, project_id=project_id, skip=skip, limit=limit)
+        return await self.get_multi_with_ratings(
+            db, project_id=project_id, skip=skip, limit=limit
+        )
 
     async def get_by_widget(
         self, db: AsyncSession, widget_id: UUID, skip: int = 0, limit: int = 100
     ) -> List[Feedback]:
-        return await self.get_multi(db, widget_id=widget_id, skip=skip, limit=limit)
+        return await self.get_multi_with_ratings(
+            db, widget_id=widget_id, skip=skip, limit=limit
+        )
 
     async def get_by_status(
         self,
@@ -277,7 +285,6 @@ class FeedbackRepository(BaseRepository[Feedback]):
                 WHEN f.feedback_type = 'NPS' THEN nf.nps_score
                 WHEN f.feedback_type = 'CSAT' THEN cf.csat_score
                 WHEN f.feedback_type = 'CES' THEN ef.ces_score
-                ELSE f.rating
             END
         ), 0) as avg_rating
         FROM feedback f
@@ -289,8 +296,7 @@ class FeedbackRepository(BaseRepository[Feedback]):
             (f.feedback_type = 'review' AND rf.overall_rating IS NOT NULL) OR
             (f.feedback_type = 'NPS' AND nf.nps_score IS NOT NULL) OR
             (f.feedback_type = 'CSAT' AND cf.csat_score IS NOT NULL) OR
-            (f.feedback_type = 'CES' AND ef.ces_score IS NOT NULL) OR
-            (f.feedback_type NOT IN ('review', 'NPS', 'CSAT', 'CES') AND f.rating IS NOT NULL)
+            (f.feedback_type = 'CES' AND ef.ces_score IS NOT NULL)
         )
         """
 
@@ -340,7 +346,53 @@ class FeedbackRepository(BaseRepository[Feedback]):
 
         activities = []
         for item in feedback_items:
-            summary = FeedbackFormatter.format_display_title(item)
+            # Get the rating for this feedback item
+            rating = None
+            if item.feedback_type.value == 'review':
+                review_stmt = select(ReviewFeedback).where(ReviewFeedback.id == item.id)
+                review_result = await db.execute(review_stmt)
+                review_data = review_result.scalar_one_or_none()
+                if review_data:
+                    rating = review_data.overall_rating
+            elif item.feedback_type.value == 'NPS':
+                nps_stmt = select(NPSFeedback).where(NPSFeedback.id == item.id)
+                nps_result = await db.execute(nps_stmt)
+                nps_data = nps_result.scalar_one_or_none()
+                if nps_data:
+                    rating = nps_data.nps_score
+            elif item.feedback_type.value == 'CSAT':
+                csat_stmt = select(CSATFeedback).where(CSATFeedback.id == item.id)
+                csat_result = await db.execute(csat_stmt)
+                csat_data = csat_result.scalar_one_or_none()
+                if csat_data:
+                    rating = csat_data.csat_score
+            elif item.feedback_type.value == 'CES':
+                ces_stmt = select(CESFeedback).where(CESFeedback.id == item.id)
+                ces_result = await db.execute(ces_stmt)
+                ces_data = ces_result.scalar_one_or_none()
+                if ces_data:
+                    rating = ces_data.ces_score
+
+            # Create a temporary object with the rating for the formatter
+            class FeedbackWithRating:
+                def __init__(self, feedback, rating):
+                    self.feedback_type = feedback.feedback_type
+                    self.message = feedback.message
+                    self.overall_rating = (
+                        rating if feedback.feedback_type.value == 'review' else None
+                    )
+                    self.nps_score = (
+                        rating if feedback.feedback_type.value == 'NPS' else None
+                    )
+                    self.csat_score = (
+                        rating if feedback.feedback_type.value == 'CSAT' else None
+                    )
+                    self.ces_score = (
+                        rating if feedback.feedback_type.value == 'CES' else None
+                    )
+
+            temp_item = FeedbackWithRating(item, rating)
+            summary = FeedbackFormatter.format_display_title(temp_item)
 
             widget_name = item.widget.name if item.widget else None
 
@@ -358,7 +410,6 @@ class FeedbackRepository(BaseRepository[Feedback]):
                     if item.is_actionable is not None
                     else True,
                     'widget_name': widget_name,
-                    'rating': self._get_effective_rating(item),
                 }
             )
 
@@ -417,7 +468,6 @@ class FeedbackRepository(BaseRepository[Feedback]):
                 'feedback_type': item.feedback_type,
                 'title': display_title,
                 'message': item.message,
-                'rating': self._get_effective_rating(item),
                 'created_at': item.created_at,
                 'submitter_name': item.submitter_name,
                 'submitter_email': item.submitter_email,

@@ -1,4 +1,4 @@
-from app.models.feedback_model import Feedback, FeedbackType
+from app.models.feedback_model import Feedback
 from typing import Optional
 
 
@@ -12,11 +12,11 @@ class FeedbackFormatter:
         content = item.message
 
         if not content or content.strip() == '':
-            rating = FeedbackFormatter._get_effective_rating(item)
-            if rating is not None:
-                return f'Rating: {rating}'
-            else:
-                return f'{item.feedback_type.value.replace("_", " ").title()} Submitted'
+            if item.feedback_type.value in ['review', 'NPS', 'CSAT', 'CES']:
+                rating = FeedbackFormatter._get_effective_rating(item)
+                if rating is not None:
+                    return f'Rating: {rating}'
+            return f'{item.feedback_type.value.replace("_", " ").title()} Submitted'
 
         if content.startswith('New '):
             content = content[4:]
@@ -44,16 +44,20 @@ class FeedbackFormatter:
         }
 
     @staticmethod
-    def _get_effective_rating(item: Feedback) -> Optional[int]:
+    def _get_effective_rating(item) -> Optional[int]:
+        """Returns the appropriate rating value based on feedback type"""
         try:
-            if item.feedback_type == FeedbackType.REVIEW:
-                return getattr(item, 'overall_rating', item.rating)
-            elif item.feedback_type == FeedbackType.NPS:
-                return getattr(item, 'nps_score', item.rating)
-            elif item.feedback_type == FeedbackType.CSAT:
-                return getattr(item, 'csat_score', item.rating)
-            elif item.feedback_type == FeedbackType.CES:
-                return getattr(item, 'ces_score', item.rating)
-            return item.rating
+            # Check for rating attributes directly
+            if hasattr(item, 'overall_rating') and item.overall_rating is not None:
+                return item.overall_rating
+            elif hasattr(item, 'nps_score') and item.nps_score is not None:
+                return item.nps_score
+            elif hasattr(item, 'csat_score') and item.csat_score is not None:
+                return item.csat_score
+            elif hasattr(item, 'ces_score') and item.ces_score is not None:
+                return item.ces_score
+
+            # If no rating found, return None (will fall back to "Submitted" text)
+            return None
         except Exception:
-            return item.rating
+            return None

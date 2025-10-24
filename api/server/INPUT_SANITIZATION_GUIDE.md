@@ -87,7 +87,7 @@ const cleanText = InputSanitizer.sanitizeText(userInput, { maxLength: 200 });
 // Convenience functions
 const cleanTitle = sanitizeInput.title(userInput);
 const cleanEmail = sanitizeInput.email(userInput);
-const cleanRating = sanitizeInput.rating(userInput);
+const cleanRating = sanitizeInput.overall_rating(userInput);
 ```
 
 ### Reusable Components

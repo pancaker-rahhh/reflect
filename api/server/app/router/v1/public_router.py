@@ -23,11 +23,14 @@ public_router = APIRouter()
 
 class PublicFeedbackPayload(BaseModel):
     widgetKey: str
-    rating: Optional[int] = None
     message: Optional[str] = None
     feedbackType: Optional[str] = None
     widgetType: Optional[str] = None
     overall_rating: Optional[int] = None
+    nps_score: Optional[int] = None
+    csat_score: Optional[int] = None
+    ces_score: Optional[int] = None
+    rating: Optional[int] = None  # Generic rating field for any type
     severity: Optional[str] = None
     priority: Optional[str] = None
     useCase: Optional[str] = None
@@ -85,16 +88,51 @@ async def create_or_update_widget_feedback(
     )
 
     feedback_data = {
-        'rating': payload.rating,
         'message': payload.message or '',
     }
 
     if widget_type == WidgetType.REVIEW:
         feedback_data.update(
             {
-                'rating': payload.overall_rating or payload.rating,
+                'rating': payload.overall_rating,
             }
         )
+    elif widget_type == WidgetType.NPS:
+        # Extract NPS score from typeSpecificData or payload
+        nps_score = None
+        if hasattr(payload, 'nps_score') and payload.nps_score is not None:
+            nps_score = payload.nps_score
+        elif payload.context and 'nps_score' in payload.context:
+            nps_score = payload.context.get('nps_score')
+        elif hasattr(payload, 'rating') and payload.rating is not None:
+            nps_score = payload.rating
+
+        if nps_score is not None:
+            feedback_data.update({'rating': nps_score})
+    elif widget_type == WidgetType.CSAT:
+        # Extract CSAT score from typeSpecificData or payload
+        csat_score = None
+        if hasattr(payload, 'csat_score') and payload.csat_score is not None:
+            csat_score = payload.csat_score
+        elif payload.context and 'csat_score' in payload.context:
+            csat_score = payload.context.get('csat_score')
+        elif hasattr(payload, 'rating') and payload.rating is not None:
+            csat_score = payload.rating
+
+        if csat_score is not None:
+            feedback_data.update({'rating': csat_score})
+    elif widget_type == WidgetType.CES:
+        # Extract CES score from typeSpecificData or payload
+        ces_score = None
+        if hasattr(payload, 'ces_score') and payload.ces_score is not None:
+            ces_score = payload.ces_score
+        elif payload.context and 'ces_score' in payload.context:
+            ces_score = payload.context.get('ces_score')
+        elif hasattr(payload, 'rating') and payload.rating is not None:
+            ces_score = payload.rating
+
+        if ces_score is not None:
+            feedback_data.update({'rating': ces_score})
     elif widget_type == WidgetType.BUG_REPORT:
         feedback_data.update(
             {

@@ -380,8 +380,10 @@ export function PublicFeedbackDisplay({
             >
               {/* Header with rating only */}
               <div className="flex items-center justify-between mb-2">
-                {item.rating && (
-                  <div className="flex items-center space-x-2">{renderStars(item.rating)}</div>
+                {feedbackType === 'REVIEW' && item.overall_rating && (
+                  <div className="flex items-center space-x-1">
+                    {renderStars(item.overall_rating)}
+                  </div>
                 )}
               </div>
 

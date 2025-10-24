@@ -147,8 +147,6 @@ export function Responses() {
           score = item.csat_score
         } else if (item.feedback_type === 'CES') {
           score = item.ces_score
-        } else if (item.rating !== null && item.rating !== undefined) {
-          score = item.rating
         }
 
         if (score !== null && score !== undefined) {

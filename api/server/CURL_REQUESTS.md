@@ -14,7 +14,7 @@ curl -X POST "YOUR_BASE_URL/api/v1/public/feedback" \
   -d '{
     "widgetKey": "widget_abc123",
     "widgetType": "REVIEW",
-    "rating": 5,
+    "overall_rating": 5,
     "title": "Great Product!",
     "message": "This product exceeded my expectations.",
     "pros": "Easy to use, great features, excellent support",
@@ -307,13 +307,13 @@ curl -X POST "YOUR_BASE_URL/api/v1/public/feedback" \
 **Note**: Severity levels are only used for bug reports. Other feedback types (reviews, feature requests, NPS, CSAT, CES) do not have priority/severity fields.
 
 ### Rating Values
-- **Review Widget**: `1` to `5` (5-star rating system)
+- **Review Widget**: `1` to `5` (5-star rating system) - use `overall_rating` field
 - **NPS Widget**: `0` to `10` (Net Promoter Score)
 - **CSAT Widget**: `1` to `5` (Customer Satisfaction)
 - **CES Widget**: `1` to `5` (Customer Effort Score)
 
 ### Widget Types
-- `"REVIEW"` - 5-star rating system
+- `"REVIEW"` - 5-star rating system (use `overall_rating` field)
 - `"BUG_REPORT"` - Detailed bug reporting
 - `"FEATURE_REQUEST"` - Feature requests with solution/benefits
 - `"NPS"` - Net Promoter Score (0-10)
@@ -353,7 +353,7 @@ curl -X POST "YOUR_BASE_URL/api/v1/feedback/{feedback_id}/upvote" \
 ## Widget Type Handling
 
 The system supports these widget types:
-- `REVIEW` - 5-star rating system
+- `REVIEW` - 5-star rating system (use `overall_rating` field)
 - `BUG_REPORT` - Detailed bug reporting
 - `FEATURE_REQUEST` - Feature requests with solution/benefits
 - `NPS` - Net Promoter Score (0-10)

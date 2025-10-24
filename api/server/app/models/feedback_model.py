@@ -55,7 +55,6 @@ class Feedback(BaseModel):
     )
 
     message = Column(Text)
-    rating = Column(Integer)
     feedback_votes = Column(Integer, default=0)
 
     feedback_metadata = Column(JSONB, default=dict)
