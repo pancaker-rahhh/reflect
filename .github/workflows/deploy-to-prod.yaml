@@ -143,12 +143,13 @@ jobs:
 
       - name: Terraform Init
         run: |
-          terraform init \
-            -backend-config="bucket=reflectfeedback-terraform-state"
+          cd infra/gcp/
+          terraform init -backend-config="bucket=reflectfeedback-terraform-state"
 
       - name: Terraform Plan
         id: plan
         run: |
+          cd infra/gcp/
           terraform plan \
             -var-file=environments/prod/terraform.tfvars \
             -var="image=${{ secrets.PROD_DOCKER_IMAGE_TAG }}:${{ github.sha }}" \
@@ -159,7 +160,9 @@ jobs:
           echo "::endgroup::"
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+        run: |
+          cd infra/gcp/
+          terraform apply -auto-approve tfplan
 
       - name: Get Service URL
         id: output
