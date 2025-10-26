@@ -9,7 +9,7 @@ custom_domain         = "api-dev.reflectfeedback.com"
 env_vars = {
   DEBUG         = "true"
   ENV           = "development"
-  POSTGRES_DB   = "neondb"
+  POSTGRES_DB   = "reflectfeedback"
   POSTGRES_PORT = "5432"
 }
 
