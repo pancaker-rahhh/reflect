@@ -108,7 +108,7 @@ jobs:
     environment: dev
     defaults:
       run:
-        working-directory: ./infra
+        working-directory: ./infra/google
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -142,14 +142,11 @@ jobs:
           fi
 
       - name: Terraform Init
-        run: |
-          cd infra/google/
-          terraform init -backend-config="bucket=reflectfeedback-dev-terraform-state"
+        run: terraform init -backend-config="bucket=reflectfeedback-dev-terraform-state"
 
       - name: Terraform Plan
         id: plan
         run: |
-          cd infra/google/
           terraform plan \
             -var-file=environments/dev/terraform.tfvars \
             -var="image=us-east4-docker.pkg.dev/reflect-dev-473413/reflectfeedback/app:${{ github.sha }}" \
@@ -160,9 +157,7 @@ jobs:
           echo "::endgroup::"
 
       - name: Terraform Apply
-        run: |
-          cd infra/google/
-          terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve tfplan
 
       - name: Get Service URL
         id: output

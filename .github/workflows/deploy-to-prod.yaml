@@ -108,7 +108,7 @@ jobs:
     environment: production
     defaults:
       run:
-        working-directory: ./infra
+        working-directory: ./infra/google
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -142,14 +142,11 @@ jobs:
           fi
 
       - name: Terraform Init
-        run: |
-          cd infra/google/
-          terraform init -backend-config="bucket=reflectfeedback-terraform-state"
+        run: terraform init -backend-config="bucket=reflectfeedback-terraform-state"
 
       - name: Terraform Plan
         id: plan
         run: |
-          cd infra/google/
           terraform plan \
             -var-file=environments/prod/terraform.tfvars \
             -var="image=${{ secrets.PROD_DOCKER_IMAGE_TAG }}:${{ github.sha }}" \
@@ -160,9 +157,7 @@ jobs:
           echo "::endgroup::"
 
       - name: Terraform Apply
-        run: |
-          cd infra/google/
-          terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve tfplan
 
       - name: Get Service URL
         id: output
