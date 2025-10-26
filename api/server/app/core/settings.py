@@ -1,6 +1,5 @@
 from functools import lru_cache
-from typing import List, Optional, Any
-from pydantic import field_validator
+from typing import List, Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -18,7 +17,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = 'reflect_dev_pass'
     POSTGRES_HOST: str = 'localhost'
     POSTGRES_PORT: int = 5432
-    DATABASE_URL: Optional[str] = None
+    DATABASE_URL: str = ''
     DATABASE_POOL_SIZE: int = 20
     DATABASE_MAX_OVERFLOW: int = 0
 
@@ -121,26 +120,6 @@ class Settings(BaseSettings):
         if self.R2_ACCOUNT_ID:
             return f'https://{self.R2_ACCOUNT_ID}.r2.cloudflarestorage.com'
         return ''
-
-    @field_validator('DATABASE_URL', mode='before')
-    @classmethod
-    def construct_database_url(cls, v: Any, values) -> Optional[str]:
-        if isinstance(v, str) and v.strip() != '':
-            return v
-
-        user = values.data.get('POSTGRES_USER')
-        password = values.data.get('POSTGRES_PASSWORD')
-        host = values.data.get('POSTGRES_HOST')
-        port = values.data.get('POSTGRES_PORT')
-        db = values.data.get('POSTGRES_DB')
-
-        if all([user, password, host, port, db]):
-            return f'postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}'
-
-        raise ValueError(
-            'Database connection failed: DATABASE_URL is not set and could not be constructed from POSTGRES_* variables.'
-        )
-
 
 @lru_cache()
 def get_settings() -> Settings:

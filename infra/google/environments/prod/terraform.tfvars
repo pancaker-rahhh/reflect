@@ -26,6 +26,10 @@ secrets = {
     secret_name = "postgres-password"
     version     = "latest"
   }
+  DATABASE_URL = {
+    secret_name = "database-url"
+    version     = "latest"
+  }
   SUPABASE_URL = {
     secret_name = "supabase-url"
     version     = "latest"
