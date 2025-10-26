@@ -37,7 +37,6 @@ class WidgetFeedbackHandler:
         logger.info(f'Processing review feedback for widget {widget_id}')
 
         feedback_data = {
-            'rating': data.get('rating', 0),
             'title': data.get('title', 'Product Review'),
             'message': data.get('message', ''),
             'pros': data.get('pros', ''),

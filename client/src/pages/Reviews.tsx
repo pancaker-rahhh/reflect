@@ -120,7 +120,7 @@ export function Reviews() {
       if (endDate && new Date(review.created_at) > endDate) return false
 
       if (ratingFilter !== 'all') {
-        const rating = review.overall_rating || review.rating || 0
+        const rating = review.overall_rating || 0
         if (ratingFilter === 'promoters' && rating < 4) return false
         if (ratingFilter === 'passives' && (rating < 3 || rating > 3)) return false
         if (ratingFilter === 'detractors' && rating > 2) return false
@@ -156,13 +156,12 @@ export function Reviews() {
 
   const averageRating =
     reviews.length > 0
-      ? reviews.reduce((sum, review) => sum + (review.overall_rating || review.rating || 0), 0) /
-        reviews.length
+      ? reviews.reduce((sum, review) => sum + (review.overall_rating || 0), 0) / reviews.length
       : 0
 
   const ratingDistribution = Array.from({ length: 5 }, (_, i) => {
     const rating = 5 - i
-    const count = reviews.filter((r) => (r.overall_rating || r.rating || 0) === rating).length
+    const count = reviews.filter((r) => (r.overall_rating || 0) === rating).length
     const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0
     return { rating, count, percentage }
   })
@@ -216,7 +215,7 @@ export function Reviews() {
                 <div className="text-2xl font-semibold text-muted-foreground">
                   {reviews.length > 0
                     ? Math.round(
-                        (reviews.filter((r) => (r.overall_rating || r.rating || 0) >= 4).length /
+                        (reviews.filter((r) => (r.overall_rating || 0) >= 4).length /
                           reviews.length) *
                           100
                       )

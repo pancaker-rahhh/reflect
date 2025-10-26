@@ -19,7 +19,6 @@ class RecentActivityResponse(BaseModel):
     converted_to_action_item_id: Optional[str] = None
     is_actionable: bool
     widget_name: Optional[str] = None
-    rating: Optional[int] = None
 
 
 class FeedbackDataResponse(BaseModel):
@@ -28,7 +27,6 @@ class FeedbackDataResponse(BaseModel):
     feedback_type: str
     title: Optional[str] = None
     message: Optional[str] = None
-    rating: Optional[int] = None
     created_at: datetime
     submitter_name: Optional[str] = None
     submitter_email: Optional[str] = None

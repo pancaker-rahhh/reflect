@@ -102,7 +102,12 @@ export function useFeedbackSubmission({
 
     // Type-specific validation
     if (data.typeSpecificData) {
-      if (data.feedbackType === 'REVIEW' && data.rating && (data.rating < 1 || data.rating > 5)) {
+      if (
+        data.feedbackType === 'REVIEW' &&
+        'overall_rating' in data.typeSpecificData &&
+        data.typeSpecificData.overall_rating &&
+        (data.typeSpecificData.overall_rating < 1 || data.typeSpecificData.overall_rating > 5)
+      ) {
         return 'Rating must be between 1 and 5 stars'
       }
 
@@ -235,7 +240,6 @@ export function useFeedbackSubmission({
       }
 
       await handleSubmit({
-        rating: score,
         feedbackType,
         typeSpecificData,
       })

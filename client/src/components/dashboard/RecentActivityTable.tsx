@@ -88,15 +88,6 @@ export function RecentActivityTable({
                     <span>
                       {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
                     </span>
-
-                    {activity.rating && (
-                      <>
-                        <span>•</span>
-                        <span className="text-xs bg-secondary px-2 py-1 rounded-full">
-                          Rating: {activity.rating}
-                        </span>
-                      </>
-                    )}
                   </div>
                 </div>
               </div>

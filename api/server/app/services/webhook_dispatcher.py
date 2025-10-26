@@ -27,7 +27,6 @@ class WebhookEventDispatcher:
             'feedback_type': feedback.feedback_type.value,
             'title': feedback.title,
             'message': feedback.message,
-            'rating': feedback.rating,
             'submitter_name': feedback.submitter_name,
             'submitter_email': feedback.submitter_email,
             'is_anonymous': feedback.is_anonymous,

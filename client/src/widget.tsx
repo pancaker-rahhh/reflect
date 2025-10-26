@@ -556,15 +556,10 @@ declare global {
 
           const payload = {
             widgetKey: publicKey,
-            rating: data.rating,
             message: data.response || '',
             feedbackType: data.feedbackType?.toLowerCase() || 'general',
             // Include type-specific data
             ...(data.typeSpecificData || {}),
-            // For REVIEW feedback, ensure overall_rating is set
-            ...(data.feedbackType === 'REVIEW' && data.rating
-              ? { overall_rating: data.rating }
-              : {}),
           }
 
           console.log('Reflect Widget: Submitting feedback to:', `${apiBaseUrl}/public/feedback`)

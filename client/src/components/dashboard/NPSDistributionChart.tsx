@@ -12,8 +12,7 @@ import {
 interface NPSDistributionChartProps {
   feedback: Array<{
     type: string
-    rating: number | null
-    nps_score?: number | null
+    nps_score: number | null
   }>
 }
 

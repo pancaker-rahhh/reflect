@@ -84,7 +84,6 @@ export function FeedbackCard({
 
   // Get score for NPS/CSAT/CES
   const getScore = () => {
-    if (feedback.rating !== null && feedback.rating !== undefined) return feedback.rating
     if (feedback.nps_score !== null && feedback.nps_score !== undefined) return feedback.nps_score
     if (feedback.csat_score !== null && feedback.csat_score !== undefined)
       return feedback.csat_score

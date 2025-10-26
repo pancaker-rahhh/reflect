@@ -17,7 +17,6 @@ class FeedbackBase(BaseModel):
     project_id: UUID = Field(...)
     feedback_type: FeedbackType = Field(...)
     message: Optional[str] = None
-    rating: Optional[int] = None
 
     feedback_metadata: Dict[str, Any] = Field(default_factory=dict)
     context: Dict[str, Any] = Field(default_factory=dict)
@@ -37,7 +36,6 @@ class FeedbackCreate(FeedbackBase):
 class FeedbackUpdate(BaseModel):
     # Base fields
     message: Optional[str] = None
-    rating: Optional[int] = None
     feedback_metadata: Optional[Dict[str, Any]] = None
     context: Optional[Dict[str, Any]] = None
     is_internal: Optional[bool] = None
@@ -84,7 +82,6 @@ class FeedbackResponse(BaseModel):
     project_id: UUID
     feedback_type: FeedbackType
     message: Optional[str]
-    rating: Optional[int]
     feedback_votes: int = 0
     feedback_metadata: Dict[str, Any]
     context: Dict[str, Any]

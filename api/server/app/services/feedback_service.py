@@ -173,7 +173,6 @@ class FeedbackService:
         return ReviewFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.REVIEW,
-            rating=rating_value,
             overall_rating=rating_value,
             message=user_message,
         )
@@ -239,7 +238,6 @@ class FeedbackService:
         return NPSFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.NPS,
-            rating=nps_score,
             nps_score=nps_score,
             promoter_category=promoter_category,
             message=user_message,
@@ -267,7 +265,6 @@ class FeedbackService:
         return CSATFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.CSAT,
-            rating=csat_score,
             csat_score=csat_score,
             satisfaction_level=satisfaction_levels.get(csat_score, 'neutral'),
             message=user_message,
@@ -295,7 +292,6 @@ class FeedbackService:
         return CESFeedbackCreate(
             **base_data,
             feedback_type=FeedbackType.CES,
-            rating=ces_score,
             ces_score=ces_score,
             ease_level=ease_levels.get(ces_score, 'neutral'),
             message=user_message,
@@ -310,7 +306,6 @@ class FeedbackService:
             **base_data,
             feedback_type=FeedbackType.GENERAL,
             message=user_message,
-            rating=data.get('rating'),
         )
 
     async def get_feedback(
@@ -360,7 +355,9 @@ class FeedbackService:
             )
             project_ids = [p.id for p in accessible_projects]
             logger.info(f'📋 User {user_id} has access to projects: {project_ids}')
-            objs = await feedback_repository.get_multi(db, skip=skip, limit=limit)
+            objs = await feedback_repository.get_multi_with_ratings(
+                db, skip=skip, limit=limit
+            )
             objs = [o for o in objs if o.project_id in project_ids]
 
         logger.info(f'✅ Returning {len(objs)} feedback items for user {user_id}')

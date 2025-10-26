@@ -153,7 +153,6 @@ export interface SurveyResponse extends BaseFeedback {
 
 export interface Review extends BaseFeedback {
   type: 'review'
-  rating: number
   title: string
   content: string
   isPublished: boolean

@@ -85,7 +85,6 @@ export function FeedbackRenderer({
 
     await onSubmit({
       response: userMessage,
-      rating: selectedScore,
       feedbackType,
       typeSpecificData: {
         message: userMessage,
@@ -98,7 +97,6 @@ export function FeedbackRenderer({
 
     await onSubmit({
       response: userMessage,
-      rating: data.rating,
       feedbackType,
       typeSpecificData: {
         overall_rating: data.rating,
