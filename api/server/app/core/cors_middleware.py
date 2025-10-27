@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Optional, Sequence
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.requests import Request
