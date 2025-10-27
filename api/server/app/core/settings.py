@@ -93,7 +93,11 @@ class Settings(BaseSettings):
     @property
     def cors_origins_list(self) -> List[str]:
         if not self.CORS_ORIGINS or self.CORS_ORIGINS.strip() == '':
-            return []
+            return ['*']
+
+        if self.ENV == 'production':
+            return ['*']
+
         origins = [
             origin.strip() for origin in self.CORS_ORIGINS.split(',') if origin.strip()
         ]

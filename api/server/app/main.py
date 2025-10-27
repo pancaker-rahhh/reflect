@@ -15,6 +15,7 @@ from app.router.v1.health_router import health_router
 
 setup_logging()
 
+
 def create_application() -> FastAPI:
     settings = get_settings()
 
@@ -31,7 +32,9 @@ def create_application() -> FastAPI:
     # Add middleware in correct order (bottom to top execution)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=['https://ui-dev.reflectfeedback.com', 'https://reflectfeedback.com'],
+        allow_origins=settings.cors_origins_list
+        if settings.cors_origins_list
+        else ['*'],
         allow_credentials=True,
         allow_methods=['*'],
         allow_headers=['*'],
