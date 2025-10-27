@@ -32,7 +32,7 @@ def create_application() -> FastAPI:
     setup_selective_cors(
         app,
         excluded_paths=['/api/v1/public'],
-        allow_origins=['https://ui-dev.reflectfeedback.com', 'https://reflectfeedback.com'],
+        allow_origins=settings.cors_origins_list if settings.cors_origins_list else ['https://ui-dev.reflectfeedback.com', 'https://reflectfeedback.com'],
         allow_credentials=True,
         allow_methods=['*'],
         allow_headers=['*'],
