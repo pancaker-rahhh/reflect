@@ -8,7 +8,7 @@ class SelectiveCORSMiddleware(CORSMiddleware):
     def __init__(
         self,
         app,
-        excluded_paths: Sequence[str] = None,
+        excluded_paths: Optional[Sequence[str]] = None,
         allow_origins: Sequence[str] = (),
         allow_credentials: bool = False,
         allow_methods: Sequence[str] = ("GET",),
@@ -38,7 +38,7 @@ class SelectiveCORSMiddleware(CORSMiddleware):
 
 def setup_selective_cors(
     app: FastAPI,
-    excluded_paths: Sequence[str] = None,
+    excluded_paths: Optional[Sequence[str]] = None,
     allow_origins: Sequence[str] = (),
     allow_credentials: bool = False,
     allow_methods: Sequence[str] = ("GET",),
