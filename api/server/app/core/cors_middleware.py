@@ -1,11 +1,10 @@
 from typing import Sequence
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
 
-class SelectiveCORSMiddleware(BaseHTTPMiddleware):
+class SelectiveCORSMiddleware(CORSMiddleware):
     def __init__(
         self,
         app,
@@ -17,10 +16,8 @@ class SelectiveCORSMiddleware(BaseHTTPMiddleware):
         expose_headers: Sequence[str] = (),
         max_age: int = 600,
     ):
-        super().__init__(app)
-        self.excluded_paths = excluded_paths or []
-        self.cors_app = CORSMiddleware(
-            app=self.app,
+        super().__init__(
+            app,
             allow_origins=allow_origins,
             allow_credentials=allow_credentials,
             allow_methods=allow_methods,
@@ -28,6 +25,7 @@ class SelectiveCORSMiddleware(BaseHTTPMiddleware):
             expose_headers=expose_headers,
             max_age=max_age,
         )
+        self.excluded_paths = excluded_paths or []
     
     def _is_excluded_path(self, path: str) -> bool:
         return any(path.startswith(excluded) for excluded in self.excluded_paths)
@@ -35,8 +33,7 @@ class SelectiveCORSMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         if self._is_excluded_path(request.url.path):
             return await call_next(request)
-
-        return await self.cors_app(request.scope, request.receive, request._send)
+        return await super().dispatch(request, call_next)
 
 
 def setup_selective_cors(
