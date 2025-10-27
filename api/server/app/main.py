@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from app.core.exception_handlers import (
     authentication_error_handler,
     general_error_handler,
@@ -7,6 +6,7 @@ from app.core.exception_handlers import (
 from app.core.exceptions import AuthenticationError
 from app.core.settings import get_settings
 from app.core.middleware import CorrelationIDMiddleware, RequestLoggingMiddleware
+from app.core.cors_middleware import setup_selective_cors
 from app.core.rate_limiting import setup_rate_limiting
 from app.core.logging import setup_logging
 from app.core.lifespan import lifespan
@@ -14,7 +14,6 @@ from app.router.api_router import api_router
 from app.router.v1.health_router import health_router
 
 setup_logging()
-
 
 def create_application() -> FastAPI:
     settings = get_settings()
@@ -29,12 +28,11 @@ def create_application() -> FastAPI:
         lifespan=lifespan,
         redirect_slashes=False,
     )
-    # Add middleware in correct order (bottom to top execution)
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.cors_origins_list
-        if settings.cors_origins_list
-        else ['*'],
+
+    setup_selective_cors(
+        app,
+        excluded_paths=['/api/v1/public'],
+        allow_origins=settings.cors_origins_list if settings.cors_origins_list else ['https://ui-dev.reflectfeedback.com', 'https://reflectfeedback.com'],
         allow_credentials=True,
         allow_methods=['*'],
         allow_headers=['*'],
