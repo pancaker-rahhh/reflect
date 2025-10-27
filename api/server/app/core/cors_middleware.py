@@ -3,7 +3,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import Response
 
 
 class SelectiveCORSMiddleware(BaseHTTPMiddleware):
@@ -20,8 +19,8 @@ class SelectiveCORSMiddleware(BaseHTTPMiddleware):
     ):
         super().__init__(app)
         self.excluded_paths = excluded_paths or []
-        self.cors_middleware = CORSMiddleware(
-            app=app,
+        self.cors_app = CORSMiddleware(
+            app=self.app,
             allow_origins=allow_origins,
             allow_credentials=allow_credentials,
             allow_methods=allow_methods,
@@ -35,10 +34,9 @@ class SelectiveCORSMiddleware(BaseHTTPMiddleware):
     
     async def dispatch(self, request: Request, call_next):
         if self._is_excluded_path(request.url.path):
-            response = await call_next(request)
-            return response
+            return await call_next(request)
 
-        return await self.cors_middleware.dispatch(request, call_next)
+        return await self.cors_app(request.scope, request.receive, request._send)
 
 
 def setup_selective_cors(
