@@ -37,7 +37,7 @@ class CDNDeploymentService:
             except Exception as e:
                 if attempt < max_retries:
                     delay = (2**attempt) * 1  # Exponential backoff: 1s, 2s, 4s
-                    logger.warning(
+                    logger.error(
                         f'Widget deployment attempt {attempt + 1} failed for {widget.public_key}: {str(e)}. Retrying in {delay}s...'
                     )
                     await asyncio.sleep(delay)

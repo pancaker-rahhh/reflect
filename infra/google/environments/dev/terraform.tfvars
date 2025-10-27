@@ -62,6 +62,10 @@ secrets = {
     secret_name = "r2-bucket-name"
     version     = "latest"
   }
+  R2_ACCOUNT_ID = {
+    secret_name = "r2-account-id"
+    version     = "latest"
+  }
   CDN_BASE_URL = {
     secret_name = "cdn-base-url"
     version     = "latest"

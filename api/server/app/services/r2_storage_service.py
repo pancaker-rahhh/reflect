@@ -68,7 +68,7 @@ class R2StorageService:
             widget_url = f'{settings.CDN_BASE_URL}/{widget_key}'
             config_url = f'{settings.CDN_BASE_URL}/{config_key}'
 
-            logger.info(f'Successfully uploaded widget {public_key} to R2')
+            logger.info(f'✅ Successfully uploaded widget {public_key} to R2')
 
             return {
                 'widget_url': widget_url,

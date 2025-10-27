@@ -16,7 +16,6 @@ from app.core.exceptions import (
     ValidationError,
     SubscriptionLimitExceededError,
 )
-
 from app.schemas.feedback_schema import (
     FeedbackUpdate,
     FeedbackCreatePayload,
@@ -360,7 +359,7 @@ class FeedbackService:
             )
             objs = [o for o in objs if o.project_id in project_ids]
 
-        logger.info(f'✅ Returning {len(objs)} feedback items for user {user_id}')
+        logger.info(f'Returning {len(objs)} feedback items for user {user_id}')
         return [self._convert_to_response(o) for o in objs]
 
     async def update_feedback(
@@ -559,22 +558,22 @@ class FeedbackService:
                 existing_feedback, CSATFeedback
             ):
                 existing_feedback.csat_score = rating_value
-                logger.info(f'✅ Updated csat_score to {rating_value}')
+                logger.info(f'Updated csat_score to {rating_value}')
             elif feedback_type == FeedbackType.CES and isinstance(
                 existing_feedback, CESFeedback
             ):
                 existing_feedback.ces_score = rating_value
-                logger.info(f'✅ Updated ces_score to {rating_value}')
+                logger.info(f'Updated ces_score to {rating_value}')
             elif feedback_type == FeedbackType.NPS and isinstance(
                 existing_feedback, NPSFeedback
             ):
                 existing_feedback.nps_score = rating_value
-                logger.info(f'✅ Updated nps_score to {rating_value}')
+                logger.info(f'Updated nps_score to {rating_value}')
             elif feedback_type == FeedbackType.REVIEW and isinstance(
                 existing_feedback, ReviewFeedback
             ):
                 existing_feedback.overall_rating = rating_value
-                logger.info(f'✅ Updated overall_rating to {rating_value}')
+                logger.info(f'Updated overall_rating to {rating_value}')
 
         # Update context - handle this carefully to avoid lazy loading issues
         if context:
