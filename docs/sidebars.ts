@@ -28,6 +28,9 @@ const sidebars: SidebarsConfig = {
         'widgets/integration/next-js',
         'widgets/integration/svelte',
         'widgets/integration/wordpress',
+        'widgets/integration/framer',
+        'widgets/integration/webflow',
+        'widgets/integration/shopify',
       ],
     },
     {
