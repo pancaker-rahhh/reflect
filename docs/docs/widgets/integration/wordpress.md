@@ -81,8 +81,3 @@ If you're using multiple methods, the widget might load multiple times. Choose o
 ### Caching issues
 
 If using a caching plugin (WP Super Cache, W3 Total Cache, etc.), clear the cache after adding the widget.
-
-## Next Steps
-
-- [Widget Configuration](/docs/widgets/configuration/basic)
-- [Widget Types](/docs/widgets/types/feedback)

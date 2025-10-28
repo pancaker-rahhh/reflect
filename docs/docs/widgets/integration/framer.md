@@ -50,8 +50,3 @@ That's it! The widget will now appear on all pages of your Framer website.
 ### Widget appearing multiple times
 
 Make sure you've only added the code once in the Custom Code section.
-
-## Next Steps
-
-- [Widget Configuration](/docs/widgets/configuration/basic)
-- [Widget Types](/docs/widgets/types/feedback)

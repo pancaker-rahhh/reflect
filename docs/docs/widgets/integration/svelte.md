@@ -65,8 +65,3 @@ Replace `widget_eee5d255e1bc48d8` with your actual widget key from the Reflect d
 :::
 
 That's it! The widget will now appear on all pages of your Svelte application.
-
-## Next Steps
-
-- [Widget Configuration](/docs/widgets/configuration/basic)
-- [Widget Types](/docs/widgets/types/feedback)

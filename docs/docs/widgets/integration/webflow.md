@@ -61,8 +61,3 @@ If you want the widget to appear only on specific pages:
 ### Widget appearing multiple times
 
 If you've added the code in both Project Settings and Page Settings, the widget might load twice. Use only one location.
-
-## Next Steps
-
-- [Widget Configuration](/docs/widgets/configuration/basic)
-- [Widget Types](/docs/widgets/types/feedback)

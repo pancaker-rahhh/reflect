@@ -78,8 +78,3 @@ If you experience conflicts with other Shopify apps:
 1. **Save the file**: Make sure you clicked "Save" after adding the code
 2. **Hard refresh**: Press Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)
 3. **Clear Shopify cache**: Theme changes can take a few minutes to propagate
-
-## Next Steps
-
-- [Widget Configuration](/docs/widgets/configuration/basic)
-- [Widget Types](/docs/widgets/types/feedback)
