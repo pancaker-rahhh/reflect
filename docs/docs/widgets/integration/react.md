@@ -19,13 +19,13 @@ function App() {
   useEffect(() => {
     // Configure widget
     window.reflectConfig = {
-      key: "widget_abc123",
+      key: "widget_eee5d255e1bc48d8",
       position: "bottom_right"
     };
 
     // Load widget script
     const script = document.createElement('script');
-    script.src = "https://cdn.reflect.app/widgets/widget_abc123/widget.js";
+    script.src = "https://cdn.reflectfeedback.com/widgets/widget_eee5d255e1bc48d8/widget.js";
     script.async = true;
     document.body.appendChild(script);
 
@@ -65,7 +65,7 @@ export function useReflectWidget(config: ReflectConfig) {
     window.reflectConfig = config;
 
     const script = document.createElement('script');
-    script.src = `https://cdn.reflect.app/widgets/${config.key}/widget.js`;
+    script.src = `https://cdn.reflectfeedback.com/widgets/${config.key}/widget.js`;
     script.async = true;
     document.body.appendChild(script);
 
@@ -85,7 +85,7 @@ import { useReflectWidget } from './hooks/useReflectWidget';
 
 function App() {
   useReflectWidget({
-    key: "widget_abc123",
+    key: "widget_eee5d255e1bc48d8",
     position: "bottom_right"
   });
 
@@ -109,7 +109,7 @@ export function ReflectWidget({ widgetKey, position = 'bottom_right' }: Props) {
     window.reflectConfig = { key: widgetKey, position };
 
     const script = document.createElement('script');
-    script.src = `https://cdn.reflect.app/widgets/${widgetKey}/widget.js`;
+    script.src = `https://cdn.reflectfeedback.com/widgets/${widgetKey}/widget.js`;
     script.async = true;
     document.body.appendChild(script);
 
@@ -132,7 +132,7 @@ import { ReflectWidget } from './components/ReflectWidget';
 function App() {
   return (
     <>
-      <ReflectWidget widgetKey="widget_abc123" position="bottom_right" />
+      <ReflectWidget widgetKey="widget_eee5d255e1bc48d8" position="bottom_right" />
       <div>Your app content</div>
     </>
   );
