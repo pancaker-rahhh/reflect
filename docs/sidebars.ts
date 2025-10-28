@@ -16,6 +16,7 @@ const sidebars: SidebarsConfig = {
   // Main documentation sidebar - unified structure
   tutorialSidebar: [
     'intro',
+    'widgets/installation',
     {
       type: 'category',
       label: 'Frameworks',
