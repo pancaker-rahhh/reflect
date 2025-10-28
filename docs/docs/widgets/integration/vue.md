@@ -4,13 +4,41 @@ sidebar_position: 3
 
 # Vue Integration
 
-# Vue Integration
+Integrate Reflect feedback widget into your Vue 3 or Vue 2 application. The widget is hosted on a CDN and can be easily integrated with just a few lines of code.
 
-Integration guide for Vue 3 and Vue 2 applications.
+## Quick Start
 
-## Vue 3 Composition API
+The simplest way to integrate the Reflect widget is to add it to your main `index.html` file.
 
-### Method 1: Global Loading in main.js
+### Add to public/index.html
+
+Add the following code inside the `<body>` tag of your `public/index.html` file:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue App</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    
+    <!-- Reflect Widget -->
+    <script>
+      window.reflectConfig = { key: "widget_eee5d255e1bc48d8", position: "bottom_right" };
+    </script>
+    <script async src="https://cdn.reflectfeedback.com/widgets/widget_eee5d255e1bc48d8/widget.js"></script>
+  </body>
+</html>
+```
+
+That's it! The widget will now appear on all pages of your Vue application.
+
+## Alternative Methods
+
+### Vue 3 - Using onMounted in main.js
 
 Load the widget globally in your main application file:
 
@@ -35,7 +63,7 @@ document.body.appendChild(script);
 app.mount('#app')
 ```
 
-### Method 2: Using onMounted in App.vue
+### Vue 3 - Using onMounted in App.vue
 
 ```vue
 <!-- src/App.vue -->
@@ -65,72 +93,7 @@ onMounted(() => {
 </script>
 ```
 
-### Method 3: Vue Component
-
-Create a dedicated component for the widget:
-
-```vue
-<!-- src/components/ReflectWidget.vue -->
-<template>
-  <!-- This component doesn't render anything -->
-</template>
-
-<script setup>
-import { onMounted, onUnmounted } from 'vue'
-
-interface Props {
-  widgetKey?: string
-  position?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  widgetKey: "widget_eee5d255e1bc48d8",
-  position: "bottom_right"
-})
-
-let scriptElement: HTMLScriptElement | null = null
-
-onMounted(() => {
-  // Set configuration
-  window.reflectConfig = {
-    key: props.widgetKey,
-    position: props.position
-  };
-
-  // Create and load script
-  scriptElement = document.createElement('script');
-  scriptElement.src = `https://cdn.reflectfeedback.com/widgets/${props.widgetKey}/widget.js`;
-  scriptElement.async = true;
-  document.body.appendChild(scriptElement);
-})
-
-onUnmounted(() => {
-  if (scriptElement && document.body.contains(scriptElement)) {
-    document.body.removeChild(scriptElement);
-  }
-})
-</script>
-```
-
-Use it in your app:
-
-```vue
-<!-- src/App.vue -->
-<template>
-  <div id="app">
-    <h1>My Vue App</h1>
-    <ReflectWidget widget-key="widget_eee5d255e1bc48d8" position="bottom_right" />
-  </div>
-</template>
-
-<script setup>
-import ReflectWidget from './components/ReflectWidget.vue'
-</script>
-```
-
-## Vue 2 Options API
-
-### Method 1: Global Loading in main.js
+### Vue 2 - Using mounted in main.js
 
 ```javascript
 // src/main.js
@@ -153,7 +116,7 @@ new Vue({
 }).$mount('#app')
 ```
 
-### Method 2: Using mounted in App.vue
+### Vue 2 - Using mounted in App.vue
 
 ```vue
 <!-- src/App.vue -->
@@ -178,181 +141,42 @@ export default {
     const script = document.createElement('script');
     script.src = "https://cdn.reflectfeedback.com/widgets/widget_eee5d255e1bc48d8/widget.js";
     script.async = true;
-    this.$el.appendChild(script);
+    document.body.appendChild(script);
   }
 }
 </script>
-```
-
-### Method 3: Vue Component
-
-```vue
-<!-- src/components/ReflectWidget.vue -->
-<template>
-  <!-- This component doesn't render anything -->
-</template>
-
-<script>
-export default {
-  name: 'ReflectWidget',
-  props: {
-    widgetKey: {
-      type: String,
-      default: "widget_eee5d255e1bc48d8"
-    },
-    position: {
-      type: String,
-      default: "bottom_right"
-    }
-  },
-  mounted() {
-    // Set configuration
-    window.reflectConfig = {
-      key: this.widgetKey,
-      position: this.position
-    };
-
-    // Create and load script
-    this.scriptElement = document.createElement('script');
-    this.scriptElement.src = `https://cdn.reflectfeedback.com/widgets/${this.widgetKey}/widget.js`;
-    this.scriptElement.async = true;
-    document.body.appendChild(this.scriptElement);
-  },
-  beforeDestroy() {
-    if (this.scriptElement && document.body.contains(this.scriptElement)) {
-      document.body.removeChild(this.scriptElement);
-    }
-  }
-}
-</script>
-```
-
-## Vue Router Integration
-
-If using Vue Router, you can conditionally load the widget based on the route:
-
-```javascript
-// src/router/index.js
-import Vue from 'vue'
-import Router from 'vue-router'
-
-Vue.use(Router)
-
-const router = new Router({
-  routes: [
-    // your routes
-  ]
-})
-
-// Load widget only on specific routes
-router.afterEach((to, from) => {
-  if (to.name === 'feedback-page') {
-    if (!window.reflectConfig) {
-      window.reflectConfig = {
-        key: "widget_eee5d255e1bc48d8",
-        position: "bottom_right"
-      };
-
-      const script = document.createElement('script');
-      script.src = "https://cdn.reflectfeedback.com/widgets/widget_eee5d255e1bc48d8/widget.js";
-      script.async = true;
-      document.body.appendChild(script);
-    }
-  }
-})
-
-export default router
 ```
 
 ## TypeScript Support
 
-Add type declarations:
+Add type declarations to avoid TypeScript errors:
 
 ```typescript
 // src/types/reflect.d.ts
 interface ReflectConfig {
   key: string;
   position?: 'bottom_right' | 'bottom_left' | 'top_right' | 'top_left';
-  offset?: { x: number; y: number };
-  autoShow?: boolean;
-  showAfter?: number;
-  hideOnSubmit?: boolean;
-  debug?: boolean;
-}
-
-interface ReflectAPI {
-  show(): void;
-  hide(): void;
-  open(): void;
-  close(): void;
-  identify(user: { userId: string; email?: string; name?: string }): void;
 }
 
 declare global {
   interface Window {
     reflectConfig: ReflectConfig;
-    Reflect: ReflectAPI;
+    Reflect?: {
+      show(): void;
+      hide(): void;
+    };
   }
 }
+
+export {}
 ```
 
-Include in your TypeScript config:
+## Configuration Options
 
-```json
-{
-  "compilerOptions": {
-    "types": ["reflect"]
-  }
-}
-```
+The `reflectConfig` object supports the following options:
 
-## Programmatic Control
-
-Control the widget programmatically using the global Reflect API:
-
-```vue
-<template>
-  <div>
-    <button @click="showWidget">Show Widget</button>
-    <button @click="hideWidget">Hide Widget</button>
-  </div>
-</template>
-
-<script setup>
-import { ref } from 'vue'
-
-const widgetLoaded = ref(false)
-
-onMounted(() => {
-  window.reflectConfig = {
-    key: "widget_eee5d255e1bc48d8",
-    position: "bottom_right"
-  };
-
-  const script = document.createElement('script');
-  script.src = "https://cdn.reflectfeedback.com/widgets/widget_eee5d255e1bc48d8/widget.js";
-  script.async = true;
-  document.body.appendChild(script);
-
-  // Listen for widget load
-  window.addEventListener('reflectLoaded', () => {
-    widgetLoaded.value = true;
-  });
-})
-
-function showWidget() {
-  if (widgetLoaded.value && window.Reflect) {
-    window.Reflect.show();
-  }
-}
-
-function hideWidget() {
-  if (widgetLoaded.value && window.Reflect) {
-    window.Reflect.hide();
-  }
-}
-</script>
-```
+- **key** (required): Your widget key (e.g., `"widget_eee5d255e1bc48d8"`)
+- **position** (optional): Widget position - `"bottom_right"`, `"bottom_left"`, `"top_right"`, or `"top_left"` (default: `"bottom_right"`)
 
 ## Next Steps
 
