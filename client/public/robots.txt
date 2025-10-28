@@ -3,8 +3,6 @@
 
 User-agent: *
 Allow: /
-
-# Disallow admin and private areas
 Disallow: /admin/
 Disallow: /api/
 Disallow: /app/
@@ -12,9 +10,6 @@ Disallow: /dashboard/
 Disallow: /auth/
 Disallow: /settings/
 Disallow: /private/
-
-# Allow important public pages
-Allow: /
 Allow: /pricing
 Allow: /features
 Allow: /login
@@ -24,14 +19,12 @@ Allow: /docs
 Allow: /terms
 Allow: /privacy
 Allow: /cookies
+Crawl-delay: 1
 
 # Sitemaps
 Sitemap: https://reflectfeedback.com/sitemap.xml
 Sitemap: https://reflectfeedback.com/sitemap-pages.xml
 Sitemap: https://reflectfeedback.com/sitemap-blog.xml
-
-# Crawl-delay (helps prevent server overload)
-Crawl-delay: 1
 
 # Specific rules for different bots
 User-agent: Googlebot
