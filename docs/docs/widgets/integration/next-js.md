@@ -4,13 +4,13 @@ sidebar_position: 5
 
 # Next.js Integration
 
-# Next.js Integration
-
-Integration guide for Next.js 13+ with App Router and Pages Router.
+Integrate Reflect feedback widget into your Next.js application. The widget is hosted on a CDN and works seamlessly with both App Router (Next.js 13+) and Pages Router.
 
 ## App Router (Next.js 13+)
 
-Use the `Script` component from `next/script` in your root layout:
+For Next.js 13+ using the App Router, add the widget scripts to your root layout file.
+
+### Add to app/layout.tsx
 
 ```tsx
 // app/layout.tsx
@@ -55,188 +55,11 @@ export default function RootLayout({
 }
 ```
 
-## Pages Router (Next.js 12 and below)
+:::tip
+Replace `widget_eee5d255e1bc48d8` with your actual widget key from the Reflect dashboard.
+:::
 
-Add the scripts to your `_document.tsx` or `_app.tsx`:
-
-```tsx
-// pages/_document.tsx
-import { Html, Head, Main, NextScript } from 'next/document'
-
-export default function Document() {
-  return (
-    <Html lang="en">
-      <Head />
-      <body>
-        <Main />
-        <NextScript />
-
-        {/* Reflect Widget Configuration */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.reflectConfig = {
-                key: "widget_eee5d255e1bc48d8",
-                position: "bottom_right"
-              };
-            `,
-          }}
-        />
-
-        {/* Reflect Widget Script */}
-        <script
-          async
-          src="https://cdn.reflectfeedback.com/widgets/widget_eee5d255e1bc48d8/widget.js"
-        />
-      </body>
-    </Html>
-  )
-}
-```
-
-## Custom Hook (Works with both routers)
-
-Create a reusable hook for loading the widget:
-
-```tsx
-// lib/useReflectWidget.ts
-import { useEffect } from 'react'
-
-interface ReflectConfig {
-  key: string
-  position?: 'bottom_right' | 'bottom_left' | 'top_right' | 'top_left'
-  offset?: { x: number; y: number }
-  autoShow?: boolean
-}
-
-export function useReflectWidget(config: ReflectConfig) {
-  useEffect(() => {
-    // Set configuration
-    ;(window as any).reflectConfig = config
-
-    // Load script if not already loaded
-    if (!document.querySelector(`script[src*="widgets/${config.key}"]`)) {
-      const script = document.createElement('script')
-      script.src = `https://cdn.reflectfeedback.com/widgets/${config.key}/widget.js`
-      script.async = true
-      document.body.appendChild(script)
-    }
-
-    // Cleanup function
-    return () => {
-      const script = document.querySelector(`script[src*="widgets/${config.key}"]`)
-      if (script) {
-        document.body.removeChild(script)
-      }
-    }
-  }, [config.key])
-}
-```
-
-Use it in any component:
-
-```tsx
-// components/Layout.tsx
-'use client'
-
-import { useReflectWidget } from '../lib/useReflectWidget'
-
-export function Layout({ children }: { children: React.ReactNode }) {
-  useReflectWidget({
-    key: 'widget_eee5d255e1bc48d8',
-    position: 'bottom_right'
-  })
-
-  return <div>{children}</div>
-}
-```
-
-## Client Component Method
-
-If you prefer to load the widget in a specific component:
-
-```tsx
-// components/ReflectWidget.tsx
-'use client'
-
-import { useEffect } from 'react'
-import Script from 'next/script'
-
-interface Props {
-  widgetKey: string
-  position?: 'bottom_right' | 'bottom_left' | 'top_right' | 'top_left'
-}
-
-export function ReflectWidget({ widgetKey, position = 'bottom_right' }: Props) {
-  useEffect(() => {
-    ;(window as any).reflectConfig = { key: widgetKey, position }
-  }, [widgetKey, position])
-
-  return (
-    <Script
-      src={`https://cdn.reflectfeedback.com/widgets/${widgetKey}/widget.js`}
-      strategy="afterInteractive"
-    />
-  )
-}
-```
-
-Usage:
-
-```tsx
-import { ReflectWidget } from './components/ReflectWidget'
-
-export default function Home() {
-  return (
-    <main>
-      <h1>Welcome</h1>
-      <ReflectWidget widgetKey="widget_eee5d255e1bc48d8" position="bottom_right" />
-    </main>
-  )
-}
-```
-
-## TypeScript Support
-
-Add type declarations:
-
-```typescript
-// types/reflect.d.ts
-interface ReflectConfig {
-  key: string
-  position?: 'bottom_right' | 'bottom_left' | 'top_right' | 'top_left'
-  offset?: { x: number; y: number }
-  autoShow?: boolean
-  showAfter?: number
-  hideOnSubmit?: boolean
-  debug?: boolean
-}
-
-interface ReflectAPI {
-  show(): void
-  hide(): void
-  open(): void
-  close(): void
-  identify(user: { userId: string; email?: string; name?: string }): void
-}
-
-declare global {
-  interface Window {
-    reflectConfig: ReflectConfig
-    Reflect: ReflectAPI
-  }
-}
-```
-
-Include in `tsconfig.json`:
-
-```json
-{
-  "compilerOptions": {
-    "types": ["./types/reflect"]
-  }
-}
-```
+That's it! The widget will now appear on all pages of your Next.js application.
 
 ## Next Steps
 
