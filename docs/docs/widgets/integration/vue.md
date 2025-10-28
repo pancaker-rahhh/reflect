@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Vue Integration
 
-Integrate Reflect feedback widget into your Vue 3 or Vue 2 application. The widget is hosted on a CDN and can be easily integrated with just a few lines of code.
+Integrate [Reflect](https://reflectfeedback.com) feedback widget into your Vue 3 or Vue 2 application. The widget is hosted on a CDN and can be easily integrated with just a few lines of code.
 
 ## Quick Start
 

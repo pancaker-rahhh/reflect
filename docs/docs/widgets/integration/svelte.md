@@ -4,7 +4,7 @@ sidebar_position: 6
 
 # Svelte Integration
 
-Integrate Reflect feedback widget into your Svelte or SvelteKit application. The widget is hosted on a CDN and can be easily integrated with just a few lines of code.
+Integrate [Reflect](https://reflectfeedback.com) feedback widget into your Svelte or SvelteKit application. The widget is hosted on a CDN and can be easily integrated with just a few lines of code.
 
 ## Quick Start
 

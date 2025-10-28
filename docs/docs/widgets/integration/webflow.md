@@ -4,7 +4,7 @@ sidebar_position: 9
 
 # Webflow Integration
 
-Integrate Reflect feedback widget into your Webflow website. The widget is hosted on a CDN and can be easily integrated using Webflow's custom code feature.
+Integrate [Reflect](https://reflectfeedback.com) feedback widget into your Webflow website. The widget is hosted on a CDN and can be easily integrated using Webflow's custom code feature.
 
 ## Quick Start
 

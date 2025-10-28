@@ -4,7 +4,7 @@ sidebar_position: 7
 
 # WordPress Integration
 
-Integrate Reflect feedback widget into your WordPress site. The widget is hosted on a CDN and can be easily integrated using several methods.
+Integrate [Reflect](https://reflectfeedback.com) feedback widget into your WordPress site. The widget is hosted on a CDN and can be easily integrated using several methods.
 
 ## Quick Start
 

@@ -4,7 +4,7 @@ sidebar_position: 10
 
 # Shopify Integration
 
-Integrate Reflect feedback widget into your Shopify store. The widget is hosted on a CDN and can be easily integrated by editing your theme files.
+Integrate [Reflect](https://reflectfeedback.com) feedback widget into your Shopify store. The widget is hosted on a CDN and can be easily integrated by editing your theme files.
 
 ## Quick Start
 

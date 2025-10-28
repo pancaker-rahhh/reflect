@@ -14,7 +14,7 @@ slug: /
 
 ## What is Reflect?
 
-Reflect is a powerful feedback widget platform that enables you to collect, manage, and analyze user feedback seamlessly across your applications. Whether you need NPS surveys, bug reports, feature requests, or customer reviews, Reflect provides the tools to gather meaningful insights from your users.
+[Reflect](https://reflectfeedback.com) is a powerful feedback widget platform that enables you to collect, manage, and analyze user feedback seamlessly across your applications. Whether you need NPS surveys, bug reports, feature requests, or customer reviews, Reflect provides the tools to gather meaningful insights from your users.
 
 ## Key Features
 

@@ -4,7 +4,7 @@ sidebar_position: 5
 
 # Next.js Integration
 
-Integrate Reflect feedback widget into your Next.js application. The widget is hosted on a CDN and works seamlessly with both App Router (Next.js 13+) and Pages Router.
+Integrate [Reflect](https://reflectfeedback.com) feedback widget into your Next.js application. The widget is hosted on a CDN and works seamlessly with both App Router (Next.js 13+) and Pages Router.
 
 ## App Router (Next.js 13+)
 

@@ -5,7 +5,7 @@ id: installation
 
 # Widget Installation Guide
 
-Learn how to integrate the Reflect feedback widget into your website or application.
+Learn how to integrate the [Reflect](https://reflectfeedback.com) feedback widget into your website or application.
 
 ## Quick Start
 

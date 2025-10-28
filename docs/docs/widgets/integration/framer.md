@@ -4,7 +4,7 @@ sidebar_position: 8
 
 # Framer Integration
 
-Integrate Reflect feedback widget into your Framer website. The widget is hosted on a CDN and can be easily integrated using Framer's custom code feature.
+Integrate [Reflect](https://reflectfeedback.com) feedback widget into your Framer website. The widget is hosted on a CDN and can be easily integrated using Framer's custom code feature.
 
 ## Quick Start
 

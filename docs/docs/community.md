@@ -36,10 +36,10 @@ Ask technical questions and get help from the community.
 
 In the meantime, if you have questions or need support, feel free to reach out through:
 - **Emails**:
-    - support@reflectfeedback.com
-    - indirakumarak@gmail.com
-    - skameel2002@gmail.com
-    - keshavrathinavel@gmail.com
+    - [support@reflectfeedback.com](mailto:support@reflectfeedback.com)
+    - [indirakumarak@gmail.com](mailto:indirakumarak@gmail.com)
+    - [skameel2002@gmail.com](mailto:skameel2002@gmail.com)
+    - [keshavrathinavel@gmail.com](mailto:keshavrathinavel@gmail.com)
 
 :::note
 We are a team of 3 people, so we might not be as active as possible on the 'support@reflectfeedback.com' mailbox at the moment, so please cc to one of the other 3 mails mentioned as well, thanks for understanding ❤️
