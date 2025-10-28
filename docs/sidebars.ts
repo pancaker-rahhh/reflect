@@ -31,6 +31,8 @@ const sidebars: SidebarsConfig = {
         'widgets/integration/framer',
         'widgets/integration/webflow',
         'widgets/integration/shopify',
+        'widgets/integration/laravel',
+        'widgets/integration/django',
       ],
     },
     // {
