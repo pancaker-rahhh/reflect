@@ -21,7 +21,6 @@ const sidebars: SidebarsConfig = {
       label: 'Frameworks',
       collapsed: false,
       items: [
-        'widgets/integration/vanilla-js',
         'widgets/integration/react',
         'widgets/integration/vue',
         'widgets/integration/angular',
