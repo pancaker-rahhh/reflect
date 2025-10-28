@@ -18,10 +18,10 @@ Reflect is a powerful feedback widget platform that enables you to collect, mana
 
 ## Key Features
 
-- **🎨 Customizable Widgets** - Create beautiful, on-brand feedback widgets with extensive styling options
+- **🎨  Customizable Widgets** - Create beautiful, on-brand feedback widgets with extensive styling options
 - **📊 Multiple Widget Types** - Support for NPS, CSAT, CES, Reviews, Bug Reports, and Feature Requests
 - **🚀 Easy Integration** - Works with React, Vue, Angular, Next.js, and vanilla JavaScript
-- **☁️ CDN Deployment** - Global content delivery via Cloudflare R2 + CDN
+- **☁️ CDN Deployment** - Global content delivery via CDN
 - **🎯 Smart Targeting** - Display widgets based on URLs, user segments, and custom rules
 - **📈 Analytics Ready** - Track feedback trends and user sentiment
 - **🔒 Secure & Scalable** - Built with security best practices and rate limiting
@@ -53,12 +53,8 @@ Simple integration, comprehensive documentation, and support for all major frame
 ### Performant
 Lightweight widgets (< 50KB), lazy loading, and global CDN ensure fast loading times.
 
-### Flexible
-From simple feedback forms to complex multi-step surveys, Reflect adapts to your needs.
-
-### Privacy-Focused
-GDPR compliant, no tracking cookies, and user data protection built-in.
 
 ## Community & Support
 
 - **Documentation**: You're here! 📖
+- **Support**: Please click here to [go to support page](/community)
