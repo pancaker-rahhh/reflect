@@ -33,19 +33,19 @@ const sidebars: SidebarsConfig = {
         'widgets/integration/shopify',
       ],
     },
-    {
-      type: 'category',
-      label: 'Features',
-      items: [
-        'widgets/features/feedback',
-        'widgets/features/nps',
-        'widgets/features/csat',
-        'widgets/features/ces',
-        'widgets/features/review',
-        'widgets/features/bug-report',
-        'widgets/features/feature-request',
-      ],
-    },
+    // {
+    //   type: 'category',
+    //   label: 'Features',
+    //   items: [
+    //     'widgets/features/feedback',
+    //     'widgets/features/nps',
+    //     'widgets/features/csat',
+    //     'widgets/features/ces',
+    //     'widgets/features/review',
+    //     'widgets/features/bug-report',
+    //     'widgets/features/feature-request',
+    //   ],
+    // },
     'community',
   ],
 };
