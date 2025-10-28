@@ -16,33 +16,38 @@ const sidebars: SidebarsConfig = {
   // Main documentation sidebar - unified structure
   tutorialSidebar: [
     'intro',
+    'widgets/installation',
     {
       type: 'category',
       label: 'Frameworks',
       collapsed: false,
       items: [
-        'widgets/integration/vanilla-js',
         'widgets/integration/react',
         'widgets/integration/vue',
         'widgets/integration/angular',
         'widgets/integration/next-js',
         'widgets/integration/svelte',
         'widgets/integration/wordpress',
+        'widgets/integration/framer',
+        'widgets/integration/webflow',
+        'widgets/integration/shopify',
+        'widgets/integration/laravel',
+        'widgets/integration/django',
       ],
     },
-    {
-      type: 'category',
-      label: 'Features',
-      items: [
-        'widgets/features/feedback',
-        'widgets/features/nps',
-        'widgets/features/csat',
-        'widgets/features/ces',
-        'widgets/features/review',
-        'widgets/features/bug-report',
-        'widgets/features/feature-request',
-      ],
-    },
+    // {
+    //   type: 'category',
+    //   label: 'Features',
+    //   items: [
+    //     'widgets/features/feedback',
+    //     'widgets/features/nps',
+    //     'widgets/features/csat',
+    //     'widgets/features/ces',
+    //     'widgets/features/review',
+    //     'widgets/features/bug-report',
+    //     'widgets/features/feature-request',
+    //   ],
+    // },
     'community',
   ],
 };
