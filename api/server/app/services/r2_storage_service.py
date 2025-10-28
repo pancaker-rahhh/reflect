@@ -36,7 +36,8 @@ class R2StorageService:
                 region_name='auto',
             )
         except Exception as e:
-            logger.error(f'Failed to initialize R2 client: {str(e)}')
+            logger.exception(f'Failed to initialize R2 client: {str(e)}')
+            raise e
 
     async def upload_widget_files(
         self, public_key: str, widget_js_content: str, config: Dict[str, Any]
