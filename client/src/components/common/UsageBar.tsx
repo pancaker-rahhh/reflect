@@ -43,11 +43,19 @@ export function UsageBar({ resourceType, label, className }: UsageBarProps) {
         <div className="flex items-center gap-1">
           <div
             className={`w-2 h-2 rounded-full ${
-              usageInfo.percentage > 95 ? 'bg-red-500' : 'bg-orange-500'
+              usageInfo.percentage >= 100
+                ? 'bg-red-500'
+                : usageInfo.percentage > 95
+                  ? 'bg-red-500'
+                  : 'bg-orange-500'
             }`}
           />
           <p className="text-xs text-muted-foreground">
-            {usageInfo.percentage > 95 ? 'Limit almost reached' : 'Approaching limit'}
+            {usageInfo.percentage >= 100
+              ? 'Limit reached'
+              : usageInfo.percentage > 95
+                ? 'Limit almost reached'
+                : 'Approaching limit'}
           </p>
         </div>
       )}
