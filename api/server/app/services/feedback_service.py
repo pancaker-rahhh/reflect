@@ -51,6 +51,7 @@ from app.models.feedback_model import (
     FeedbackComment,
 )
 from app.models.widget_model import WidgetType
+from app.models.usage_tracking_model import ResourceType
 from app.utils.feedback_formatter import FeedbackFormatter
 
 logger = get_logger(__name__)
@@ -118,7 +119,7 @@ class FeedbackService:
                 db, project.organization_id, resource_type
             )
             raise SubscriptionLimitExceededError(
-                resource_type='responses',
+                resource_type=ResourceType.RESPONSES.value,
                 current_usage=current_usage,
                 limit=limits.get(resource_type, 0),
                 message='Upgrade to Pro plan for unlimited responses',
@@ -160,7 +161,7 @@ class FeedbackService:
 
     def _get_resource_type_from_widget_type(self, widget_type: WidgetType) -> str:
         """Map widget type to subscription resource type"""
-        return 'responses'
+        return ResourceType.RESPONSES.value
 
     def _create_review_feedback(
         self, base_data: Dict[str, Any], data: Dict[str, Any]

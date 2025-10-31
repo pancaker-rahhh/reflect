@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.subscription_plans import PLAN_LIMITS
 from app.models.widget_model import Widget, WidgetStatus
+from app.models.usage_tracking_model import ResourceType
 from app.repositories.widget_repository import widget_repository, WidgetRepository
 from app.schemas.widget_schema import WidgetCreate, WidgetUpdate
 from app.services.project_service import project_service, ProjectService
@@ -92,23 +93,23 @@ class WidgetService:
             plan = organization.subscription_plan or 'free'
             limits = PLAN_LIMITS.get(plan, PLAN_LIMITS['free'])
 
-        limit = limits.get('widgets', 0)
+        limit = limits.get(ResourceType.WIDGETS.value, 0)
         can_create = (
             limit >= 999
             or await usage_tracking_service.get_current_usage(
-                db, project.organization_id, 'widgets'
+                db, project.organization_id, ResourceType.WIDGETS.value
             )
             < limit
         )
 
         if not can_create:
             current_usage = await usage_tracking_service.get_current_usage(
-                db, project.organization_id, 'widgets'
+                db, project.organization_id, ResourceType.WIDGETS.value
             )
             raise SubscriptionLimitExceededError(
-                resource_type='widgets',
+                resource_type=ResourceType.WIDGETS.value,
                 current_usage=current_usage,
-                limit=limits.get('widgets', 0),
+                limit=limits.get(ResourceType.WIDGETS.value, 0),
                 message='Upgrade to Pro plan for unlimited widgets',
             )
 
@@ -127,7 +128,7 @@ class WidgetService:
         widget = await self.repository.create(db, **widget_data)
 
         await usage_tracking_service.increment_usage(
-            db, project.organization_id, 'widgets'
+            db, project.organization_id, ResourceType.WIDGETS.value
         )
         await self._deploy_to_cdn(widget)
 

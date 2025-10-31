@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from datetime import datetime, timezone
 from app.models.organization_model import Organization
-from app.models.usage_tracking_model import UsageTracking
+from app.models.usage_tracking_model import UsageTracking, ResourceType
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
@@ -42,11 +42,9 @@ class UsageTrackingService:
     ) -> Dict[str, int]:
         usage_dict = {}
 
-        # Get all resource types that have usage tracking
-        resource_types = ['projects', 'widgets', 'responses']
-        for resource_type in resource_types:
-            usage_dict[resource_type] = await self.get_current_usage(
-                db, organization_id, resource_type
+        for resource_type in ResourceType:
+            usage_dict[resource_type.value] = await self.get_current_usage(
+                db, organization_id, resource_type.value
             )
 
         return usage_dict

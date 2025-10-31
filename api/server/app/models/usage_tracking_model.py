@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 from datetime import datetime
 import uuid
+import enum
 from sqlalchemy import String, DateTime as DateTimeColumn, Integer, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -9,6 +10,12 @@ from app.models.base_model import BaseModelWithoutSoftDelete
 
 if TYPE_CHECKING:
     pass
+
+
+class ResourceType(str, enum.Enum):
+    PROJECTS = 'projects'
+    WIDGETS = 'widgets'
+    RESPONSES = 'responses'
 
 
 class UsageTracking(BaseModelWithoutSoftDelete):

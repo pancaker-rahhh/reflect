@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.subscription_plans import PLAN_LIMITS
 from app.models.project_model import Project
 from app.models.organization_model import ProjectRole, OrganizationRole
+from app.models.usage_tracking_model import ResourceType
 from app.repositories.project_repository import (
     project_repository,
     project_member_repository,
@@ -113,23 +114,23 @@ class ProjectService:
             plan = organization.subscription_plan or 'free'
             limits = PLAN_LIMITS.get(plan, PLAN_LIMITS['free'])
 
-        limit = limits.get('projects', 0)
+        limit = limits.get(ResourceType.PROJECTS.value, 0)
         can_create = (
             limit >= 999
             or await usage_tracking_service.get_current_usage(
-                db, project_in.organization_id, 'projects'
+                db, project_in.organization_id, ResourceType.PROJECTS.value
             )
             < limit
         )
 
         if not can_create:
             current_usage = await usage_tracking_service.get_current_usage(
-                db, project_in.organization_id, 'projects'
+                db, project_in.organization_id, ResourceType.PROJECTS.value
             )
             raise SubscriptionLimitExceededError(
-                resource_type='projects',
+                resource_type=ResourceType.PROJECTS.value,
                 current_usage=current_usage,
-                limit=limits.get('projects', 0),
+                limit=limits.get(ResourceType.PROJECTS.value, 0),
                 message='Upgrade to Pro plan for unlimited projects',
             )
 
@@ -150,7 +151,7 @@ class ProjectService:
 
         # Increment usage count for subscription tracking
         await usage_tracking_service.increment_usage(
-            db, project_in.organization_id, 'projects'
+            db, project_in.organization_id, ResourceType.PROJECTS.value
         )
 
         # Automatically add the creator as an admin to the project
