@@ -28,6 +28,7 @@ import { TagManager } from '@/components/roadmap/TagManager'
 import type { Roadmap, RoadmapColumn } from '@/types'
 import { useToast } from '@/components/ui/use-toast'
 import type { RoadmapColumnCreateRequest } from '@/lib/api/roadmap'
+import { urlBuilder } from '@/config'
 
 // Extended type for local column management
 interface ExtendedRoadmapColumn extends RoadmapColumn {
@@ -272,13 +273,7 @@ export function RoadmapSettings() {
 
   const getPublicRoadmapUrl = () => {
     if (!formData.is_public) return null
-
-    if (formData.subdomain) {
-      return `http://localhost:5173/public/r/${formData.subdomain}`
-    } else if (formData.public_slug) {
-      return `http://localhost:5173/public/roadmap/${formData.public_slug}`
-    }
-    return null
+    return urlBuilder.publicRoadmap(formData.subdomain, formData.public_slug)
   }
 
   const publicRoadmapUrl = getPublicRoadmapUrl()
