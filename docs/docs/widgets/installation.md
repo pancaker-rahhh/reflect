@@ -84,12 +84,12 @@ Example:
 
 For detailed integration instructions for your specific framework, check out our framework guides:
 
-- [React Integration](/docs/widgets/integration/react)
-- [Vue.js Integration](/docs/widgets/integration/vue)
-- [Angular Integration](/docs/widgets/integration/angular)
-- [Next.js Integration](/docs/widgets/integration/next-js)
-- [Svelte Integration](/docs/widgets/integration/svelte)
-- [WordPress Integration](/docs/widgets/integration/wordpress)
+- [React Integration](/widgets/integration/react)
+- [Vue.js Integration](/widgets/integration/vue)
+- [Angular Integration](/widgets/integration/angular)
+- [Next.js Integration](/widgets/integration/next-js)
+- [Svelte Integration](/widgets/integration/svelte)
+- [WordPress Integration](/widgets/integration/wordpress)
 
 ## Troubleshooting
 
@@ -133,5 +133,5 @@ If you see errors in the browser console:
 
 ## Next Steps
 
-- Learn about [Widget Configuration](/docs/widgets/configuration/basic)
-- Explore different [Widget Types](/docs/widgets/types/feedback)
+- Explore our [Framework Integrations](/widgets/integration/react)
+- Check out our [Widget Features](/widgets/features/feedback)

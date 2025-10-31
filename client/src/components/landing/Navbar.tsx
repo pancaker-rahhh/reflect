@@ -49,6 +49,11 @@ export const Navbar = () => {
     navigate('/login')
   }
 
+  const handleDocs = (e: React.MouseEvent) => {
+    e.preventDefault()
+    window.location.href = 'https://docs.reflectfeedback.com'
+  }
+
   const navLinks = [
     { name: 'Features', href: '#features', targetId: 'features' },
     { name: 'Modules', href: '#interactive-modules', targetId: 'interactive-modules' },
@@ -106,6 +111,29 @@ export const Navbar = () => {
                 />
               </motion.a>
             ))}
+            <motion.button
+              onClick={handleDocs}
+              className={`text-base font-medium transition-all duration-300 px-4 py-3 rounded-xl relative ${
+                isScrolled
+                  ? 'text-foreground hover:text-primary hover:bg-primary/8'
+                  : isDocsPage
+                    ? 'text-foreground hover:text-primary hover:bg-primary/8'
+                    : 'text-foreground/90 hover:text-foreground hover:bg-foreground/8'
+              }`}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.4 + navLinks.length * 0.1 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Docs
+              <motion.div
+                className="absolute -bottom-1 left-0 h-0.5 bg-primary"
+                initial={{ width: 0 }}
+                whileHover={{ width: '100%' }}
+                transition={{ duration: 0.3 }}
+              />
+            </motion.button>
           </nav>
 
           <div className="hidden lg:flex items-center gap-6">
@@ -211,6 +239,21 @@ export const Navbar = () => {
                   {link.name}
                 </motion.a>
               ))}
+              <motion.button
+                onClick={handleDocs}
+                className={`block text-base font-semibold transition-colors ${
+                  isScrolled
+                    ? 'text-muted-foreground hover:text-primary'
+                    : isDocsPage
+                      ? 'text-muted-foreground hover:text-primary'
+                      : 'text-foreground hover:text-primary'
+                }`}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 + navLinks.length * 0.05 }}
+              >
+                Docs
+              </motion.button>
               <motion.div
                 className="border-t border-border/20 pt-4 flex flex-col space-y-4"
                 initial={{ opacity: 0, y: 10 }}
