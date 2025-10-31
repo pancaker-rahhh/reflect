@@ -6,11 +6,12 @@ import { organizationApi } from '@/lib/api/organization'
 import { useAppContext } from '@/context/AppContext'
 import { useSubscription } from '@/hooks/useSubscription'
 import { UsageBar } from '@/components/common/UsageBar'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { usePayment } from '@/hooks/usePayment'
 
 export function FreeTierAlert() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { currentOrganization } = useAppContext()
   const { subscription } = useSubscription()
   const { undoCancelSubscription, isUndoingCancellation } = usePayment()
@@ -18,6 +19,8 @@ export function FreeTierAlert() {
     queryKey: ['organizations', 'my'],
     queryFn: () => organizationApi.getMy(),
   })
+  
+  const isOnBillingPage = location.pathname.includes('/settings/account') && location.search.includes('tab=billing')
 
   // Prefer the organizations list entry (often richer),
   // otherwise fall back to context. Pick the one that has subscription_plan.
@@ -131,12 +134,16 @@ export function FreeTierAlert() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button size="sm" className="gap-2" onClick={handleUpgrade}>
-            <Zap className="h-4 w-4" />
-            Upgrade to Pro
-          </Button>
+          {!isOnBillingPage && (
+            <Button size="sm" className="gap-2" onClick={handleUpgrade}>
+              <Zap className="h-4 w-4" />
+              Upgrade to Pro
+            </Button>
+          )}
           <span className="text-sm text-[hsl(var(--banner-info-foreground-light))]">
-            Unlock unlimited widgets and responses
+            {isOnBillingPage 
+              ? 'Unlock unlimited widgets and responses with Pro'
+              : 'Unlock unlimited widgets and responses'}
           </span>
         </div>
       </AlertDescription>
