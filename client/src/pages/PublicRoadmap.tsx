@@ -53,16 +53,7 @@ export function PublicRoadmap() {
 
   const upvoteMutation = useMutation({
     mutationFn: async (featureId: string) => {
-      const response = await fetch(`/api/v1/public/features/${featureId}/vote`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      if (!response.ok) {
-        throw new Error('Failed to upvote feature')
-      }
-      return response.json()
+      return await roadmapApi.upvotePublicFeature(featureId)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['public-roadmap', publicSlug || subdomain] })
