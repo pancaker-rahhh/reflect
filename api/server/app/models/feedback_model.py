@@ -8,8 +8,9 @@ from sqlalchemy import (
     ForeignKey,
     Enum as SQLEnum,
     DateTime as DateTimeColumn,
+    JSON,
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 import enum
 import uuid
@@ -57,8 +58,8 @@ class Feedback(BaseModel):
     message = Column(Text)
     feedback_votes = Column(Integer, default=0)
 
-    feedback_metadata = Column(JSONB, default=dict)
-    context = Column(JSONB, default=dict)
+    feedback_metadata = Column(JSON, default=dict)
+    context = Column(JSON, default=dict)
 
     submitter_name = Column(String(255))
     submitter_email = Column(String(320))
@@ -107,7 +108,7 @@ class SurveyFeedback(Feedback):
     )
     survey_type = Column(String(50))
     score = Column(Integer)
-    response_data = Column(JSONB, default=dict)
+    response_data = Column(JSON, default=dict)
 
     __mapper_args__ = {'polymorphic_identity': FeedbackType.SURVEY}
 

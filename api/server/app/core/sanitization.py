@@ -100,6 +100,9 @@ class InputSanitizer:
         if not re.match(email_pattern, email):
             return None
 
+        if '..' in email:
+            return None
+
         return email[:254]
 
     @classmethod

@@ -1,7 +1,7 @@
 from typing import List, Optional, Any, Dict
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, text, and_
+from sqlalchemy import select, text, and_, cast, String
 from sqlalchemy.orm import selectinload
 from datetime import datetime, timedelta, timezone
 from app.core.logging import get_logger
@@ -202,11 +202,11 @@ class FeedbackRepository(BaseRepository[Feedback]):
             Feedback.created_at >= cutoff_time,
         ]
 
-        # Add context filters if available - now using context JSONB field
+        # Add context filters if available - now using context JSON field
         if ip_address:
-            filters.append(Feedback.context['ip_address'].astext == ip_address)
+            filters.append(cast(Feedback.context['ip_address'], String) == ip_address)
         if user_agent:
-            filters.append(Feedback.context['user_agent'].astext == user_agent)
+            filters.append(cast(Feedback.context['user_agent'], String) == user_agent)
 
         logger.info(
             f'🔍 Deduplication query filters: widget_id={widget_id}, feedback_type={feedback_type_enum}, ip_address={ip_address}, user_agent={user_agent}'

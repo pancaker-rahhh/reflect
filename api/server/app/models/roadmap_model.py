@@ -11,7 +11,8 @@ from sqlalchemy import (
     DateTime,
     Index,
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.models.base_model import BaseModel, BaseModelWithoutSoftDelete
@@ -165,7 +166,7 @@ class RoadmapActionItemIntegration(BaseModel):
     external_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     external_status: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
 
-    integration_metadata: Mapped[Dict[str, Any]] = mapped_column(JSONB, default=dict)
+    integration_metadata: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
 
     last_synced_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True

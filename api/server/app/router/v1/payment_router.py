@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from app.db import get_db
 from app.core.auth import get_current_user
 from app.models.user_model import User
-from app.services.payment_service import payment_service
+from app.services.payment_service import payment_service, ProrationBillingMode
 from app.core.logging import get_logger
 from app.core.rate_limiting import create_rate_limit_decorator
 from app.services.permission_service import PermissionService
@@ -288,7 +288,7 @@ async def change_plan(
             db=db,
             organization_id=organization_id,
             new_plan_id=payload.new_plan_id,
-            proration_billing_mode='difference_immediately',
+            proration_billing_mode=ProrationBillingMode.DIFFERENCE_IMMEDIATELY,
             quantity=payload.quantity,
         )
 
