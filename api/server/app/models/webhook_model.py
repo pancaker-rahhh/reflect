@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, List, Dict, Optional
 import uuid
 import enum
-from sqlalchemy import String, ForeignKey, Text, Integer, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import String, ForeignKey, Text, Integer, Enum as SQLEnum, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.models.base_model import BaseModel
@@ -39,8 +39,8 @@ class Webhook(BaseModel):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     url: Mapped[str] = mapped_column(String(500), nullable=False)
 
-    events: Mapped[List[WebhookEventType]] = mapped_column(JSONB, default=list)
-    headers: Mapped[Dict[str, str]] = mapped_column(JSONB, default=dict)
+    events: Mapped[List[WebhookEventType]] = mapped_column(JSON, default=list)
+    headers: Mapped[Dict[str, str]] = mapped_column(JSON, default=dict)
 
     status: Mapped[WebhookStatus] = mapped_column(
         SQLEnum(WebhookStatus), default=WebhookStatus.ACTIVE

@@ -2,8 +2,16 @@ from typing import List, Optional, TYPE_CHECKING, Dict, Any
 from datetime import datetime
 import uuid
 import enum
-from sqlalchemy import String, Boolean, ForeignKey, DateTime, Text, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import (
+    String,
+    Boolean,
+    ForeignKey,
+    DateTime,
+    Text,
+    Enum as SQLEnum,
+    JSON,
+)
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.models.base_model import BaseModel
@@ -53,8 +61,8 @@ class Integration(BaseModel):
         SQLEnum(IntegrationStatus), default=IntegrationStatus.PENDING
     )
 
-    config: Mapped[Dict[str, Any]] = mapped_column(JSONB, default=dict)
-    auth_data: Mapped[Dict[str, Any]] = mapped_column(JSONB, default=dict)
+    config: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
+    auth_data: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
 
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     sync_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -93,7 +101,7 @@ class IntegrationMapping(BaseModel):
     external_id: Mapped[str] = mapped_column(String(255), nullable=False)
     external_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
 
-    mapping_metadata: Mapped[Dict[str, Any]] = mapped_column(JSONB, default=dict)
+    mapping_metadata: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
 
     sync_status: Mapped[str] = mapped_column(String(50), default='synced')
     last_synced_at: Mapped[Optional[datetime]] = mapped_column(

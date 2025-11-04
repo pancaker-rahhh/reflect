@@ -6,8 +6,9 @@ from sqlalchemy import (
     ForeignKey,
     Enum as SQLEnum,
     DateTime as DateTimeColumn,
+    JSON,
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from uuid import uuid4
 import enum
@@ -49,9 +50,9 @@ class Widget(BaseModel):
     widget_type = Column(SQLEnum(WidgetType), nullable=False)
     status = Column(SQLEnum(WidgetStatus), default=WidgetStatus.DRAFT)
 
-    configuration = Column(JSONB, default=dict)
-    theme_configuration = Column(JSONB, default=dict)
-    targeting_rules = Column(JSONB, default=list)
+    configuration = Column(JSON, default=dict)
+    theme_configuration = Column(JSON, default=dict)
+    targeting_rules = Column(JSON, default=list)
 
     embed_code = Column(Text)
     public_key = Column(String(255), unique=True, index=True)

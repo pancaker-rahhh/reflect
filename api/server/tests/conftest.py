@@ -133,9 +133,10 @@ def test_user_id() -> UUID:
 
 @pytest.fixture
 def test_user(test_user_id) -> User:
+    unique_id = str(uuid4())[:8]
     return User(
         id=test_user_id,
-        email='test@example.com',
+        email=f'test_{unique_id}@example.com',
         name='Test User',
         created_at=datetime.now(timezone.utc),
         updated_at=datetime.now(timezone.utc),

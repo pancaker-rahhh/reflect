@@ -1,10 +1,33 @@
 import os
+import uuid
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.dialects.postgresql import UUID as PostgresUUID
 from app.core.settings import get_settings
 
 settings = get_settings()
+
+_original_uuid_bind = PostgresUUID.bind_processor
+
+
+def _uuid_bind_processor(self, dialect):
+    processor = _original_uuid_bind(self, dialect)
+    if processor is None:
+        return None
+
+    def wrapped(value):
+        if isinstance(value, str):
+            try:
+                value = uuid.UUID(value)
+            except (ValueError, AttributeError):
+                pass
+        return processor(value)
+
+    return wrapped
+
+
+PostgresUUID.bind_processor = _uuid_bind_processor
 
 # Only create async engine if not in migration context
 if os.getenv('ALEMBIC_MIGRATION'):

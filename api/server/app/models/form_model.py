@@ -1,7 +1,7 @@
 from typing import Optional, List
 import uuid
-from sqlalchemy import String, Boolean, ForeignKey, Integer
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import String, Boolean, ForeignKey, Integer, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.models.base_model import BaseModel
@@ -20,7 +20,7 @@ class FeedbackForm(BaseModel):
     form_type: Mapped[str] = mapped_column(String(50), default='custom')
     description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    config: Mapped[dict] = mapped_column(JSONB, default=dict)
+    config: Mapped[dict] = mapped_column(JSON, default=dict)
 
     project = relationship('Project', back_populates='forms')
     feedback_items = relationship('Feedback', back_populates='form')
@@ -44,8 +44,8 @@ class FormField(BaseModel):
     label: Mapped[str] = mapped_column(String(255), nullable=False)
 
     is_required: Mapped[bool] = mapped_column(Boolean, default=False)
-    validation_rules: Mapped[dict] = mapped_column(JSONB, default=dict)
-    options: Mapped[list] = mapped_column(JSONB, default=list)
+    validation_rules: Mapped[dict] = mapped_column(JSON, default=dict)
+    options: Mapped[list] = mapped_column(JSON, default=list)
 
     order_index: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
