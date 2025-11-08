@@ -27,20 +27,27 @@ dependencies = [
     "email-validator (>=2.0.0,<3.0.0)",
     "aiohttp (>=3.9.0,<4.0.0)",
     "cryptography (>=41.0.0,<42.0.0)",    
-    "dodopayments (>=1.0.0,<2.0.0)"
+    "dodopayments (>=1.0.0,<2.0.0)",    
+    "pytest (>=8.4.2,<9.0.0)",    
+    "pytest-asyncio (>=1.2.0,<2.0.0)",    
+    "testcontainers (>=4.13.2,<5.0.0)"
 ]
 
 [tool.poetry]
 package-mode = false
 
 [tool.poetry.dependencies]
-python = ">=3.12,<4.0"
+python = ">=3.12,<3.13"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.11.10"
 
 [tool.ruff.format]
 quote-style = 'single'
+
+[tool.pytest.ini_options]
+testpaths = ["server/tests"]
+pythonpath = ["server"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

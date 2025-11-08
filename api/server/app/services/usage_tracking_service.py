@@ -11,6 +11,8 @@ logger = get_logger(__name__)
 
 
 class UsageTrackingService:
+    """Tracks usage of various resources (projects, widgets, responses) per organization."""
+
     async def get_organization_subscription(
         self, db: AsyncSession, organization_id: UUID
     ) -> Optional[Organization]:
