@@ -1,7 +1,12 @@
 import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from app.db import AsyncSessionLocal, engine
+from app.db import (
+    create_engine_and_session_maker,
+    set_engine_and_session_maker,
+    get_session_maker,
+    close_db,
+)
 from app.core.logging import get_logger
 from app.services.subscription_service import subscription_service
 from app.services.payment_service import payment_service
@@ -20,17 +25,18 @@ class BackgroundTaskManager:
     async def _cancellation_worker(self):
         while not self.stop_event.is_set():
             try:
-                # Check if database is available
-                if AsyncSessionLocal is None:
+                # Get the session maker
+                try:
+                    session_maker = get_session_maker()
+                except RuntimeError:
                     logger.warning(
-                        'Database not configured (AsyncSessionLocal is None). '
-                        'Skipping subscription cancellation cycle. '
-                        'Check DATABASE_URL environment variable.'
+                        'Database not initialized yet. '
+                        'Skipping subscription cancellation cycle.'
                     )
                     await asyncio.sleep(60)
                     continue
 
-                async with AsyncSessionLocal() as db:
+                async with session_maker() as db:
                     try:
                         orgs = await subscription_service.list_organizations_due_cancellation(
                             db
@@ -100,6 +106,11 @@ class BackgroundTaskManager:
 async def lifespan(app: FastAPI):
     logger.info('Starting application...')
 
+    # Initialize database engine and session maker
+    engine, session_maker = create_engine_and_session_maker()
+    set_engine_and_session_maker(engine, session_maker)
+    logger.info('Database engine initialized successfully')
+
     # Import all models to ensure SQLAlchemy relationships are properly configured
     import app.models  # noqa: F401
 
@@ -115,13 +126,10 @@ async def lifespan(app: FastAPI):
         await task_manager.stop()
 
         # Dispose database engine
-        if engine is not None:
-            try:
-                await engine.dispose()
-                logger.info('Database engine disposed successfully')
-            except Exception as e:
-                logger.error(
-                    f'Error disposing database engine: {str(e)}', exc_info=True
-                )
-        else:
-            logger.warning('Database engine was not initialized, skipping disposal')
+        try:
+            await close_db()
+            logger.info('Database engine disposed successfully')
+        except Exception as e:
+            logger.error(
+                f'Error disposing database engine: {str(e)}', exc_info=True
+            )

@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
-from app.db import AsyncSessionLocal
+from app.db import get_session_maker
 from app.models.organization_model import OrganizationMember
 from app.models.invitation import Invitation, PendingMember, InvitationTask
 from app.models.user_model import User
@@ -77,11 +77,8 @@ class InvitationService:
         organization_id: Optional[UUID],
         invitations: List[InvitationEntry],
     ):
-        if AsyncSessionLocal is None:
-            raise RuntimeError(
-                'Database not initialized. This function should not be called in migration context.'
-            )
-        async with AsyncSessionLocal() as db:
+        session_maker = get_session_maker()
+        async with session_maker() as db:
             try:
                 await self._update_task_status(task_id, 'processing', db)
 
@@ -240,9 +237,10 @@ class InvitationService:
         organization_name = 'Your Organization'
         if organization_id:
             from app.repositories.organization_repository import organization_repository
-            from app.db import AsyncSessionLocal
+            from app.db import get_session_maker
 
-            async with AsyncSessionLocal() as temp_db:
+            session_maker = get_session_maker()
+            async with session_maker() as temp_db:
                 organization = await organization_repository.get(
                     temp_db, organization_id
                 )

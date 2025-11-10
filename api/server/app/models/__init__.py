@@ -35,7 +35,11 @@ from app.models.onboarding_model import UserOnboarding
 from app.models.invitation import Invitation, PendingMember, InvitationTask
 from app.models.usage_tracking_model import UsageTracking
 
+from .v2.forms_v2_model import FormV2 as FormV2, FormFieldV2 as FormFieldV2
+
 __all__ = [
+    'FormV2',
+    'FormFieldV2',
     'BaseModel',
     'BaseModelWithoutSoftDelete',
     'TimeStampMixin',

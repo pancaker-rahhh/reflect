@@ -10,7 +10,7 @@ from app.core.cors_middleware import setup_selective_cors
 from app.core.rate_limiting import setup_rate_limiting
 from app.core.logging import setup_logging
 from app.core.lifespan import lifespan
-from app.router.api_router import api_router
+from app.router.api_router import api_router, api_router_v2
 from app.router.v1.health_router import health_router
 
 setup_logging()
@@ -50,6 +50,7 @@ def create_application() -> FastAPI:
     app.add_exception_handler(Exception, general_error_handler)
 
     app.include_router(api_router)
+    app.include_router(api_router_v2)
     app.include_router(health_router)
 
     @app.get('/')

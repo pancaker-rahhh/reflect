@@ -21,6 +21,11 @@ from app.router.v1 import (
     webhook_router,
     upgrade_router,
 )
+from app.router.v2 import form_v2_router
+
+api_router_v2 = APIRouter(prefix='/api/v2')
+api_router_v2.include_router(form_v2_router)
+
 
 api_router = APIRouter(prefix='/api/v1')
 api_router.include_router(health_router.health_router)
