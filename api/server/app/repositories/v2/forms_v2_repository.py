@@ -1,5 +1,34 @@
 """
 Repository for Form V2 operations.
+
+Form Response Schema Evolution:
+-------------------------------
+The FormResponseV2 model stores answers as JSONB keyed by field_key.
+This design supports form schema changes over time:
+
+1. Added Fields: New fields won't exist in old responses
+   - Business logic can detect: response.answers.keys() vs current form.fields
+   - Can mark these as "N/A" or "Not collected at submission time"
+
+2. Deleted Fields: Deleted fields remain in old responses  
+   - Business logic can detect: field_key in response but not in current form
+   - Can mark these as "Obsolete field" or hide from display
+
+3. Renamed Fields: Old responses keep old key, new responses use new key
+   - This appears as a delete + add from the perspective above
+   - Migration scripts can be written to copy old_key -> new_key if needed
+
+4. Changed Field Types: Field type is stored in form_fields_v2, not in response
+   - Response validation should use the form schema at submission time
+   - Display logic should handle type mismatches gracefully
+
+Example usage in service layer:
+    response = await repository.get_response_with_form(db, response_id)
+    current_field_keys = {f.field_key for f in response.form.fields}
+    response_keys = set(response.answers.keys())
+    
+    missing_fields = current_field_keys - response_keys  # Added since submission
+    obsolete_fields = response_keys - current_field_keys  # Deleted since submission
 """
 from typing import List, Optional
 from uuid import UUID
@@ -8,7 +37,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from app.models.v2.forms_v2_model import FormV2, FormFieldV2
+from app.models.v2.forms_v2_model import FormV2, FormFieldV2, FormResponseV2
 from app.repositories.base_repository import BaseRepository
 
 
@@ -152,6 +181,18 @@ class FormV2Repository(BaseRepository[FormV2]):
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_by_public_link(
+        self, db: AsyncSession, public_link: str
+    ) -> Optional[FormV2]:
+        """Get a form by its public link with all fields eagerly loaded."""
+        stmt = (
+            select(FormV2)
+            .where(FormV2.public_link == public_link)
+            .options(selectinload(FormV2.fields))
+        )
+        result = await db.execute(stmt)
+        return result.scalar_one_or_none()
+
     async def get_by_project(
         self, db: AsyncSession, project_id: UUID, skip: int = 0, limit: int = 100
     ) -> List[FormV2]:
@@ -199,6 +240,36 @@ class FormFieldV2Repository(BaseRepository[FormFieldV2]):
         return list(result.scalars().all())
 
 
+class FormResponseV2Repository(BaseRepository[FormResponseV2]):
+    def __init__(self):
+        super().__init__(FormResponseV2)
+
+    async def get_by_form(
+        self, db: AsyncSession, form_id: UUID, skip: int = 0, limit: int = 100
+    ) -> List[FormResponseV2]:
+        """Get all responses for a specific form."""
+        stmt = (
+            select(FormResponseV2)
+            .where(FormResponseV2.form_id == form_id)
+            .offset(skip)
+            .limit(limit)
+            .order_by(FormResponseV2.created_at.desc())
+        )
+        result = await db.execute(stmt)
+        return list(result.scalars().all())
+
+    async def count_by_form(self, db: AsyncSession, form_id: UUID) -> int:
+        """Count total responses for a specific form."""
+        from sqlalchemy import func
+        
+        stmt = select(func.count()).select_from(FormResponseV2).where(
+            FormResponseV2.form_id == form_id
+        )
+        result = await db.execute(stmt)
+        return result.scalar_one()
+
+
 # Singleton instances
 form_v2_repository = FormV2Repository()
 form_field_v2_repository = FormFieldV2Repository()
+form_response_v2_repository = FormResponseV2Repository()

@@ -123,6 +123,7 @@ class FormV2Response(BaseModel):
     form_type: str
     description: Optional[str]
     is_active: bool
+    public_link: str
     config: dict
     created_at: datetime
     updated_at: Optional[datetime] = None
@@ -132,3 +133,17 @@ class FormV2Response(BaseModel):
 class FormV2ListResponse(BaseModel):
     total: int
     items: List[FormV2Response]
+
+
+# Form Response Schemas
+class FormResponseV2Create(BaseModel):
+    """Schema for submitting a form response via public link."""
+    answers: dict = Field(..., description='Answers keyed by field_key')
+    submitter_email: Optional[str] = Field(None, max_length=255)
+    submitter_name: Optional[str] = Field(None, max_length=255)
+
+
+class FormSubmissionSuccessResponse(BaseModel):
+    """Simple success response for public form submissions."""
+    message: str = "Thank you for your submission"
+    success: bool = True

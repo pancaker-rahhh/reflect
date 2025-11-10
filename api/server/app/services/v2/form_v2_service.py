@@ -2,20 +2,24 @@
 Service layer for Form V2 operations.
 Uses FormV2 models and repositories.
 """
+import random
+import string
 from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.v2.forms_v2_model import FormV2, FormFieldV2
+from app.models.v2.forms_v2_model import FormV2
 from app.repositories.v2.forms_v2_repository import (
     form_v2_repository,
     form_field_v2_repository,
+    form_response_v2_repository,
 )
 from app.schemas.v2.form_v2_schema import (
     FormV2Create,
     FormV2Update,
     FormV2Response,
     FormFieldV2Response,
+    FormResponseV2Create,
     TextFieldCreate,
     NumberFieldCreate,
     ChoiceFieldCreate,
@@ -31,6 +35,11 @@ logger = get_logger(__name__)
 
 class FormV2Service:
     """Service for managing Form V2 entities."""
+
+    def _generate_public_link(self) -> str:
+        """Generate a random 16-character string with uppercase and lowercase letters."""
+        letters = string.ascii_letters  # Contains a-z and A-Z
+        return ''.join(random.choices(letters, k=16))
 
     def _field_to_config(self, field_data) -> list:
         """Convert field creation data to config list for storage."""
@@ -69,6 +78,7 @@ class FormV2Service:
             'description': form_data.description,
             'is_active': form_data.is_active,
             'form_type': 'custom',
+            'public_link': self._generate_public_link(),
             'config': {},
         }
         form = await form_v2_repository.create(db, **form_dict)
@@ -98,6 +108,15 @@ class FormV2Service:
     ) -> Optional[FormV2Response]:
         """Get a form by ID with all its fields."""
         form = await form_v2_repository.get_with_fields(db, form_id)
+        if not form:
+            return None
+        return FormV2Response.model_validate(form)
+
+    async def get_form_by_public_link(
+        self, db: AsyncSession, public_link: str
+    ) -> Optional[FormV2Response]:
+        """Get a form by its public link with all its fields."""
+        form = await form_v2_repository.get_by_public_link(db, public_link)
         if not form:
             return None
         return FormV2Response.model_validate(form)
@@ -227,6 +246,60 @@ class FormV2Service:
         if success:
             logger.info(f'Deleted field v2 {field_id}')
         return success
+
+    async def submit_form_response(
+        self,
+        db: AsyncSession,
+        public_link: str,
+        response_data: FormResponseV2Create,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
+    ) -> None:
+        """
+        Submit a response to a form via its public link.
+        Validates the form exists and is active, then stores the response.
+        """
+        # Get form by public link
+        form = await form_v2_repository.get_by_public_link(db, public_link)
+        if not form:
+            raise NotFoundError('Form not found')
+        
+        if not form.is_active:
+            raise ValueError('This form is no longer accepting responses')
+        
+        # Validate that all required fields have answers
+        await self._validate_required_fields(form, response_data.answers)
+        
+        # Create the response
+        response_dict = {
+            'form_id': form.id,
+            'answers': response_data.answers,
+            'submitter_email': response_data.submitter_email,
+            'submitter_name': response_data.submitter_name,
+            'ip_address': ip_address,
+            'user_agent': user_agent,
+        }
+        
+        response = await form_response_v2_repository.create(db, **response_dict)
+        logger.info(f'Created form response {response.id} for form {form.id}')
+
+    async def _validate_required_fields(self, form: FormV2, answers: dict) -> None:
+        """Validate that all required fields have been answered."""
+        # Load fields if not already loaded
+        if not form.fields:
+            # Fields should be loaded, but just in case
+            pass
+        
+        missing_fields = []
+        for field in form.fields:
+            if field.is_required:
+                answer = answers.get(field.field_key)
+                # Check if answer is missing or empty
+                if answer is None or answer == '' or (isinstance(answer, list) and len(answer) == 0):
+                    missing_fields.append(field.label)
+        
+        if missing_fields:
+            raise ValueError(f"Required fields missing: {', '.join(missing_fields)}")
 
 
 # Singleton instance

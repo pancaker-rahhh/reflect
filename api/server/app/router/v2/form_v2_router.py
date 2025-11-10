@@ -1,24 +1,76 @@
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
 from app.core.auth import get_current_token_data
 from app.schemas.auth_schema import TokenData
 from app.schemas.v2.form_v2_schema import (
-    FormV2Response,
     FormV2Create,
     FormV2Update,
-    FormFieldV2Response,
+    FormV2Response,
+    FormV2ListResponse,
     FormFieldV2Create,
+    FormFieldV2Response,
     FormFieldV2Update,
+    FormResponseV2Create,
+    FormSubmissionSuccessResponse,
 )
 from app.services.v2.form_v2_service import form_v2_service
 from app.services.organization_service import organization_service
 
 form_router = APIRouter(prefix='/forms', tags=['forms-v2'])
+
+
+@form_router.get('/public/{public_link}', response_model=FormV2Response)
+async def get_form_by_public_link(
+    public_link: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Public endpoint to get a form by its public link.
+    No authentication required - used for rendering forms to end users.
+    """
+    form = await form_v2_service.get_form_by_public_link(db, public_link)
+    if not form:
+        raise HTTPException(status_code=404, detail='Form not found')
+    return form
+
+
+@form_router.post(
+    "/public/{public_link}/submit",
+    status_code=status.HTTP_201_CREATED,
+    response_model=FormSubmissionSuccessResponse,
+    summary="Submit a form response via public link",
+    description="Public endpoint for submitting form responses. No authentication required.",
+)
+async def submit_form_response(
+    public_link: str,
+    response_data: FormResponseV2Create,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> FormSubmissionSuccessResponse:
+    """
+    Public endpoint for submitting form responses.
+    Validates form is active and all required fields are provided.
+    """
+    # Extract IP address and user agent for tracking
+    ip_address = request.client.host if request.client else None
+    user_agent = request.headers.get('user-agent')
+    
+    try:
+        await form_v2_service.submit_form_response(
+            db=db,
+            public_link=public_link,
+            response_data=response_data,
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
+        return FormSubmissionSuccessResponse()
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @form_router.post('/', response_model=FormV2Response, status_code=status.HTTP_201_CREATED)

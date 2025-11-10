@@ -7,6 +7,7 @@ import pytest
 from fastapi import status
 
 from app.main import app
+from app.core.auth import get_current_token_data
 
 
 @pytest.mark.asyncio
@@ -548,4 +549,258 @@ async def test_update_field_with_wrong_type_properties(test_setup):
         )
         # Should succeed but ignore invalid properties
         assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.asyncio
+async def test_get_form_by_public_link(test_setup):
+    """Test retrieving a form by its public link without authentication."""
+    project_id = str(test_setup['project'].id)
+    
+    # Create a form
+    create_payload = {
+        'name': 'Public Form',
+        'project_id': project_id,
+        'description': 'Form accessible via public link',
+        'fields': [
+            {
+                'field_type': 'text',
+                'field_key': 'user_name',
+                'label': 'Your Name',
+                'is_required': True,
+                'max_length': 100,
+                'order_index': 0,
+            },
+            {
+                'field_type': 'choice',
+                'field_key': 'rating',
+                'label': 'Rating',
+                'is_required': True,
+                'choices': ['Excellent', 'Good', 'Fair', 'Poor'],
+                'multiple': False,
+                'order_index': 1,
+            },
+        ],
+    }
+    
+    async with AsyncClient(app=app, base_url='http://test') as ac:
+        # Create the form with authentication
+        create_response = await ac.post('/api/v2/forms/', json=create_payload)
+        assert create_response.status_code == status.HTTP_201_CREATED
+        
+        form_data = create_response.json()
+        public_link = form_data['public_link']
+        
+        # Verify public_link is a 16-character string with only letters
+        assert len(public_link) == 16
+        assert public_link.isalpha()
+        
+        # Now access the form via public link WITHOUT authentication
+        # Remove only the auth override, keep the db override
+        app.dependency_overrides.pop(get_current_token_data, None)
+        
+        public_response = await ac.get(f'/api/v2/forms/public/{public_link}')
+        assert public_response.status_code == status.HTTP_200_OK
+        
+        public_data = public_response.json()
+        assert public_data['id'] == form_data['id']
+        assert public_data['name'] == 'Public Form'
+        assert public_data['public_link'] == public_link
+        assert len(public_data['fields']) == 2
+        
+        # Verify field details are included
+        assert public_data['fields'][0]['field_key'] == 'user_name'
+        assert public_data['fields'][0]['label'] == 'Your Name'
+        assert public_data['fields'][1]['field_key'] == 'rating'
+        assert public_data['fields'][1]['label'] == 'Rating'
+
+
+@pytest.mark.asyncio
+async def test_get_form_by_public_link_not_found(test_setup):
+    """Test accessing a non-existent public link returns 404."""
+    
+    async with AsyncClient(app=app, base_url='http://test') as ac:
+        # Clear auth for public endpoint, but keep db override
+        app.dependency_overrides.pop(get_current_token_data, None)
+        
+        response = await ac.get('/api/v2/forms/public/nonexistentlink')
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.json()['detail'] == 'Form not found'
+
+
+@pytest.mark.asyncio
+async def test_public_link_uniqueness(test_setup):
+    """Test that each form gets a unique public link."""
+    project_id = str(test_setup['project'].id)
+    
+    public_links = set()
+    
+    async with AsyncClient(app=app, base_url='http://test') as ac:
+        # Create multiple forms
+        for i in range(5):
+            payload = {
+                'name': f'Form {i}',
+                'project_id': project_id,
+                'description': f'Description {i}',
+                'fields': [],
+            }
+            response = await ac.post('/api/v2/forms/', json=payload)
+            assert response.status_code == status.HTTP_201_CREATED
+            
+            public_link = response.json()['public_link']
+            assert len(public_link) == 16
+            assert public_link.isalpha()
+            
+            # Ensure it's unique
+            assert public_link not in public_links
+            public_links.add(public_link)
+        
+        # Verify we got 5 unique links
+        assert len(public_links) == 5
+
+
+@pytest.mark.asyncio
+async def test_submit_form_response_public(test_setup):
+    """Test submitting a form response via public link."""
+    project_id = str(test_setup['project'].id)
+    
+    # Create a form with fields
+    create_payload = {
+        'name': 'Feedback Form',
+        'project_id': project_id,
+        'description': 'Submit your feedback',
+        'fields': [
+            {
+                'field_type': 'text',
+                'field_key': 'name',
+                'label': 'Your Name',
+                'is_required': True,
+                'max_length': 100,
+                'order_index': 0,
+            },
+            {
+                'field_type': 'text',
+                'field_key': 'email',
+                'label': 'Your Email',
+                'is_required': True,
+                'max_length': 255,
+                'order_index': 1,
+            },
+            {
+                'field_type': 'choice',
+                'field_key': 'satisfaction',
+                'label': 'How satisfied are you?',
+                'is_required': True,
+                'choices': ['Very Satisfied', 'Satisfied', 'Neutral', 'Dissatisfied'],
+                'multiple': False,
+                'order_index': 2,
+            },
+        ],
+    }
+    
+    async with AsyncClient(app=app, base_url='http://test') as ac:
+        # Create the form
+        create_response = await ac.post('/api/v2/forms/', json=create_payload)
+        assert create_response.status_code == status.HTTP_201_CREATED
+        
+        form_data = create_response.json()
+        public_link = form_data['public_link']
+        
+        # Remove auth for public endpoint
+        app.dependency_overrides.pop(get_current_token_data, None)
+        
+        # Submit a response
+        response_payload = {
+            'answers': {
+                'name': 'John Doe',
+                'email': 'john@example.com',
+                'satisfaction': 'Very Satisfied',
+            },
+            'submitter_name': 'John Doe',
+            'submitter_email': 'john@example.com',
+        }
+        
+        submit_response = await ac.post(
+            f'/api/v2/forms/public/{public_link}/submit',
+            json=response_payload
+        )
+        assert submit_response.status_code == status.HTTP_201_CREATED
+        
+        response_data = submit_response.json()
+        assert response_data['success'] is True
+        assert 'Thank you' in response_data['message']
+
+
+@pytest.mark.asyncio
+async def test_submit_form_response_missing_required_field(test_setup):
+    """Test that submitting a form with missing required fields fails."""
+    project_id = str(test_setup['project'].id)
+    
+    # Create a form with required field
+    create_payload = {
+        'name': 'Required Fields Form',
+        'project_id': project_id,
+        'fields': [
+            {
+                'field_type': 'text',
+                'field_key': 'required_field',
+                'label': 'Required Field',
+                'is_required': True,
+                'order_index': 0,
+            },
+        ],
+    }
+    
+    async with AsyncClient(app=app, base_url='http://test') as ac:
+        create_response = await ac.post('/api/v2/forms/', json=create_payload)
+        public_link = create_response.json()['public_link']
+        
+        # Remove auth
+        app.dependency_overrides.pop(get_current_token_data, None)
+        
+        # Try to submit without the required field
+        response_payload = {
+            'answers': {},
+        }
+        
+        submit_response = await ac.post(
+            f'/api/v2/forms/public/{public_link}/submit',
+            json=response_payload
+        )
+        assert submit_response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'Required fields missing' in submit_response.json()['detail']
+
+
+@pytest.mark.asyncio
+async def test_submit_form_response_inactive_form(test_setup):
+    """Test that submitting to an inactive form fails."""
+    project_id = str(test_setup['project'].id)
+    
+    # Create an inactive form
+    create_payload = {
+        'name': 'Inactive Form',
+        'project_id': project_id,
+        'is_active': False,
+        'fields': [],
+    }
+    
+    async with AsyncClient(app=app, base_url='http://test') as ac:
+        create_response = await ac.post('/api/v2/forms/', json=create_payload)
+        public_link = create_response.json()['public_link']
+        
+        # Remove auth
+        app.dependency_overrides.pop(get_current_token_data, None)
+        
+        # Try to submit to inactive form
+        response_payload = {
+            'answers': {},
+        }
+        
+        submit_response = await ac.post(
+            f'/api/v2/forms/public/{public_link}/submit',
+            json=response_payload
+        )
+        assert submit_response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'no longer accepting responses' in submit_response.json()['detail']
+
+
 

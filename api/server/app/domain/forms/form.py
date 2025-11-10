@@ -96,6 +96,7 @@ class Form(BaseModel):
     name: str
     description: Optional[str] = None
     is_active: bool = True
+    public_link: Optional[str] = None
     fields: List[FormField] = Field(default_factory=list)
 
     @model_validator(mode='after')
@@ -105,7 +106,7 @@ class Form(BaseModel):
             raise ValueError('All field_key values in fields must be unique.')
         return self
 
-    def add_field(self, field: BaseField):
+    def add_field(self, field: FormField):
         if any(f.field_key == field.field_key for f in self.fields):
             raise ValueError(
                 f"Field key '{field.field_key}' already exists in this form."
