@@ -316,3 +316,77 @@ export interface Integration {
   created_at: string
   updated_at: string
 }
+
+export type FormFieldType = 'text' | 'number' | 'choice'
+
+export interface FormFieldV2 {
+  id: string
+  form_id: string
+  field_type: FormFieldType
+  field_key: string
+  label: string
+  is_required: boolean
+  config: any[]
+  order_index: number
+  created_at: string
+  updated_at?: string
+}
+
+export interface FormV2 {
+  id: string
+  project_id: string
+  name: string
+  form_type: string
+  description?: string
+  is_active: boolean
+  public_link: string
+  config: {
+    theme?: string
+    primaryColor?: string
+    headerGradientEnd?: string
+    backgroundColor?: string
+    textColor?: string
+    buttonTextColor?: string
+    pageBackground?: string
+  }
+  created_at: string
+  updated_at?: string
+  fields: FormFieldV2[]
+}
+
+export interface FormFieldCreate {
+  field_type: FormFieldType
+  field_key: string
+  label: string
+  is_required?: boolean
+  order_index?: number
+  max_length?: number
+  min_value?: number
+  max_value?: number
+  choices?: string[]
+  multiple?: boolean
+  default_value?: string | number | string[]
+}
+
+export interface FormCreate {
+  project_id: string
+  name: string
+  description?: string
+  is_active?: boolean
+  fields?: FormFieldCreate[]
+}
+
+export interface FormUpdate {
+  name?: string
+  description?: string
+  is_active?: boolean
+  config?: {
+    theme?: string
+    primaryColor?: string
+    headerGradientEnd?: string
+    backgroundColor?: string
+    textColor?: string
+    buttonTextColor?: string
+    pageBackground?: string
+  }
+}

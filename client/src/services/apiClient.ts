@@ -1,4 +1,5 @@
 import { config } from '@/config'
+import { supabase } from '@/lib/supabase'
 
 const API_BASE_URL = config.apiBaseUrl
 
@@ -22,12 +23,11 @@ const DEFAULT_CONFIG: ApiConfig = {
   retryableStatusCodes: new Set([408, 429, 500, 502, 503, 504]),
 }
 
-function getToken(): string | null {
-  const authData = localStorage.getItem('supabase.auth.token')
-  if (authData) {
-    return JSON.parse(authData).session?.access_token ?? null
-  }
-  return null
+async function getToken(): Promise<string | null> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+  return session?.access_token ?? null
 }
 
 function createTimeoutSignal(timeout: number): AbortSignal {
@@ -64,12 +64,31 @@ export async function request<T>(endpoint: string, options: RequestOptions = {})
     ...fetchOptions
   } = options
 
-  const token = getToken()
-  const headers = new Headers(fetchOptions.headers)
+  const token = await getToken()
+  const headersObj: Record<string, string> = {}
 
-  headers.set('Content-Type', 'application/json')
+  if (fetchOptions.headers) {
+    if (fetchOptions.headers instanceof Headers) {
+      fetchOptions.headers.forEach((value, key) => {
+        headersObj[key] = value
+      })
+    } else if (Array.isArray(fetchOptions.headers)) {
+      fetchOptions.headers.forEach(([key, value]) => {
+        headersObj[key] = value
+      })
+    } else {
+      Object.assign(headersObj, fetchOptions.headers)
+    }
+  }
+
+  headersObj['Content-Type'] = 'application/json'
   if (token) {
-    headers.set('Authorization', `Bearer ${token}`)
+    headersObj['Authorization'] = `Bearer ${token}`
+  }
+
+  let baseUrl = API_BASE_URL
+  if (endpoint.startsWith('/api/v2')) {
+    baseUrl = API_BASE_URL.replace('/api/v1', '')
   }
 
   const makeRequest = async (attempt: number = 0): Promise<T> => {
@@ -81,9 +100,9 @@ export async function request<T>(endpoint: string, options: RequestOptions = {})
         ? AbortSignal.any([timeoutSignal, requestSignal])
         : timeoutSignal
 
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      const response = await fetch(`${baseUrl}${endpoint}`, {
         ...fetchOptions,
-        headers,
+        headers: headersObj,
         signal: combinedSignal,
       })
 
