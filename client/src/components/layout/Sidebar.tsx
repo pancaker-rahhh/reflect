@@ -13,6 +13,7 @@ import {
   Star,
   FileText,
   Users,
+  ClipboardText,
 } from 'phosphor-react'
 import { cn } from '@/lib/utils'
 import { OrganizationDropdown } from './OrganizationDropdown'
@@ -38,6 +39,11 @@ const navigation: NavItem[] = [
     label: 'Widgets',
     href: '/app/widgets',
     icon: PuzzlePiece,
+  },
+  {
+    label: 'Forms',
+    href: '/app/forms',
+    icon: ClipboardText,
   },
   {
     label: 'Feedback & Roadmap',
@@ -141,9 +147,16 @@ export function Sidebar() {
           >
             <span className="truncate">{item.label}</span>
             {/* Shortcut hints */}
-            {(item.label === 'Dashboard' || item.label === 'Widgets') && (
+            {(item.label === 'Dashboard' || item.label === 'Widgets' || item.label === 'Forms') && (
               <span className="text-xs text-muted-foreground border rounded px-1 ml-2">
-                ⌘⇧{item.label === 'Dashboard' ? '1' : item.label === 'Widgets' ? '2' : '3'}
+                ⌘⇧
+                {item.label === 'Dashboard'
+                  ? '1'
+                  : item.label === 'Widgets'
+                    ? '2'
+                    : item.label === 'Forms'
+                      ? '3'
+                      : ''}
               </span>
             )}
             {hasChildren && (
@@ -175,6 +188,9 @@ export function Sidebar() {
             break
           case '2':
             navigate('/app/widgets')
+            break
+          case '3':
+            navigate('/app/forms')
             break
         }
       }
