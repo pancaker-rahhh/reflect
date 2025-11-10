@@ -87,7 +87,7 @@ FormFieldV2Update = Union[TextFieldUpdate, NumberFieldUpdate, ChoiceFieldUpdate]
 # Response schemas
 class FormFieldV2Response(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: UUID
     form_id: UUID
     field_type: str
@@ -105,6 +105,7 @@ class FormV2Create(BaseModel):
     name: str = Field(..., max_length=255)
     description: Optional[str] = None
     is_active: bool = True
+    config: Optional[dict] = Field(default_factory=dict)
     fields: List[FormFieldV2Create] = Field(default_factory=list)
 
 
@@ -112,11 +113,12 @@ class FormV2Update(BaseModel):
     name: Optional[str] = Field(None, max_length=255)
     description: Optional[str] = None
     is_active: Optional[bool] = None
+    config: Optional[dict] = None
 
 
 class FormV2Response(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: UUID
     project_id: UUID
     name: str
@@ -138,15 +140,15 @@ class FormV2ListResponse(BaseModel):
 # Form Response Schemas
 class FormResponseV2Create(BaseModel):
     """Schema for submitting a form response via public link."""
+
     answers: dict = Field(..., description='Answers keyed by field_key')
     submitter_email: Optional[str] = Field(None, max_length=255)
     submitter_name: Optional[str] = Field(None, max_length=255)
 
 
 class FormResponseV2Response(BaseModel):
-    """Schema for form response data returned to form owners."""
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: UUID
     form_id: UUID
     answers: dict
@@ -159,12 +161,12 @@ class FormResponseV2Response(BaseModel):
 
 
 class FormResponseV2ListResponse(BaseModel):
-    """Paginated list of form responses."""
     total: int
     items: List[FormResponseV2Response]
 
 
 class FormSubmissionSuccessResponse(BaseModel):
     """Simple success response for public form submissions."""
-    message: str = "Thank you for your submission"
+
+    message: str = 'Thank you for your submission'
     success: bool = True
