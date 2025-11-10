@@ -7,6 +7,8 @@ interface WizardNavigationProps {
   onNext: () => void
   onPrevious: () => void
   isSubmitting?: boolean
+  submitButtonText?: string
+  submittingText?: string
 }
 
 export function WizardNavigation({
@@ -15,6 +17,8 @@ export function WizardNavigation({
   onNext,
   onPrevious,
   isSubmitting,
+  submitButtonText = 'Create Widget',
+  submittingText = 'Creating...',
 }: WizardNavigationProps) {
   const isFirstStep = currentStep === 0
   const isLastStep = currentStep === totalSteps - 1
@@ -31,18 +35,14 @@ export function WizardNavigation({
         Previous
       </Button>
 
-      <Button
-        onClick={onNext}
-        disabled={isSubmitting}
-        className="gap-2"
-      >
+      <Button onClick={onNext} disabled={isSubmitting} className="gap-2">
         {isSubmitting ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            Creating...
+            {submittingText}
           </>
         ) : isLastStep ? (
-          'Create Widget'
+          submitButtonText
         ) : (
           <>
             Next
