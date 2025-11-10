@@ -143,6 +143,27 @@ class FormResponseV2Create(BaseModel):
     submitter_name: Optional[str] = Field(None, max_length=255)
 
 
+class FormResponseV2Response(BaseModel):
+    """Schema for form response data returned to form owners."""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: UUID
+    form_id: UUID
+    answers: dict
+    submitter_email: Optional[str]
+    submitter_name: Optional[str]
+    ip_address: Optional[str]
+    user_agent: Optional[str]
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+
+class FormResponseV2ListResponse(BaseModel):
+    """Paginated list of form responses."""
+    total: int
+    items: List[FormResponseV2Response]
+
+
 class FormSubmissionSuccessResponse(BaseModel):
     """Simple success response for public form submissions."""
     message: str = "Thank you for your submission"

@@ -11,11 +11,11 @@ from app.schemas.v2.form_v2_schema import (
     FormV2Create,
     FormV2Update,
     FormV2Response,
-    FormV2ListResponse,
     FormFieldV2Create,
     FormFieldV2Response,
     FormFieldV2Update,
     FormResponseV2Create,
+    FormResponseV2ListResponse,
     FormSubmissionSuccessResponse,
 )
 from app.services.v2.form_v2_service import form_v2_service
@@ -149,6 +149,32 @@ async def delete_form(
     success = await form_v2_service.delete_form(db, form_id)
     if not success:
         raise HTTPException(status_code=404, detail='Form not found')
+
+
+@form_router.get('/{form_id}/responses', response_model=FormResponseV2ListResponse)
+async def get_form_responses(
+    form_id: UUID,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=1, le=1000),
+    db: AsyncSession = Depends(get_db),
+    current_user: TokenData = Depends(get_current_token_data),
+):
+    """
+    Get all responses for a specific form.
+    Requires authentication and access to the form's project.
+    """
+    # Check if form exists and user has access
+    form = await form_v2_service.get_form(db, form_id)
+    if not form:
+        raise HTTPException(status_code=404, detail='Form not found')
+
+    await organization_service.check_project_access(
+        db, UUID(current_user.user_id), form.project_id
+    )
+    
+    # Get responses with pagination
+    result = await form_v2_service.get_form_responses(db, form_id, skip, limit)
+    return result
 
 
 @form_router.post('/{form_id}/fields', response_model=FormFieldV2Response)

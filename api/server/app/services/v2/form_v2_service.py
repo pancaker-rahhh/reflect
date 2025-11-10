@@ -301,6 +301,21 @@ class FormV2Service:
         if missing_fields:
             raise ValueError(f"Required fields missing: {', '.join(missing_fields)}")
 
+    async def get_form_responses(
+        self, db: AsyncSession, form_id: UUID, skip: int = 0, limit: int = 100
+    ) -> dict:
+        """
+        Get all responses for a form with pagination.
+        Returns a dict with total count and list of responses.
+        """
+        responses = await form_response_v2_repository.get_by_form(db, form_id, skip, limit)
+        total = await form_response_v2_repository.count_by_form(db, form_id)
+        
+        return {
+            'total': total,
+            'items': responses
+        }
+
 
 # Singleton instance
 form_v2_service = FormV2Service()

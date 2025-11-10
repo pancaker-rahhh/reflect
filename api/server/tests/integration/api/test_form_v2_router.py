@@ -803,4 +803,214 @@ async def test_submit_form_response_inactive_form(test_setup):
         assert 'no longer accepting responses' in submit_response.json()['detail']
 
 
+@pytest.mark.asyncio
+async def test_get_form_responses(test_setup):
+    """Test retrieving all responses for a form."""
+    project_id = str(test_setup['project'].id)
+    user_id = str(test_setup['user'].id)
+    
+    # Create a form
+    create_payload = {
+        'name': 'Response Collection Test',
+        'project_id': project_id,
+        'fields': [
+            {
+                'field_type': 'text',
+                'field_key': 'feedback',
+                'label': 'Your Feedback',
+                'is_required': True,
+                'order_index': 0,
+            },
+        ],
+    }
+    
+    async with AsyncClient(app=app, base_url='http://test') as ac:
+        create_response = await ac.post('/api/v2/forms/', json=create_payload)
+        form_data = create_response.json()
+        form_id = form_data['id']
+        public_link = form_data['public_link']
+        
+        # Remove auth for public submissions
+        app.dependency_overrides.pop(get_current_token_data, None)
+        
+        # Submit multiple responses
+        for i in range(5):
+            response_payload = {
+                'answers': {
+                    'feedback': f'Test feedback number {i + 1}',
+                },
+                'submitter_name': f'User {i + 1}',
+                'submitter_email': f'user{i + 1}@example.com',
+            }
+            submit_response = await ac.post(
+                f'/api/v2/forms/public/{public_link}/submit',
+                json=response_payload
+            )
+            assert submit_response.status_code == status.HTTP_201_CREATED
+        
+        # Restore auth by adding back the mock token
+        from app.schemas.auth_schema import TokenData
+        import time
+        now = int(time.time())
+        mock_token = TokenData(
+            sub=user_id,
+            email=test_setup['user'].email,
+            role='Admin',
+            exp=now + 3600,
+            iat=now,
+            iss='test-issuer',
+            aud='test-audience',
+        )
+        app.dependency_overrides[get_current_token_data] = lambda: mock_token
+        
+        # Get all responses
+        get_responses = await ac.get(f'/api/v2/forms/{form_id}/responses')
+        assert get_responses.status_code == status.HTTP_200_OK
+        
+        response_data = get_responses.json()
+        assert response_data['total'] == 5
+        assert len(response_data['items']) == 5
+        
+        # Verify response structure
+        first_response = response_data['items'][0]
+        assert 'id' in first_response
+        assert 'form_id' in first_response
+        assert 'answers' in first_response
+        assert 'submitter_name' in first_response
+        assert 'submitter_email' in first_response
+        assert 'ip_address' in first_response
+        assert 'user_agent' in first_response
+        assert 'created_at' in first_response
+        
+        # Verify answers content
+        assert 'feedback' in first_response['answers']
+
+
+@pytest.mark.asyncio
+async def test_get_form_responses_pagination(test_setup):
+    """Test pagination of form responses."""
+    project_id = str(test_setup['project'].id)
+    user_id = str(test_setup['user'].id)
+    
+    # Create a form
+    create_payload = {
+        'name': 'Pagination Test',
+        'project_id': project_id,
+        'fields': [
+            {
+                'field_type': 'text',
+                'field_key': 'message',
+                'label': 'Message',
+                'is_required': True,
+                'order_index': 0,
+            },
+        ],
+    }
+    
+    async with AsyncClient(app=app, base_url='http://test') as ac:
+        create_response = await ac.post('/api/v2/forms/', json=create_payload)
+        form_data = create_response.json()
+        form_id = form_data['id']
+        public_link = form_data['public_link']
+        
+        # Remove auth for public submissions
+        app.dependency_overrides.pop(get_current_token_data, None)
+        
+        # Submit 10 responses
+        for i in range(10):
+            response_payload = {
+                'answers': {
+                    'message': f'Message {i + 1}',
+                },
+            }
+            await ac.post(
+                f'/api/v2/forms/public/{public_link}/submit',
+                json=response_payload
+            )
+        
+        # Restore auth
+        from app.schemas.auth_schema import TokenData
+        import time
+        now = int(time.time())
+        mock_token = TokenData(
+            sub=user_id,
+            email=test_setup['user'].email,
+            role='Admin',
+            exp=now + 3600,
+            iat=now,
+            iss='test-issuer',
+            aud='test-audience',
+        )
+        app.dependency_overrides[get_current_token_data] = lambda: mock_token
+        
+        # Get first page (3 items)
+        page1 = await ac.get(f'/api/v2/forms/{form_id}/responses?skip=0&limit=3')
+        assert page1.status_code == status.HTTP_200_OK
+        page1_data = page1.json()
+        assert page1_data['total'] == 10
+        assert len(page1_data['items']) == 3
+        
+        # Get second page (3 items)
+        page2 = await ac.get(f'/api/v2/forms/{form_id}/responses?skip=3&limit=3')
+        assert page2.status_code == status.HTTP_200_OK
+        page2_data = page2.json()
+        assert page2_data['total'] == 10
+        assert len(page2_data['items']) == 3
+        
+        # Verify different responses
+        assert page1_data['items'][0]['id'] != page2_data['items'][0]['id']
+
+
+@pytest.mark.asyncio
+async def test_get_form_responses_empty(test_setup):
+    """Test getting responses for a form with no submissions."""
+    project_id = str(test_setup['project'].id)
+    
+    # Create a form without any submissions
+    create_payload = {
+        'name': 'Empty Form',
+        'project_id': project_id,
+        'fields': [],
+    }
+    
+    async with AsyncClient(app=app, base_url='http://test') as ac:
+        create_response = await ac.post('/api/v2/forms/', json=create_payload)
+        form_id = create_response.json()['id']
+        
+        # Get responses
+        get_responses = await ac.get(f'/api/v2/forms/{form_id}/responses')
+        assert get_responses.status_code == status.HTTP_200_OK
+        
+        response_data = get_responses.json()
+        assert response_data['total'] == 0
+        assert len(response_data['items']) == 0
+
+
+@pytest.mark.asyncio
+async def test_get_form_responses_unauthorized(test_setup):
+    """Test that getting responses requires authentication."""
+    project_id = str(test_setup['project'].id)
+    
+    # Create a form
+    create_payload = {
+        'name': 'Auth Test Form',
+        'project_id': project_id,
+        'fields': [],
+    }
+    
+    async with AsyncClient(app=app, base_url='http://test') as ac:
+        create_response = await ac.post('/api/v2/forms/', json=create_payload)
+        form_id = create_response.json()['id']
+        
+        # Remove auth
+        app.dependency_overrides.pop(get_current_token_data, None)
+        
+        # Try to get responses without auth
+        get_responses = await ac.get(f'/api/v2/forms/{form_id}/responses')
+        assert get_responses.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+
+
+
 
