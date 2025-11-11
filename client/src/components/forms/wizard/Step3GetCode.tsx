@@ -1,19 +1,30 @@
 import { useState } from 'react'
 import { Copy, CheckCircle, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { config } from '@/config'
 
 interface Step3GetCodeProps {
   publicLink: string
   formName: string
+  embedCode?: string | null
 }
 
-export function Step3GetCode({ publicLink, formName }: Step3GetCodeProps) {
+export function Step3GetCode({
+  publicLink,
+  formName,
+  embedCode: embedCodeFromApi,
+}: Step3GetCodeProps) {
   const [copiedUrl, setCopiedUrl] = useState(false)
   const [copiedCode, setCopiedCode] = useState(false)
 
-  const publicUrl = `${window.location.origin}/forms/${publicLink}`
+  // Use current environment URL (localhost in dev, production in prod)
+  // Use /public/forms/ to match roadmap pattern (/public/roadmap/)
+  const publicUrl = `${config.frontendUrl}/public/forms/${publicLink}`
 
-  const embedCode = `<!-- ${formName} Form Embed -->
+  // Use CDN embed code from API if available, otherwise fallback to iframe
+  const embedCode =
+    embedCodeFromApi ||
+    `<!-- ${formName} Form Embed -->
 <iframe
   src="${publicUrl}"
   width="100%"
@@ -85,13 +96,15 @@ export function Step3GetCode({ publicLink, formName }: Step3GetCodeProps) {
                 <strong>Embed Code:</strong> Add to your website
               </p>
               <div className="bg-muted rounded-md p-4 relative">
-                <pre className="text-sm overflow-x-auto pr-32">
-                  <code>{embedCode}</code>
-                </pre>
+                <div className="pr-28">
+                  <pre className="text-sm overflow-x-auto">
+                    <code className="whitespace-pre-wrap break-words">{embedCode}</code>
+                  </pre>
+                </div>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="absolute top-2 right-2"
+                  className="absolute top-2 right-2 z-10 bg-background/80 backdrop-blur-sm"
                   onClick={handleCopyCode}
                 >
                   {copiedCode ? (
@@ -107,6 +120,11 @@ export function Step3GetCode({ publicLink, formName }: Step3GetCodeProps) {
                   )}
                 </Button>
               </div>
+              {embedCodeFromApi && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  💡 Paste this code just before the closing &lt;/body&gt; tag of your website
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -118,7 +136,7 @@ export function Step3GetCode({ publicLink, formName }: Step3GetCodeProps) {
           <div className="border rounded-lg p-4">
             <h4 className="text-lg font-semibold mb-2">Share Your Form</h4>
             <p className="text-sm text-muted-foreground mb-3">
-              Share the public link directly or embed it on your website using the iframe code.
+              Share the public link directly or embed it on your website using the embed code.
             </p>
             <p className="text-xs text-blue-600">💡 Works with any website or platform</p>
           </div>

@@ -1,7 +1,7 @@
+import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Card } from '@/components/ui/card'
 
 interface Step2AppearanceProps {
   appearance: {
@@ -11,15 +11,16 @@ interface Step2AppearanceProps {
     backgroundColor: string
     textColor: string
     buttonTextColor: string
+    pageBackground?: string
   }
-  setAppearance: (appearance: any) => void
+  setAppearance: (appearance: Step2AppearanceProps['appearance']) => void
 }
 
 const themes = [
   { value: 'default', label: 'Default', description: 'Clean and modern' },
   { value: 'midnight', label: 'Midnight', description: 'Dark and elegant' },
-  { value: 'minimal-light', label: 'Minimal Light', description: 'Simple and bright' },
-  { value: 'minimal-dark', label: 'Minimal Dark', description: 'Simple and dark' },
+  { value: 'minimal-dark', label: 'Minimal Dark', description: 'Subtle dark theme' },
+  { value: 'minimal-light', label: 'Minimal Light', description: 'Clean light theme' },
 ]
 
 const backgroundPatterns = [

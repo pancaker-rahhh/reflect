@@ -1,12 +1,12 @@
-import { Plus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { Card } from '@/components/ui/card'
-import type { FormFieldV2 } from '@/types'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
 import { FieldEditor } from './FieldEditor'
+import type { FormFieldV2 } from '@/types'
 import {
   DndContext,
   closestCenter,
@@ -26,7 +26,7 @@ interface Step1BasicsProps {
   formName: string
   setFormName: (name: string) => void
   formDescription: string
-  setFormDescription: (desc: string) => void
+  setFormDescription: (description: string) => void
   isActive: boolean
   setIsActive: (active: boolean) => void
   fields: FormFieldV2[]
@@ -36,7 +36,7 @@ interface Step1BasicsProps {
   onAddField: () => void
   isEditMode: boolean
   formId?: string
-  onSaveField: (fieldId: string, data: any) => void
+  onSaveField: (fieldId: string, data: Partial<FormFieldV2>) => void
   onDeleteField: (fieldId: string) => void
 }
 
@@ -72,7 +72,24 @@ export function Step1Basics({
       const newIndex = fields.findIndex((f) => f.id === over.id)
 
       const newFields = arrayMove(fields, oldIndex, newIndex)
-      setFields(newFields)
+      const updatedFields = newFields.map((field, index) => ({
+        ...field,
+        order_index: index,
+      }))
+      setFields(updatedFields)
+
+      if (isEditMode && formId) {
+        setTimeout(() => {
+          updatedFields.forEach((field, index) => {
+            if (field.id && !field.id.startsWith('temp_')) {
+              onSaveField(field.id, {
+                field_type: field.field_type,
+                order_index: index,
+              })
+            }
+          })
+        }, 100)
+      }
     }
   }
 
@@ -124,9 +141,9 @@ export function Step1Basics({
         </div>
 
         {fields.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground border-2 border-dashed rounded-lg">
-            <p className="font-medium">No fields yet</p>
-            <p className="text-sm mt-1">Click "Add Field" to get started</p>
+          <div className="text-center py-8 text-muted-foreground">
+            <p>No fields added yet</p>
+            <p className="text-sm mt-2">Click "Add Field" to get started</p>
           </div>
         ) : (
           <DndContext
