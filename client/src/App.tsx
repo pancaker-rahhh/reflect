@@ -40,9 +40,6 @@ const RoadmapPage = lazy(() => import('@/pages/Roadmap').then((m) => ({ default:
 const PublicRoadmap = lazy(() =>
   import('@/pages/PublicRoadmap').then((m) => ({ default: m.PublicRoadmap }))
 )
-const PublicFormView = lazy(() =>
-  import('@/pages/PublicFormView').then((m) => ({ default: m.PublicFormView }))
-)
 const AccountSettings = lazy(() =>
   import('@/pages/settings/AccountSettings').then((m) => ({ default: m.AccountSettings }))
 )
@@ -73,6 +70,12 @@ const ContactPage = lazy(() =>
 )
 const Forms = lazy(() => import('@/pages/Forms').then((m) => ({ default: m.Forms })))
 const FormCreate = lazy(() => import('@/pages/FormCreate').then((m) => ({ default: m.FormCreate })))
+const FormResponses = lazy(() =>
+  import('@/pages/FormResponses').then((m) => ({ default: m.FormResponses }))
+)
+const PublicFormView = lazy(() =>
+  import('@/pages/PublicFormView').then((m) => ({ default: m.PublicFormView }))
+)
 const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m.NotFound })))
 
 function App() {
@@ -95,7 +98,7 @@ function App() {
                       <Route path="/invitation/accept" element={<InvitationAcceptancePage />} />
                       <Route path="/public/roadmap/:publicSlug" element={<PublicRoadmap />} />
                       <Route path="/public/r/:subdomain" element={<PublicRoadmap />} />
-                      <Route path="/forms/:publicLink" element={<PublicFormView />} />
+                      <Route path="/public/forms/:publicLink" element={<PublicFormView />} />
                       <Route path="/widget-view" element={<WidgetView />} />
                       <Route path="/payment-status" element={<PaymentStatus />} />
                       <Route path="/terms" element={<TermsOfService />} />
@@ -141,10 +144,11 @@ function App() {
                         <Route path="feedback/reviews" element={<Reviews />} />
                         <Route path="feedback/bugs" element={<BugReports />} />
                         <Route path="feedback/features" element={<FeatureRequests />} />
-                        <Route path="roadmap" element={<RoadmapPage />} />
                         <Route path="forms" element={<Forms />} />
                         <Route path="forms/new" element={<FormCreate />} />
                         <Route path="forms/:formId/edit" element={<FormCreate />} />
+                        <Route path="forms/:formId/responses" element={<FormResponses />} />
+                        <Route path="roadmap" element={<RoadmapPage />} />
                         <Route path="settings" element={<Navigate to="account" replace />} />
                         <Route path="settings/account" element={<AccountSettings />} />
                         <Route path="settings/project" element={<ProjectSettings />} />

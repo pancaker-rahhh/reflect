@@ -9,7 +9,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
-import { CheckCircle, Loader2 } from 'lucide-react'
+import { CheckCircle, Loader2, Star as StarIcon } from 'lucide-react'
 import type { FormFieldV2 } from '@/types'
 import { getBackgroundStyle } from '@/lib/formBackgroundPatterns'
 
@@ -39,12 +39,21 @@ export function PublicFormView() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validate required fields
+    // Validate required fields - check for null, undefined, empty string, or empty array
     const requiredFields = form?.fields?.filter((f) => f.is_required) || []
-    const missingFields = requiredFields.filter((f) => !answers[f.field_key])
+    const missingFields = requiredFields.filter((f) => {
+      const answer = answers[f.field_key]
+      return (
+        answer === null ||
+        answer === undefined ||
+        answer === '' ||
+        (Array.isArray(answer) && answer.length === 0)
+      )
+    })
 
     if (missingFields.length > 0) {
-      alert('Please fill in all required fields')
+      const fieldLabels = missingFields.map((f) => f.label).join(', ')
+      alert(`Please fill in all required fields: ${fieldLabels}`)
       return
     }
 
@@ -71,6 +80,35 @@ export function PublicFormView() {
     return false
   }
 
+  const getScoreColor = (score: number, isNPS: boolean = true) => {
+    if (isNPS) {
+      // NPS color coding
+      if (score <= 3) return { bg: '#ef4444', border: '#f87171', light: '#fee2e2' }
+      if (score <= 8) return { bg: '#f59e0b', border: '#fbbf24', light: '#fef3c7' }
+      return { bg: '#10b981', border: '#34d399', light: '#d1fae5' }
+    } else {
+      // CSAT/CES color coding (1-5)
+      const colors = [
+        { bg: '#ef4444', border: '#f87171', light: '#fee2e2' }, // Red
+        { bg: '#f97316', border: '#fb923c', light: '#ffedd5' }, // Orange
+        { bg: '#eab308', border: '#facc15', light: '#fef9c3' }, // Yellow
+        { bg: '#84cc16', border: '#a3e635', light: '#ecfccb' }, // Lime
+        { bg: '#10b981', border: '#34d399', light: '#d1fae5' }, // Green
+      ]
+      return colors[score - 1] || colors[2]
+    }
+  }
+
+  const getSatisfactionEmoji = (value: number) => {
+    const emojis = ['😡', '😕', '😐', '😊', '😍']
+    return emojis[value - 1] || ''
+  }
+
+  const getEaseEmoji = (value: number) => {
+    const emojis = ['😤', '😔', '😐', '😌', '😊']
+    return emojis[value - 1] || ''
+  }
+
   const renderField = (field: FormFieldV2) => {
     const value = answers[field.field_key] || ''
 
@@ -87,6 +125,229 @@ export function PublicFormView() {
         )
 
       case 'number':
+        // Check if this is an NPS rating (0-10)
+        if (
+          field.label.toLowerCase().includes('recommend') ||
+          field.label.toLowerCase().includes('nps')
+        ) {
+          return (
+            <div className="space-y-3">
+              {value !== '' && (
+                <div className="text-center">
+                  <div
+                    className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold"
+                    style={{
+                      backgroundColor: getScoreColor(value, true).light,
+                      color: getScoreColor(value, true).bg,
+                    }}
+                  >
+                    <span className="text-lg mr-1">{value}</span>
+                    <span className="text-xs opacity-75">/ 10</span>
+                  </div>
+                </div>
+              )}
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-1.5">
+                  {Array.from({ length: 6 }, (_, i) => {
+                    const scoreColors = getScoreColor(i, true)
+                    const isSelected = value === i
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => handleAnswerChange(field.field_key, i)}
+                        className={`flex-1 h-12 rounded-lg border-2 font-semibold transition-all ${
+                          isSelected ? 'shadow-lg scale-105' : 'hover:scale-105'
+                        }`}
+                        style={{
+                          backgroundColor: isSelected ? scoreColors.bg : '#ffffff',
+                          borderColor: isSelected ? scoreColors.bg : '#d1d5db',
+                          color: isSelected ? '#ffffff' : form?.config?.textColor || '#374151',
+                          boxShadow: isSelected ? `0 4px 12px ${scoreColors.bg}40` : undefined,
+                        }}
+                      >
+                        {i}
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="flex gap-1.5">
+                  {Array.from({ length: 5 }, (_, i) => {
+                    const score = i + 6
+                    const scoreColors = getScoreColor(score, true)
+                    const isSelected = value === score
+                    return (
+                      <button
+                        key={score}
+                        type="button"
+                        onClick={() => handleAnswerChange(field.field_key, score)}
+                        className={`flex-1 h-12 rounded-lg border-2 font-semibold transition-all ${
+                          isSelected ? 'shadow-lg scale-105' : 'hover:scale-105'
+                        }`}
+                        style={{
+                          backgroundColor: isSelected ? scoreColors.bg : '#ffffff',
+                          borderColor: isSelected ? scoreColors.bg : '#d1d5db',
+                          color: isSelected ? '#ffffff' : form?.config?.textColor || '#374151',
+                          boxShadow: isSelected ? `0 4px 12px ${scoreColors.bg}40` : undefined,
+                        }}
+                      >
+                        {score}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              <div className="flex justify-between items-center text-xs px-1 text-gray-500">
+                <span>Not likely</span>
+                <span>Very likely</span>
+              </div>
+            </div>
+          )
+        }
+
+        // Check if this is a review rating (1-5) - MUST CHECK FIRST before CSAT
+        if (
+          field.field_key.includes('review_rating') ||
+          (field.label.toLowerCase().includes('rate') &&
+            field.label.toLowerCase().includes('experience')) ||
+          (field.label.toLowerCase().includes('review') &&
+            !field.label.toLowerCase().includes('satisfied') &&
+            !field.label.toLowerCase().includes('easy'))
+        ) {
+          return (
+            <div className="space-y-4">
+              <div className="flex gap-1 justify-between">
+                {Array.from({ length: 5 }, (_, i) => {
+                  const num = i + 1
+                  const isSelected = value !== '' && Number(value) >= num
+                  return (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => handleAnswerChange(field.field_key, num)}
+                      className="flex-1 flex items-center justify-center p-2 transition-all hover:scale-110"
+                      style={{
+                        filter: isSelected ? `drop-shadow(0 0 8px #FCD34D)` : 'none',
+                      }}
+                    >
+                      <StarIcon
+                        className={`w-10 h-10 transition-all duration-200 ${
+                          isSelected
+                            ? 'fill-yellow-400 text-yellow-400'
+                            : 'text-gray-300 hover:text-gray-400'
+                        }`}
+                      />
+                    </button>
+                  )
+                })}
+              </div>
+              {value !== '' && (
+                <div className="text-center">
+                  <div className="text-sm font-medium" style={{ color: form?.config?.textColor }}>
+                    {['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][Number(value)]}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">Rating: {value}/5</div>
+                </div>
+              )}
+            </div>
+          )
+        }
+
+        // Check if this is a satisfaction rating (1-5) - CSAT
+        if (
+          field.label.toLowerCase().includes('satisfied') ||
+          (field.label.toLowerCase().includes('rate') &&
+            !field.field_key.includes('review_rating') &&
+            !field.label.toLowerCase().includes('experience')) ||
+          field.label.toLowerCase().includes('score')
+        ) {
+          const labels = ['Very Bad', 'Bad', 'OK', 'Good', 'Great']
+          return (
+            <div className="space-y-4">
+              <div className="flex gap-3">
+                {Array.from({ length: 5 }, (_, i) => {
+                  const num = i + 1
+                  const scoreColors = getScoreColor(num, false)
+                  const isSelected = value === num
+                  return (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => handleAnswerChange(field.field_key, num)}
+                      className={`flex-1 flex flex-col items-center p-3 rounded-lg border-2 transition-all ${
+                        isSelected ? 'shadow-lg scale-105' : 'hover:scale-105'
+                      }`}
+                      style={{
+                        backgroundColor: isSelected ? scoreColors.bg : '#ffffff',
+                        borderColor: isSelected ? scoreColors.bg : '#e5e7eb',
+                        color: isSelected ? '#ffffff' : form?.config?.textColor || '#374151',
+                      }}
+                    >
+                      <span className="text-3xl mb-2">{getSatisfactionEmoji(num)}</span>
+                      <span className="text-xs font-medium text-center leading-tight">
+                        {labels[i]}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+              {value !== '' && (
+                <div className="text-center text-sm">
+                  <div className="font-medium" style={{ color: form?.config?.textColor }}>
+                    {labels[value - 1]}
+                  </div>
+                  <div className="text-xs text-gray-500">Score: {value}/5</div>
+                </div>
+              )}
+            </div>
+          )
+        }
+
+        // Check if this is an ease/effort rating (1-5) - CES
+        if (field.label.toLowerCase().includes('easy')) {
+          const labels = ['Hard', 'Difficult', 'OK', 'Easy', 'Very Easy']
+          return (
+            <div className="space-y-4">
+              <div className="flex gap-3">
+                {Array.from({ length: 5 }, (_, i) => {
+                  const num = i + 1
+                  const scoreColors = getScoreColor(num, false)
+                  const isSelected = value === num
+                  return (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => handleAnswerChange(field.field_key, num)}
+                      className={`flex-1 flex flex-col items-center p-3 rounded-lg border-2 transition-all ${
+                        isSelected ? 'shadow-lg scale-105' : 'hover:scale-105'
+                      }`}
+                      style={{
+                        backgroundColor: isSelected ? scoreColors.bg : '#ffffff',
+                        borderColor: isSelected ? scoreColors.bg : '#e5e7eb',
+                        color: isSelected ? '#ffffff' : form?.config?.textColor || '#374151',
+                      }}
+                    >
+                      <span className="text-3xl mb-2">{getEaseEmoji(num)}</span>
+                      <span className="text-xs font-medium text-center leading-tight">
+                        {labels[i]}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+              {value !== '' && (
+                <div className="text-center text-sm">
+                  <div className="font-medium" style={{ color: form?.config?.textColor }}>
+                    {labels[value - 1]}
+                  </div>
+                  <div className="text-xs text-gray-500">Score: {value}/5</div>
+                </div>
+              )}
+            </div>
+          )
+        }
+
+        // Default number input for other cases
         return (
           <Input
             type="number"

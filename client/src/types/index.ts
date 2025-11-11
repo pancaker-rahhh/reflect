@@ -317,19 +317,18 @@ export interface Integration {
   updated_at: string
 }
 
-export type FormFieldType = 'text' | 'number' | 'choice'
-
+// Form V2 Types
 export interface FormFieldV2 {
   id: string
   form_id: string
-  field_type: FormFieldType
+  field_type: 'text' | 'number' | 'choice'
   field_key: string
   label: string
   is_required: boolean
-  config: any[]
   order_index: number
+  config: Array<{ key: string; value: any }>
   created_at: string
-  updated_at?: string
+  updated_at?: string | null
 }
 
 export interface FormV2 {
@@ -352,20 +351,16 @@ export interface FormV2 {
   created_at: string
   updated_at?: string
   fields: FormFieldV2[]
+  embed_code?: string | null
 }
 
 export interface FormFieldCreate {
-  field_type: FormFieldType
+  field_type: 'text' | 'number' | 'choice'
   field_key: string
   label: string
   is_required?: boolean
   order_index?: number
-  max_length?: number
-  min_value?: number
-  max_value?: number
-  choices?: string[]
-  multiple?: boolean
-  default_value?: string | number | string[]
+  config?: Array<{ key: string; value: any }>
 }
 
 export interface FormCreate {
@@ -374,19 +369,36 @@ export interface FormCreate {
   description?: string
   is_active?: boolean
   fields?: FormFieldCreate[]
+  config?: Record<string, any>
 }
 
 export interface FormUpdate {
   name?: string
   description?: string
   is_active?: boolean
-  config?: {
-    theme?: string
-    primaryColor?: string
-    headerGradientEnd?: string
-    backgroundColor?: string
-    textColor?: string
-    buttonTextColor?: string
-    pageBackground?: string
-  }
+  config?: Record<string, any>
+}
+
+export interface FormResponseV2 {
+  id: string
+  form_id: string
+  answers: Record<string, any>
+  submitter_name?: string | null
+  submitter_email?: string | null
+  ip_address?: string | null
+  user_agent?: string | null
+  created_at: string
+  updated_at?: string | null
+}
+
+export interface FormResponseV2ListResponse {
+  total: number
+  items: FormResponseV2[]
+}
+
+export interface FormMetrics {
+  total_responses: number
+  average_score?: number
+  response_rate?: number
+  completion_rate?: number
 }

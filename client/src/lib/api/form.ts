@@ -1,10 +1,18 @@
 import { apiClient } from '@/services/apiClient'
-import type { FormV2, FormCreate, FormUpdate, FormFieldV2, FormFieldCreate } from '@/types'
+import type {
+  FormV2,
+  FormCreate,
+  FormUpdate,
+  FormFieldV2,
+  FormFieldCreate,
+  FormResponseV2ListResponse,
+  FormMetrics,
+} from '@/types'
 
 export const formApi = {
   list(projectId?: string): Promise<FormV2[]> {
-    const url = projectId ? `/api/v2/forms/?project_id=${projectId}` : '/api/v2/forms/'
-    return apiClient.get<FormV2[]>(url)
+    const params = projectId ? `?project_id=${projectId}` : ''
+    return apiClient.get<FormV2[]>(`/api/v2/forms/${params}`)
   },
 
   get(formId: string): Promise<FormV2> {
@@ -27,15 +35,11 @@ export const formApi = {
     return apiClient.delete<void>(`/api/v2/forms/${formId}`)
   },
 
-  addField(formId: string, field: FormFieldCreate): Promise<FormFieldV2> {
+  createField(formId: string, field: FormFieldCreate): Promise<FormFieldV2> {
     return apiClient.post<FormFieldV2>(`/api/v2/forms/${formId}/fields`, field)
   },
 
-  updateField(
-    formId: string,
-    fieldId: string,
-    field: Partial<FormFieldCreate>
-  ): Promise<FormFieldV2> {
+  updateField(formId: string, fieldId: string, field: Partial<FormFieldV2>): Promise<FormFieldV2> {
     return apiClient.put<FormFieldV2>(`/api/v2/forms/${formId}/fields/${fieldId}`, field)
   },
 
@@ -45,15 +49,28 @@ export const formApi = {
 
   submitResponse(
     publicLink: string,
-    data: {
-      answers: Record<string, any>
-      submitter_email?: string
-      submitter_name?: string
-    }
+    data: { answers: Record<string, any> }
   ): Promise<{ message: string; success: boolean }> {
     return apiClient.post<{ message: string; success: boolean }>(
       `/api/v2/forms/public/${publicLink}/submit`,
       data
     )
+  },
+
+  getResponses(
+    formId: string,
+    skip: number = 0,
+    limit: number = 100
+  ): Promise<FormResponseV2ListResponse> {
+    const params = new URLSearchParams()
+    if (skip > 0) params.append('skip', skip.toString())
+    if (limit !== 100) params.append('limit', limit.toString())
+    const queryString = params.toString()
+    const url = `/api/v2/forms/${formId}/responses${queryString ? `?${queryString}` : ''}`
+    return apiClient.get<FormResponseV2ListResponse>(url)
+  },
+
+  getMetrics(formId: string, timeRange: string = 'all'): Promise<FormMetrics> {
+    return apiClient.get<FormMetrics>(`/api/v2/forms/${formId}/metrics?timeRange=${timeRange}`)
   },
 }

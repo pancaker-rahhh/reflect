@@ -1,16 +1,18 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, MagnifyingGlass, GridFour, List } from 'phosphor-react'
+import { Plus, MagnifyingGlass, GridFour, List, ChartBar } from 'phosphor-react'
 import { formApi } from '@/lib/api/form'
 import { useAppContext } from '@/context/AppContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FormCard } from '@/components/forms/FormCard'
+import { FreeTierAlert } from '@/components/widgets/SubscriptionMessagesBanner'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageLoading } from '@/components/common/LoadingSpinner'
 import { DeleteConfirmationModal } from '@/components/common/ConfirmationModal'
 import { useToastNotifications } from '@/hooks/useToastNotifications'
+import { config } from '@/config'
 import type { FormV2 } from '@/types'
 
 export function Forms() {
@@ -32,19 +34,22 @@ export function Forms() {
 
   const { data: forms, isLoading: isLoadingForms } = useQuery({
     queryKey: ['forms', currentProject?.id],
-    queryFn: () => formApi.list(currentProject!.id),
-    enabled: !!currentProject,
+    queryFn: () => formApi.list(currentProject?.id),
+    enabled: !!currentProject?.id,
   })
 
   const deleteMutation = useMutation({
     mutationFn: (formId: string) => formApi.delete(formId),
     onMutate: async (formId) => {
       await queryClient.cancelQueries({ queryKey: ['forms', currentProject?.id] })
+
       const previousForms = queryClient.getQueryData(['forms', currentProject?.id])
+
       queryClient.setQueryData(
         ['forms', currentProject?.id],
         (old: FormV2[] | undefined) => old?.filter((form: FormV2) => form.id !== formId) || []
       )
+
       return { previousForms }
     },
     onError: (err, _formId, context) => {
@@ -55,8 +60,9 @@ export function Forms() {
       const message = (err as { message?: string })?.message || 'Failed to delete form'
       toast.showError(message, 'Delete Failed')
     },
-    onSettled: () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forms', currentProject?.id] })
+      toast.showSuccess('Form deleted successfully', 'Deleted')
     },
   })
 
@@ -69,18 +75,18 @@ export function Forms() {
     navigate('/app/forms/new')
   }
 
-  const handleDeleteForm = (formId: string, formName: string) => {
+  const handleDelete = (formId: string, formName: string) => {
     setDeleteModal({ isOpen: true, formId, formName })
   }
 
   const handleShare = (form: FormV2) => {
-    const publicUrl = `${window.location.origin}/forms/${form.public_link}`
+    const publicUrl = `${config.frontendUrl}/public/forms/${form.public_link}`
     navigator.clipboard.writeText(publicUrl)
     toast.showSuccess('Form link copied to clipboard!', 'Link Copied')
   }
 
-  const handleEdit = (formId: string) => {
-    navigate(`/app/forms/${formId}/edit`)
+  const handleViewResponses = (form: FormV2) => {
+    navigate(`/app/forms/${form.id}/responses`)
   }
 
   const confirmDelete = () => {
@@ -107,9 +113,10 @@ export function Forms() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Your Forms</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Your forms</h1>
         <p className="text-muted-foreground mt-2">
-          Create and manage custom forms for project: <strong>{currentProject.name}</strong>
+          Create and manage forms to collect feedback for project:{' '}
+          <strong>{currentProject.name}</strong>
         </p>
       </div>
 
@@ -120,6 +127,10 @@ export function Forms() {
         </Button>
 
         <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <ChartBar className="h-4 w-4" />
+            <span>{activeForms.length} active</span>
+          </div>
           <div className="flex rounded-lg border border-border overflow-hidden">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
@@ -142,6 +153,8 @@ export function Forms() {
           </div>
         </div>
       </div>
+
+      <FreeTierAlert />
 
       <div className="relative">
         <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -168,6 +181,7 @@ export function Forms() {
         <EmptyState searchQuery={searchQuery} onCreateForm={handleCreateForm} />
       ) : (
         <div className="space-y-8">
+          {/* Active Forms Section */}
           {activeForms.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
@@ -183,9 +197,10 @@ export function Forms() {
                     key={form.id}
                     form={form}
                     viewMode={viewMode}
-                    onDelete={() => handleDeleteForm(form.id, form.name)}
+                    onDelete={() => handleDelete(form.id, form.name)}
                     onShare={() => handleShare(form)}
-                    onEdit={() => handleEdit(form.id)}
+                    onEdit={() => navigate(`/app/forms/${form.id}/edit`)}
+                    onViewResponses={() => handleViewResponses(form)}
                   />
                 ))}
               </div>
@@ -194,6 +209,7 @@ export function Forms() {
         </div>
       )}
 
+      {/* Delete Confirmation Modal */}
       <DeleteConfirmationModal
         isOpen={deleteModal.isOpen}
         onClose={closeDeleteModal}
@@ -223,7 +239,7 @@ function EmptyState({
       <p className="text-muted-foreground mb-6 max-w-sm">
         {searchQuery
           ? `No forms match "${searchQuery}". Try a different search term.`
-          : 'Get started by creating your first form to collect responses from your users.'}
+          : 'Get started by creating your first form to collect feedback from your users.'}
       </p>
       {!searchQuery && (
         <Button onClick={onCreateForm} className="gap-2">

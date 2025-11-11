@@ -1,4 +1,12 @@
-import { DotsThreeVertical, Trash, Calendar, TrendUp, Link, FileText } from 'phosphor-react'
+import {
+  DotsThreeVertical,
+  Trash,
+  Calendar,
+  TrendUp,
+  Link,
+  FileText,
+  ChartBar,
+} from 'phosphor-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -8,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useFormMetrics } from '@/hooks/useFormMetrics'
 import type { FormV2 } from '@/types'
 
 interface FormCardProps {
@@ -16,10 +25,19 @@ interface FormCardProps {
   onDelete: () => void
   onShare: () => void
   onEdit: () => void
+  onViewResponses: () => void
 }
 
-export function FormCard({ form, viewMode = 'grid', onDelete, onShare, onEdit }: FormCardProps) {
+export function FormCard({
+  form,
+  viewMode = 'grid',
+  onDelete,
+  onShare,
+  onEdit,
+  onViewResponses,
+}: FormCardProps) {
   const fieldCount = form.fields?.length || 0
+  const { data: metrics, isLoading: metricsLoading } = useFormMetrics(form.id)
 
   if (viewMode === 'list') {
     return (
@@ -41,6 +59,10 @@ export function FormCard({ form, viewMode = 'grid', onDelete, onShare, onEdit }:
                     <span>
                       {fieldCount} field{fieldCount !== 1 ? 's' : ''}
                     </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <TrendUp className="h-4 w-4" />
+                    <span>{metricsLoading ? '...' : metrics?.total_responses || 0} responses</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
@@ -65,6 +87,10 @@ export function FormCard({ form, viewMode = 'grid', onDelete, onShare, onEdit }:
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={onViewResponses} className="gap-2 cursor-pointer">
+                        <ChartBar className="h-4 w-4" />
+                        <span>View Responses</span>
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={onShare} className="gap-2 cursor-pointer">
                         <Link className="h-4 w-4" />
                         <span>Share</span>
@@ -123,6 +149,10 @@ export function FormCard({ form, viewMode = 'grid', onDelete, onShare, onEdit }:
                   <FileText className="h-4 w-4" />
                   <span>Edit</span>
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={onViewResponses} className="gap-2 cursor-pointer">
+                  <ChartBar className="h-4 w-4" />
+                  <span>View Responses</span>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={onShare} className="gap-2 cursor-pointer">
                   <Link className="h-4 w-4" />
                   <span>Share</span>
@@ -141,6 +171,18 @@ export function FormCard({ form, viewMode = 'grid', onDelete, onShare, onEdit }:
       </CardHeader>
 
       <CardContent className="space-y-4">
+        <div className="flex justify-center p-3 bg-muted/50 rounded-lg">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1 text-primary mb-1">
+              <TrendUp className="h-4 w-4" />
+              <span className="font-bold text-lg">
+                {metricsLoading ? '...' : metrics?.total_responses || 0}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">Responses</p>
+          </div>
+        </div>
+
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />

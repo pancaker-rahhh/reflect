@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Sparkles } from 'lucide-react'
 import { formApi } from '@/lib/api/form'
@@ -24,6 +24,7 @@ const steps = [
 export function FormCreate() {
   const navigate = useNavigate()
   const { formId } = useParams<{ formId: string }>()
+  const [searchParams, setSearchParams] = useSearchParams()
   const queryClient = useQueryClient()
   const toast = useToastNotifications()
   const { currentProject } = useAppContext()
@@ -31,7 +32,10 @@ export function FormCreate() {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const isFormInitialMount = useRef(true)
 
-  const [currentStep, setCurrentStep] = useState(0)
+  // Initialize step from URL param or default to 0
+  const stepFromUrl = searchParams.get('step')
+  const initialStep = stepFromUrl ? parseInt(stepFromUrl, 10) : 0
+  const [currentStep, setCurrentStep] = useState(initialStep)
   const [formName, setFormName] = useState('Untitled Form')
   const [formDescription, setFormDescription] = useState('')
   const [isActive, setIsActive] = useState(true)
@@ -83,10 +87,22 @@ export function FormCreate() {
     const state = window.history.state?.usr
     if (state?.goToStep !== undefined && isEditMode) {
       setCurrentStep(state.goToStep)
+      setSearchParams({ step: state.goToStep.toString() }, { replace: true })
       // Clear the state
       window.history.replaceState({}, '')
     }
-  }, [isEditMode])
+  }, [isEditMode, setSearchParams])
+
+  // Sync step with URL param on mount or when URL changes
+  useEffect(() => {
+    const stepParam = searchParams.get('step')
+    if (stepParam) {
+      const stepNum = parseInt(stepParam, 10)
+      if (!isNaN(stepNum) && stepNum >= 0 && stepNum < steps.length) {
+        setCurrentStep(stepNum)
+      }
+    }
+  }, [searchParams])
 
   // Debounced auto-save for form details and appearance
   useEffect(() => {
@@ -158,7 +174,7 @@ export function FormCreate() {
       toast.showSuccess('Form created successfully!', 'Success')
       setIsSubmitting(false)
       // Navigate to edit mode and automatically go to step 3 (Get Your Code)
-      navigate(`/app/forms/${data.id}/edit`, { replace: true, state: { goToStep: 2 } })
+      navigate(`/app/forms/${data.id}/edit?step=2`, { replace: true })
     },
     onError: (err) => {
       toast.showError((err as Error).message || 'Failed to create form', 'Error')
@@ -196,8 +212,8 @@ export function FormCreate() {
   })
 
   const addFieldMutation = useMutation({
-    mutationFn: (field: FormFieldCreate) => formApi.addField(formId!, field),
-    onSuccess: (newField) => {
+    mutationFn: (field: FormFieldCreate) => formApi.createField(formId!, field),
+    onSuccess: (newField: FormFieldV2) => {
       setFields([...fields, newField])
       setShowAddFieldModal(false)
       toast.showSuccess('Field added', 'Success')
@@ -244,7 +260,9 @@ export function FormCreate() {
     },
   })
 
-  const handleAddField = (fieldType: 'text' | 'number' | 'choice' | 'nps' | 'csat' | 'ces') => {
+  const handleAddField = (
+    fieldType: 'text' | 'number' | 'choice' | 'nps' | 'csat' | 'ces' | 'review'
+  ) => {
     if (fieldType === 'nps') {
       const ratingField: any = {
         id: `temp_${Date.now()}`,
@@ -297,6 +315,38 @@ export function FormCreate() {
         field_type: 'text',
         field_key: `${fieldType}_comment_${Date.now()}`,
         label: 'Additional comments (optional)',
+        is_required: false,
+        order_index: fields.length + 1,
+        config: [],
+      }
+
+      if (isEditMode && formId) {
+        addFieldMutation.mutate(ratingField)
+        setTimeout(() => addFieldMutation.mutate(commentField), 100)
+      } else {
+        setFields([...fields, ratingField, commentField])
+        setShowAddFieldModal(false)
+      }
+      return
+    }
+
+    if (fieldType === 'review') {
+      const ratingField: any = {
+        id: `temp_${Date.now()}`,
+        field_type: 'number',
+        field_key: `review_rating_${Date.now()}`,
+        label: 'Rate your experience',
+        is_required: true,
+        order_index: fields.length,
+        min_value: 1,
+        max_value: 5,
+        config: [],
+      }
+      const commentField: any = {
+        id: `temp_${Date.now() + 1}`,
+        field_type: 'text',
+        field_key: `review_comment_${Date.now()}`,
+        label: 'Write your review (optional)',
         is_required: false,
         order_index: fields.length + 1,
         config: [],
@@ -406,13 +456,17 @@ export function FormCreate() {
     }
 
     // Otherwise, move to next step
-    setCurrentStep(currentStep + 1)
+    const nextStep = currentStep + 1
+    setCurrentStep(nextStep)
+    setSearchParams({ step: nextStep.toString() }, { replace: true })
     scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handlePrevious = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1)
+      const prevStep = currentStep - 1
+      setCurrentStep(prevStep)
+      setSearchParams({ step: prevStep.toString() }, { replace: true })
       scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
@@ -514,13 +568,25 @@ export function FormCreate() {
                 )}
 
                 {currentStep === 1 && (
-                  <Step2Appearance appearance={appearance} setAppearance={setAppearance} />
+                  <Step2Appearance
+                    appearance={appearance}
+                    setAppearance={(newAppearance) =>
+                      setAppearance({
+                        ...newAppearance,
+                        pageBackground: newAppearance.pageBackground || 'none',
+                      })
+                    }
+                  />
                 )}
               </div>
             )}
 
             {currentStep === 2 && form && (
-              <Step3GetCode publicLink={form.public_link} formName={formName} />
+              <Step3GetCode
+                publicLink={form.public_link}
+                formName={formName}
+                embedCode={form.embed_code}
+              />
             )}
           </div>
 
@@ -603,7 +669,7 @@ function AddFieldModal({
 }: {
   isOpen: boolean
   onClose: () => void
-  onAddField: (type: 'text' | 'number' | 'choice' | 'nps' | 'csat' | 'ces') => void
+  onAddField: (type: 'text' | 'number' | 'choice' | 'nps' | 'csat' | 'ces' | 'review') => void
 }) {
   const fieldTypes = [
     { type: 'text' as const, label: 'Text', icon: '📝', description: 'Long form text response' },
@@ -625,6 +691,12 @@ function AddFieldModal({
       description: 'Customer Satisfaction (1-5)',
     },
     { type: 'ces' as const, label: 'CES', icon: '🎯', description: 'Customer Effort Score (1-5)' },
+    {
+      type: 'review' as const,
+      label: 'Review',
+      icon: '⭐',
+      description: 'Star rating with review (1-5)',
+    },
   ]
 
   return (
