@@ -17,6 +17,7 @@ from app.schemas.v2.form_v2_schema import (
     FormResponseV2Create,
     FormResponseV2ListResponse,
     FormSubmissionSuccessResponse,
+    FormMetricsResponse,
 )
 from app.services.v2.form_v2_service import form_v2_service
 from app.services.organization_service import organization_service
@@ -29,10 +30,6 @@ async def get_form_by_public_link(
     public_link: str,
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    Public endpoint to get a form by its public link.
-    No authentication required - used for rendering forms to end users.
-    """
     form = await form_v2_service.get_form_by_public_link(db, public_link)
     if not form:
         raise HTTPException(status_code=404, detail='Form not found')
@@ -40,11 +37,11 @@ async def get_form_by_public_link(
 
 
 @form_router.post(
-    "/public/{public_link}/submit",
+    '/public/{public_link}/submit',
     status_code=status.HTTP_201_CREATED,
     response_model=FormSubmissionSuccessResponse,
-    summary="Submit a form response via public link",
-    description="Public endpoint for submitting form responses. No authentication required.",
+    summary='Submit a form response via public link',
+    description='Public endpoint for submitting form responses. No authentication required.',
 )
 async def submit_form_response(
     public_link: str,
@@ -52,14 +49,9 @@ async def submit_form_response(
     request: Request,
     db: AsyncSession = Depends(get_db),
 ) -> FormSubmissionSuccessResponse:
-    """
-    Public endpoint for submitting form responses.
-    Validates form is active and all required fields are provided.
-    """
-    # Extract IP address and user agent for tracking
     ip_address = request.client.host if request.client else None
     user_agent = request.headers.get('user-agent')
-    
+
     try:
         await form_v2_service.submit_form_response(
             db=db,
@@ -73,7 +65,9 @@ async def submit_form_response(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@form_router.post('/', response_model=FormV2Response, status_code=status.HTTP_201_CREATED)
+@form_router.post(
+    '/', response_model=FormV2Response, status_code=status.HTTP_201_CREATED
+)
 async def create_form(
     form_data: FormV2Create,
     db: AsyncSession = Depends(get_db),
@@ -159,11 +153,6 @@ async def get_form_responses(
     db: AsyncSession = Depends(get_db),
     current_user: TokenData = Depends(get_current_token_data),
 ):
-    """
-    Get all responses for a specific form.
-    Requires authentication and access to the form's project.
-    """
-    # Check if form exists and user has access
     form = await form_v2_service.get_form(db, form_id)
     if not form:
         raise HTTPException(status_code=404, detail='Form not found')
@@ -171,10 +160,30 @@ async def get_form_responses(
     await organization_service.check_project_access(
         db, UUID(current_user.user_id), form.project_id
     )
-    
-    # Get responses with pagination
+
     result = await form_v2_service.get_form_responses(db, form_id, skip, limit)
     return result
+
+
+@form_router.get('/{form_id}/metrics', response_model=FormMetricsResponse)
+async def get_form_metrics(
+    form_id: UUID,
+    time_range: Optional[str] = Query(
+        default='all', description='Time range for metrics (all, 7d, 30d, 90d)'
+    ),
+    db: AsyncSession = Depends(get_db),
+    current_user: TokenData = Depends(get_current_token_data),
+):
+    form = await form_v2_service.get_form(db, form_id)
+    if not form:
+        raise HTTPException(status_code=404, detail='Form not found')
+
+    await organization_service.check_project_access(
+        db, UUID(current_user.user_id), form.project_id
+    )
+
+    metrics = await form_v2_service.get_form_metrics(db, form_id, time_range)
+    return metrics
 
 
 @form_router.post('/{form_id}/fields', response_model=FormFieldV2Response)
@@ -249,6 +258,5 @@ async def update_form_field(
     updated_field = await form_v2_service.update_field(db, field_id, field_data)
     if not updated_field:
         raise HTTPException(status_code=404, detail='Form field not found')
-    
-    return updated_field
 
+    return updated_field
