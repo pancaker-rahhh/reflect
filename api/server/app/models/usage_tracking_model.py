@@ -16,6 +16,8 @@ class ResourceType(str, enum.Enum):
     PROJECTS = 'projects'
     WIDGETS = 'widgets'
     RESPONSES = 'responses'
+    FORMS = 'forms'
+    FORM_RESPONSES = 'form_responses'
 
 
 class UsageTracking(BaseModelWithoutSoftDelete):
