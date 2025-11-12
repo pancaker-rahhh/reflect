@@ -16,6 +16,7 @@ from app.schemas.organization_schema import (
     OrganizationMemberUpdate,
 )
 from app.services.organization_service import organization_service
+from app.services.lifetime_offer_service import lifetime_offer_service
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
@@ -163,3 +164,28 @@ async def leave_organization(
     current_user: User = Depends(get_current_user),
 ):
     await organization_service.leave_organization(org_id, current_user.id, db)
+
+
+@router.get('/{org_id}/lifetime-offer/eligibility')
+async def check_lifetime_offer_eligibility(
+    org_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    await organization_service.get_organization(org_id, current_user.id, db)
+    return await lifetime_offer_service.is_eligible_for_lifetime_offer(db, org_id)
+
+
+@router.post('/{org_id}/lifetime-offer/dismiss', status_code=status.HTTP_204_NO_CONTENT)
+async def dismiss_lifetime_offer(
+    org_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    await organization_service.get_organization(org_id, current_user.id, db)
+    success = await lifetime_offer_service.dismiss_lifetime_offer(db, org_id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Organization not found',
+        )

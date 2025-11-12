@@ -46,6 +46,9 @@ const AccountSettings = lazy(() =>
 const PaymentStatus = lazy(() =>
   import('@/pages/PaymentStatus').then((m) => ({ default: m.default }))
 )
+const LifetimeOfferPage = lazy(() =>
+  import('@/pages/billing/LifetimeOfferPage').then((m) => ({ default: m.default }))
+)
 const ProjectSettings = lazy(() =>
   import('@/pages/settings/ProjectSettings').then((m) => ({ default: m.ProjectSettings }))
 )
@@ -143,6 +146,7 @@ function App() {
                         <Route path="settings/project" element={<ProjectSettings />} />
                         <Route path="settings/roadmap" element={<RoadmapSettings />} />
                         <Route path="settings/organization" element={<OrganizationSettings />} />
+                        <Route path="billing/lifetime-offer" element={<LifetimeOfferPage />} />
                       </Route>
 
                       <Route path="*" element={<NotFound />} />

@@ -70,17 +70,17 @@ class Settings(BaseSettings):
     CDN_ZONE_ID: Optional[str] = None
     CDN_API_TOKEN: Optional[str] = None
 
-    # Dodo Payments Test Configuration
-    DODO_TEST_API_KEY: str = ''
-    DODO_TEST_PRODUCT_ID_PRO_MONTHLY: str = ''
-    DODO_TEST_PRODUCT_ID_PRO_YEARLY: str = ''
-    DODO_TEST_WEBHOOK_SECRET: str = ''
     # Dodo Payments Configuration
     DODO_API_KEY: str = ''
     DODO_WEBHOOK_SECRET: str = ''
     DODO_RETURN_URL: str = ''
     DODO_PRODUCT_ID_PRO_MONTHLY: str = ''
     DODO_PRODUCT_ID_PRO_YEARLY: str = ''
+    DODO_PRODUCT_ID_PRO_LIFETIME: str = ''
+
+    # Lifetime Offer Configuration
+    LIFETIME_OFFER_CUTOFF_DATE: str = '2026-02-01'
+    LIFETIME_OFFER_MAX_PURCHASES: int = 200
 
     model_config = SettingsConfigDict(
         env_file='.env',
@@ -124,6 +124,7 @@ class Settings(BaseSettings):
         if self.R2_ACCOUNT_ID:
             return f'https://{self.R2_ACCOUNT_ID}.r2.cloudflarestorage.com'
         return ''
+
 
 @lru_cache()
 def get_settings() -> Settings:
