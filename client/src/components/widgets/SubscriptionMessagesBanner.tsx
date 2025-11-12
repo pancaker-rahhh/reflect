@@ -54,7 +54,6 @@ export function FreeTierAlert() {
   const widgetUsage = getUsageInfo('widgets')
   const responseUsage = getUsageInfo('responses')
   const formUsage = getUsageInfo('forms')
-  const formResponseUsage = getUsageInfo('form_responses')
 
   // Check if still in grace period (subscription hasn't ended yet)
   // Use org.subscription_ends_at for consistency with org.subscription_status

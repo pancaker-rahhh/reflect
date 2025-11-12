@@ -45,6 +45,8 @@ export interface SubscriptionUsage {
   projects: number
   widgets: number
   responses: number
+  forms: number
+  form_responses: number
 }
 
 export const subscriptionApi = {

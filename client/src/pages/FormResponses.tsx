@@ -139,7 +139,7 @@ export function FormResponses() {
   ): boolean => {
     if (scoreRange === 'all') return true
 
-    const [surveyType, range] = scoreRange.split('_')
+    const [surveyType] = scoreRange.split('_')
     const field = surveyFields[surveyType]
     if (!field) return false
 
