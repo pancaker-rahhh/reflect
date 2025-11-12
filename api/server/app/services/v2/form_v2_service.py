@@ -1,10 +1,10 @@
 import random
 import string
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.v2.forms_v2_model import FormV2
+from app.models.v2.forms_v2_model import FormV2, FormResponseV2
 from app.repositories.v2.forms_v2_repository import (
     form_v2_repository,
     form_field_v2_repository,
@@ -23,13 +23,22 @@ from app.schemas.v2.form_v2_schema import (
     NumberFieldUpdate,
     ChoiceFieldUpdate,
 )
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import NotFoundError, SubscriptionLimitExceededError
 from app.core.logging import get_logger
+from app.services.feedback_service import feedback_service
+from app.models.feedback_model import FeedbackType, FeedbackPriority
+from app.services.usage_tracking_service import usage_tracking_service
+from app.core.subscription_plans import PLAN_LIMITS
+from app.models.usage_tracking_model import ResourceType
+from app.services.project_service import project_service
 
 logger = get_logger(__name__)
 
 
 class FormV2Service:
+    def __init__(self):
+        self.feedback_service = feedback_service
+
     def _generate_public_link(self) -> str:
         letters = string.ascii_letters
         return ''.join(random.choices(letters, k=16))
@@ -238,6 +247,39 @@ class FormV2Service:
         if not form.is_active:
             raise ValueError('This form is no longer accepting responses')
 
+        project = await project_service.get_project_by_id(db, form.project_id)
+        if not project:
+            raise NotFoundError('Project not found')
+
+        organization = await usage_tracking_service.get_organization_subscription(
+            db, project.organization_id
+        )
+        if not organization:
+            limits = PLAN_LIMITS['free']
+        else:
+            plan = organization.subscription_plan or 'free'
+            limits = PLAN_LIMITS.get(plan, PLAN_LIMITS['free'])
+
+        limit = limits.get(ResourceType.FORM_RESPONSES.value, 0)
+        can_create = (
+            limit >= 999
+            or await usage_tracking_service.get_current_usage(
+                db, project.organization_id, ResourceType.FORM_RESPONSES.value
+            )
+            < limit
+        )
+
+        if not can_create:
+            current_usage = await usage_tracking_service.get_current_usage(
+                db, project.organization_id, ResourceType.FORM_RESPONSES.value
+            )
+            raise SubscriptionLimitExceededError(
+                resource_type=ResourceType.FORM_RESPONSES.value,
+                current_usage=current_usage,
+                limit=limits.get(ResourceType.FORM_RESPONSES.value, 0),
+                message='Upgrade to Pro plan for unlimited form responses',
+            )
+
         await self._validate_required_fields(form, response_data.answers)
 
         response_dict = {
@@ -251,6 +293,22 @@ class FormV2Service:
 
         response = await form_response_v2_repository.create(db, **response_dict)
         logger.info(f'Created form response {response.id} for form {form.id}')
+
+        await usage_tracking_service.increment_usage(
+            db, project.organization_id, ResourceType.FORM_RESPONSES.value
+        )
+
+        feedback_ids = await self._create_feedback_from_response(
+            db, form, response, response_data.answers
+        )
+
+        if feedback_ids:
+            await form_response_v2_repository.update(
+                db, response.id, feedback_ids=feedback_ids
+            )
+            logger.info(
+                f'Created {len(feedback_ids)} feedback records for form response {response.id}'
+            )
 
     async def _validate_required_fields(self, form: FormV2, answers: dict) -> None:
         if not form.fields:
@@ -286,6 +344,469 @@ class FormV2Service:
         return await form_response_v2_repository.get_form_metrics(
             db, form_id, time_range
         )
+
+    def _detect_survey_types(
+        self, form: FormV2, answers: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        survey_data = {}
+        text_fields_with_survey_type = set()
+
+        for field in form.fields:
+            field_key = field.field_key.lower()
+            label = field.label.lower()
+            answer = answers.get(field.field_key)
+
+            if field.field_type == 'number' and answer is not None:
+                try:
+                    score = int(answer)
+                except (ValueError, TypeError):
+                    continue
+
+                if 'nps_rating' in field_key or 'recommend' in label or 'nps' in label:
+                    survey_data['nps'] = {'field': field, 'score': score}
+                elif (
+                    'review_rating' in field_key
+                    or ('rate' in label and 'experience' in label)
+                    or (
+                        'review' in label
+                        and 'satisfied' not in label
+                        and 'easy' not in label
+                    )
+                ):
+                    survey_data['review'] = {'field': field, 'score': score}
+                elif (
+                    'satisfied' in label
+                    or (
+                        'rate' in label
+                        and 'review_rating' not in field_key
+                        and 'experience' not in label
+                    )
+                    or 'score' in label
+                ):
+                    survey_data['csat'] = {'field': field, 'score': score}
+                elif 'easy' in label:
+                    survey_data['ces'] = {'field': field, 'score': score}
+
+            if field.field_type == 'text' and answer:
+                if (
+                    'bug' in field_key
+                    or 'error' in field_key
+                    or 'bug' in label
+                    or 'error' in label
+                ):
+                    survey_data['bug_report'] = {'field': field, 'message': str(answer)}
+                    text_fields_with_survey_type.add(field.field_key)
+                elif (
+                    'feature' in field_key
+                    or 'request' in field_key
+                    or 'feature' in label
+                    or 'request' in label
+                ):
+                    survey_data['feature_request'] = {
+                        'field': field,
+                        'message': str(answer),
+                    }
+                    text_fields_with_survey_type.add(field.field_key)
+                else:
+                    field_config = field.config if field.config else []
+                    survey_type_config = None
+                    if isinstance(field_config, list):
+                        for config_item in field_config:
+                            if (
+                                isinstance(config_item, dict)
+                                and config_item.get('key') == 'survey_type'
+                            ):
+                                survey_type_config = config_item.get('value')
+                                text_fields_with_survey_type.add(field.field_key)
+                                break
+
+                    if (
+                        not survey_type_config
+                        and field.field_key not in text_fields_with_survey_type
+                    ):
+                        if 'general_feedback' not in survey_data:
+                            survey_data['general_feedback'] = []
+                        survey_data['general_feedback'].append(
+                            {'field': field, 'message': str(answer)}
+                        )
+
+        return survey_data
+
+    async def _create_feedback_from_response(
+        self,
+        db: AsyncSession,
+        form: FormV2,
+        response: FormResponseV2,
+        answers: Dict[str, Any],
+    ) -> List[str]:
+        survey_data = self._detect_survey_types(form, answers)
+        feedback_ids = []
+
+        logger.info(f'Survey data detected: {list(survey_data.keys())}')
+        if 'general_feedback' in survey_data:
+            logger.info(
+                f'General feedback items: {len(survey_data["general_feedback"])}'
+            )
+
+        base_metadata = {
+            'form_response_v2_id': str(response.id),
+            'form_name': form.name,
+            'submission_method': 'form',
+        }
+
+        base_context = {
+            'ip_address': response.ip_address,
+            'user_agent': response.user_agent,
+        }
+
+        for survey_type, data in survey_data.items():
+            try:
+                if survey_type == 'nps':
+                    comment = self._extract_comment_from_answers(
+                        form, answers, 'nps', data.get('field')
+                    )
+                    feedback_data = {
+                        'widget_id': None,
+                        'project_id': form.project_id,
+                        'feedback_type': FeedbackType.NPS,
+                        'nps_score': data['score'],
+                        'message': comment if comment else '',
+                        'feedback_metadata': {
+                            **base_metadata,
+                            'nps_score': data['score'],
+                        },
+                        'context': base_context,
+                        'submitter_name': response.submitter_name,
+                        'submitter_email': response.submitter_email,
+                        'is_anonymous': not bool(
+                            response.submitter_name or response.submitter_email
+                        ),
+                    }
+                    if data['score'] >= 9:
+                        feedback_data['promoter_category'] = 'promoter'
+                    elif data['score'] >= 7:
+                        feedback_data['promoter_category'] = 'passive'
+                    else:
+                        feedback_data['promoter_category'] = 'detractor'
+
+                elif survey_type == 'review':
+                    comment = self._extract_comment_from_answers(
+                        form, answers, 'review', data.get('field')
+                    )
+                    feedback_data = {
+                        'widget_id': None,
+                        'project_id': form.project_id,
+                        'feedback_type': FeedbackType.REVIEW,
+                        'overall_rating': data['score'],
+                        'message': comment if comment else '',
+                        'feedback_metadata': {
+                            **base_metadata,
+                            'overall_rating': data['score'],
+                        },
+                        'context': base_context,
+                        'submitter_name': response.submitter_name,
+                        'submitter_email': response.submitter_email,
+                        'is_anonymous': not bool(
+                            response.submitter_name or response.submitter_email
+                        ),
+                    }
+
+                elif survey_type == 'csat':
+                    comment = self._extract_comment_from_answers(
+                        form, answers, 'csat', data.get('field')
+                    )
+                    feedback_data = {
+                        'widget_id': None,
+                        'project_id': form.project_id,
+                        'feedback_type': FeedbackType.CSAT,
+                        'csat_score': data['score'],
+                        'message': comment if comment else '',
+                        'feedback_metadata': {
+                            **base_metadata,
+                            'csat_score': data['score'],
+                        },
+                        'context': base_context,
+                        'submitter_name': response.submitter_name,
+                        'submitter_email': response.submitter_email,
+                        'is_anonymous': not bool(
+                            response.submitter_name or response.submitter_email
+                        ),
+                    }
+                    satisfaction_levels = {
+                        1: 'very_dissatisfied',
+                        2: 'dissatisfied',
+                        3: 'neutral',
+                        4: 'satisfied',
+                        5: 'very_satisfied',
+                    }
+                    feedback_data['satisfaction_level'] = satisfaction_levels.get(
+                        data['score'], 'neutral'
+                    )
+
+                elif survey_type == 'ces':
+                    comment = self._extract_comment_from_answers(
+                        form, answers, 'ces', data.get('field')
+                    )
+                    feedback_data = {
+                        'widget_id': None,
+                        'project_id': form.project_id,
+                        'feedback_type': FeedbackType.CES,
+                        'ces_score': data['score'],
+                        'message': comment if comment else '',
+                        'feedback_metadata': {
+                            **base_metadata,
+                            'ces_score': data['score'],
+                        },
+                        'context': base_context,
+                        'submitter_name': response.submitter_name,
+                        'submitter_email': response.submitter_email,
+                        'is_anonymous': not bool(
+                            response.submitter_name or response.submitter_email
+                        ),
+                    }
+                    ease_levels = {
+                        1: 'very_difficult',
+                        2: 'difficult',
+                        3: 'neutral',
+                        4: 'easy',
+                        5: 'very_easy',
+                    }
+                    feedback_data['ease_level'] = ease_levels.get(
+                        data['score'], 'neutral'
+                    )
+
+                elif survey_type == 'bug_report':
+                    severity = self._extract_severity_from_answers(form, answers)
+                    feedback_data = {
+                        'widget_id': None,
+                        'project_id': form.project_id,
+                        'feedback_type': FeedbackType.BUG_REPORT,
+                        'message': data.get('message', ''),
+                        'severity_level': severity,
+                        'feedback_metadata': {
+                            **base_metadata,
+                            'severity': severity.value
+                            if isinstance(severity, FeedbackPriority)
+                            else 'medium',
+                        },
+                        'context': base_context,
+                        'submitter_name': response.submitter_name,
+                        'submitter_email': response.submitter_email,
+                        'is_anonymous': not bool(
+                            response.submitter_name or response.submitter_email
+                        ),
+                    }
+
+                elif survey_type == 'feature_request':
+                    priority = self._extract_priority_from_answers(form, answers)
+                    feedback_data = {
+                        'widget_id': None,
+                        'project_id': form.project_id,
+                        'feedback_type': FeedbackType.FEATURE_REQUEST,
+                        'message': data.get('message', ''),
+                        'feedback_metadata': {
+                            **base_metadata,
+                            'priority': priority.value
+                            if isinstance(priority, FeedbackPriority)
+                            else 'medium',
+                        },
+                        'context': base_context,
+                        'submitter_name': response.submitter_name,
+                        'submitter_email': response.submitter_email,
+                        'is_anonymous': not bool(
+                            response.submitter_name or response.submitter_email
+                        ),
+                    }
+
+                elif survey_type == 'general_feedback':
+                    for feedback_item in data:
+                        field_obj = feedback_item.get('field')
+                        field_label = (
+                            field_obj.label if hasattr(field_obj, 'label') else None
+                        )
+
+                        feedback_data = {
+                            'widget_id': None,
+                            'project_id': form.project_id,
+                            'feedback_type': FeedbackType.GENERAL,
+                            'message': feedback_item.get('message', ''),
+                            'feedback_metadata': {
+                                **base_metadata,
+                                'field_label': field_label,
+                            },
+                            'context': base_context,
+                            'submitter_name': response.submitter_name,
+                            'submitter_email': response.submitter_email,
+                            'is_anonymous': not bool(
+                                response.submitter_name or response.submitter_email
+                            ),
+                        }
+
+                        from app.schemas.feedback_schema import GeneralFeedbackCreate
+
+                        payload = GeneralFeedbackCreate(**feedback_data)
+                        created_feedback = await self.feedback_service.create_feedback(
+                            db, payload
+                        )
+                        feedback_ids.append(str(created_feedback.id))
+                    continue
+
+                else:
+                    continue
+
+                if survey_type == 'nps':
+                    from app.schemas.feedback_schema import NPSFeedbackCreate
+
+                    payload = NPSFeedbackCreate(**feedback_data)
+                elif survey_type == 'review':
+                    from app.schemas.feedback_schema import ReviewFeedbackCreate
+
+                    payload = ReviewFeedbackCreate(**feedback_data)
+                elif survey_type == 'csat':
+                    from app.schemas.feedback_schema import CSATFeedbackCreate
+
+                    payload = CSATFeedbackCreate(**feedback_data)
+                elif survey_type == 'ces':
+                    from app.schemas.feedback_schema import CESFeedbackCreate
+
+                    payload = CESFeedbackCreate(**feedback_data)
+                elif survey_type == 'bug_report':
+                    from app.schemas.feedback_schema import BugReportFeedbackCreate
+
+                    payload = BugReportFeedbackCreate(**feedback_data)
+                elif survey_type == 'feature_request':
+                    from app.schemas.feedback_schema import FeatureRequestFeedbackCreate
+
+                    payload = FeatureRequestFeedbackCreate(**feedback_data)
+
+                feedback_result = await feedback_service.create_feedback(db, payload)
+                feedback_ids.append(str(feedback_result.id))
+
+            except Exception as e:
+                logger.error(
+                    f'Failed to create {survey_type} feedback from form response {response.id}: {str(e)}'
+                )
+                continue
+
+        return feedback_ids
+
+    def _extract_comment_from_answers(
+        self,
+        form: FormV2,
+        answers: Dict[str, Any],
+        survey_type: str,
+        rating_field: Any = None,
+    ) -> Optional[str]:
+        rating_field_index = None
+        if rating_field:
+            for idx, field in enumerate(form.fields):
+                if field.id == rating_field.id:
+                    rating_field_index = idx
+                    break
+
+        for field in form.fields:
+            if field.field_type != 'text':
+                continue
+
+            answer = answers.get(field.field_key)
+            if not answer or not str(answer).strip():
+                continue
+
+            field_config = field.config if field.config else []
+            survey_type_config = None
+            if isinstance(field_config, list):
+                for config_item in field_config:
+                    if (
+                        isinstance(config_item, dict)
+                        and config_item.get('key') == 'survey_type'
+                    ):
+                        survey_type_config = str(config_item.get('value', '')).lower()
+                        break
+
+            if survey_type_config and survey_type_config == survey_type.lower():
+                return str(answer).strip()
+
+        if rating_field_index is not None:
+            for field in form.fields:
+                if field.field_type != 'text':
+                    continue
+
+                answer = answers.get(field.field_key)
+                if not answer or not str(answer).strip():
+                    continue
+
+                field_index = None
+                for idx, f in enumerate(form.fields):
+                    if f.id == field.id:
+                        field_index = idx
+                        break
+
+                if field_index == rating_field_index + 1:
+                    field_key = field.field_key.lower()
+                    if survey_type == 'nps' and (
+                        'nps_comment' in field_key
+                        or ('comment' in field_key and 'nps' in field_key)
+                    ):
+                        return str(answer).strip()
+                    elif survey_type == 'csat' and (
+                        'csat_comment' in field_key
+                        or ('comment' in field_key and 'csat' in field_key)
+                    ):
+                        return str(answer).strip()
+                    elif survey_type == 'ces' and (
+                        'ces_comment' in field_key
+                        or ('comment' in field_key and 'ces' in field_key)
+                    ):
+                        return str(answer).strip()
+                    elif survey_type == 'review' and (
+                        'review_comment' in field_key
+                        or ('comment' in field_key and 'review' in field_key)
+                    ):
+                        return str(answer).strip()
+
+        return None
+
+    def _extract_severity_from_answers(
+        self, form: FormV2, answers: Dict[str, Any]
+    ) -> FeedbackPriority:
+        for field in form.fields:
+            if field.field_type == 'choice':
+                field_key = field.field_key.lower()
+                label = field.label.lower()
+                answer = answers.get(field.field_key)
+
+                if not answer:
+                    continue
+
+                if 'severity' in field_key or 'severity' in label:
+                    answer_str = str(answer).lower()
+                    try:
+                        return FeedbackPriority(answer_str)
+                    except ValueError:
+                        pass
+
+        return FeedbackPriority.MEDIUM
+
+    def _extract_priority_from_answers(
+        self, form: FormV2, answers: Dict[str, Any]
+    ) -> FeedbackPriority:
+        for field in form.fields:
+            if field.field_type == 'choice':
+                field_key = field.field_key.lower()
+                label = field.label.lower()
+                answer = answers.get(field.field_key)
+
+                if not answer:
+                    continue
+
+                if 'priority' in field_key or 'priority' in label:
+                    answer_str = str(answer).lower()
+                    try:
+                        return FeedbackPriority(answer_str)
+                    except ValueError:
+                        pass
+
+        return FeedbackPriority.MEDIUM
 
 
 form_v2_service = FormV2Service()

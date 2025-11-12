@@ -395,6 +395,11 @@ class FeedbackRepository(BaseRepository[Feedback]):
             summary = FeedbackFormatter.format_display_title(temp_item)
 
             widget_name = item.widget.name if item.widget else None
+            form_name = (
+                item.feedback_metadata.get('form_name')
+                if item.feedback_metadata
+                else None
+            )
 
             activities.append(
                 {
@@ -410,6 +415,7 @@ class FeedbackRepository(BaseRepository[Feedback]):
                     if item.is_actionable is not None
                     else True,
                     'widget_name': widget_name,
+                    'form_name': form_name,
                 }
             )
 
@@ -460,7 +466,51 @@ class FeedbackRepository(BaseRepository[Feedback]):
 
         feedback_data = []
         for item in feedback_items:
-            display_title = FeedbackFormatter.format_display_title(item)
+            rating = None
+            if item.feedback_type == 'review':
+                review_stmt = select(ReviewFeedback).where(ReviewFeedback.id == item.id)
+                review_result = await db.execute(review_stmt)
+                review_data = review_result.scalar_one_or_none()
+                if review_data:
+                    rating = review_data.overall_rating
+            elif item.feedback_type == 'NPS':
+                nps_stmt = select(NPSFeedback).where(NPSFeedback.id == item.id)
+                nps_result = await db.execute(nps_stmt)
+                nps_data = nps_result.scalar_one_or_none()
+                if nps_data:
+                    rating = nps_data.nps_score
+            elif item.feedback_type == 'CSAT':
+                csat_stmt = select(CSATFeedback).where(CSATFeedback.id == item.id)
+                csat_result = await db.execute(csat_stmt)
+                csat_data = csat_result.scalar_one_or_none()
+                if csat_data:
+                    rating = csat_data.csat_score
+            elif item.feedback_type == 'CES':
+                ces_stmt = select(CESFeedback).where(CESFeedback.id == item.id)
+                ces_result = await db.execute(ces_stmt)
+                ces_data = ces_result.scalar_one_or_none()
+                if ces_data:
+                    rating = ces_data.ces_score
+
+            class FeedbackWithRating:
+                def __init__(self, feedback, rating):
+                    self.feedback_type = feedback.feedback_type
+                    self.message = feedback.message
+                    self.overall_rating = (
+                        rating if feedback.feedback_type.value == 'review' else None
+                    )
+                    self.nps_score = (
+                        rating if feedback.feedback_type.value == 'NPS' else None
+                    )
+                    self.csat_score = (
+                        rating if feedback.feedback_type.value == 'CSAT' else None
+                    )
+                    self.ces_score = (
+                        rating if feedback.feedback_type.value == 'CES' else None
+                    )
+
+            temp_item = FeedbackWithRating(item, rating)
+            display_title = FeedbackFormatter.format_display_title(temp_item)
 
             feedback_dict = {
                 'id': str(item.id),
@@ -484,18 +534,17 @@ class FeedbackRepository(BaseRepository[Feedback]):
             if item.feedback_metadata:
                 feedback_dict['feedback_metadata'] = item.feedback_metadata
 
-            if item.feedback_type == 'review':
-                review_stmt = select(ReviewFeedback).where(ReviewFeedback.id == item.id)
-                review_result = await db.execute(review_stmt)
-                review_data = review_result.scalar_one_or_none()
-                if review_data:
-                    feedback_dict.update(
-                        {
-                            'overall_rating': review_data.overall_rating,
-                        }
-                    )
+            if rating is not None:
+                if item.feedback_type == 'review':
+                    feedback_dict.update({'overall_rating': rating})
+                elif item.feedback_type == 'NPS':
+                    feedback_dict.update({'nps_score': rating})
+                elif item.feedback_type == 'CSAT':
+                    feedback_dict.update({'csat_score': rating})
+                elif item.feedback_type == 'CES':
+                    feedback_dict.update({'ces_score': rating})
 
-            elif item.feedback_type == 'bug_report':
+            if item.feedback_type == 'bug_report':
                 bug_stmt = select(BugReportFeedback).where(
                     BugReportFeedback.id == item.id
                 )
@@ -505,48 +554,6 @@ class FeedbackRepository(BaseRepository[Feedback]):
                     feedback_dict.update(
                         {
                             'severity_level': bug_data.severity_level,
-                        }
-                    )
-
-            elif item.feedback_type == 'feature_request':
-                feature_stmt = select(FeatureRequestFeedback).where(
-                    FeatureRequestFeedback.id == item.id
-                )
-                feature_result = await db.execute(feature_stmt)
-                feature_data = feature_result.scalar_one_or_none()
-                if feature_data:
-                    pass
-
-            elif item.feedback_type == 'NPS':
-                nps_stmt = select(NPSFeedback).where(NPSFeedback.id == item.id)
-                nps_result = await db.execute(nps_stmt)
-                nps_data = nps_result.scalar_one_or_none()
-                if nps_data:
-                    feedback_dict.update(
-                        {
-                            'nps_score': nps_data.nps_score,
-                        }
-                    )
-
-            elif item.feedback_type == 'CSAT':
-                csat_stmt = select(CSATFeedback).where(CSATFeedback.id == item.id)
-                csat_result = await db.execute(csat_stmt)
-                csat_data = csat_result.scalar_one_or_none()
-                if csat_data:
-                    feedback_dict.update(
-                        {
-                            'csat_score': csat_data.csat_score,
-                        }
-                    )
-
-            elif item.feedback_type == 'CES':
-                ces_stmt = select(CESFeedback).where(CESFeedback.id == item.id)
-                ces_result = await db.execute(ces_stmt)
-                ces_data = ces_result.scalar_one_or_none()
-                if ces_data:
-                    feedback_dict.update(
-                        {
-                            'ces_score': ces_data.ces_score,
                         }
                     )
 

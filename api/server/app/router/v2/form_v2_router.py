@@ -21,6 +21,11 @@ from app.schemas.v2.form_v2_schema import (
 )
 from app.services.v2.form_v2_service import form_v2_service
 from app.services.organization_service import organization_service
+from app.services.project_service import project_service
+from app.services.usage_tracking_service import usage_tracking_service
+from app.core.subscription_plans import PLAN_LIMITS
+from app.models.usage_tracking_model import ResourceType
+from app.core.exceptions import SubscriptionLimitExceededError
 
 form_router = APIRouter(prefix='/forms', tags=['forms-v2'])
 
@@ -76,7 +81,47 @@ async def create_form(
     await organization_service.check_project_access(
         db, UUID(current_user.user_id), form_data.project_id, required_role='Admin'
     )
-    return await form_v2_service.create_form(db, form_data)
+
+    project = await project_service.get_project_by_id(db, form_data.project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail='Project not found')
+
+    organization = await usage_tracking_service.get_organization_subscription(
+        db, project.organization_id
+    )
+    if not organization:
+        limits = PLAN_LIMITS['free']
+    else:
+        plan = organization.subscription_plan or 'free'
+        limits = PLAN_LIMITS.get(plan, PLAN_LIMITS['free'])
+
+    limit = limits.get(ResourceType.FORMS.value, 0)
+    can_create = (
+        limit >= 999
+        or await usage_tracking_service.get_current_usage(
+            db, project.organization_id, ResourceType.FORMS.value
+        )
+        < limit
+    )
+
+    if not can_create:
+        current_usage = await usage_tracking_service.get_current_usage(
+            db, project.organization_id, ResourceType.FORMS.value
+        )
+        raise SubscriptionLimitExceededError(
+            resource_type=ResourceType.FORMS.value,
+            current_usage=current_usage,
+            limit=limits.get(ResourceType.FORMS.value, 0),
+            message='Upgrade to Pro plan for unlimited forms',
+        )
+
+    form = await form_v2_service.create_form(db, form_data)
+
+    await usage_tracking_service.increment_usage(
+        db, project.organization_id, ResourceType.FORMS.value
+    )
+
+    return form
 
 
 @form_router.get('/{form_id}', response_model=FormV2Response)

@@ -13,7 +13,7 @@ from app.models.feedback_model import (
 
 
 class FeedbackBase(BaseModel):
-    widget_id: UUID = Field(...)
+    widget_id: Optional[UUID] = None
     project_id: UUID = Field(...)
     feedback_type: FeedbackType = Field(...)
     message: Optional[str] = None
@@ -78,7 +78,7 @@ class FeedbackResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
-    widget_id: UUID
+    widget_id: Optional[UUID] = None
     project_id: UUID
     feedback_type: FeedbackType
     message: Optional[str]

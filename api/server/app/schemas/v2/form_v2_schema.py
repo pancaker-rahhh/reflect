@@ -140,6 +140,7 @@ class FormResponseV2Response(BaseModel):
     id: UUID
     form_id: UUID
     answers: dict
+    feedback_ids: List[str] = Field(default_factory=list)
     submitter_email: Optional[str]
     submitter_name: Optional[str]
     ip_address: Optional[str]

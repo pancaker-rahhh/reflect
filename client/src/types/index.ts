@@ -289,6 +289,7 @@ export interface RecentActivity {
   converted_to_action_item_id?: string | null
   is_actionable?: boolean
   widget_name?: string
+  form_name?: string
   rating?: number
 }
 
