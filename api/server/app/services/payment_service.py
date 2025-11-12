@@ -291,11 +291,16 @@ class PaymentService:
         # Default to monthly if no plan_id specified
         if plan_id == 'pro_yearly':
             organization.subscription_plan = SubscriptionPlanEnum.PRO_YEARLY
+        elif plan_id == 'pro_lifetime':
+            organization.subscription_plan = SubscriptionPlanEnum.PRO_LIFETIME
+            organization.dodo_subscription_id = None
+            organization.subscription_ends_at = None
         else:
             organization.subscription_plan = SubscriptionPlanEnum.PRO_MONTHLY
 
         organization.subscription_status = SUBSCRIPTION_STATUS['ACTIVE']
-        organization.dodo_subscription_id = subscription_id
+        if plan_id != 'pro_lifetime':
+            organization.dodo_subscription_id = subscription_id
         organization.payment_status = PaymentStatusEnum.SUCCEEDED
         organization.last_payment_date = datetime.now(timezone.utc)
         organization.updated_at = datetime.now(timezone.utc)
@@ -731,6 +736,10 @@ class PaymentService:
                 organization.subscription_plan = SubscriptionPlanEnum.PRO_MONTHLY
             elif plan_id == 'pro_yearly':
                 organization.subscription_plan = SubscriptionPlanEnum.PRO_YEARLY
+            elif plan_id == 'pro_lifetime':
+                organization.subscription_plan = SubscriptionPlanEnum.PRO_LIFETIME
+                organization.dodo_subscription_id = None
+                organization.subscription_ends_at = None
             else:
                 organization.subscription_plan = SubscriptionPlanEnum.PRO_MONTHLY
             organization.updated_at = datetime.now(timezone.utc)
@@ -951,6 +960,10 @@ class PaymentService:
                 organization.subscription_plan = SubscriptionPlanEnum.PRO_MONTHLY
             elif new_plan_id == 'pro_yearly':
                 organization.subscription_plan = SubscriptionPlanEnum.PRO_YEARLY
+            elif new_plan_id == 'pro_lifetime':
+                organization.subscription_plan = SubscriptionPlanEnum.PRO_LIFETIME
+                organization.dodo_subscription_id = None
+                organization.subscription_ends_at = None
             else:
                 organization.subscription_plan = SubscriptionPlanEnum.PRO_MONTHLY
             organization.updated_at = datetime.now(timezone.utc)

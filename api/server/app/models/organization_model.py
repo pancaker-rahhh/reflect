@@ -30,6 +30,7 @@ class SubscriptionPlanEnum(str, enum.Enum):
     FREE = 'free'
     PRO_MONTHLY = 'pro_monthly'
     PRO_YEARLY = 'pro_yearly'
+    PRO_LIFETIME = 'pro_lifetime'
 
 
 class PaymentStatusEnum(str, enum.Enum):
@@ -86,6 +87,9 @@ class Organization(BaseModel):
         DateTimeColumn(timezone=True), nullable=True
     )
     payment_metadata: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    lifetime_offer_dismissed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTimeColumn(timezone=True), nullable=True
+    )
     settings: Mapped[dict] = mapped_column(JSON, default=dict)
     created_by: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
