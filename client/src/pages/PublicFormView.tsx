@@ -150,7 +150,9 @@ export function PublicFormView() {
                 <div className="flex gap-1.5">
                   {Array.from({ length: 6 }, (_, i) => {
                     const scoreColors = getScoreColor(i, true)
-                    const isSelected = value === i
+                    const numValue =
+                      value !== '' && value !== null && value !== undefined ? Number(value) : null
+                    const isSelected = numValue === i
                     return (
                       <button
                         key={i}
@@ -160,7 +162,9 @@ export function PublicFormView() {
                           isSelected ? 'shadow-lg scale-105' : 'hover:scale-105'
                         }`}
                         style={{
-                          backgroundColor: isSelected ? scoreColors.bg : '#ffffff',
+                          backgroundColor: isSelected
+                            ? scoreColors.bg
+                            : form?.config?.backgroundColor || '#ffffff',
                           borderColor: isSelected ? scoreColors.bg : '#d1d5db',
                           color: isSelected ? '#ffffff' : form?.config?.textColor || '#374151',
                           boxShadow: isSelected ? `0 4px 12px ${scoreColors.bg}40` : undefined,
@@ -175,7 +179,9 @@ export function PublicFormView() {
                   {Array.from({ length: 5 }, (_, i) => {
                     const score = i + 6
                     const scoreColors = getScoreColor(score, true)
-                    const isSelected = value === score
+                    const numValue =
+                      value !== '' && value !== null && value !== undefined ? Number(value) : null
+                    const isSelected = numValue === score
                     return (
                       <button
                         key={score}
@@ -185,7 +191,9 @@ export function PublicFormView() {
                           isSelected ? 'shadow-lg scale-105' : 'hover:scale-105'
                         }`}
                         style={{
-                          backgroundColor: isSelected ? scoreColors.bg : '#ffffff',
+                          backgroundColor: isSelected
+                            ? scoreColors.bg
+                            : form?.config?.backgroundColor || '#ffffff',
                           borderColor: isSelected ? scoreColors.bg : '#d1d5db',
                           color: isSelected ? '#ffffff' : form?.config?.textColor || '#374151',
                           boxShadow: isSelected ? `0 4px 12px ${scoreColors.bg}40` : undefined,
@@ -243,7 +251,10 @@ export function PublicFormView() {
               </div>
               {value !== '' && (
                 <div className="text-center">
-                  <div className="text-sm font-medium" style={{ color: form?.config?.textColor }}>
+                  <div
+                    className="text-sm font-medium"
+                    style={{ color: form?.config?.textColor || '#1f2937' }}
+                  >
                     {['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][Number(value)]}
                   </div>
                   <div className="text-xs text-gray-500 mt-1">Rating: {value}/5</div>
@@ -293,7 +304,10 @@ export function PublicFormView() {
               </div>
               {value !== '' && (
                 <div className="text-center text-sm">
-                  <div className="font-medium" style={{ color: form?.config?.textColor }}>
+                  <div
+                    className="font-medium"
+                    style={{ color: form?.config?.textColor || '#1f2937' }}
+                  >
                     {labels[value - 1]}
                   </div>
                   <div className="text-xs text-gray-500">Score: {value}/5</div>
@@ -337,7 +351,10 @@ export function PublicFormView() {
               </div>
               {value !== '' && (
                 <div className="text-center text-sm">
-                  <div className="font-medium" style={{ color: form?.config?.textColor }}>
+                  <div
+                    className="font-medium"
+                    style={{ color: form?.config?.textColor || '#1f2937' }}
+                  >
                     {labels[value - 1]}
                   </div>
                   <div className="text-xs text-gray-500">Score: {value}/5</div>
@@ -362,8 +379,125 @@ export function PublicFormView() {
         const choices = getChoicesFromConfig(field.config)
         const multiple = getMultipleFromConfig(field.config)
 
+        if (field.field_key.includes('bug_severity')) {
+          const severityOptions = [
+            {
+              value: 'low',
+              label: 'Low',
+              icon: '🟢',
+              description: 'Minor issue, workaround available',
+            },
+            {
+              value: 'medium',
+              label: 'Medium',
+              icon: '🟡',
+              description: 'Noticeable issue affecting some users',
+            },
+            {
+              value: 'high',
+              label: 'High',
+              icon: '🟠',
+              description: 'Major issue affecting many users',
+            },
+            {
+              value: 'critical',
+              label: 'Critical',
+              icon: '🔴',
+              description: 'Blocking issue, needs immediate attention',
+            },
+          ]
+
+          return (
+            <div className="space-y-2">
+              {severityOptions.map((option) => {
+                const isSelected = value === option.value
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => handleAnswerChange(field.field_key, option.value)}
+                    className={`w-full p-3 rounded-lg border text-left transition-all ${
+                      isSelected ? 'border-2' : 'border hover:border-gray-300'
+                    }`}
+                    style={{
+                      borderColor: isSelected ? form?.config?.primaryColor || '#0066FF' : '#E5E7EB',
+                      backgroundColor: isSelected
+                        ? `${form?.config?.primaryColor || '#0066FF'}10`
+                        : form?.config?.backgroundColor || '#ffffff',
+                      color: form?.config?.textColor || '#374151',
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg">{option.icon}</span>
+                      <div>
+                        <div className="font-medium text-sm">{option.label}</div>
+                        <div className="text-xs opacity-70">{option.description}</div>
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          )
+        }
+
+        if (field.field_key.includes('feature_priority')) {
+          const priorityOptions = [
+            {
+              value: 'low',
+              label: 'Nice to Have',
+              icon: '😌',
+              description: 'Would be helpful but not essential',
+            },
+            {
+              value: 'medium',
+              label: 'Important',
+              icon: '😊',
+              description: 'Would significantly improve experience',
+            },
+            {
+              value: 'high',
+              label: 'Critical',
+              icon: '🚀',
+              description: 'Essential for workflow/success',
+            },
+          ]
+
+          return (
+            <div className="space-y-2">
+              {priorityOptions.map((option) => {
+                const isSelected = value === option.value
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => handleAnswerChange(field.field_key, option.value)}
+                    className={`w-full p-3 rounded-lg border text-left transition-all ${
+                      isSelected ? 'border-2' : 'border hover:border-gray-300'
+                    }`}
+                    style={{
+                      borderColor: isSelected ? form?.config?.primaryColor || '#0066FF' : '#E5E7EB',
+                      backgroundColor: isSelected
+                        ? `${form?.config?.primaryColor || '#0066FF'}10`
+                        : form?.config?.backgroundColor || '#ffffff',
+                      color: form?.config?.textColor || '#374151',
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg">{option.icon}</span>
+                      <div>
+                        <div className="font-medium text-sm">{option.label}</div>
+                        <div className="text-xs opacity-70">{option.description}</div>
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          )
+        }
+
         if (multiple) {
-          // Multi-select with checkboxes
           const selectedValues = Array.isArray(value) ? value : []
 
           return (
@@ -383,6 +517,7 @@ export function PublicFormView() {
                   <Label
                     htmlFor={`${field.field_key}-${idx}`}
                     className="text-sm font-normal cursor-pointer"
+                    style={{ color: form?.config?.textColor || '#374151' }}
                   >
                     {choice}
                   </Label>
@@ -391,7 +526,6 @@ export function PublicFormView() {
             </div>
           )
         } else {
-          // Single-select with radio buttons
           return (
             <RadioGroup
               value={value}
@@ -403,6 +537,7 @@ export function PublicFormView() {
                   <Label
                     htmlFor={`${field.field_key}-${idx}`}
                     className="text-sm font-normal cursor-pointer"
+                    style={{ color: form?.config?.textColor || '#374151' }}
                   >
                     {choice}
                   </Label>
@@ -515,7 +650,7 @@ export function PublicFormView() {
             <div key={field.id}>
               <Label
                 className="text-base font-medium mb-2 block"
-                style={{ color: config.textColor || '#000000' }}
+                style={{ color: config.textColor || '#1f2937' }}
               >
                 {field.label}
                 {field.is_required && <span className="text-red-500 ml-1">*</span>}

@@ -261,7 +261,16 @@ export function FormCreate() {
   })
 
   const handleAddField = (
-    fieldType: 'text' | 'number' | 'choice' | 'nps' | 'csat' | 'ces' | 'review'
+    fieldType:
+      | 'text'
+      | 'number'
+      | 'choice'
+      | 'nps'
+      | 'csat'
+      | 'ces'
+      | 'review'
+      | 'bug_report'
+      | 'feature_request'
   ) => {
     if (fieldType === 'nps') {
       const ratingField: any = {
@@ -273,7 +282,7 @@ export function FormCreate() {
         order_index: fields.length,
         min_value: 0,
         max_value: 10,
-        config: [],
+        config: [{ key: 'survey_type', value: 'nps' }],
       }
       const commentField: any = {
         id: `temp_${Date.now() + 1}`,
@@ -282,7 +291,7 @@ export function FormCreate() {
         label: "What's the main reason for your score?",
         is_required: false,
         order_index: fields.length + 1,
-        config: [],
+        config: [{ key: 'survey_type', value: 'nps' }],
       }
 
       if (isEditMode && formId) {
@@ -308,7 +317,7 @@ export function FormCreate() {
         order_index: fields.length,
         min_value: 1,
         max_value: 5,
-        config: [],
+        config: [{ key: 'survey_type', value: fieldType }],
       }
       const commentField: any = {
         id: `temp_${Date.now() + 1}`,
@@ -317,7 +326,7 @@ export function FormCreate() {
         label: 'Additional comments (optional)',
         is_required: false,
         order_index: fields.length + 1,
-        config: [],
+        config: [{ key: 'survey_type', value: fieldType }],
       }
 
       if (isEditMode && formId) {
@@ -340,7 +349,7 @@ export function FormCreate() {
         order_index: fields.length,
         min_value: 1,
         max_value: 5,
-        config: [],
+        config: [{ key: 'survey_type', value: 'review' }],
       }
       const commentField: any = {
         id: `temp_${Date.now() + 1}`,
@@ -349,7 +358,7 @@ export function FormCreate() {
         label: 'Write your review (optional)',
         is_required: false,
         order_index: fields.length + 1,
-        config: [],
+        config: [{ key: 'survey_type', value: 'review' }],
       }
 
       if (isEditMode && formId) {
@@ -357,6 +366,72 @@ export function FormCreate() {
         setTimeout(() => addFieldMutation.mutate(commentField), 100)
       } else {
         setFields([...fields, ratingField, commentField])
+        setShowAddFieldModal(false)
+      }
+      return
+    }
+
+    if (fieldType === 'bug_report') {
+      const descriptionField: any = {
+        id: `temp_${Date.now()}`,
+        field_type: 'text',
+        field_key: `bug_description_${Date.now()}`,
+        label: 'Describe the bug',
+        is_required: true,
+        order_index: fields.length,
+        config: [],
+      }
+      const severityField: any = {
+        id: `temp_${Date.now() + 1}`,
+        field_type: 'choice',
+        field_key: `bug_severity_${Date.now()}`,
+        label: 'Severity',
+        is_required: false,
+        order_index: fields.length + 1,
+        config: [
+          { key: 'choices', value: ['low', 'medium', 'high', 'critical'] },
+          { key: 'multiple', value: false },
+        ],
+      }
+
+      if (isEditMode && formId) {
+        addFieldMutation.mutate(descriptionField)
+        setTimeout(() => addFieldMutation.mutate(severityField), 100)
+      } else {
+        setFields([...fields, descriptionField, severityField])
+        setShowAddFieldModal(false)
+      }
+      return
+    }
+
+    if (fieldType === 'feature_request') {
+      const descriptionField: any = {
+        id: `temp_${Date.now()}`,
+        field_type: 'text',
+        field_key: `feature_description_${Date.now()}`,
+        label: 'Describe the feature',
+        is_required: true,
+        order_index: fields.length,
+        config: [],
+      }
+      const priorityField: any = {
+        id: `temp_${Date.now() + 1}`,
+        field_type: 'choice',
+        field_key: `feature_priority_${Date.now()}`,
+        label: 'Priority',
+        is_required: false,
+        order_index: fields.length + 1,
+        config: [
+          { key: 'choices', value: ['low', 'medium', 'high'] },
+          { key: 'multiple', value: false },
+        ],
+      }
+
+      if (isEditMode && formId) {
+        addFieldMutation.mutate(descriptionField)
+        setTimeout(() => addFieldMutation.mutate(priorityField), 100)
+      } else {
+        setFields([...fields, descriptionField, priorityField])
         setShowAddFieldModal(false)
       }
       return
@@ -669,7 +744,18 @@ function AddFieldModal({
 }: {
   isOpen: boolean
   onClose: () => void
-  onAddField: (type: 'text' | 'number' | 'choice' | 'nps' | 'csat' | 'ces' | 'review') => void
+  onAddField: (
+    type:
+      | 'text'
+      | 'number'
+      | 'choice'
+      | 'nps'
+      | 'csat'
+      | 'ces'
+      | 'review'
+      | 'bug_report'
+      | 'feature_request'
+  ) => void
 }) {
   const fieldTypes = [
     { type: 'text' as const, label: 'Text', icon: '📝', description: 'Long form text response' },
@@ -696,6 +782,18 @@ function AddFieldModal({
       label: 'Review',
       icon: '⭐',
       description: 'Star rating with review (1-5)',
+    },
+    {
+      type: 'bug_report' as const,
+      label: 'Bug Report',
+      icon: '🐛',
+      description: 'Report bugs and issues',
+    },
+    {
+      type: 'feature_request' as const,
+      label: 'Feature Request',
+      icon: '💡',
+      description: 'Request new features',
     },
   ]
 

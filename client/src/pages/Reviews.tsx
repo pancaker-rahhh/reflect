@@ -25,6 +25,7 @@ export function Reviews() {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined)
   const [endDate, setEndDate] = useState<Date | undefined>(undefined)
   const [ratingFilter, setRatingFilter] = useState('all')
+  const [sourceFilter, setSourceFilter] = useState('all')
   const [sortBy, setSortBy] = useState<string>('newest')
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
@@ -47,11 +48,17 @@ export function Reviews() {
     setStartDate(undefined)
     setEndDate(undefined)
     setRatingFilter('all')
+    setSourceFilter('all')
     setSortBy('newest')
   }
 
   const hasActiveFilters =
-    searchQuery || startDate || endDate || ratingFilter !== 'all' || sortBy !== 'newest'
+    searchQuery ||
+    startDate ||
+    endDate ||
+    ratingFilter !== 'all' ||
+    sourceFilter !== 'all' ||
+    sortBy !== 'newest'
 
   const convertMutation = useMutation({
     mutationFn: ({ feedbackId, conversionData }: { feedbackId: string; conversionData: any }) =>
@@ -115,7 +122,17 @@ export function Reviews() {
   }
 
   const filteredReviews = reviews
-    .filter((review) => {
+    .filter((review: any) => {
+      if (sourceFilter === 'widgets') {
+        if (!review.widget_id || review.feedback_metadata?.form_response_v2_id) {
+          return false
+        }
+      }
+      if (sourceFilter === 'forms') {
+        if (!review.feedback_metadata?.form_response_v2_id) {
+          return false
+        }
+      }
       if (startDate && new Date(review.created_at) < startDate) return false
       if (endDate && new Date(review.created_at) > endDate) return false
 
@@ -264,7 +281,7 @@ export function Reviews() {
           </p>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
             <DatePicker
               date={startDate}
               onDateChange={setStartDate}
@@ -288,6 +305,17 @@ export function Reviews() {
                 <SelectItem value="promoters">Positive (4-5 ⭐)</SelectItem>
                 <SelectItem value="passives">Neutral (3 ⭐)</SelectItem>
                 <SelectItem value="detractors">Negative (1-2 ⭐)</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={sourceFilter} onValueChange={setSourceFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Source" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sources</SelectItem>
+                <SelectItem value="widgets">Widgets</SelectItem>
+                <SelectItem value="forms">Forms</SelectItem>
               </SelectContent>
             </Select>
 
@@ -325,6 +353,7 @@ export function Reviews() {
                       startDate,
                       endDate,
                       ratingFilter !== 'all',
+                      sourceFilter !== 'all',
                       sortBy !== 'newest',
                       searchQuery,
                     ].filter(Boolean).length

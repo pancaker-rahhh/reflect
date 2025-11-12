@@ -24,6 +24,7 @@ export function Responses() {
   const [endDate, setEndDate] = useState<Date | undefined>()
   const [submissionType, setSubmissionType] = useState<string>('all')
   const [scoreFilter, setScoreFilter] = useState<string>('all')
+  const [sourceFilter, setSourceFilter] = useState('all')
   const [sortBy, setSortBy] = useState<string>('newest')
   const [searchQuery, setSearchQuery] = useState('')
   const [isSelectionMode, setIsSelectionMode] = useState(false)
@@ -48,6 +49,7 @@ export function Responses() {
     setEndDate(undefined)
     setSubmissionType('all')
     setScoreFilter('all')
+    setSourceFilter('all')
     setSortBy('newest')
     setSearchQuery('')
   }
@@ -57,6 +59,7 @@ export function Responses() {
     endDate ||
     submissionType !== 'all' ||
     scoreFilter !== 'all' ||
+    sourceFilter !== 'all' ||
     sortBy !== 'newest' ||
     searchQuery
 
@@ -123,6 +126,16 @@ export function Responses() {
 
   const filteredResponses = feedback
     .filter((item: any) => {
+      if (sourceFilter === 'widgets') {
+        if (!item.widget_id || item.feedback_metadata?.form_response_v2_id) {
+          return false
+        }
+      }
+      if (sourceFilter === 'forms') {
+        if (!item.feedback_metadata?.form_response_v2_id) {
+          return false
+        }
+      }
       if (submissionType !== 'all' && item.feedback_type !== submissionType) {
         return false
       }
@@ -232,7 +245,7 @@ export function Responses() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-8 gap-4">
             <div className="relative">
               <DatePicker
                 date={startDate}
@@ -322,6 +335,17 @@ export function Responses() {
               </SelectContent>
             </Select>
 
+            <Select value={sourceFilter} onValueChange={setSourceFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Source" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sources</SelectItem>
+                <SelectItem value="widgets">Widgets</SelectItem>
+                <SelectItem value="forms">Forms</SelectItem>
+              </SelectContent>
+            </Select>
+
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger>
                 <SelectValue placeholder="Sort by" />
@@ -357,6 +381,7 @@ export function Responses() {
                       endDate,
                       submissionType !== 'all',
                       scoreFilter !== 'all',
+                      sourceFilter !== 'all',
                       sortBy !== 'newest',
                       searchQuery,
                     ].filter(Boolean).length

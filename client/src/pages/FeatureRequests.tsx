@@ -24,6 +24,7 @@ export function FeatureRequests() {
   const [endDate, setEndDate] = useState<Date | undefined>()
   const [sortBy, setSortBy] = useState<string>('newest')
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
+  const [sourceFilter, setSourceFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
@@ -44,11 +45,17 @@ export function FeatureRequests() {
     setEndDate(undefined)
     setSortBy('newest')
     setPriorityFilter('all')
+    setSourceFilter('all')
     setSearchQuery('')
   }
 
   const hasActiveFilters =
-    startDate || endDate || sortBy !== 'newest' || priorityFilter !== 'all' || searchQuery
+    startDate ||
+    endDate ||
+    sortBy !== 'newest' ||
+    priorityFilter !== 'all' ||
+    sourceFilter !== 'all' ||
+    searchQuery
 
   const convertMutation = useMutation({
     mutationFn: ({ feedbackId, conversionData }: { feedbackId: string; conversionData: any }) =>
@@ -113,7 +120,17 @@ export function FeatureRequests() {
 
   const filteredFeatureRequests = feedback
     .filter((item) => item.feedback_type === 'feature_request')
-    .filter((feature) => {
+    .filter((feature: any) => {
+      if (sourceFilter === 'widgets') {
+        if (!feature.widget_id || feature.feedback_metadata?.form_response_v2_id) {
+          return false
+        }
+      }
+      if (sourceFilter === 'forms') {
+        if (!feature.feedback_metadata?.form_response_v2_id) {
+          return false
+        }
+      }
       if (startDate && new Date(feature.created_at) < startDate) return false
       if (endDate && new Date(feature.created_at) > endDate) return false
 
@@ -191,7 +208,7 @@ export function FeatureRequests() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
             <DatePicker
               date={startDate}
               onDateChange={setStartDate}
@@ -229,6 +246,17 @@ export function FeatureRequests() {
               </SelectContent>
             </Select>
 
+            <Select value={sourceFilter} onValueChange={setSourceFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Source" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sources</SelectItem>
+                <SelectItem value="widgets">Widgets</SelectItem>
+                <SelectItem value="forms">Forms</SelectItem>
+              </SelectContent>
+            </Select>
+
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
@@ -248,7 +276,16 @@ export function FeatureRequests() {
               Reset filters
               {hasActiveFilters && (
                 <span className="ml-2 bg-tertiary/20 text-xs px-1.5 py-0.5 rounded-full">
-                  {[startDate, endDate, sortBy !== 'newest', searchQuery].filter(Boolean).length}
+                  {
+                    [
+                      startDate,
+                      endDate,
+                      priorityFilter !== 'all',
+                      sourceFilter !== 'all',
+                      sortBy !== 'newest',
+                      searchQuery,
+                    ].filter(Boolean).length
+                  }
                 </span>
               )}
             </Button>
