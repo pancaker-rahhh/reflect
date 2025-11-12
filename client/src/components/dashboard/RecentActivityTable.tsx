@@ -70,10 +70,12 @@ export function RecentActivityTable({
                       {typeConfigItem.label}
                     </span>
 
-                    {activity.widget_name && (
+                    {(activity.widget_name || activity.form_name) && (
                       <>
                         <span className="text-muted-foreground">•</span>
-                        <span className="text-xs">{activity.widget_name}</span>
+                        <span className="text-xs">
+                          {activity.widget_name || activity.form_name}
+                        </span>
                       </>
                     )}
                   </div>

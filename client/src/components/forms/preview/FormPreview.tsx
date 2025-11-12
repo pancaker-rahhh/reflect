@@ -169,7 +169,14 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                             <div className="flex gap-1.5">
                               {Array.from({ length: 6 }, (_, i) => {
                                 const scoreColors = getScoreColor(i, true)
-                                const isSelected = previewValues[field.field_key] === i
+                                const previewValue = previewValues[field.field_key]
+                                const numValue =
+                                  previewValue !== '' &&
+                                  previewValue !== null &&
+                                  previewValue !== undefined
+                                    ? Number(previewValue)
+                                    : null
+                                const isSelected = numValue === i
                                 return (
                                   <button
                                     key={i}
@@ -183,7 +190,9 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                                     style={{
                                       backgroundColor: isSelected ? scoreColors.bg : '#ffffff',
                                       borderColor: isSelected ? scoreColors.bg : '#d1d5db',
-                                      color: isSelected ? '#ffffff' : appearance.textColor,
+                                      color: isSelected
+                                        ? '#ffffff'
+                                        : appearance.textColor || '#374151',
                                       boxShadow: isSelected
                                         ? `0 4px 12px ${scoreColors.bg}40`
                                         : undefined,
@@ -198,7 +207,14 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                               {Array.from({ length: 5 }, (_, i) => {
                                 const score = i + 6
                                 const scoreColors = getScoreColor(score, true)
-                                const isSelected = previewValues[field.field_key] === score
+                                const previewValue = previewValues[field.field_key]
+                                const numValue =
+                                  previewValue !== '' &&
+                                  previewValue !== null &&
+                                  previewValue !== undefined
+                                    ? Number(previewValue)
+                                    : null
+                                const isSelected = numValue === score
                                 return (
                                   <button
                                     key={score}
@@ -215,7 +231,9 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                                     style={{
                                       backgroundColor: isSelected ? scoreColors.bg : '#ffffff',
                                       borderColor: isSelected ? scoreColors.bg : '#d1d5db',
-                                      color: isSelected ? '#ffffff' : appearance.textColor,
+                                      color: isSelected
+                                        ? '#ffffff'
+                                        : appearance.textColor || '#374151',
                                       boxShadow: isSelected
                                         ? `0 4px 12px ${scoreColors.bg}40`
                                         : undefined,
@@ -270,7 +288,7 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                             <div className="text-center">
                               <div
                                 className="text-sm font-medium"
-                                style={{ color: appearance.textColor }}
+                                style={{ color: appearance.textColor || '#1f2937' }}
                               >
                                 {
                                   ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][
@@ -394,7 +412,7 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                               ? appearance.primaryColor
                               : undefined,
                             backgroundColor: appearance.backgroundColor,
-                            color: appearance.textColor,
+                            color: appearance.textColor || '#374151',
                           }}
                         />
                       )}
@@ -424,8 +442,135 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                       const choices = getChoices()
                       const multiple = getMultiple()
 
+                      if (field.field_key.includes('bug_severity')) {
+                        const severityOptions = [
+                          {
+                            value: 'low',
+                            label: 'Low',
+                            icon: '🟢',
+                            description: 'Minor issue, workaround available',
+                          },
+                          {
+                            value: 'medium',
+                            label: 'Medium',
+                            icon: '🟡',
+                            description: 'Noticeable issue affecting some users',
+                          },
+                          {
+                            value: 'high',
+                            label: 'High',
+                            icon: '🟠',
+                            description: 'Major issue affecting many users',
+                          },
+                          {
+                            value: 'critical',
+                            label: 'Critical',
+                            icon: '🔴',
+                            description: 'Blocking issue, needs immediate attention',
+                          },
+                        ]
+
+                        return (
+                          <div className="space-y-2">
+                            {severityOptions.map((option) => {
+                              const isSelected = previewValues[field.field_key] === option.value
+                              return (
+                                <button
+                                  key={option.value}
+                                  type="button"
+                                  onClick={() =>
+                                    setPreviewValues({
+                                      ...previewValues,
+                                      [field.field_key]: option.value,
+                                    })
+                                  }
+                                  className={`w-full p-3 rounded-lg border text-left transition-all ${
+                                    isSelected ? 'border-2' : 'border hover:border-gray-300'
+                                  }`}
+                                  style={{
+                                    borderColor: isSelected ? appearance.primaryColor : '#E5E7EB',
+                                    backgroundColor: isSelected
+                                      ? `${appearance.primaryColor}10`
+                                      : appearance.backgroundColor,
+                                    color: appearance.textColor || '#374151',
+                                  }}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-lg">{option.icon}</span>
+                                    <div>
+                                      <div className="font-medium text-sm">{option.label}</div>
+                                      <div className="text-xs opacity-70">{option.description}</div>
+                                    </div>
+                                  </div>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )
+                      }
+
+                      if (field.field_key.includes('feature_priority')) {
+                        const priorityOptions = [
+                          {
+                            value: 'low',
+                            label: 'Nice to Have',
+                            icon: '😌',
+                            description: 'Would be helpful but not essential',
+                          },
+                          {
+                            value: 'medium',
+                            label: 'Important',
+                            icon: '😊',
+                            description: 'Would significantly improve experience',
+                          },
+                          {
+                            value: 'high',
+                            label: 'Critical',
+                            icon: '🚀',
+                            description: 'Essential for workflow/success',
+                          },
+                        ]
+
+                        return (
+                          <div className="space-y-2">
+                            {priorityOptions.map((option) => {
+                              const isSelected = previewValues[field.field_key] === option.value
+                              return (
+                                <button
+                                  key={option.value}
+                                  type="button"
+                                  onClick={() =>
+                                    setPreviewValues({
+                                      ...previewValues,
+                                      [field.field_key]: option.value,
+                                    })
+                                  }
+                                  className={`w-full p-3 rounded-lg border text-left transition-all ${
+                                    isSelected ? 'border-2' : 'border hover:border-gray-300'
+                                  }`}
+                                  style={{
+                                    borderColor: isSelected ? appearance.primaryColor : '#E5E7EB',
+                                    backgroundColor: isSelected
+                                      ? `${appearance.primaryColor}10`
+                                      : appearance.backgroundColor,
+                                    color: appearance.textColor || '#374151',
+                                  }}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-lg">{option.icon}</span>
+                                    <div>
+                                      <div className="font-medium text-sm">{option.label}</div>
+                                      <div className="text-xs opacity-70">{option.description}</div>
+                                    </div>
+                                  </div>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )
+                      }
+
                       if (multiple) {
-                        // Render checkboxes for multiple selection
                         const selectedValues = Array.isArray(previewValues[field.field_key])
                           ? previewValues[field.field_key]
                           : []
@@ -450,7 +595,7 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                                 <Label
                                   htmlFor={`preview-${field.field_key}-${idx}`}
                                   className="text-sm font-normal cursor-pointer"
-                                  style={{ color: appearance.textColor }}
+                                  style={{ color: appearance.textColor || '#1f2937' }}
                                 >
                                   {choice}
                                 </Label>
@@ -459,7 +604,6 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                           </div>
                         )
                       } else {
-                        // Render radio buttons for single selection
                         return (
                           <RadioGroup
                             value={previewValues[field.field_key] || ''}
@@ -479,7 +623,7 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                                 <Label
                                   htmlFor={`preview-${field.field_key}-${idx}`}
                                   className="text-sm font-normal cursor-pointer"
-                                  style={{ color: appearance.textColor }}
+                                  style={{ color: appearance.textColor || '#1f2937' }}
                                 >
                                   {choice}
                                 </Label>

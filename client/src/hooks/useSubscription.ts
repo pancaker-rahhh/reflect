@@ -125,6 +125,8 @@ export function useSubscription() {
             projects: usage?.projects || projects?.items?.length || 0,
             widgets: usage?.widgets || widgetCount || 0,
             responses: usage?.responses || 0,
+            forms: usage?.forms || 0,
+            form_responses: usage?.form_responses || 0,
           },
         }
       : undefined
