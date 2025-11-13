@@ -216,6 +216,8 @@ export function FormCreate() {
     onSuccess: (newField: FormFieldV2) => {
       setFields([...fields, newField])
       setShowAddFieldModal(false)
+      // Open the newly added field by default
+      setExpandedFieldId(newField.id)
       toast.showSuccess('Field added', 'Success')
       // Update cache directly to avoid refetch
       queryClient.setQueryData(['form', formId], (old: any) => ({
@@ -299,6 +301,8 @@ export function FormCreate() {
         setTimeout(() => addFieldMutation.mutate(commentField), 100)
       } else {
         setFields([...fields, ratingField, commentField])
+        // Open the last-added field (comment) by default
+        setExpandedFieldId(commentField.id)
         setShowAddFieldModal(false)
       }
       return
@@ -334,6 +338,8 @@ export function FormCreate() {
         setTimeout(() => addFieldMutation.mutate(commentField), 100)
       } else {
         setFields([...fields, ratingField, commentField])
+        // Open the last-added field (comment) by default
+        setExpandedFieldId(commentField.id)
         setShowAddFieldModal(false)
       }
       return
@@ -366,6 +372,8 @@ export function FormCreate() {
         setTimeout(() => addFieldMutation.mutate(commentField), 100)
       } else {
         setFields([...fields, ratingField, commentField])
+        // Open the last-added field (comment) by default
+        setExpandedFieldId(commentField.id)
         setShowAddFieldModal(false)
       }
       return
@@ -399,6 +407,8 @@ export function FormCreate() {
         setTimeout(() => addFieldMutation.mutate(severityField), 100)
       } else {
         setFields([...fields, descriptionField, severityField])
+        // Open the last-added field by default
+        setExpandedFieldId(severityField.id)
         setShowAddFieldModal(false)
       }
       return
@@ -432,6 +442,8 @@ export function FormCreate() {
         setTimeout(() => addFieldMutation.mutate(priorityField), 100)
       } else {
         setFields([...fields, descriptionField, priorityField])
+        // Open the last-added field by default
+        setExpandedFieldId(priorityField.id)
         setShowAddFieldModal(false)
       }
       return
@@ -463,6 +475,8 @@ export function FormCreate() {
       addFieldMutation.mutate(field)
     } else {
       setFields([...fields, field])
+      // Open the newly added field by default
+      setExpandedFieldId(field.id)
       setShowAddFieldModal(false)
     }
   }
