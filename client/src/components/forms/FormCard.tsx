@@ -69,6 +69,17 @@ export function FormCard({
                     <span>{new Date(form.created_at).toLocaleDateString()}</span>
                   </div>
                 </div>
+                <div className="mt-4">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="w-full flex items-center justify-center gap-2 rounded-md border border-primary/30 bg-background hover:bg-primary/10 text-primary font-medium shadow-sm transition-colors"
+                    onClick={onViewResponses}
+                  >
+                    <ChartBar className="h-4 w-4" />
+                    <span>View Responses</span>
+                  </Button>
+                </div>
               </div>
 
               <div className="flex items-center gap-4">
@@ -114,7 +125,7 @@ export function FormCard({
   }
 
   return (
-  <Card className="group relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl shadow-md border-b-4 border-b-transparent hover:border-b-foreground/20">
+    <Card className="group relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl shadow-md border-b-4 border-b-transparent hover:border-b-foreground/20">
       <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-primary/60 to-accent/60" />
 
       <CardHeader className="pt-6 pb-4">
@@ -130,6 +141,17 @@ export function FormCard({
               <span className="text-sm text-muted-foreground">
                 {fieldCount} field{fieldCount !== 1 ? 's' : ''}
               </span>
+            </div>
+            <div className="mt-4">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="w-full flex items-center justify-center gap-2 rounded-md border border-primary/30 bg-background hover:bg-primary/10 text-primary font-medium shadow-sm transition-colors"
+                onClick={onViewResponses}
+              >
+                <ChartBar className="h-4 w-4" />
+                <span>View Responses</span>
+              </Button>
             </div>
           </div>
 
