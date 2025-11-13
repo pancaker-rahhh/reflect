@@ -130,7 +130,7 @@ export function FieldEditor({
   }
 
   return (
-    <Card className="p-4 group transition-colors">
+    <Card className="p-4 group transition-colors hover:!translate-y-0">
       {/* Header - Always visible */}
       <div className="flex items-start gap-3">
         <div

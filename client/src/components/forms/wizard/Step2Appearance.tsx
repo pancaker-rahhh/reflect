@@ -133,7 +133,7 @@ export function Step2Appearance({ appearance, setAppearance }: Step2AppearancePr
 
   return (
     <div className="space-y-6">
-      <Card className="p-6">
+  <Card className="p-6 hover:!translate-y-0">
         <h2 className="text-lg font-semibold mb-4">Theme</h2>
         <RadioGroup
           value={appearance.theme}
@@ -155,7 +155,7 @@ export function Step2Appearance({ appearance, setAppearance }: Step2AppearancePr
         </RadioGroup>
       </Card>
 
-      <Card className="p-6">
+  <Card className="p-6 hover:!translate-y-0">
         <h2 className="text-lg font-semibold mb-2">Page Background</h2>
         <p className="text-sm text-muted-foreground mb-4">
           Choose a background pattern for the page surrounding your form
@@ -191,7 +191,7 @@ export function Step2Appearance({ appearance, setAppearance }: Step2AppearancePr
         </RadioGroup>
       </Card>
 
-      <Card className="p-6">
+  <Card className="p-6 hover:!translate-y-0">
         <h2 className="text-lg font-semibold mb-2">Custom Colors</h2>
         <p className="text-sm text-muted-foreground mb-4">
           Customize the look to match your brand identity

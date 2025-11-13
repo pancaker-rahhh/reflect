@@ -122,7 +122,7 @@ export function FormResponseCard({ response, fields }: FormResponseCardProps) {
   return (
     <Card
       className={cn(
-        'group transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 border-l-4 border-l-blue-500'
+        'group transition-all duration-200 hover:shadow-lg border-l-4 border-l-blue-500'
       )}
     >
       <CardContent className="pt-6">

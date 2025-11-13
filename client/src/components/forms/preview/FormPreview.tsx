@@ -484,16 +484,14 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                                       [field.field_key]: option.value,
                                     })
                                   }
-                                  className={`w-full p-3 rounded-lg border text-left transition-all ${
-                                    isSelected ? 'border-2' : 'border hover:border-gray-300'
-                                  }`}
-                                  style={{
-                                    borderColor: isSelected ? appearance.primaryColor : '#E5E7EB',
-                                    backgroundColor: isSelected
-                                      ? `${appearance.primaryColor}10`
-                                      : appearance.backgroundColor,
-                                    color: appearance.textColor || '#374151',
-                                  }}
+                                  className={`w-full p-3 rounded-lg border-2 border-transparent text-left transition-all hover:border-gray-300`}
+                                    style={{
+                                      borderColor: isSelected ? appearance.primaryColor : '#E5E7EB',
+                                      backgroundColor: isSelected
+                                        ? `${appearance.primaryColor}10`
+                                        : appearance.backgroundColor,
+                                      color: appearance.textColor || '#374151',
+                                    }}
                                 >
                                   <div className="flex items-center gap-3">
                                     <span className="text-lg">{option.icon}</span>
@@ -545,9 +543,7 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                                       [field.field_key]: option.value,
                                     })
                                   }
-                                  className={`w-full p-3 rounded-lg border text-left transition-all ${
-                                    isSelected ? 'border-2' : 'border hover:border-gray-300'
-                                  }`}
+                                  className={`w-full p-3 rounded-lg border-2 border-transparent text-left transition-all hover:border-gray-300`}
                                   style={{
                                     borderColor: isSelected ? appearance.primaryColor : '#E5E7EB',
                                     backgroundColor: isSelected

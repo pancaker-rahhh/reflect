@@ -114,7 +114,7 @@ export function FormCard({
   }
 
   return (
-    <Card className="group relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 border-0 shadow-md hover:border-b-4 hover:border-b-foreground/20">
+  <Card className="group relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl shadow-md border-b-4 border-b-transparent hover:border-b-foreground/20">
       <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-primary/60 to-accent/60" />
 
       <CardHeader className="pt-6 pb-4">

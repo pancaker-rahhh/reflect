@@ -95,7 +95,7 @@ export function Step1Basics({
 
   return (
     <div className="space-y-6">
-      <Card className="p-6">
+      <Card className="p-6 hover:!translate-y-0">
         <h2 className="text-lg font-semibold mb-4">Form Details</h2>
         <div className="space-y-4">
           <div>
@@ -131,7 +131,7 @@ export function Step1Basics({
         </div>
       </Card>
 
-      <Card className="p-6">
+  <Card className="p-6 hover:!translate-y-0">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">Form Fields</h2>
           <Button onClick={onAddField} size="sm">
