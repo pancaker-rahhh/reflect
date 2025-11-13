@@ -531,6 +531,17 @@ export function FormCreate() {
   }
 
   const handleNext = () => {
+    // Validation: when moving from Step 1 (details) ensure all fields have a question
+    if (currentStep === 0) {
+      const invalidField = fields.find((f) => !f.label || String(f.label).trim().length === 0)
+      if (invalidField) {
+        // Open the invalid field and show an error
+        setExpandedFieldId(invalidField.id)
+        toast.showError('Please provide a question for all fields before continuing.', 'Validation error')
+        return
+      }
+    }
+
     // If on step 2 (appearance) and not in edit mode, create the form
     if (currentStep === 1 && !isEditMode) {
       setIsSubmitting(true)
