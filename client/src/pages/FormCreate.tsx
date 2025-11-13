@@ -456,10 +456,10 @@ export function FormCreate() {
       field_key: fieldKey,
       label:
         fieldType === 'text'
-          ? 'Your answer'
+          ? 'Enter your question here'
           : fieldType === 'number'
-            ? 'Enter a number'
-            : 'Select an option',
+            ? 'Enter your number here'
+            : 'Enter your question multiple choice question here',
       is_required: false,
       order_index: fields.length,
       config:
