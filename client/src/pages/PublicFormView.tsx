@@ -148,16 +148,16 @@ export function PublicFormView() {
               )}
               <div className="flex flex-col gap-2">
                 <div className="flex gap-1.5">
-                  {Array.from({ length: 6 }, (_, i) => {
-                    const scoreColors = getScoreColor(i, true)
+                  {Array.from({ length: 5 }, (_, i) => {
+                    const scoreColors = getScoreColor(i + 1, true)
                     const numValue =
                       value !== '' && value !== null && value !== undefined ? Number(value) : null
-                    const isSelected = numValue === i
+                    const isSelected = numValue === i + 1
                     return (
                       <button
-                        key={i}
+                        key={i+1}
                         type="button"
-                        onClick={() => handleAnswerChange(field.field_key, i)}
+                        onClick={() => handleAnswerChange(field.field_key, i+1)}
                         className={`flex-1 h-12 rounded-lg border-2 font-semibold transition-all ${
                           isSelected ? 'shadow-lg scale-105' : 'hover:scale-105'
                         }`}
@@ -170,7 +170,7 @@ export function PublicFormView() {
                           boxShadow: isSelected ? `0 4px 12px ${scoreColors.bg}40` : undefined,
                         }}
                       >
-                        {i}
+                        {i+1}
                       </button>
                     )
                   })}
