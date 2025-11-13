@@ -531,8 +531,16 @@ export function FormCreate() {
   }
 
   const handleNext = () => {
-    // Validation: when moving from Step 1 (details) ensure all fields have a question
+    // Validation: when moving from Step 1 (details) ensure form has a name and all fields have a question
     if (currentStep === 0) {
+      if (!formName || String(formName).trim().length === 0) {
+        // Focus the form name input if present and show an error
+        const el = document.getElementById('form-name') as HTMLInputElement | null
+        if (el) el.focus()
+        toast.showError('Please provide a name for the form before continuing.', 'Validation error')
+        return
+      }
+
       const invalidField = fields.find((f) => !f.label || String(f.label).trim().length === 0)
       if (invalidField) {
         // Open the invalid field and show an error
