@@ -147,16 +147,9 @@ export function Sidebar() {
           >
             <span className="truncate">{item.label}</span>
             {/* Shortcut hints */}
-            {(item.label === 'Dashboard' || item.label === 'Widgets' || item.label === 'Forms') && (
+            {(item.label === 'Dashboard' || item.label === 'Widgets') && (
               <span className="text-xs text-muted-foreground border rounded px-1 ml-2">
-                ⌘⇧
-                {item.label === 'Dashboard'
-                  ? '1'
-                  : item.label === 'Widgets'
-                    ? '2'
-                    : item.label === 'Forms'
-                      ? '3'
-                      : ''}
+                ⌘⇧{item.label === 'Dashboard' ? '1' : '2'}
               </span>
             )}
             {hasChildren && (
@@ -188,9 +181,6 @@ export function Sidebar() {
             break
           case '2':
             navigate('/app/widgets')
-            break
-          case '3':
-            navigate('/app/forms')
             break
         }
       }
