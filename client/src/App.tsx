@@ -1,25 +1,26 @@
-import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
-import { HelmetProvider } from 'react-helmet-async'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { PageLoading } from '@/components/common/LoadingSpinner'
-import { TooltipProvider } from '@/components/ui/tooltip'
-import { AuthProvider } from '@/contexts/AuthContext'
-import { AppProvider } from '@/context/AppContext'
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { OnboardingGuard } from '@/components/onboarding/OnboardingGuard'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import { AppProvider } from '@/context/AppContext'
+import { AuthProvider } from '@/contexts/AuthContext'
 import { DirectionProvider } from '@radix-ui/react-direction'
+import { PostHogProvider } from 'posthog-js/react'
+import { lazy, Suspense } from 'react'
+import { HelmetProvider } from 'react-helmet-async'
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 
 // Eagerly load core components
 import { AppLayout } from '@/components/layout/AppLayout'
-import { LandingPage } from '@/pages/LandingPage'
-import { Dashboard } from '@/pages/Dashboard'
-import { Login } from '@/pages/auth/Login'
-import { AuthCallback } from '@/pages/auth/AuthCallback'
-import { VerifyOtp } from '@/pages/auth/VerifyOtp'
-import { OnboardingPage } from '@/pages/OnboardingPage'
-import { InvitationAcceptancePage } from '@/pages/InvitationAcceptancePage'
 import { Toaster } from '@/components/ui/toaster'
+import { AuthCallback } from '@/pages/auth/AuthCallback'
+import { Login } from '@/pages/auth/Login'
+import { VerifyOtp } from '@/pages/auth/VerifyOtp'
+import { Dashboard } from '@/pages/Dashboard'
+import { InvitationAcceptancePage } from '@/pages/InvitationAcceptancePage'
+import { LandingPage } from '@/pages/LandingPage'
+import { OnboardingPage } from '@/pages/OnboardingPage'
 
 // Lazy load secondary pages
 const WidgetView = lazy(() => import('@/pages/WidgetView').then((m) => ({ default: m.WidgetView })))
@@ -75,45 +76,52 @@ const ContactPage = lazy(() =>
 )
 const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m.NotFound })))
 
+const options = {
+  api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
+  defaults: '2025-05-24',
+} as const
+
+
 function App() {
   return (
-    <ErrorBoundary>
-      <HelmetProvider>
-        <DirectionProvider dir="ltr">
-          <TooltipProvider>
-            <BrowserRouter>
-              <AuthProvider>
-                <AppProvider>
-                  <Suspense fallback={<PageLoading />}>
-                    <Routes>
-                      {/* Public routes */}
-                      <Route path="/" element={<LandingPage />} />
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/auth/verify-otp" element={<VerifyOtp />} />
-                      <Route path="/auth/callback" element={<AuthCallback />} />
-                      <Route path="/invite" element={<InvitationAcceptancePage />} />
-                      <Route path="/invitation/accept" element={<InvitationAcceptancePage />} />
-                      <Route path="/public/roadmap/:publicSlug" element={<PublicRoadmap />} />
-                      <Route path="/public/r/:subdomain" element={<PublicRoadmap />} />
-                      <Route path="/widget-view" element={<WidgetView />} />
-                      <Route path="/payment-status" element={<PaymentStatus />} />
-                      <Route path="/terms" element={<TermsOfService />} />
-                      <Route path="/privacy" element={<PrivacyPolicy />} />
-                      <Route path="/cookies" element={<CookiePolicy />} />
-                      <Route path="/about" element={<AboutPage />} />
-                      <Route path="/contact" element={<ContactPage />} />
+    <PostHogProvider apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_KEY} options={options}>
+      <ErrorBoundary>
+        <HelmetProvider>
+          <DirectionProvider dir="ltr">
+            <TooltipProvider>
+              <BrowserRouter>
+                <AuthProvider>
+                  <AppProvider>
+                    <Suspense fallback={<PageLoading />}>
+                      <Routes>
+                        {/* Public routes */}
+                        <Route path="/" element={<LandingPage />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/auth/verify-otp" element={<VerifyOtp />} />
+                        <Route path="/auth/callback" element={<AuthCallback />} />
+                        <Route path="/invite" element={<InvitationAcceptancePage />} />
+                        <Route path="/invitation/accept" element={<InvitationAcceptancePage />} />
+                        <Route path="/public/roadmap/:publicSlug" element={<PublicRoadmap />} />
+                        <Route path="/public/r/:subdomain" element={<PublicRoadmap />} />
+                        <Route path="/widget-view" element={<WidgetView />} />
+                        <Route path="/payment-status" element={<PaymentStatus />} />
+                        <Route path="/terms" element={<TermsOfService />} />
+                        <Route path="/privacy" element={<PrivacyPolicy />} />
+                        <Route path="/cookies" element={<CookiePolicy />} />
+                        <Route path="/about" element={<AboutPage />} />
+                        <Route path="/contact" element={<ContactPage />} />
 
-                      {/* Onboarding route */}
-                      <Route
-                        path="/onboarding"
-                        element={
-                          <ProtectedRoute>
-                            <OnboardingGuard>
-                              <OnboardingPage />
-                            </OnboardingGuard>
-                          </ProtectedRoute>
-                        }
-                      />
+                        {/* Onboarding route */}
+                        <Route
+                          path="/onboarding"
+                          element={
+                            <ProtectedRoute>
+                              <OnboardingGuard>
+                                <OnboardingPage />
+                              </OnboardingGuard>
+                            </ProtectedRoute>
+                          }
+                        />
 
                       {/* Protected routes with onboarding guard */}
                       <Route
@@ -149,16 +157,17 @@ function App() {
                         <Route path="billing/lifetime-offer" element={<LifetimeOfferPage />} />
                       </Route>
 
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </Suspense>
-                </AppProvider>
-              </AuthProvider>
-            </BrowserRouter>
-          </TooltipProvider>
-        </DirectionProvider>
-      </HelmetProvider>
-    </ErrorBoundary>
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </Suspense>
+                  </AppProvider>
+                </AuthProvider>
+              </BrowserRouter>
+            </TooltipProvider>
+          </DirectionProvider>
+        </HelmetProvider>
+      </ErrorBoundary>
+    </PostHogProvider>
   )
 }
 
