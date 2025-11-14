@@ -52,6 +52,7 @@ class OrganizationResponse(BaseModel):
     subscription_plan: Optional[str] = None
     subscription_status: Optional[str] = None
     subscription_ends_at: Optional[datetime] = None
+    lifetime_offer_dismissed_at: Optional[datetime] = None
     settings: dict
     created_by: Optional[UUID] = None
     created_at: datetime

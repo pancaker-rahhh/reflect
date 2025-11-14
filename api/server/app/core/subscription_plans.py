@@ -7,6 +7,7 @@ settings = get_settings()
 DODO_PRODUCT_IDS = {
     'pro_monthly': settings.DODO_PRODUCT_ID_PRO_MONTHLY,
     'pro_yearly': settings.DODO_PRODUCT_ID_PRO_YEARLY,
+    'pro_lifetime': settings.DODO_PRODUCT_ID_PRO_LIFETIME,
 }
 
 PLAN_LIMITS = {
@@ -38,6 +39,11 @@ PLAN_LIMITS = {
         'forms': 999999,
         'form_responses': 999999,
     },
+    'pro_lifetime': {
+        'projects': 999999,
+        'widgets': 999999,
+        'responses': 999999,
+    },
 }
 
 FEATURE_FLAGS = {
@@ -63,6 +69,13 @@ FEATURE_FLAGS = {
         'jira_integration': True,
     },
     'pro_yearly': {
+        'advanced_targeting': True,
+        'branding_removal': True,
+        'priority_support': True,
+        'dofollow_backlink': True,
+        'jira_integration': True,
+    },
+    'pro_lifetime': {
         'advanced_targeting': True,
         'branding_removal': True,
         'priority_support': True,
@@ -115,7 +128,22 @@ SUBSCRIPTION_PLANS: List[Dict[str, Any]] = [
         'trial_days': 0,
         'limits': PLAN_LIMITS['pro'],
         'features': FEATURE_FLAGS['pro'],
-        'description': 'Unlimited everything, billed yearly (2 months free)',
+        'description': 'Pay annually and get 2 months free',
+        'is_active': True,
+    },
+    {
+        'id': 'pro_lifetime',
+        'name': 'pro',
+        'display_name': 'Pro Lifetime',
+        'dodo_product_id': DODO_PRODUCT_IDS['pro_lifetime'],
+        'price': 99.0,
+        'currency': 'USD',
+        'interval': None,
+        'interval_count': None,
+        'trial_days': 0,
+        'limits': PLAN_LIMITS['pro'],
+        'features': FEATURE_FLAGS['pro'],
+        'description': 'Unlimited everything, lifetime access.',
         'is_active': True,
     },
 ]

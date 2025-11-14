@@ -15,6 +15,7 @@ export interface Organization {
   subscription_plan: string
   subscription_status?: string
   subscription_ends_at?: string | null
+  lifetime_offer_dismissed_at?: string | null
   settings: Record<string, unknown>
   created_at: string
   updated_at?: string

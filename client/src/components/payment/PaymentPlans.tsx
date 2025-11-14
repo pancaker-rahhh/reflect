@@ -139,15 +139,22 @@ export function PaymentPlans({ onPlanSelect: _onPlanSelect, selectedPlanId }: Pa
             {plan.id === 'pro_monthly' && (
               <Badge className="absolute -top-2 left-1/2 -translate-x-1/2">Most Popular</Badge>
             )}
+            {plan.id === 'pro_lifetime' && (
+              <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-600 to-blue-600">
+                Limited Time
+              </Badge>
+            )}
 
             <CardHeader className="text-center pb-4">
               <CardTitle className="text-xl">{plan.display_name}</CardTitle>
               <CardDescription className="text-sm">{plan.description}</CardDescription>
               <div className="mt-4">
                 <span className="text-4xl font-bold">${plan.price}</span>
-                <span className="text-muted-foreground">
-                  /{plan.interval === 'month' ? 'month' : 'year'}
-                </span>
+                {plan.interval && (
+                  <span className="text-muted-foreground">
+                    /{plan.interval === 'month' ? 'month' : 'year'}
+                  </span>
+                )}
               </div>
             </CardHeader>
 
