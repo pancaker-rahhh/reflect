@@ -322,7 +322,7 @@ export interface Integration {
 export interface FormFieldV2 {
   id: string
   form_id: string
-  field_type: 'text' | 'number' | 'choice'
+  field_type: 'text' | 'email' | 'number' | 'choice'
   field_key: string
   label: string
   is_required: boolean
@@ -356,7 +356,7 @@ export interface FormV2 {
 }
 
 export interface FormFieldCreate {
-  field_type: 'text' | 'number' | 'choice'
+  field_type: 'text' | 'email' | 'number' | 'choice'
   field_key: string
   label: string
   is_required?: boolean

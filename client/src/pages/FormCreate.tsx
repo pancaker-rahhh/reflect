@@ -145,6 +145,8 @@ export function FormCreate() {
 
           if (f.field_type === 'text') {
             fieldData.max_length = 1000
+          } else if (f.field_type === 'email') {
+            fieldData.max_length = 255
           } else if (f.field_type === 'number') {
             fieldData.min_value = 0
             fieldData.max_value = 10
@@ -265,6 +267,7 @@ export function FormCreate() {
   const handleAddField = (
     fieldType:
       | 'text'
+      | 'email'
       | 'number'
       | 'choice'
       | 'nps'
@@ -457,9 +460,11 @@ export function FormCreate() {
       label:
         fieldType === 'text'
           ? 'Enter your question here'
-          : fieldType === 'number'
-            ? 'Enter your number here'
-            : 'Enter your question multiple choice question here',
+          : fieldType === 'email'
+            ? 'Enter your email here'
+            : fieldType === 'number'
+              ? 'Enter your number here'
+              : 'Enter your question multiple choice question here',
       is_required: false,
       order_index: fields.length,
       config:
@@ -780,6 +785,7 @@ function AddFieldModal({
   onAddField: (
     type:
       | 'text'
+      | 'email'
       | 'number'
       | 'choice'
       | 'nps'
@@ -792,6 +798,7 @@ function AddFieldModal({
 }) {
   const fieldTypes = [
     { type: 'text' as const, label: 'Text', icon: '📝', description: 'Long form text response' },
+    { type: 'email' as const, label: 'Email', icon: '📧', description: 'Email address input' },
     { type: 'number' as const, label: 'Number', icon: '🔢', description: 'Numeric input' },
     {
       type: 'choice' as const,

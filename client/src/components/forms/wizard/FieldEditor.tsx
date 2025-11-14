@@ -123,6 +123,7 @@ export function FieldEditor({
   const getFieldTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
       text: 'Text',
+      email: 'Email',
       number: 'Number',
       choice: multiple ? 'Multiple Choice (Multi-select)' : 'Multiple Choice (Single-select)',
     }

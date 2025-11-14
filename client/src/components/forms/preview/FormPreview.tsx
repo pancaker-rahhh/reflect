@@ -141,6 +141,29 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                     />
                   )}
 
+                  {field.field_type === 'email' && (
+                    <Input
+                      type="email"
+                      value={previewValues[field.field_key] || ''}
+                      onChange={(e) =>
+                        setPreviewValues({
+                          ...previewValues,
+                          [field.field_key]: e.target.value,
+                        })
+                      }
+                      placeholder="email@example.com"
+                      required={field.is_required}
+                      pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                      style={{
+                        borderColor: previewValues[field.field_key]
+                          ? appearance.primaryColor
+                          : undefined,
+                        backgroundColor: appearance.backgroundColor,
+                        color: appearance.textColor,
+                      }}
+                    />
+                  )}
+
                   {field.field_type === 'number' && (
                     <div className="space-y-4">
                       {field.label.toLowerCase().includes('recommend') ||
