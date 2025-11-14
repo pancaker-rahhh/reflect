@@ -41,7 +41,7 @@ class FeedbackPriority(str, enum.Enum):
 class Feedback(BaseModel):
     __tablename__ = 'feedback'
 
-    widget_id = Column(UUID(as_uuid=True), ForeignKey('widgets.id'), nullable=False)
+    widget_id = Column(UUID(as_uuid=True), ForeignKey('widgets.id'), nullable=True)
     project_id = Column(UUID(as_uuid=True), ForeignKey('projects.id'), nullable=False)
     form_id = Column(UUID(as_uuid=True), ForeignKey('feedback_forms.id'), nullable=True)
 

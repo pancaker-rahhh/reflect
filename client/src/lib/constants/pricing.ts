@@ -14,6 +14,8 @@ export interface PricingPlan {
     projects: number
     widgets: number
     responses: number
+    forms: number
+    form_responses: number
     bug_reports: number
     feature_requests: number
   }
@@ -44,6 +46,8 @@ export const PRICING_PLANS: PricingPlan[] = [
       projects: 1,
       widgets: 1,
       responses: 20,
+      forms: 1,
+      form_responses: 20,
       bug_reports: 0,
       feature_requests: 0,
     },
@@ -71,6 +75,8 @@ export const PRICING_PLANS: PricingPlan[] = [
       projects: 999999, // Unlimited
       widgets: 999999, // Unlimited
       responses: 999999, // Unlimited
+      forms: 999999, // Unlimited
+      form_responses: 999999, // Unlimited
       bug_reports: 999999, // Unlimited
       feature_requests: 999999, // Unlimited
     },
@@ -99,6 +105,8 @@ export const PRICING_PLANS: PricingPlan[] = [
       projects: 999999, // Unlimited
       widgets: 999999, // Unlimited
       responses: 999999, // Unlimited
+      forms: 999999, // Unlimited
+      form_responses: 999999, // Unlimited
       bug_reports: 999999, // Unlimited
       feature_requests: 999999, // Unlimited
     },

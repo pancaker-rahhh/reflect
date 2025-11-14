@@ -157,6 +157,7 @@ export function FreeTierAlert() {
 
   const widgetUsage = getUsageInfo('widgets')
   const responseUsage = getUsageInfo('responses')
+  const formUsage = getUsageInfo('forms')
 
   // Check if still in grace period (subscription hasn't ended yet)
   // Use org.subscription_ends_at for consistency with org.subscription_status
@@ -231,13 +232,15 @@ export function FreeTierAlert() {
       </AlertTitle>
       <AlertDescription className="mt-2 space-y-4">
         <p className="text-[hsl(var(--banner-info-foreground-light))]">
-          Your current plan allows for {widgetUsage.limit} active widget and up to{' '}
-          {responseUsage.limit} responses per month.
+          Your current plan allows for {widgetUsage.limit} active widget, {formUsage.limit} form,
+          and up to {responseUsage.limit} responses per month.
         </p>
 
         <div className="space-y-3">
           <UsageBar resourceType="widgets" label="Widgets" />
           <UsageBar resourceType="responses" label="Responses" />
+          <UsageBar resourceType="forms" label="Forms" />
+          <UsageBar resourceType="form_responses" label="Form Responses" />
         </div>
 
         <div className="flex items-center gap-3">
@@ -249,8 +252,8 @@ export function FreeTierAlert() {
           )}
           <span className="text-sm text-[hsl(var(--banner-info-foreground-light))]">
             {isOnBillingPage
-              ? 'Unlock unlimited widgets and responses with Pro'
-              : 'Unlock unlimited widgets and responses'}
+              ? 'Unlock unlimited widgets, forms, and responses'
+              : 'Unlock unlimited widgets, forms, and responses'}
           </span>
         </div>
       </AlertDescription>

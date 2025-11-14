@@ -290,6 +290,7 @@ export interface RecentActivity {
   converted_to_action_item_id?: string | null
   is_actionable?: boolean
   widget_name?: string
+  form_name?: string
   rating?: number
 }
 
@@ -316,4 +317,90 @@ export interface Integration {
   auth_data: Record<string, unknown>
   created_at: string
   updated_at: string
+}
+
+// Form V2 Types
+export interface FormFieldV2 {
+  id: string
+  form_id: string
+  field_type: 'text' | 'email' | 'number' | 'choice'
+  field_key: string
+  label: string
+  is_required: boolean
+  order_index: number
+  config: Array<{ key: string; value: any }>
+  created_at: string
+  updated_at?: string | null
+}
+
+export interface FormV2 {
+  id: string
+  project_id: string
+  name: string
+  form_type: string
+  description?: string
+  is_active: boolean
+  public_link: string
+  config: {
+    theme?: string
+    primaryColor?: string
+    headerGradientEnd?: string
+    backgroundColor?: string
+    textColor?: string
+    buttonTextColor?: string
+    pageBackground?: string
+  }
+  created_at: string
+  updated_at?: string
+  fields: FormFieldV2[]
+  embed_code?: string | null
+}
+
+export interface FormFieldCreate {
+  field_type: 'text' | 'email' | 'number' | 'choice'
+  field_key: string
+  label: string
+  is_required?: boolean
+  order_index?: number
+  config?: Array<{ key: string; value: any }>
+}
+
+export interface FormCreate {
+  project_id: string
+  name: string
+  description?: string
+  is_active?: boolean
+  fields?: FormFieldCreate[]
+  config?: Record<string, any>
+}
+
+export interface FormUpdate {
+  name?: string
+  description?: string
+  is_active?: boolean
+  config?: Record<string, any>
+}
+
+export interface FormResponseV2 {
+  id: string
+  form_id: string
+  answers: Record<string, any>
+  submitter_name?: string | null
+  submitter_email?: string | null
+  ip_address?: string | null
+  user_agent?: string | null
+  created_at: string
+  updated_at?: string | null
+}
+
+export interface FormResponseV2ListResponse {
+  total: number
+  items: FormResponseV2[]
+}
+
+export interface FormMetrics {
+  total_responses: number
+  average_score?: number
+  response_rate?: number
+  completion_rate?: number
 }

@@ -23,6 +23,7 @@ export function BugReports() {
   const [startDate, setStartDate] = useState<Date | undefined>()
   const [endDate, setEndDate] = useState<Date | undefined>()
   const [severityFilter, setSeverityFilter] = useState<string>('all')
+  const [sourceFilter, setSourceFilter] = useState('all')
   const [sortBy, setSortBy] = useState<string>('newest')
   const [searchQuery, setSearchQuery] = useState('')
   const [isSelectionMode, setIsSelectionMode] = useState(false)
@@ -43,12 +44,18 @@ export function BugReports() {
     setStartDate(undefined)
     setEndDate(undefined)
     setSeverityFilter('all')
+    setSourceFilter('all')
     setSortBy('newest')
     setSearchQuery('')
   }
 
   const hasActiveFilters =
-    startDate || endDate || severityFilter !== 'all' || sortBy !== 'newest' || searchQuery
+    startDate ||
+    endDate ||
+    severityFilter !== 'all' ||
+    sourceFilter !== 'all' ||
+    sortBy !== 'newest' ||
+    searchQuery
 
   const convertMutation = useMutation({
     mutationFn: ({ feedbackId, conversionData }: { feedbackId: string; conversionData: any }) =>
@@ -114,6 +121,16 @@ export function BugReports() {
   const filteredBugReports = feedback
     .filter((item: any) => item.feedback_type === 'bug_report')
     .filter((bug: any) => {
+      if (sourceFilter === 'widgets') {
+        if (!bug.widget_id || bug.feedback_metadata?.form_response_v2_id) {
+          return false
+        }
+      }
+      if (sourceFilter === 'forms') {
+        if (!bug.feedback_metadata?.form_response_v2_id) {
+          return false
+        }
+      }
       if (startDate && new Date(bug.created_at) < startDate) return false
       if (endDate && new Date(bug.created_at) > endDate) return false
 
@@ -195,7 +212,7 @@ export function BugReports() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
             <DatePicker
               date={startDate}
               onDateChange={setStartDate}
@@ -220,6 +237,17 @@ export function BugReports() {
                 <SelectItem value="high">High</SelectItem>
                 <SelectItem value="medium">Medium</SelectItem>
                 <SelectItem value="low">Low</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={sourceFilter} onValueChange={setSourceFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Source" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sources</SelectItem>
+                <SelectItem value="widgets">Widgets</SelectItem>
+                <SelectItem value="forms">Forms</SelectItem>
               </SelectContent>
             </Select>
 
@@ -258,6 +286,7 @@ export function BugReports() {
                       startDate,
                       endDate,
                       severityFilter !== 'all',
+                      sourceFilter !== 'all',
                       sortBy !== 'newest',
                       searchQuery,
                     ].filter(Boolean).length

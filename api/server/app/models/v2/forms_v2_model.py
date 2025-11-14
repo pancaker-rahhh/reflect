@@ -5,6 +5,7 @@ from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from app.models.base_model import BaseModel
 
+
 class FormV2(BaseModel):
     __tablename__ = 'forms_v2'
 
@@ -17,16 +18,22 @@ class FormV2(BaseModel):
     form_type: Mapped[str] = mapped_column(String(50), default='custom')
     description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    public_link: Mapped[str] = mapped_column(String(16), unique=True, nullable=False, index=True)
+    public_link: Mapped[str] = mapped_column(
+        String(16), unique=True, nullable=False, index=True
+    )
     config: Mapped[dict] = mapped_column(JSONB, default=dict)
 
     project = relationship('Project')
     fields: Mapped[List['FormFieldV2']] = relationship(
-        'FormFieldV2', back_populates='form', cascade='all, delete-orphan'
+        'FormFieldV2',
+        back_populates='form',
+        cascade='all, delete-orphan',
+        order_by='FormFieldV2.order_index',
     )
     responses: Mapped[List['FormResponseV2']] = relationship(
         'FormResponseV2', back_populates='form', cascade='all, delete-orphan'
     )
+
 
 class FormFieldV2(BaseModel):
     __tablename__ = 'form_fields_v2'
@@ -65,8 +72,8 @@ class FormResponseV2(BaseModel):
     # - Renamed fields: old responses keep old key, new responses use new key
     # The form_id reference allows comparing response keys against current form fields
     answers: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
-    
-    # Optional metadata
+    feedback_ids: Mapped[List[str]] = mapped_column(JSONB, nullable=True, default=list)
+
     submitter_email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     submitter_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)

@@ -19,6 +19,7 @@ class RecentActivityResponse(BaseModel):
     converted_to_action_item_id: Optional[str] = None
     is_actionable: bool
     widget_name: Optional[str] = None
+    form_name: Optional[str] = None
 
 
 class FeedbackDataResponse(BaseModel):
