@@ -98,4 +98,8 @@ secrets = {
     secret_name = "dodo-product-id-pro-yearly"
     version     = "latest"
   }
+  DODO_PRODUCT_ID_PRO_LIFETIME = {
+    secret_name = "dodo-product-id-pro-lifetime"
+    version     = "latest"
+  }
 }
