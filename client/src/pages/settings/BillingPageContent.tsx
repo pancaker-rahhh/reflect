@@ -288,77 +288,86 @@ export function BillingPageContent() {
 
               <Separator />
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-semibold">Features</h4>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {Object.entries(subscription.features).map(
-                      ([feature, enabled]) =>
-                        enabled && (
-                          <Badge key={feature} variant="outline" className="text-xs">
-                            {feature.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
-                          </Badge>
-                        )
-                    )}
-                    {Object.values(subscription.features).every((enabled) => !enabled) && (
-                      <span className="text-sm text-muted-foreground">
-                        Upgrade plan for premium features
-                      </span>
-                    )}
-                  </div>
+              <div>
+                <h4 className="font-semibold">Features</h4>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {Object.entries(subscription.features).map(
+                    ([feature, enabled]) =>
+                      enabled && (
+                        <Badge key={feature} variant="outline" className="text-xs">
+                          {feature.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+                        </Badge>
+                      )
+                  )}
+                  {Object.values(subscription.features).every((enabled) => !enabled) && (
+                    <span className="text-sm text-muted-foreground">
+                      Upgrade plan for premium features
+                    </span>
+                  )}
                 </div>
+              </div>
 
-                <div className="flex flex-col md:flex-row gap-2">
-                  {subscription.status === 'cancelled' || subscription.status === 'expired' ? (
-                    <>
-                      {subscription.subscription_ends_at &&
-                        new Date(subscription.subscription_ends_at) > new Date() && (
-                          <Button
-                            onClick={handleUndoCancellation}
-                            disabled={isUndoingCancellation}
-                            className="w-full md:w-auto"
-                          >
-                            {isUndoingCancellation ? 'Processing...' : 'Undo Cancellation'}
-                          </Button>
-                        )}
-                    </>
-                  ) : subscription.plan !== 'free' && subscription.plan !== 'pro_lifetime' ? (
-                    <>
-                      <div className="flex gap-2">
-                        {subscription.plan === 'pro_monthly' && (
-                          <Button
-                            variant="outline"
-                            onClick={() => handleChangePlan('yearly')}
-                            disabled={isChangingPlan}
-                            className="w-full bg-primary/90 text-white hover:bg-primary hover:text-white"
-                          >
-                            {isChangingPlan ? 'Changing…' : 'Switch to Yearly'}
-                          </Button>
-                        )}
-                        {subscription.plan === 'pro_yearly' && (
-                          <Button
-                            variant="outline"
-                            onClick={() => handleChangePlan('monthly')}
-                            disabled={isChangingPlan}
-                            className="w-full bg-primary/90 text-white hover:bg-primary hover:text-white"
-                          >
-                            {isChangingPlan ? 'Changing…' : 'Switch to Monthly'}
-                          </Button>
-                        )}
-                      </div>
-                      {isOrgOwner && (
+              <Separator />
+
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-3">
+                {subscription.status === 'cancelled' || subscription.status === 'expired' ? (
+                  <>
+                    {subscription.subscription_ends_at &&
+                      new Date(subscription.subscription_ends_at) > new Date() && (
                         <Button
-                          variant="outline"
-                          onClick={() => setShowCancelConfirm(true)}
-                          disabled={isCancelling}
-                          className="w-full hover:bg-red-500 hover:text-white"
+                          onClick={handleUndoCancellation}
+                          disabled={isUndoingCancellation}
+                          className="w-full md:w-auto"
                         >
-                          {isCancelling ? 'Cancelling…' : 'Cancel Subscription'}
+                          {isUndoingCancellation ? 'Processing...' : 'Undo Cancellation'}
                         </Button>
                       )}
-                    </>
-                  ) : null}
-                </div>
+                  </>
+                ) : subscription.plan !== 'free' && subscription.plan !== 'pro_lifetime' ? (
+                  <>
+                    {subscription.plan === 'pro_monthly' && (
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground">
+                          Save 17% by switching to yearly billing
+                        </p>
+                        <Button
+                          variant="default"
+                          onClick={() => handleChangePlan('yearly')}
+                          disabled={isChangingPlan}
+                          className="w-full md:w-auto"
+                        >
+                          {isChangingPlan ? 'Changing…' : 'Switch to Yearly'}
+                        </Button>
+                      </div>
+                    )}
+                    {subscription.plan === 'pro_yearly' && (
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground">
+                          Prefer monthly billing? Switch to monthly plan
+                        </p>
+                        <Button
+                          variant="default"
+                          onClick={() => handleChangePlan('monthly')}
+                          disabled={isChangingPlan}
+                          className="w-full md:w-auto"
+                        >
+                          {isChangingPlan ? 'Changing…' : 'Switch to Monthly'}
+                        </Button>
+                      </div>
+                    )}
+                    {isOrgOwner && (
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowCancelConfirm(true)}
+                        disabled={isCancelling}
+                        className="w-full md:w-auto hover:bg-red-500 hover:text-white"
+                      >
+                        {isCancelling ? 'Cancelling…' : 'Cancel Subscription'}
+                      </Button>
+                    )}
+                  </>
+                ) : null}
               </div>
 
               {cancellationError && (
@@ -406,16 +415,21 @@ export function BillingPageContent() {
         </CardContent>
       </Card>
 
-      {/* Payment Plans - Always visible */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Available Plans</CardTitle>
-          <CardDescription>Choose the plan that best fits your needs</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <PaymentPlans onPlanSelect={(_plan) => {}} />
-        </CardContent>
-      </Card>
+      {/* Payment Plans - Only show for free tier or cancelled/expired subscriptions */}
+      {subscription &&
+        (subscription.plan === 'free' ||
+          subscription.status === 'cancelled' ||
+          subscription.status === 'expired') && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Available Plans</CardTitle>
+              <CardDescription>Choose the plan that best fits your needs</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PaymentPlans onPlanSelect={(_plan) => {}} />
+            </CardContent>
+          </Card>
+        )}
 
       {/* Billing Information */}
       <Card>
