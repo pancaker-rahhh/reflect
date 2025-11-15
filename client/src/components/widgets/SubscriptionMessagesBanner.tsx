@@ -86,78 +86,23 @@ export function FreeTierAlert() {
   const isFreeTier = org.subscription_plan === 'free'
   const isCancelled = org.subscription_status === 'cancelled'
 
-  if (lifetimeEligibility?.eligible && !org.lifetime_offer_dismissed_at) {
-    const daysUntilExpiry = Math.ceil(
-      (new Date(lifetimeEligibility.expires_at).getTime() - new Date().getTime()) /
-        (1000 * 60 * 60 * 24)
-    )
+  // Show lifetime offer banner if eligible
+  const showLifetimeOffer = lifetimeEligibility?.eligible && !org.lifetime_offer_dismissed_at
+  const daysUntilExpiry = showLifetimeOffer
+    ? Math.ceil(
+        (new Date(lifetimeEligibility.expires_at).getTime() - new Date().getTime()) /
+          (1000 * 60 * 60 * 24)
+      )
+    : 0
 
-    return (
-      <Alert className="p-6 border-2 border-primary/30 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <AlertTitle className="text-2xl font-semibold text-primary">
-                🎉 Early Supporter Offer: Lifetime Pro Access
-              </AlertTitle>
-            </div>
-            <AlertDescription className="space-y-4">
-              <div className="text-lg font-medium">
-                <p className="text-foreground">
-                  As one of our first users, you&apos;re eligible for an exclusive lifetime deal!
-                </p>
-                <p className="text-muted-foreground mt-2">
-                  Get Pro features for life for a one-time payment of $99.
-                </p>
-              </div>
+  // Show usage limits for free tier users
+  const showUsageLimits = isFreeTier
 
-              <div className="flex flex-wrap items-center gap-4 text-sm font-medium">
-                <div className="flex items-center gap-2 text-primary">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>Only {lifetimeEligibility.spots_remaining} spots remaining</span>
-                </div>
-                <div className="flex items-center gap-2 text-primary">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>Expires in {daysUntilExpiry} days</span>
-                </div>
-              </div>
+  if (!isFreeTier && !isCancelled && !showLifetimeOffer) return null
 
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <Button
-                  size="lg"
-                  className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                  onClick={handleClaimLifetime}
-                  disabled={isCreatingPayment}
-                >
-                  {isCreatingPayment ? 'Redirecting to checkout...' : 'Claim Lifetime Access'}
-                </Button>
-                {!isOnBillingPage && (
-                  <Button size="lg" variant="outline" onClick={handleUpgrade}>
-                    See All Plans
-                  </Button>
-                )}
-              </div>
-            </AlertDescription>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="shrink-0 h-8 w-8"
-            onClick={() => dismissMutation.mutate()}
-            disabled={dismissMutation.isPending}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      </Alert>
-    )
-  }
-
-  if (!isFreeTier && !isCancelled) return null
-
-  const widgetUsage = getUsageInfo('widgets')
-  const responseUsage = getUsageInfo('responses')
-  const formUsage = getUsageInfo('forms')
+  const widgetUsage = showUsageLimits ? getUsageInfo('widgets') : null
+  const responseUsage = showUsageLimits ? getUsageInfo('responses') : null
+  const formUsage = showUsageLimits ? getUsageInfo('forms') : null
 
   // Check if still in grace period (subscription hasn't ended yet)
   // Use org.subscription_ends_at for consistency with org.subscription_status
@@ -171,10 +116,62 @@ export function FreeTierAlert() {
       )
     : 0
 
-  if (isCancelled) {
-    if (isInGracePeriod) {
-      // Still in grace period - show undo cancellation option
-      return (
+  return (
+    <div className="space-y-4">
+      {/* Lifetime Offer Banner */}
+      {showLifetimeOffer && (
+        <Alert className="p-6 border-2 border-primary/30 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <AlertTitle className="text-2xl font-semibold text-primary">
+                  🎉 Early Access Offer! Get Pro for Lifetime!
+                </AlertTitle>
+              </div>
+              <AlertDescription className="space-y-4">
+                <div className="flex flex-wrap items-center gap-4 text-sm font-medium">
+                  <div className="flex items-center gap-2 text-primary">
+                    <AlertCircle className="h-4 w-4" />
+                    <span>Only {lifetimeEligibility.spots_remaining} spots remaining</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-primary">
+                    <AlertCircle className="h-4 w-4" />
+                    <span>Expires in {daysUntilExpiry} days</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <Button
+                    size="lg"
+                    className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                    onClick={handleClaimLifetime}
+                    disabled={isCreatingPayment}
+                  >
+                    {isCreatingPayment ? 'Redirecting to checkout...' : 'Claim Lifetime Access'}
+                  </Button>
+                  {!isOnBillingPage && (
+                    <Button size="lg" variant="outline" onClick={handleUpgrade}>
+                      See All Plans
+                    </Button>
+                  )}
+                </div>
+              </AlertDescription>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="shrink-0 h-8 w-8"
+              onClick={() => dismissMutation.mutate()}
+              disabled={dismissMutation.isPending}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </Alert>
+      )}
+
+      {/* Cancelled Subscription Banners */}
+      {isCancelled && isInGracePeriod && (
         <Alert className="text-[hsl(var(--banner-info-foreground-light))] p-4 bg-[hsl(var(--banner-info-bg-light))]">
           <AlertCircle className="h-4 w-4 text-[hsl(var(--banner-info-foreground-light))]" />
           <AlertTitle className="text-[hsl(var(--banner-info-foreground-light))]">
@@ -199,10 +196,9 @@ export function FreeTierAlert() {
             </div>
           </AlertDescription>
         </Alert>
-      )
-    } else {
-      // Grace period expired - show renew option
-      return (
+      )}
+
+      {isCancelled && !isInGracePeriod && (
         <Alert className="text-[hsl(var(--banner-info-foreground-light))] p-4 bg-[hsl(var(--banner-info-bg-light))]">
           <AlertCircle className="h-4 w-4 text-[hsl(var(--banner-info-foreground-light))]" />
           <AlertTitle className="text-[hsl(var(--banner-info-foreground-light))]">
@@ -220,43 +216,42 @@ export function FreeTierAlert() {
             </div>
           </AlertDescription>
         </Alert>
-      )
-    }
-  }
+      )}
 
-  return (
-    <Alert className="text-[hsl(var(--banner-info-foreground-light))] p-4 bg-[hsl(var(--banner-info-bg-light))]">
-      <AlertCircle className="h-4 w-4 text-[hsl(var(--banner-info-foreground-light))]" />
-      <AlertTitle className="text-[hsl(var(--banner-info-foreground-light))]">
-        Free Tier Limitations
-      </AlertTitle>
-      <AlertDescription className="mt-2 space-y-4">
-        <p className="text-[hsl(var(--banner-info-foreground-light))]">
-          Your current plan allows for {widgetUsage.limit} active widget, {formUsage.limit} form,
-          and up to {responseUsage.limit} responses per month.
-        </p>
+      {/* Free Tier Usage Limits */}
+      {showUsageLimits && widgetUsage && responseUsage && formUsage && (
+        <Alert className="text-[hsl(var(--banner-info-foreground-light))] p-4 bg-[hsl(var(--banner-info-bg-light))]">
+          <AlertCircle className="h-4 w-4 text-[hsl(var(--banner-info-foreground-light))]" />
+          <AlertTitle className="text-[hsl(var(--banner-info-foreground-light))]">
+            Free Tier Limitations
+          </AlertTitle>
+          <AlertDescription className="mt-2 space-y-4">
+            <p className="text-[hsl(var(--banner-info-foreground-light))]">
+              Your current plan allows for {widgetUsage.limit} active widget, {formUsage.limit}{' '}
+              form, and up to {responseUsage.limit} responses per month.
+            </p>
 
-        <div className="space-y-3">
-          <UsageBar resourceType="widgets" label="Widgets" />
-          <UsageBar resourceType="responses" label="Responses" />
-          <UsageBar resourceType="forms" label="Forms" />
-          <UsageBar resourceType="form_responses" label="Form Responses" />
-        </div>
+            <div className="space-y-3">
+              <UsageBar resourceType="widgets" label="Widgets" />
+              <UsageBar resourceType="responses" label="Responses" />
+              <UsageBar resourceType="forms" label="Forms" />
+              <UsageBar resourceType="form_responses" label="Form Responses" />
+            </div>
 
-        <div className="flex items-center gap-3">
-          {!isOnBillingPage && (
-            <Button size="sm" className="gap-2" onClick={handleUpgrade}>
-              <Zap className="h-4 w-4" />
-              Upgrade to Pro
-            </Button>
-          )}
-          <span className="text-sm text-[hsl(var(--banner-info-foreground-light))]">
-            {isOnBillingPage
-              ? 'Unlock unlimited widgets, forms, and responses'
-              : 'Unlock unlimited widgets, forms, and responses'}
-          </span>
-        </div>
-      </AlertDescription>
-    </Alert>
+            <div className="flex items-center gap-3">
+              {!isOnBillingPage && (
+                <Button size="sm" className="gap-2" onClick={handleUpgrade}>
+                  <Zap className="h-4 w-4" />
+                  Upgrade to Pro
+                </Button>
+              )}
+              <span className="text-sm text-[hsl(var(--banner-info-foreground-light))]">
+                Unlock unlimited widgets, forms, and responses
+              </span>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+    </div>
   )
 }

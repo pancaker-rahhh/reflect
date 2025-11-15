@@ -28,7 +28,6 @@ export function BillingPageContent() {
     isUndoingCancellation,
     isChangingPlan,
   } = usePayment()
-  const [showUpgrade, setShowUpgrade] = useState(false)
   const [cancellationError, setCancellationError] = useState<string | null>(null)
   const [changeError, setChangeError] = useState<string | null>(null)
   const [infoMessage, setInfoMessage] = useState<string | null>(null)
@@ -255,9 +254,11 @@ export function BillingPageContent() {
               {/* Failure banners */}
               {subscription.status === 'past_due' && (
                 <Alert variant="destructive">
-                  <AlertDescription className="flex items-center justify-between">
-                    <span>Payment failed. Please try again to restore service.</span>
-                    <Button onClick={() => setShowUpgrade(true)}>Retry Payment</Button>
+                  <AlertDescription>
+                    <span>
+                      Payment failed. Please select a plan below to retry payment and restore
+                      service.
+                    </span>
                   </AlertDescription>
                 </Alert>
               )}
@@ -287,31 +288,33 @@ export function BillingPageContent() {
 
               <Separator />
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-semibold">Features</h4>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {Object.entries(subscription.features).map(
-                      ([feature, enabled]) =>
-                        enabled && (
-                          <Badge key={feature} variant="outline" className="text-xs">
-                            {feature.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
-                          </Badge>
-                        )
-                    )}
-                    {Object.values(subscription.features).every((enabled) => !enabled) && (
-                      <span className="text-sm text-muted-foreground">
-                        No premium features enabled
-                      </span>
-                    )}
-                  </div>
+              <div>
+                <h4 className="font-semibold">Features</h4>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {Object.entries(subscription.features).map(
+                    ([feature, enabled]) =>
+                      enabled && (
+                        <Badge key={feature} variant="outline" className="text-xs">
+                          {feature.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+                        </Badge>
+                      )
+                  )}
+                  {Object.values(subscription.features).every((enabled) => !enabled) && (
+                    <span className="text-sm text-muted-foreground">
+                      Upgrade plan for premium features
+                    </span>
+                  )}
                 </div>
+              </div>
 
-                <div className="flex flex-col md:flex-row gap-2">
-                  {subscription.status === 'cancelled' || subscription.status === 'expired' ? (
-                    <>
-                      {subscription.subscription_ends_at &&
-                      new Date(subscription.subscription_ends_at) > new Date() ? (
+              <Separator />
+
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-3">
+                {subscription.status === 'cancelled' || subscription.status === 'expired' ? (
+                  <>
+                    {subscription.subscription_ends_at &&
+                      new Date(subscription.subscription_ends_at) > new Date() && (
                         <Button
                           onClick={handleUndoCancellation}
                           disabled={isUndoingCancellation}
@@ -319,51 +322,52 @@ export function BillingPageContent() {
                         >
                           {isUndoingCancellation ? 'Processing...' : 'Undo Cancellation'}
                         </Button>
-                      ) : (
-                        <Button onClick={() => setShowUpgrade(true)} className="w-full md:w-auto">
-                          Renew Subscription
-                        </Button>
                       )}
-                    </>
-                  ) : subscription.plan === 'free' ? (
-                    <Button onClick={() => setShowUpgrade(true)}>Upgrade Plan</Button>
-                  ) : (
-                    <>
-                      <div className="flex gap-2">
-                        {subscription.plan === 'pro_monthly' && (
-                          <Button
-                            variant="outline"
-                            onClick={() => handleChangePlan('yearly')}
-                            disabled={isChangingPlan}
-                            className="w-full bg-primary/90 text-white hover:bg-primary hover:text-white"
-                          >
-                            {isChangingPlan ? 'Changing…' : 'Switch to Yearly'}
-                          </Button>
-                        )}
-                        {subscription.plan === 'pro_yearly' && (
-                          <Button
-                            variant="outline"
-                            onClick={() => handleChangePlan('monthly')}
-                            disabled={isChangingPlan}
-                            className="w-full bg-primary/90 text-white hover:bg-primary hover:text-white"
-                          >
-                            {isChangingPlan ? 'Changing…' : 'Switch to Monthly'}
-                          </Button>
-                        )}
-                      </div>
-                      {isOrgOwner && (
+                  </>
+                ) : subscription.plan !== 'free' && subscription.plan !== 'pro_lifetime' ? (
+                  <>
+                    {subscription.plan === 'pro_monthly' && (
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground">
+                          Save 17% by switching to yearly billing
+                        </p>
                         <Button
-                          variant="outline"
-                          onClick={() => setShowCancelConfirm(true)}
-                          disabled={isCancelling}
-                          className="w-full hover:bg-red-500 hover:text-white"
+                          variant="default"
+                          onClick={() => handleChangePlan('yearly')}
+                          disabled={isChangingPlan}
+                          className="w-full md:w-auto"
                         >
-                          {isCancelling ? 'Cancelling…' : 'Cancel Subscription'}
+                          {isChangingPlan ? 'Changing…' : 'Switch to Yearly'}
                         </Button>
-                      )}
-                    </>
-                  )}
-                </div>
+                      </div>
+                    )}
+                    {subscription.plan === 'pro_yearly' && (
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground">
+                          Prefer monthly billing? Switch to monthly plan
+                        </p>
+                        <Button
+                          variant="default"
+                          onClick={() => handleChangePlan('monthly')}
+                          disabled={isChangingPlan}
+                          className="w-full md:w-auto"
+                        >
+                          {isChangingPlan ? 'Changing…' : 'Switch to Monthly'}
+                        </Button>
+                      </div>
+                    )}
+                    {isOrgOwner && (
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowCancelConfirm(true)}
+                        disabled={isCancelling}
+                        className="w-full md:w-auto hover:bg-red-500 hover:text-white"
+                      >
+                        {isCancelling ? 'Cancelling…' : 'Cancel Subscription'}
+                      </Button>
+                    )}
+                  </>
+                ) : null}
               </div>
 
               {cancellationError && (
@@ -404,31 +408,28 @@ export function BillingPageContent() {
               <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold">No Subscription Found</h3>
               <p className="text-muted-foreground mb-4">
-                Unable to load your subscription information.
+                Unable to load your subscription information. Please view available plans below.
               </p>
-              <Button onClick={() => setShowUpgrade(true)}>View Available Plans</Button>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Payment Plans */}
-      {showUpgrade && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Available Plans</CardTitle>
-            <CardDescription>Choose the plan that best fits your needs</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <PaymentPlans
-              onPlanSelect={(_plan) => {
-                // Close the upgrade modal and let PaymentPlans handle the payment flow
-                setShowUpgrade(false)
-              }}
-            />
-          </CardContent>
-        </Card>
-      )}
+      {/* Payment Plans - Only show for free tier or cancelled/expired subscriptions */}
+      {subscription &&
+        (subscription.plan === 'free' ||
+          subscription.status === 'cancelled' ||
+          subscription.status === 'expired') && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Available Plans</CardTitle>
+              <CardDescription>Choose the plan that best fits your needs</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PaymentPlans onPlanSelect={(_plan) => {}} />
+            </CardContent>
+          </Card>
+        )}
 
       {/* Billing Information */}
       <Card>
