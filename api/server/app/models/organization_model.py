@@ -62,6 +62,7 @@ class Organization(BaseModel):
             SubscriptionPlanEnum,
             values_callable=lambda e: [m.value for m in e],
             native_enum=False,
+            length=20,
         ),
         default=SubscriptionPlanEnum.FREE,
     )
