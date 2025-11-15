@@ -9,6 +9,10 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  Download,
+  FileSpreadsheet,
+  FileText,
+  Loader2,
 } from 'lucide-react'
 import { formApi } from '@/lib/api/form'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -22,12 +26,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { FormResponseCard } from '@/components/forms/FormResponseCard'
 import { PageLoading } from '@/components/common/LoadingSpinner'
+import { useToastNotifications } from '@/hooks/useToastNotifications'
+import { exportToCSV, exportToExcel } from '@/lib/exportFormResponses'
 import type { FormFieldV2, FormResponseV2 } from '@/types'
 
 const ITEMS_PER_PAGE = 20
@@ -35,6 +47,7 @@ const ITEMS_PER_PAGE = 20
 export function FormResponses() {
   const navigate = useNavigate()
   const { formId } = useParams<{ formId: string }>()
+  const toast = useToastNotifications()
   const [startDate, setStartDate] = useState<Date | undefined>()
   const [endDate, setEndDate] = useState<Date | undefined>()
   const [sortBy, setSortBy] = useState<string>('newest')
@@ -42,6 +55,7 @@ export function FormResponses() {
   const [selectedSurveyTypes, setSelectedSurveyTypes] = useState<string[]>([])
   const [scoreRangeFilter, setScoreRangeFilter] = useState<string>('all')
   const [currentPage, setCurrentPage] = useState(1)
+  const [isExporting, setIsExporting] = useState(false)
 
   const handleFilterChange = () => {
     setCurrentPage(1)
@@ -217,9 +231,10 @@ export function FormResponses() {
     return options
   }, [surveyFields])
 
-  const filteredResponses =
-    responsesData?.items
-      ?.filter((response) => {
+  const filteredResponses = useMemo(() => {
+    const responses = responsesData?.items || []
+    return responses
+      .filter((response) => {
         if (startDate && new Date(response.created_at) < startDate) return false
         if (endDate && new Date(response.created_at) > endDate) return false
 
@@ -258,9 +273,109 @@ export function FormResponses() {
           default:
             return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         }
-      }) || []
+      })
+  }, [
+    responsesData?.items,
+    startDate,
+    endDate,
+    searchQuery,
+    selectedSurveyTypes,
+    scoreRangeFilter,
+    sortBy,
+    surveyFields,
+  ])
+
+  const applyFilters = (responses: FormResponseV2[]) => {
+    return responses
+      .filter((response) => {
+        if (startDate && new Date(response.created_at) < startDate) return false
+        if (endDate && new Date(response.created_at) > endDate) return false
+
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase()
+          const searchableText = [
+            response.submitter_name,
+            response.submitter_email,
+            ...Object.values(response.answers).map((v) => String(v ?? '')),
+          ]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase()
+
+          if (!searchableText.includes(query)) return false
+        }
+
+        if (selectedSurveyTypes.length > 0) {
+          const hasAllSelectedTypes = selectedSurveyTypes.every((type) =>
+            hasSurveyTypeAnswer(response, type, surveyFields)
+          )
+          if (!hasAllSelectedTypes) return false
+        }
+
+        if (scoreRangeFilter !== 'all') {
+          if (!matchesScoreRange(response, scoreRangeFilter, surveyFields)) return false
+        }
+
+        return true
+      })
+      .sort((a, b) => {
+        switch (sortBy) {
+          case 'oldest':
+            return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          case 'newest':
+          default:
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        }
+      })
+  }
 
   const totalPages = Math.ceil((responsesData?.total || 0) / ITEMS_PER_PAGE)
+
+  const handleExport = async (format: 'csv' | 'excel') => {
+    if (!formId || !form) return
+
+    setIsExporting(true)
+    const loadingToast = toast.showLoading('Fetching all responses...', 'Exporting')
+
+    try {
+      let allResponses: FormResponseV2[] = []
+      let skip = 0
+      const limit = 100
+
+      while (true) {
+        const data = await formApi.getResponses(formId, skip, limit)
+        allResponses = [...allResponses, ...data.items]
+
+        if (data.items.length < limit || allResponses.length >= data.total) {
+          break
+        }
+        skip += limit
+      }
+
+      const filtered = applyFilters(allResponses)
+
+      if (filtered.length === 0) {
+        loadingToast.dismiss()
+        toast.showWarning('No responses match your current filters', 'No Data')
+        setIsExporting(false)
+        return
+      }
+
+      loadingToast.dismiss()
+
+      if (format === 'csv') {
+        exportToCSV(filtered, form.fields || [], form.name)
+        toast.showSuccess(`Exported ${filtered.length} responses as CSV`, 'Export Complete')
+      } else {
+        exportToExcel(filtered, form.fields || [], form.name)
+        toast.showSuccess(`Exported ${filtered.length} responses as Excel`, 'Export Complete')
+      }
+    } catch (error) {
+      toast.showError((error as Error).message || 'Failed to export responses', 'Export Error')
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
   const isLoading = isLoadingForm || isLoadingResponses
   const hasError = formError || responsesError
@@ -297,9 +412,50 @@ export function FormResponses() {
             <p className="text-muted-foreground mt-2">View and manage responses for this form</p>
           </div>
         </div>
-        <Badge variant="secondary" className="text-lg px-3 py-1">
-          {responsesData?.total || 0} Responses
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Badge variant="secondary" className="text-lg px-3 py-1">
+            {responsesData?.total || 0} Responses
+          </Badge>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                disabled={!responsesData?.total || responsesData.total === 0 || isExporting}
+                className="gap-2"
+              >
+                {isExporting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Exporting...
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4" />
+                    Export
+                  </>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem
+                onClick={() => handleExport('csv')}
+                disabled={isExporting}
+                className="cursor-pointer"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Export as CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleExport('excel')}
+                disabled={isExporting}
+                className="cursor-pointer"
+              >
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                Export as Excel
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       <Card>
