@@ -98,18 +98,10 @@ export function FreeTierAlert() {
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <AlertTitle className="text-2xl font-semibold text-primary">
-                🎉 Early Supporter Offer: Lifetime Pro Access
+                🎉  Early Access Offer! Get Pro for Lifetime!
               </AlertTitle>
             </div>
             <AlertDescription className="space-y-4">
-              <div className="text-lg font-medium">
-                <p className="text-foreground">
-                  As one of our first users, you&apos;re eligible for an exclusive lifetime deal!
-                </p>
-                <p className="text-muted-foreground mt-2">
-                  Get Pro features for life for a one-time payment of $99.
-                </p>
-              </div>
 
               <div className="flex flex-wrap items-center gap-4 text-sm font-medium">
                 <div className="flex items-center gap-2 text-primary">
