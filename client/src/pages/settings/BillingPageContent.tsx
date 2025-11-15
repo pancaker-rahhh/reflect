@@ -28,7 +28,6 @@ export function BillingPageContent() {
     isUndoingCancellation,
     isChangingPlan,
   } = usePayment()
-  const [showUpgrade, setShowUpgrade] = useState(false)
   const [cancellationError, setCancellationError] = useState<string | null>(null)
   const [changeError, setChangeError] = useState<string | null>(null)
   const [infoMessage, setInfoMessage] = useState<string | null>(null)
@@ -255,9 +254,11 @@ export function BillingPageContent() {
               {/* Failure banners */}
               {subscription.status === 'past_due' && (
                 <Alert variant="destructive">
-                  <AlertDescription className="flex items-center justify-between">
-                    <span>Payment failed. Please try again to restore service.</span>
-                    <Button onClick={() => setShowUpgrade(true)}>Retry Payment</Button>
+                  <AlertDescription>
+                    <span>
+                      Payment failed. Please select a plan below to retry payment and restore
+                      service.
+                    </span>
                   </AlertDescription>
                 </Alert>
               )}
@@ -301,7 +302,7 @@ export function BillingPageContent() {
                     )}
                     {Object.values(subscription.features).every((enabled) => !enabled) && (
                       <span className="text-sm text-muted-foreground">
-                        No premium features enabled
+                        Upgrade plan for premium features
                       </span>
                     )}
                   </div>
@@ -311,23 +312,17 @@ export function BillingPageContent() {
                   {subscription.status === 'cancelled' || subscription.status === 'expired' ? (
                     <>
                       {subscription.subscription_ends_at &&
-                      new Date(subscription.subscription_ends_at) > new Date() ? (
-                        <Button
-                          onClick={handleUndoCancellation}
-                          disabled={isUndoingCancellation}
-                          className="w-full md:w-auto"
-                        >
-                          {isUndoingCancellation ? 'Processing...' : 'Undo Cancellation'}
-                        </Button>
-                      ) : (
-                        <Button onClick={() => setShowUpgrade(true)} className="w-full md:w-auto">
-                          Renew Subscription
-                        </Button>
-                      )}
+                        new Date(subscription.subscription_ends_at) > new Date() && (
+                          <Button
+                            onClick={handleUndoCancellation}
+                            disabled={isUndoingCancellation}
+                            className="w-full md:w-auto"
+                          >
+                            {isUndoingCancellation ? 'Processing...' : 'Undo Cancellation'}
+                          </Button>
+                        )}
                     </>
-                  ) : subscription.plan === 'free' ? (
-                    <Button onClick={() => setShowUpgrade(true)}>Upgrade Plan</Button>
-                  ) : (
+                  ) : subscription.plan !== 'free' && subscription.plan !== 'pro_lifetime' ? (
                     <>
                       <div className="flex gap-2">
                         {subscription.plan === 'pro_monthly' && (
@@ -362,7 +357,7 @@ export function BillingPageContent() {
                         </Button>
                       )}
                     </>
-                  )}
+                  ) : null}
                 </div>
               </div>
 
@@ -404,31 +399,23 @@ export function BillingPageContent() {
               <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold">No Subscription Found</h3>
               <p className="text-muted-foreground mb-4">
-                Unable to load your subscription information.
+                Unable to load your subscription information. Please view available plans below.
               </p>
-              <Button onClick={() => setShowUpgrade(true)}>View Available Plans</Button>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Payment Plans */}
-      {showUpgrade && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Available Plans</CardTitle>
-            <CardDescription>Choose the plan that best fits your needs</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <PaymentPlans
-              onPlanSelect={(_plan) => {
-                // Close the upgrade modal and let PaymentPlans handle the payment flow
-                setShowUpgrade(false)
-              }}
-            />
-          </CardContent>
-        </Card>
-      )}
+      {/* Payment Plans - Always visible */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Available Plans</CardTitle>
+          <CardDescription>Choose the plan that best fits your needs</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PaymentPlans onPlanSelect={(_plan) => {}} />
+        </CardContent>
+      </Card>
 
       {/* Billing Information */}
       <Card>

@@ -1,7 +1,7 @@
 import { apiClient } from '../client'
 
 export interface SubscriptionPlan {
-  plan: 'free' | 'pro' | 'pro_monthly' | 'pro_yearly'
+  plan: 'free' | 'pro' | 'pro_monthly' | 'pro_yearly' | 'pro_lifetime'
   status: string
   organization_id: string
   subscription_ends_at?: string | null
