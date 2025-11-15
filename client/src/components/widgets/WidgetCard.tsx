@@ -21,13 +21,16 @@ interface WidgetCardProps {
 
 export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: WidgetCardProps) {
   const [_copied, _setCopied] = useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const { data: metrics, isLoading: metricsLoading } = useWidgetMetrics(widget.id)
 
   const moduleCount = Object.values(widget.configuration?.modules || {}).filter(Boolean).length
 
   if (viewMode === 'list') {
     return (
-      <Card className="group relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg border-l-4 border-l-transparent hover:border-l-primary/60 hover:border-b-4 hover:border-b-foreground/20">
+      <Card
+        className={`group relative overflow-hidden border-l-4 border-l-transparent transition-shadow duration-200 ease-in-out ${isDropdownOpen ? '!shadow-md' : 'hover:shadow-md'}`}
+      >
         <div className="absolute top-0 left-0 h-full w-1 bg-gradient-to-b from-primary/60 to-accent/60" />
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
@@ -63,7 +66,7 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <DropdownMenu>
+                  <DropdownMenu onOpenChange={setIsDropdownOpen}>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
@@ -98,7 +101,9 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
 
   // Grid view (default)
   return (
-    <Card className="group relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 border-0 shadow-md hover:border-b-4 hover:border-b-foreground/20">
+    <Card
+      className={`group relative overflow-hidden transition-shadow duration-200 ease-in-out border-0 shadow-md ${isDropdownOpen ? '!shadow-lg' : 'hover:shadow-lg'}`}
+    >
       <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-primary/60 to-accent/60" />
 
       <CardHeader className="pt-6 pb-4">
@@ -118,7 +123,7 @@ export function WidgetCard({ widget, viewMode = 'grid', onDelete, onGetCode }: W
           </div>
 
           <div className="flex items-center gap-2 ml-2">
-            <DropdownMenu>
+            <DropdownMenu onOpenChange={setIsDropdownOpen}>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
