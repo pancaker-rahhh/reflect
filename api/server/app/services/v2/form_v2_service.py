@@ -47,6 +47,8 @@ class FormV2Service:
         config = []
 
         if isinstance(field_data, TextFieldCreate):
+            if 'email' in field_data.field_key.lower() and field_data.max_length == 255:
+                config.append({'key': 'input_type', 'value': 'email'})
             if field_data.max_length is not None:
                 config.append({'key': 'max_length', 'value': field_data.max_length})
             if field_data.default_value is not None:
