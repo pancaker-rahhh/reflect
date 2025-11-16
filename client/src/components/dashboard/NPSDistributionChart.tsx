@@ -32,14 +32,17 @@ export function NPSDistributionChart({ feedback }: NPSDistributionChartProps) {
     )
   }
 
-  const distribution = Array.from({ length: 11 }, (_, i) => ({
-    score: i,
-    count: npsSurveys.filter((s) => s.nps_score === i).length,
-    percentage: (
-      (npsSurveys.filter((s) => s.nps_score === i).length / npsSurveys.length) *
-      100
-    ).toFixed(1),
-  }))
+  const distribution = Array.from({ length: 10 }, (_, i) => {
+    const score = i + 1
+    return {
+      score: score,
+      count: npsSurveys.filter((s) => s.nps_score === score).length,
+      percentage: (
+        (npsSurveys.filter((s) => s.nps_score === score).length / npsSurveys.length) *
+        100
+      ).toFixed(1),
+    }
+  })
 
   const getBarColor = (score: number) => {
     if (score <= 6) return '#dc2626'

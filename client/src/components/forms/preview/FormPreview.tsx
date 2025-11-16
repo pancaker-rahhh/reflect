@@ -33,8 +33,8 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
 
   const getScoreColor = (score: number, isNPS: boolean = true) => {
     if (isNPS) {
-      // NPS color coding
-      if (score <= 3) return { bg: '#ef4444', border: '#f87171', light: '#fee2e2' }
+      // NPS color coding: Detractors (1-6), Passives (7-8), Promoters (9-10)
+      if (score <= 6) return { bg: '#ef4444', border: '#f87171', light: '#fee2e2' }
       if (score <= 8) return { bg: '#f59e0b', border: '#fbbf24', light: '#fef3c7' }
       return { bg: '#10b981', border: '#34d399', light: '#d1fae5' }
     } else {
@@ -202,7 +202,7 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                                 const isSelected = numValue === i
                                 return (
                                   <button
-                                    key={i+1}
+                                    key={i + 1}
                                     onClick={() =>
                                       setPreviewValues({ ...previewValues, [field.field_key]: i })
                                     }
@@ -211,7 +211,9 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                                       isSelected ? 'shadow-lg scale-105' : 'hover:scale-105'
                                     )}
                                     style={{
-                                      backgroundColor: isSelected ? scoreColors.bg : appearance.backgroundColor,
+                                      backgroundColor: isSelected
+                                        ? scoreColors.bg
+                                        : appearance.backgroundColor,
                                       borderColor: isSelected ? scoreColors.bg : '#d1d5db',
                                       color: isSelected
                                         ? '#ffffff'
@@ -221,7 +223,7 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                                         : undefined,
                                     }}
                                   >
-                                    {i+1}
+                                    {i + 1}
                                   </button>
                                 )
                               })}
@@ -252,7 +254,9 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                                       isSelected ? 'shadow-lg scale-105' : 'hover:scale-105'
                                     )}
                                     style={{
-                                      backgroundColor: isSelected ? scoreColors.bg : appearance.backgroundColor,
+                                      backgroundColor: isSelected
+                                        ? scoreColors.bg
+                                        : appearance.backgroundColor,
                                       borderColor: isSelected ? scoreColors.bg : '#d1d5db',
                                       color: isSelected
                                         ? '#ffffff'
@@ -344,11 +348,13 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                                     'flex-1 flex flex-col items-center p-3 rounded-lg border-2 transition-all',
                                     isSelected ? 'shadow-lg scale-105' : 'hover:scale-105'
                                   )}
-                                    style={{
-                                      backgroundColor: isSelected ? scoreColors.bg : appearance.backgroundColor,
-                                      borderColor: isSelected ? scoreColors.bg : '#e5e7eb',
-                                      color: isSelected ? '#ffffff' : appearance.textColor,
-                                    }}
+                                  style={{
+                                    backgroundColor: isSelected
+                                      ? scoreColors.bg
+                                      : appearance.backgroundColor,
+                                    borderColor: isSelected ? scoreColors.bg : '#e5e7eb',
+                                    color: isSelected ? '#ffffff' : appearance.textColor,
+                                  }}
                                 >
                                   <span className="text-3xl mb-2">{getSatisfactionEmoji(num)}</span>
                                   <span className="text-xs font-medium text-center leading-tight">
@@ -391,11 +397,13 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                                     'flex-1 flex flex-col items-center p-3 rounded-lg border-2 transition-all',
                                     isSelected ? 'shadow-lg scale-105' : 'hover:scale-105'
                                   )}
-                                    style={{
-                                      backgroundColor: isSelected ? scoreColors.bg : appearance.backgroundColor,
-                                      borderColor: isSelected ? scoreColors.bg : '#e5e7eb',
-                                      color: isSelected ? '#ffffff' : appearance.textColor,
-                                    }}
+                                  style={{
+                                    backgroundColor: isSelected
+                                      ? scoreColors.bg
+                                      : appearance.backgroundColor,
+                                    borderColor: isSelected ? scoreColors.bg : '#e5e7eb',
+                                    color: isSelected ? '#ffffff' : appearance.textColor,
+                                  }}
                                 >
                                   <span className="text-3xl mb-2">{getEaseEmoji(num)}</span>
                                   <span className="text-xs font-medium text-center leading-tight">
@@ -508,13 +516,13 @@ export function FormPreview({ formName, formDescription, fields, appearance }: F
                                     })
                                   }
                                   className={`w-full p-3 rounded-lg border-2 border-transparent text-left transition-all hover:border-gray-300`}
-                                    style={{
-                                      borderColor: isSelected ? appearance.primaryColor : '#E5E7EB',
-                                      backgroundColor: isSelected
-                                        ? `${appearance.primaryColor}10`
-                                        : appearance.backgroundColor,
-                                      color: appearance.textColor || '#374151',
-                                    }}
+                                  style={{
+                                    borderColor: isSelected ? appearance.primaryColor : '#E5E7EB',
+                                    backgroundColor: isSelected
+                                      ? `${appearance.primaryColor}10`
+                                      : appearance.backgroundColor,
+                                    color: appearance.textColor || '#374151',
+                                  }}
                                 >
                                   <div className="flex items-center gap-3">
                                     <span className="text-lg">{option.icon}</span>

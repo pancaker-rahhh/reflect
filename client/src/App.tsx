@@ -45,8 +45,9 @@ const PublicFormView = lazy(() =>
   import('@/pages/PublicFormView').then((m) => ({ default: m.PublicFormView }))
 )
 const Forms = lazy(() => import('@/pages/Forms').then((m) => ({ default: m.Forms })))
-const FormCreate = lazy(() =>
-  import('@/pages/FormCreate').then((m) => ({ default: m.FormCreate }))
+const FormCreate = lazy(() => import('@/pages/FormCreate').then((m) => ({ default: m.FormCreate })))
+const FormResponses = lazy(() =>
+  import('@/pages/FormResponses').then((m) => ({ default: m.FormResponses }))
 )
 const AccountSettings = lazy(() =>
   import('@/pages/settings/AccountSettings').then((m) => ({ default: m.AccountSettings }))
@@ -75,9 +76,7 @@ const PrivacyPolicy = lazy(() =>
 const CookiePolicy = lazy(() =>
   import('@/pages/legal/CookiePolicy').then((m) => ({ default: m.CookiePolicy }))
 )
-const AboutPage = lazy(() =>
-  import('@/pages/AboutPage').then((m) => ({ default: m.AboutPage }))
-)
+const AboutPage = lazy(() => import('@/pages/AboutPage').then((m) => ({ default: m.AboutPage })))
 const ContactPage = lazy(() =>
   import('@/pages/ContactPage').then((m) => ({ default: m.ContactPage }))
 )
@@ -87,7 +86,6 @@ const options = {
   api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
   defaults: '2025-05-24',
 } as const
-
 
 function App() {
   return (
@@ -131,42 +129,43 @@ function App() {
                           }
                         />
 
-                      {/* Protected routes with onboarding guard */}
-                      <Route
-                        path="/app"
-                        element={
-                          <ProtectedRoute>
-                            <OnboardingGuard>
-                              <AppLayout>
-                                <Outlet />
-                                <Toaster />
-                              </AppLayout>
-                            </OnboardingGuard>
-                          </ProtectedRoute>
-                        }
-                      >
-                        <Route index element={<Navigate to="/app/dashboard" replace />} />
-                        <Route path="dashboard" element={<Dashboard />} />
-                        <Route path="widgets" element={<Widgets />} />
-                        <Route path="widgets/new" element={<WidgetCreate />} />
-                        <Route path="widgets/:widgetId/edit" element={<WidgetCreate />} />
-                        <Route path="widgets/:widgetId/get-code" element={<WidgetGetCode />} />
-                        <Route path="widgets/create" element={<WidgetCreate />} />
-                        <Route path="feedback/responses" element={<Responses />} />
-                        <Route path="feedback/reviews" element={<Reviews />} />
-                        <Route path="feedback/bugs" element={<BugReports />} />
-                        <Route path="feedback/features" element={<FeatureRequests />} />
-                        <Route path="forms" element={<Forms />} />
-                        <Route path="forms/new" element={<FormCreate />} />
-                        <Route path="forms/:formId/edit" element={<FormCreate />} />
-                        <Route path="roadmap" element={<RoadmapPage />} />
-                        <Route path="settings" element={<Navigate to="account" replace />} />
-                        <Route path="settings/account" element={<AccountSettings />} />
-                        <Route path="settings/project" element={<ProjectSettings />} />
-                        <Route path="settings/roadmap" element={<RoadmapSettings />} />
-                        <Route path="settings/organization" element={<OrganizationSettings />} />
-                        <Route path="billing/lifetime-offer" element={<LifetimeOfferPage />} />
-                      </Route>
+                        {/* Protected routes with onboarding guard */}
+                        <Route
+                          path="/app"
+                          element={
+                            <ProtectedRoute>
+                              <OnboardingGuard>
+                                <AppLayout>
+                                  <Outlet />
+                                  <Toaster />
+                                </AppLayout>
+                              </OnboardingGuard>
+                            </ProtectedRoute>
+                          }
+                        >
+                          <Route index element={<Navigate to="/app/dashboard" replace />} />
+                          <Route path="dashboard" element={<Dashboard />} />
+                          <Route path="widgets" element={<Widgets />} />
+                          <Route path="widgets/new" element={<WidgetCreate />} />
+                          <Route path="widgets/:widgetId/edit" element={<WidgetCreate />} />
+                          <Route path="widgets/:widgetId/get-code" element={<WidgetGetCode />} />
+                          <Route path="widgets/create" element={<WidgetCreate />} />
+                          <Route path="feedback/responses" element={<Responses />} />
+                          <Route path="feedback/reviews" element={<Reviews />} />
+                          <Route path="feedback/bugs" element={<BugReports />} />
+                          <Route path="feedback/features" element={<FeatureRequests />} />
+                          <Route path="forms" element={<Forms />} />
+                          <Route path="forms/new" element={<FormCreate />} />
+                          <Route path="forms/:formId/edit" element={<FormCreate />} />
+                          <Route path="forms/:formId/responses" element={<FormResponses />} />
+                          <Route path="roadmap" element={<RoadmapPage />} />
+                          <Route path="settings" element={<Navigate to="account" replace />} />
+                          <Route path="settings/account" element={<AccountSettings />} />
+                          <Route path="settings/project" element={<ProjectSettings />} />
+                          <Route path="settings/roadmap" element={<RoadmapSettings />} />
+                          <Route path="settings/organization" element={<OrganizationSettings />} />
+                          <Route path="billing/lifetime-offer" element={<LifetimeOfferPage />} />
+                        </Route>
 
                         <Route path="*" element={<NotFound />} />
                       </Routes>

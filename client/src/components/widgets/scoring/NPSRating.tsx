@@ -36,7 +36,8 @@ export function NPSRating({ value, onChange, disabled = false, colors }: NPSRati
   }
 
   const getScoreColor = (score: number) => {
-    if (score <= 3) {
+    // NPS color coding: Detractors (1-6), Passives (7-8), Promoters (9-10)
+    if (score <= 6) {
       return {
         bg: '#ef4444',
         bgLight: '#fee2e2',
@@ -74,8 +75,8 @@ export function NPSRating({ value, onChange, disabled = false, colors }: NPSRati
 
       <div className="flex flex-col gap-2 items-center">
         <div className="flex gap-1.5 justify-center">
-          {Array.from({ length: 6 }, (_, i) => {
-            const score = i
+          {Array.from({ length: 5 }, (_, i) => {
+            const score = i + 1
             const isSelected = value === score
             const isHovered = hoveredValue === score
             const scoreColors = getScoreColor(score)

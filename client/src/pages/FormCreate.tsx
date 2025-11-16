@@ -65,7 +65,20 @@ export function FormCreate() {
       setFormName(form.name)
       setFormDescription(form.description || '')
       setIsActive(form.is_active)
-      setFields(form.fields || [])
+      const fieldsWithEmailType = (form.fields || []).map((f) => {
+        if (f.field_type === 'text') {
+          const maxLengthConfig = f.config?.find((c: any) => c.key === 'max_length')
+          const inputTypeConfig = f.config?.find((c: any) => c.key === 'input_type')
+          if (
+            inputTypeConfig?.value === 'email' ||
+            (f.field_key.toLowerCase().includes('email') && maxLengthConfig?.value === 255)
+          ) {
+            return { ...f, field_type: 'email' as const }
+          }
+        }
+        return f
+      })
+      setFields(fieldsWithEmailType)
 
       if (form.config && Object.keys(form.config).length > 0) {
         setAppearance({
@@ -135,31 +148,34 @@ export function FormCreate() {
           pageBackground: appearance.pageBackground,
         },
         fields: fields.map((f, idx) => {
+          const isEmailField = f.field_type === 'email'
           const fieldData: any = {
-            field_type: f.field_type,
+            field_type: isEmailField ? 'text' : f.field_type,
             field_key: f.field_key,
             label: f.label,
             is_required: f.is_required,
             order_index: idx,
           }
 
-          if (f.field_type === 'text') {
-            fieldData.max_length = 1000
-          } else if (f.field_type === 'email') {
-            fieldData.max_length = 255
+          if (f.field_type === 'text' || f.field_type === 'email') {
+            fieldData.max_length = isEmailField ? 255 : 1000
           } else if (f.field_type === 'number') {
-            fieldData.min_value = 0
+            const surveyTypeConfig = Array.isArray(f.config)
+              ? f.config.find((c: any) => c.key === 'survey_type')
+              : null
+            const isNPS = surveyTypeConfig?.value === 'nps'
+            fieldData.min_value = isNPS ? 1 : 0
             fieldData.max_value = 10
           } else if (f.field_type === 'choice') {
-            // Extract choices and multiple from config
             if (Array.isArray(f.config)) {
-              // Config is array of {key, value} objects
               const choicesConfig = f.config.find((c: any) => c.key === 'choices')
               const multipleConfig = f.config.find((c: any) => c.key === 'multiple')
-              fieldData.choices = choicesConfig?.value || []
+              const choices = choicesConfig?.value || []
+              fieldData.choices =
+                Array.isArray(choices) && choices.length > 0 ? choices : ['Option 1']
               fieldData.multiple = multipleConfig?.value || false
             } else {
-              fieldData.choices = []
+              fieldData.choices = ['Option 1']
               fieldData.multiple = false
             }
           }
@@ -285,7 +301,7 @@ export function FormCreate() {
         label: 'How likely are you to recommend us?',
         is_required: true,
         order_index: fields.length,
-        min_value: 0,
+        min_value: 1,
         max_value: 10,
         config: [{ key: 'survey_type', value: 'nps' }],
       }
@@ -550,7 +566,10 @@ export function FormCreate() {
       if (invalidField) {
         // Open the invalid field and show an error
         setExpandedFieldId(invalidField.id)
-        toast.showError('Please provide a question for all fields before continuing.', 'Validation error')
+        toast.showError(
+          'Please provide a question for all fields before continuing.',
+          'Validation error'
+        )
         return
       }
     }
@@ -809,7 +828,7 @@ function AddFieldModal({
   ]
 
   const surveyTypes = [
-    { type: 'nps' as const, label: 'NPS', icon: '📊', description: 'Net Promoter Score (0-10)' },
+    { type: 'nps' as const, label: 'NPS', icon: '📊', description: 'Net Promoter Score (1-10)' },
     {
       type: 'csat' as const,
       label: 'CSAT',

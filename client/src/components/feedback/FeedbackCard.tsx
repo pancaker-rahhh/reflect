@@ -112,7 +112,7 @@ export function FeedbackCard({
       if (priority === 'medium') return 'border-l-yellow-500'
       if (priority === 'low') return 'border-l-green-500'
     }
-    // NPS scoring (0-10)
+    // NPS scoring (1-10)
     if (feedbackType === 'nps' && score !== null) {
       if (score >= 9) return 'border-l-green-500'
       if (score >= 7) return 'border-l-yellow-500'

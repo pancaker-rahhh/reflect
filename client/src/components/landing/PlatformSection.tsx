@@ -43,7 +43,7 @@ const features = [
     bgColor: 'bg-success/10',
     title: 'NPS, CSAT, CES. All In-App',
     description:
-      'Deploy Net Promoter Score (0-10), Customer Satisfaction (emoji or star ratings), or Customer Effort Score surveys without leaving your product. Users respond in seconds, you track trends over time. Higher completion rates when surveys feel native.',
+      'Deploy Net Promoter Score (1-10), Customer Satisfaction (emoji or star ratings), or Customer Effort Score surveys without leaving your product. Users respond in seconds, you track trends over time. Higher completion rates when surveys feel native.',
     videoUrl: 'https://cdn.reflectfeedback.com/assets/survey-responses-showcase.mp4',
     thumbnail: 'https://cdn.reflectfeedback.com/assets/survey-responses-showcase.mp4',
   },

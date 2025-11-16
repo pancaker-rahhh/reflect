@@ -108,8 +108,26 @@ export async function request<T>(endpoint: string, options: RequestOptions = {})
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null)
-        const detail = errorData?.detail || `Request failed with status ${response.status}`
-        throw new Error(`API Error: ${detail}`)
+        let errorMessage = `Request failed with status ${response.status}`
+
+        if (errorData?.detail) {
+          if (Array.isArray(errorData.detail)) {
+            errorMessage = errorData.detail
+              .map((err: any) => {
+                if (typeof err === 'string') return err
+                const loc = err.loc ? err.loc.join('.') : ''
+                const msg = err.msg || 'Validation error'
+                return loc ? `${loc}: ${msg}` : msg
+              })
+              .join(', ')
+          } else if (typeof errorData.detail === 'string') {
+            errorMessage = errorData.detail
+          } else {
+            errorMessage = JSON.stringify(errorData.detail)
+          }
+        }
+
+        throw new Error(`API Error: ${errorMessage}`)
       }
 
       if (response.status === 204) {
