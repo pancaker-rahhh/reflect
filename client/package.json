@@ -66,6 +66,7 @@
     "react-select-country-list": "^2.2.3",
     "recharts": "^2.15.0",
     "tailwind-merge": "^2.5.2",
+    "xlsx": "^0.18.5",
     "zod": "^3.23.8",
     "zustand": "^4.5.2"
   },
