@@ -154,8 +154,8 @@ export class InputSanitizer {
 
       const intRating = Math.round(num)
 
-      // Ensure rating is within valid range (0-10)
-      if (intRating >= 0 && intRating <= 10) {
+      // Ensure rating is within valid range (1-10 for NPS)
+      if (intRating >= 1 && intRating <= 10) {
         return intRating
       }
     } catch {

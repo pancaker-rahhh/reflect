@@ -200,7 +200,7 @@ export function FormResponses() {
       options.push(
         { value: 'nps_promoters', label: 'NPS: Promoters (9-10)' },
         { value: 'nps_passives', label: 'NPS: Passives (7-8)' },
-        { value: 'nps_detractors', label: 'NPS: Detractors (0-6)' }
+        { value: 'nps_detractors', label: 'NPS: Detractors (1-6)' }
       )
     }
 

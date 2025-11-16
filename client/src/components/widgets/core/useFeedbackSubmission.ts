@@ -113,8 +113,8 @@ export function useFeedbackSubmission({
 
       if (data.feedbackType === 'NPS' && 'nps_score' in data.typeSpecificData) {
         const npsData = data.typeSpecificData as NPSFeedbackData
-        if (npsData.nps_score < 0 || npsData.nps_score > 10) {
-          return 'NPS score must be between 0 and 10'
+        if (npsData.nps_score < 1 || npsData.nps_score > 10) {
+          return 'NPS score must be between 1 and 10'
         }
       }
 

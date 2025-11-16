@@ -56,10 +56,10 @@ export function FormResponseCard({ response, fields }: FormResponseCardProps) {
         color:
           score >= 9
             ? 'bg-green-50 text-green-700 border-green-300'
-            : score >= 4
+            : score >= 7
               ? 'bg-yellow-50 text-yellow-700 border-yellow-300'
               : 'bg-red-50 text-red-700 border-red-300',
-        category: score >= 9 ? 'Promoter' : score >= 4 ? 'Passive' : 'Detractor',
+        category: score >= 9 ? 'Promoter' : score >= 7 ? 'Passive' : 'Detractor',
         icon: BarChart3,
       }
     }

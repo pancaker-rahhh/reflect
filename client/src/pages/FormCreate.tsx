@@ -160,7 +160,11 @@ export function FormCreate() {
           if (f.field_type === 'text' || f.field_type === 'email') {
             fieldData.max_length = isEmailField ? 255 : 1000
           } else if (f.field_type === 'number') {
-            fieldData.min_value = 0
+            const surveyTypeConfig = Array.isArray(f.config)
+              ? f.config.find((c: any) => c.key === 'survey_type')
+              : null
+            const isNPS = surveyTypeConfig?.value === 'nps'
+            fieldData.min_value = isNPS ? 1 : 0
             fieldData.max_value = 10
           } else if (f.field_type === 'choice') {
             if (Array.isArray(f.config)) {
@@ -297,7 +301,7 @@ export function FormCreate() {
         label: 'How likely are you to recommend us?',
         is_required: true,
         order_index: fields.length,
-        min_value: 0,
+        min_value: 1,
         max_value: 10,
         config: [{ key: 'survey_type', value: 'nps' }],
       }
@@ -824,7 +828,7 @@ function AddFieldModal({
   ]
 
   const surveyTypes = [
-    { type: 'nps' as const, label: 'NPS', icon: '📊', description: 'Net Promoter Score (0-10)' },
+    { type: 'nps' as const, label: 'NPS', icon: '📊', description: 'Net Promoter Score (1-10)' },
     {
       type: 'csat' as const,
       label: 'CSAT',

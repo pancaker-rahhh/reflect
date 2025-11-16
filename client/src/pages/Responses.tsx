@@ -321,8 +321,8 @@ export function Responses() {
                     </SelectItem>
                     <SelectItem value="low">
                       {submissionType === 'NPS'
-                        ? 'Detractors (0-6)'
-                        : 'Low Scores (NPS 0-6 / Others 1-2)'}
+                        ? 'Detractors (1-6)'
+                        : 'Low Scores (NPS 1-6 / Others 1-2)'}
                     </SelectItem>
                   </>
                 ) : (

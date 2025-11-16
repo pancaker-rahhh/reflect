@@ -220,10 +220,10 @@ class FeedbackService:
     def _create_nps_feedback(
         self, base_data: Dict[str, Any], data: Dict[str, Any]
     ) -> NPSFeedbackCreate:
-        """Create NPS feedback with 0-10 scale"""
-        nps_score = data.get('rating', 0)
-        if not isinstance(nps_score, int) or nps_score < 0 or nps_score > 10:
-            raise ValidationError('NPS score must be an integer between 0 and 10')
+        """Create NPS feedback with 1-10 scale"""
+        nps_score = data.get('rating', 1)
+        if not isinstance(nps_score, int) or nps_score < 1 or nps_score > 10:
+            raise ValidationError('NPS score must be an integer between 1 and 10')
 
         # Determine promoter category
         if nps_score >= 9:

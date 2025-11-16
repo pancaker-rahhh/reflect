@@ -128,7 +128,7 @@ class FeatureRequestFeedbackCreate(FeedbackBase):
 
 class NPSFeedbackCreate(FeedbackBase):
     feedback_type: Literal[FeedbackType.NPS] = FeedbackType.NPS  # type: ignore[assignment]
-    nps_score: int = Field(..., ge=0, le=10)
+    nps_score: int = Field(..., ge=1, le=10)
     promoter_category: Optional[str] = None
 
 

@@ -82,8 +82,8 @@ export function PublicFormView() {
 
   const getScoreColor = (score: number, isNPS: boolean = true) => {
     if (isNPS) {
-      // NPS color coding
-      if (score <= 3) return { bg: '#ef4444', border: '#f87171', light: '#fee2e2' }
+      // NPS color coding: Detractors (1-6), Passives (7-8), Promoters (9-10)
+      if (score <= 6) return { bg: '#ef4444', border: '#f87171', light: '#fee2e2' }
       if (score <= 8) return { bg: '#f59e0b', border: '#fbbf24', light: '#fef3c7' }
       return { bg: '#10b981', border: '#34d399', light: '#d1fae5' }
     } else {
@@ -125,7 +125,7 @@ export function PublicFormView() {
         )
 
       case 'number':
-        // Check if this is an NPS rating (0-10)
+        // Check if this is an NPS rating (1-10)
         if (
           field.label.toLowerCase().includes('recommend') ||
           field.label.toLowerCase().includes('nps')
@@ -155,9 +155,9 @@ export function PublicFormView() {
                     const isSelected = numValue === i + 1
                     return (
                       <button
-                        key={i+1}
+                        key={i + 1}
                         type="button"
-                        onClick={() => handleAnswerChange(field.field_key, i+1)}
+                        onClick={() => handleAnswerChange(field.field_key, i + 1)}
                         className={`flex-1 h-12 rounded-lg border-2 font-semibold transition-all ${
                           isSelected ? 'shadow-lg scale-105' : 'hover:scale-105'
                         }`}
@@ -170,7 +170,7 @@ export function PublicFormView() {
                           boxShadow: isSelected ? `0 4px 12px ${scoreColors.bg}40` : undefined,
                         }}
                       >
-                        {i+1}
+                        {i + 1}
                       </button>
                     )
                   })}

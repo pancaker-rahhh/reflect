@@ -124,16 +124,16 @@ class WidgetFeedbackHandler:
         db: AsyncSession, widget_id: UUID, project_id: UUID, data: Dict[str, Any]
     ):
         """
-        Handle NPS widget feedback (0-10 scale)
+        Handle NPS widget feedback (1-10 scale)
 
         Expected data:
-        - score: int (0-10)
+        - score: int (1-10)
         - comment: str (optional)
         """
         logger.info(f'Processing NPS feedback for widget {widget_id}')
 
         feedback_data = {
-            'score': data.get('score', 0),
+            'score': data.get('score', 1),
             'comment': data.get('comment', ''),
         }
 

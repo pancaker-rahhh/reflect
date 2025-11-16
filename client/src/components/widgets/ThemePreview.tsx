@@ -40,23 +40,26 @@ export function ThemePreview({ theme, position, colors, content, widgetType }: T
             {/* Rating Scale */}
             <div className="mb-4">
               {widgetType === 'nps' && (
-                <div className="grid grid-cols-11 gap-1">
-                  {[...Array(11)].map((_, i) => (
-                    <button
-                      key={i}
-                      className={cn(
-                        'aspect-square rounded text-xs font-medium',
-                        i === 9 && 'ring-2'
-                      )}
-                      style={{
-                        backgroundColor: i === 9 ? colors.primary : colors.primary + '20',
-                        color: i === 9 ? 'white' : colors.primary,
-                        borderColor: colors.primary,
-                      }}
-                    >
-                      {i}
-                    </button>
-                  ))}
+                <div className="grid grid-cols-10 gap-1">
+                  {[...Array(10)].map((_, i) => {
+                    const score = i + 1
+                    return (
+                      <button
+                        key={score}
+                        className={cn(
+                          'aspect-square rounded text-xs font-medium',
+                          score === 9 && 'ring-2'
+                        )}
+                        style={{
+                          backgroundColor: score === 9 ? colors.primary : colors.primary + '20',
+                          color: score === 9 ? 'white' : colors.primary,
+                          borderColor: colors.primary,
+                        }}
+                      >
+                        {score}
+                      </button>
+                    )
+                  })}
                 </div>
               )}
 

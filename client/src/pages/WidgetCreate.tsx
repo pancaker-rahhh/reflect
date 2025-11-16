@@ -53,7 +53,7 @@ const widgetSchema = z
       submitButtonText: z.string().min(1, 'Button text is required'),
       thankYouTitle: z.string().min(1, 'Thank you title is required'),
       thankYouMessage: z.string().min(1, 'Thank you message is required'),
-      npsScore: z.number().min(0).max(10).optional(),
+      npsScore: z.number().min(1).max(10).optional(),
       csatScore: z.number().min(1).max(5).optional(),
       cesScore: z.number().min(1).max(5).optional(),
       reviewPrompt: z.string().optional(),

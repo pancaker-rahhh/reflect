@@ -127,7 +127,7 @@ class InputSanitizer:
         try:
             rating = int(float(rating))
 
-            if 0 <= rating <= 10:
+            if 1 <= rating <= 10:
                 return rating
         except (ValueError, TypeError):
             pass
