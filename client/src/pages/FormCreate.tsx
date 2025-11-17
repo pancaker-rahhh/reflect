@@ -27,7 +27,7 @@ export function FormCreate() {
   const [searchParams, setSearchParams] = useSearchParams()
   const queryClient = useQueryClient()
   const toast = useToastNotifications()
-  const { currentProject } = useAppContext()
+  const { currentProject, currentOrganization } = useAppContext()
   const isEditMode = !!formId
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const isFormInitialMount = useRef(true)
@@ -187,6 +187,7 @@ export function FormCreate() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['forms', currentProject?.id] })
+      queryClient.invalidateQueries({ queryKey: ['subscription-usage', currentOrganization?.id] })
       // Set the form data in cache immediately to avoid reset
       queryClient.setQueryData(['form', data.id], data)
       toast.showSuccess('Form created successfully!', 'Success')

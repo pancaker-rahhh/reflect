@@ -30,7 +30,7 @@ export function Forms() {
     formId: null,
     formName: '',
   })
-  const { currentProject, isLoading: isContextLoading } = useAppContext()
+  const { currentProject, currentOrganization, isLoading: isContextLoading } = useAppContext()
 
   const { data: forms, isLoading: isLoadingForms } = useQuery({
     queryKey: ['forms', currentProject?.id],
@@ -62,6 +62,7 @@ export function Forms() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forms', currentProject?.id] })
+      queryClient.invalidateQueries({ queryKey: ['subscription-usage', currentOrganization?.id] })
       toast.showSuccess('Form deleted successfully', 'Deleted')
     },
   })

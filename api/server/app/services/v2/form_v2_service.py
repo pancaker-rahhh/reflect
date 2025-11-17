@@ -152,10 +152,11 @@ class FormV2Service:
         return FormV2Response.model_validate(form_with_fields)
 
     async def delete_form(self, db: AsyncSession, form_id: UUID) -> bool:
-        success = await form_v2_repository.delete(db, form_id)
-        if success:
-            logger.info(f'Deleted form v2 {form_id}')
-        return success
+        form = await form_v2_repository.soft_delete(db, form_id)
+        if form:
+            logger.info(f'Soft deleted form v2 {form_id}')
+            return True
+        return False
 
     async def get_form_fields(
         self, db: AsyncSession, form_id: UUID
