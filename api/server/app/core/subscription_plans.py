@@ -43,6 +43,8 @@ PLAN_LIMITS = {
         'projects': 999999,
         'widgets': 999999,
         'responses': 999999,
+        'forms': 999999,
+        'form_responses': 999999,
     },
 }
 
