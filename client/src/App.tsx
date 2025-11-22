@@ -2,6 +2,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { PageLoading } from '@/components/common/LoadingSpinner'
 import { OnboardingGuard } from '@/components/onboarding/OnboardingGuard'
+import ReflectWidgetLoader from '@/components/ReflectWidgetLoader'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { AppProvider } from '@/context/AppContext'
 import { AuthProvider } from '@/contexts/AuthContext'
@@ -170,6 +171,7 @@ function App() {
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </Suspense>
+                    <ReflectWidgetLoader />
                   </AppProvider>
                 </AuthProvider>
               </BrowserRouter>
