@@ -1,23 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-  
-  <!-- Blog Homepage -->
+
   <url>
     <loc>https://reflectfeedback.com/blog</loc>
-    <lastmod>2025-10-16</lastmod>
+    <lastmod>2025-11-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- Add individual blog posts here as they're created -->
-  <!-- Example:
-  <url>
-    <loc>https://reflectfeedback.com/blog/how-to-collect-user-feedback</loc>
-    <lastmod>2025-10-16</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  -->
 
 </urlset>

@@ -8,7 +8,11 @@ interface TriggerIconPreviewProps {
   isActive: boolean
 }
 
-export function TriggerIconPreview({ formData, onClick, isActive }: TriggerIconPreviewProps) {
+export function TriggerIconPreview({
+  formData,
+  onClick,
+  isActive: _isActive,
+}: TriggerIconPreviewProps) {
   const getPositionClasses = (position: string) => {
     switch (position) {
       case 'bottom_right':
@@ -55,23 +59,18 @@ export function TriggerIconPreview({ formData, onClick, isActive }: TriggerIconP
       <button
         onClick={onClick}
         className={cn(
-          'absolute z-10 flex items-center justify-center w-16 h-16 rounded-full shadow-lg',
-          'transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2',
+          'absolute z-10 flex items-center justify-center w-16 h-16 rounded-full',
+          'transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2',
           'text-white',
-          isActive && 'scale-110 shadow-xl',
           getPositionClasses(formData.appearance?.position || 'bottom_right')
         )}
         style={{
           backgroundColor: formData.appearance?.colors?.primary || '#6B46C1',
           color: formData.appearance?.colors?.buttonTextColor || '#FFFFFF',
-          boxShadow: isActive
-            ? `0 20px 25px -5px ${formData.appearance?.colors?.primary || '#6B46C1'}20, 0 10px 10px -5px ${formData.appearance?.colors?.primary || '#6B46C1'}10`
-            : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
         }}
       >
-        <span className={cn('transition-transform duration-200', isActive && 'rotate-12')}>
-          {getWidgetIcon()}
-        </span>
+        {getWidgetIcon()}
       </button>
     )
   }
@@ -80,23 +79,18 @@ export function TriggerIconPreview({ formData, onClick, isActive }: TriggerIconP
     <button
       onClick={onClick}
       className={cn(
-        'absolute z-10 flex items-center justify-center w-16 h-16 rounded-full shadow-lg',
-        'transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2',
+        'absolute z-10 flex items-center justify-center w-16 h-16 rounded-full',
+        'transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2',
         'text-white',
-        isActive && 'scale-110 shadow-xl',
         getPositionClasses(formData.appearance?.position || 'bottom_right')
       )}
       style={{
         backgroundColor: formData.appearance?.colors?.primary || '#6B46C1',
         color: formData.appearance?.colors?.buttonTextColor || '#FFFFFF',
-        boxShadow: isActive
-          ? `0 20px 25px -5px ${formData.appearance?.colors?.primary || '#6B46C1'}20, 0 10px 10px -5px ${formData.appearance?.colors?.primary || '#6B46C1'}10`
-          : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
       }}
     >
-      <span className={cn('transition-transform duration-200', isActive && 'rotate-12')}>
-        {getWidgetIcon()}
-      </span>
+      {getWidgetIcon()}
     </button>
   )
 }
