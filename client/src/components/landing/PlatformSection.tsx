@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { Bug, ChartBar, FileText, Lightbulb, GitMerge, Play, X, Palette } from 'phosphor-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -71,7 +71,7 @@ const features = [
   },
 ]
 
-export const PlatformSection = () => {
+export const PlatformSection = memo(() => {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null)
   const [isVideoLoaded, setIsVideoLoaded] = useState(false)
 
@@ -142,7 +142,7 @@ export const PlatformSection = () => {
                   <video
                     src={feature.thumbnail}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    preload="metadata"
+                    preload="none"
                     muted
                     playsInline
                   />
@@ -218,4 +218,6 @@ export const PlatformSection = () => {
       </AnimatePresence>
     </>
   )
-}
+})
+
+PlatformSection.displayName = 'PlatformSection'

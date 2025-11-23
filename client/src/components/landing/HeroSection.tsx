@@ -1,7 +1,12 @@
+import { lazy, Suspense, memo } from 'react'
 import { motion } from 'framer-motion'
 import NotBackedBadge from '@/components/common/NotBackedBadge'
+import { LazyVisible } from '@/components/system/LazyVisible'
 
-export const HeroSection = () => {
+// Lazy load video component
+const VideoPlayer = lazy(() => import('./VideoPlayer'))
+
+export const HeroSection = memo(() => {
   return (
     <motion.div
       id="hero"
@@ -80,62 +85,59 @@ export const HeroSection = () => {
             </motion.div>
           </motion.div>
 
-          {/* Video Section - Blended underneath */}
-          <motion.div
-            className="w-full max-w-4xl mx-auto px-4 sm:px-0"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-          >
-            <div className="relative">
-              {/* Video Container with nice blending */}
-              <motion.div
-                className="relative aspect-video w-full rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-2xl overflow-hidden border border-primary/20 backdrop-blur-sm"
-                whileHover={{
-                  scale: 1.02,
-                  boxShadow: '0 30px 60px -12px rgba(220, 38, 38, 0.3)',
-                }}
-                transition={{ duration: 0.3 }}
-                style={{
-                  willChange: 'transform',
-                  backfaceVisibility: 'hidden',
-                  transform: 'translateZ(0)',
-                }}
-              >
-                <video
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="metadata"
-                  className="w-full h-full object-cover"
-                  poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1080'%3E%3Crect width='1920' height='1080' fill='%23111827'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle' fill='%23dc2626' font-family='system-ui, sans-serif' font-size='48' font-weight='600'%3EDemo Loading...%3C/text%3E%3C/svg%3E"
+          {/* Video Section - Blended underneath - Lazy loaded */}
+          <LazyVisible rootMargin="100px">
+            <motion.div
+              className="w-full max-w-4xl mx-auto px-4 sm:px-0"
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+            >
+              <div className="relative">
+                {/* Video Container with nice blending */}
+                <motion.div
+                  className="relative aspect-video w-full rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-2xl overflow-hidden border border-primary/20 backdrop-blur-sm"
+                  whileHover={{
+                    scale: 1.02,
+                    boxShadow: '0 30px 60px -12px rgba(220, 38, 38, 0.3)',
+                  }}
+                  transition={{ duration: 0.3 }}
                   style={{
                     willChange: 'transform',
                     backfaceVisibility: 'hidden',
                     transform: 'translateZ(0)',
                   }}
-                  aria-label="Reflect widget demonstration video"
                 >
-                  <source
-                    src="https://cdn.reflectfeedback.com/assets/reflect-intro-1080p.mp4"
-                    type="video/mp4"
-                  />
-                  Your browser does not support the video tag.
-                </video>
+                  <Suspense
+                    fallback={
+                      <div className="w-full h-full bg-muted animate-pulse flex items-center justify-center">
+                        <span className="text-muted-foreground">Loading video...</span>
+                      </div>
+                    }
+                  >
+                    <VideoPlayer
+                      src="https://cdn.reflectfeedback.com/assets/reflect-intro-1080p.mp4"
+                      poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1080'%3E%3Crect width='1920' height='1080' fill='%23111827'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle' fill='%23dc2626' font-family='system-ui, sans-serif' font-size='48' font-weight='600'%3EDemo Loading...%3C/text%3E%3C/svg%3E"
+                      ariaLabel="Reflect widget demonstration video"
+                      autoPlay
+                      loop
+                      muted
+                    />
+                  </Suspense>
 
-                {/* Subtle overlay for better text readability */}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 1.0 }}
-                />
-              </motion.div>
-            </div>
-          </motion.div>
+                  {/* Subtle overlay for better text readability */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 1.0 }}
+                  />
+                </motion.div>
+              </div>
+            </motion.div>
+          </LazyVisible>
         </div>
       </div>
     </motion.div>
   )
-}
+})

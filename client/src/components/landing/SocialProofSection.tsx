@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { motion } from 'framer-motion'
 import { Star, Users, Lightning, TrendUp } from 'phosphor-react'
 
@@ -21,7 +22,7 @@ const stats = [
   { number: 'Easy', label: 'Integration', icon: TrendUp, color: 'text-primary' },
 ]
 
-export const SocialProofSection = () => {
+export const SocialProofSection = memo(() => {
   return (
     <motion.section
       className="bg-surface-2 py-12 sm:py-16"
@@ -49,7 +50,9 @@ export const SocialProofSection = () => {
               viewport={{ once: true }}
             >
               <stat.icon className={`h-6 w-6 sm:h-8 sm:w-8 ${stat.color} mx-auto mb-3 sm:mb-4`} />
-              <div className="text-2xl sm:text-3xl font-bold text-foreground mb-2">{stat.number}</div>
+              <div className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
+                {stat.number}
+              </div>
               <div className="text-muted-foreground text-sm sm:text-base">{stat.label}</div>
             </motion.div>
           ))}
@@ -126,4 +129,4 @@ export const SocialProofSection = () => {
       </div>
     </motion.section>
   )
-}
+})

@@ -1,9 +1,10 @@
+import { memo } from 'react'
 import { Check } from 'phosphor-react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { PRICING_PLANS, formatPrice, getFeatureList } from '@/lib/constants/pricing'
 
-export const PricingSection = () => {
+export const PricingSection = memo(() => {
   const navigate = useNavigate()
 
   // Get all 3 plans: Free, Pro Monthly, Pro Yearly
@@ -215,4 +216,4 @@ export const PricingSection = () => {
       </div>
     </motion.div>
   )
-}
+})

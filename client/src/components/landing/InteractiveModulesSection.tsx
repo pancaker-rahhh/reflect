@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { Star, FileText, Bug, Lightbulb, ChatCircle, Lightning, X } from 'phosphor-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -38,7 +38,7 @@ const modules: Module[] = [
   },
 ]
 
-export const InteractiveModulesSection = () => {
+export const InteractiveModulesSection = memo(() => {
   const [activeModules, setActiveModules] = useState({
     reviews: true,
     surveys: true,
@@ -368,4 +368,6 @@ export const InteractiveModulesSection = () => {
       </div>
     </motion.div>
   )
-}
+})
+
+InteractiveModulesSection.displayName = 'InteractiveModulesSection'
