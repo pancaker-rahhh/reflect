@@ -37,6 +37,7 @@ export const FaqItem: React.FC<FaqItemProps> = ({ question, answer, icon, isOpen
             isOpen ? 'rounded-t-2xl' : 'rounded-2xl'
           }`}
           aria-expanded={isOpen}
+          aria-label={`${isOpen ? 'Collapse' : 'Expand'} ${question}`}
           whileHover={{
             backgroundColor: isOpen ? 'hsl(var(--primary) / 0.05)' : 'hsl(var(--muted) / 0.05)',
             transition: { duration: 0.2 },
