@@ -5,6 +5,15 @@
     <link rel="icon" type="image/svg+xml" href="https://cdn.reflectfeedback.com/assets/logo-bg-removed.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
+    <!-- Font Preconnect & Preload -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Stolzl:wght@400;500;600;700&family=Londrina+Outline&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Stolzl:wght@400;500;600;700&family=Londrina+Outline&display=swap" /></noscript>
+    
+    <!-- Hero Video Preload -->
+    <link rel="preload" as="video" href="https://cdn.reflectfeedback.com/assets/reflect-intro-1080p.mp4" type="video/mp4" />
+    
     <!-- SEO Meta Tags -->
     <meta name="description" content="Collect user feedback with Reflect's powerful widget. Bug reports, feature requests, surveys, and roadmaps in one platform. 3-minute setup, free plan available." />
     <meta name="keywords" content="user feedback, bug tracking, feature requests, customer feedback, feedback widget, user surveys, product roadmap, customer insights, feedback management, user experience" />
@@ -59,11 +68,23 @@
     window.reflectConfig = { key: "widget_f278b31f1ae540e6", position: "bottom_right" };
   </script>
   <!-- Reflect widget is now loaded non-blocking via ReflectWidgetLoader component -->
-  <!-- Plausible Analytics -->
-  <script async src="https://plausible.io/js/pa-nq5ohml764fCc_Vqjydl5.js"></script>
+  <!-- Plausible Analytics - Deferred -->
   <script>
-    window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
-    plausible.init()
+    window.addEventListener("load", function() {
+      var s = document.createElement("script");
+      s.src = "https://plausible.io/js/pa-nq5ohml764fCc_Vqjydl5.js";
+      s.async = true;
+      s.defer = true;
+      document.head.appendChild(s);
+      
+      window.plausible = window.plausible || function() {
+        (plausible.q = plausible.q || []).push(arguments);
+      };
+      plausible.init = plausible.init || function(i) {
+        plausible.o = i || {};
+      };
+      plausible.init();
+    });
   </script>
   </body>
 </html>
