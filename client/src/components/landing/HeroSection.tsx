@@ -48,7 +48,7 @@ export const HeroSection = () => {
                   backgroundClip: 'text',
                 }}
               >
-                Turn Every User Into Your Product Manager
+                Collect Feedback & Bug Reports Directly In Your App
               </motion.span>
             </motion.h1>
 

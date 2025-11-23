@@ -3,7 +3,7 @@ sidebar_position: 1
 slug: /
 ---
 
-# Welcome to Reflect Documentation
+# Reflect Documentation
 
 > This is the forge.  
 > Where mirrors burn and masks don't stick.  

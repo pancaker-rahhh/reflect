@@ -9,10 +9,10 @@ export const AboutPage = () => {
   return (
     <>
       <Helmet>
-        <title>About Us - Reflect</title>
+        <title>About Reflect — Feedback & Bug Reporting for Product Teams</title>
         <meta
           name="description"
-          content="Learn about Reflect and the team building the future of user feedback management."
+          content="Reflect is a lightweight in-app feedback and bug reporting tool built for product and engineering teams. Learn our mission and how we help teams ship faster."
         />
       </Helmet>
 
@@ -37,10 +37,7 @@ export const AboutPage = () => {
                 <span className="text-sm font-semibold text-primary">About Us</span>
               </motion.div>
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6">
-                Building the Future of{' '}
-                <span className="text-primary bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                  Feedback
-                </span>
+                About Reflect
               </h1>
               <p className="mt-6 text-lg sm:text-xl leading-8 text-muted-foreground max-w-3xl mx-auto">
                 We're on a mission to help companies build better products by making feedback
@@ -117,7 +114,9 @@ export const AboutPage = () => {
                         alt={founder.name}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         onError={(e) => {
-                          e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(founder.name)}&size=400&background=random`
+                          e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                            founder.name
+                          )}&size=400&background=random`
                         }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>

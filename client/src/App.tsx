@@ -81,6 +81,11 @@ const AboutPage = lazy(() => import('@/pages/AboutPage').then((m) => ({ default:
 const ContactPage = lazy(() =>
   import('@/pages/ContactPage').then((m) => ({ default: m.ContactPage }))
 )
+const BlogPage = lazy(() => import('@/pages/BlogPage').then((m) => ({ default: m.BlogPage })))
+const DocsPage = lazy(() => import('@/pages/DocsPage').then((m) => ({ default: m.DocsPage })))
+const DocsApiPage = lazy(() =>
+  import('@/pages/DocsApiPage').then((m) => ({ default: m.DocsApiPage }))
+)
 const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m.NotFound })))
 
 const options = {
@@ -117,6 +122,9 @@ function App() {
                         <Route path="/cookies" element={<CookiePolicy />} />
                         <Route path="/about" element={<AboutPage />} />
                         <Route path="/contact" element={<ContactPage />} />
+                        <Route path="/blog" element={<BlogPage />} />
+                        <Route path="/docs" element={<DocsPage />} />
+                        <Route path="/docs/api" element={<DocsApiPage />} />
 
                         {/* Onboarding route */}
                         <Route
