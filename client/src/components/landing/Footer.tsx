@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { BrandWordmark } from '@/components/common/BrandWordmark'
 import { founders } from '@/components/landing/data/founders'
 
-export const Footer = () => {
+export const Footer = memo(() => {
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     e.preventDefault()
     const targetElement = document.getElementById(targetId)
@@ -229,6 +229,10 @@ export const Footer = () => {
                       src={founder.image}
                       alt={founder.name}
                       className="w-10 h-10 rounded-full object-cover ring-2 ring-border group-hover:ring-primary transition-all duration-200"
+                      loading="lazy"
+                      decoding="async"
+                      width={40}
+                      height={40}
                       onError={(e) => {
                         e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
                           founder.name
@@ -260,4 +264,4 @@ export const Footer = () => {
       </div>
     </footer>
   )
-}
+})

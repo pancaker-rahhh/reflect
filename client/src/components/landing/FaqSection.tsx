@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { FaqItem } from './FaqItem'
 import { LifeBuoy, Timer, BadgeCheck, Zap, Paintbrush, Smartphone, BarChart3 } from 'lucide-react'
 import { motion } from 'framer-motion'
@@ -42,7 +42,7 @@ const faqData = [
   },
 ]
 
-export const FaqSection = () => {
+export const FaqSection = memo(() => {
   const [openIndex, setOpenIndex] = useState<number | null>(0)
 
   const handleToggle = (index: number) => {
@@ -181,4 +181,6 @@ export const FaqSection = () => {
       />
     </motion.div>
   )
-}
+})
+
+FaqSection.displayName = 'FaqSection'

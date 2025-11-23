@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { X, List } from 'phosphor-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { BrandWordmark } from '@/components/common/BrandWordmark'
 
-export const Navbar = () => {
+export const Navbar = memo(() => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const navigate = useNavigate()
@@ -289,4 +289,4 @@ export const Navbar = () => {
       </AnimatePresence>
     </motion.header>
   )
-}
+})

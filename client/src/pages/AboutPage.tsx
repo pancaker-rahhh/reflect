@@ -113,6 +113,10 @@ export const AboutPage = () => {
                         src={founder.image}
                         alt={founder.name}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        loading="lazy"
+                        decoding="async"
+                        width={400}
+                        height={400}
                         onError={(e) => {
                           e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
                             founder.name

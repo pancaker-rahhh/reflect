@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { XCircle, CheckCircle } from 'phosphor-react'
 import { motion } from 'framer-motion'
 
@@ -40,7 +41,7 @@ const itemVariants = {
   },
 }
 
-export const BeforeAfterSection = () => {
+export const BeforeAfterSection = memo(() => {
   return (
     <motion.div
       id="features"
@@ -238,4 +239,4 @@ export const BeforeAfterSection = () => {
       </div>
     </motion.div>
   )
-}
+})

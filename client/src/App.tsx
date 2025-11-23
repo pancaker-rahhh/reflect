@@ -1,27 +1,60 @@
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
-import { PageLoading } from '@/components/common/LoadingSpinner'
 import { OnboardingGuard } from '@/components/onboarding/OnboardingGuard'
-import ReflectWidgetLoader from '@/components/ReflectWidgetLoader'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { AppProvider } from '@/context/AppContext'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { DirectionProvider } from '@radix-ui/react-direction'
 import { PostHogProvider } from 'posthog-js/react'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { HelmetProvider } from 'react-helmet-async'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 
-// Eagerly load core components
+// Lazy widget loader that uses requestIdleCallback to defer loading
+function LazyWidgetLoader() {
+  useEffect(() => {
+    // Use requestIdleCallback to load widget when browser is idle
+    // Fallback to setTimeout if not available
+    const loadWidget = () => {
+      // Dynamically import and execute widget loader
+      import('@/components/ReflectWidgetLoader')
+    }
+
+    if (typeof window !== 'undefined') {
+      if ('requestIdleCallback' in window && typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(loadWidget, { timeout: 2000 })
+      } else {
+        setTimeout(loadWidget, 2000)
+      }
+    }
+  }, [])
+
+  // Render nothing - widget loader handles its own rendering
+  return null
+}
+
+// Eagerly load core components (required for initial render)
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Toaster } from '@/components/ui/toaster'
-import { AuthCallback } from '@/pages/auth/AuthCallback'
-import { Login } from '@/pages/auth/Login'
-import { VerifyOtp } from '@/pages/auth/VerifyOtp'
-import { Dashboard } from '@/pages/Dashboard'
-import { InvitationAcceptancePage } from '@/pages/InvitationAcceptancePage'
-import { LandingPage } from '@/pages/LandingPage'
-import { OnboardingPage } from '@/pages/OnboardingPage'
+
+// Lazy load all page-level components for route-based code splitting
+const AuthCallback = lazy(() =>
+  import('@/pages/auth/AuthCallback').then((m) => ({ default: m.AuthCallback }))
+)
+const Login = lazy(() => import('@/pages/auth/Login').then((m) => ({ default: m.Login })))
+const VerifyOtp = lazy(() =>
+  import('@/pages/auth/VerifyOtp').then((m) => ({ default: m.VerifyOtp }))
+)
+const Dashboard = lazy(() => import('@/pages/Dashboard').then((m) => ({ default: m.Dashboard })))
+const InvitationAcceptancePage = lazy(() =>
+  import('@/pages/InvitationAcceptancePage').then((m) => ({ default: m.InvitationAcceptancePage }))
+)
+const LandingPage = lazy(() =>
+  import('@/pages/LandingPage').then((m) => ({ default: m.LandingPage }))
+)
+const OnboardingPage = lazy(() =>
+  import('@/pages/OnboardingPage').then((m) => ({ default: m.OnboardingPage }))
+)
 
 // Lazy load secondary pages
 const WidgetView = lazy(() => import('@/pages/WidgetView').then((m) => ({ default: m.WidgetView })))
@@ -103,7 +136,7 @@ function App() {
               <BrowserRouter>
                 <AuthProvider>
                   <AppProvider>
-                    <Suspense fallback={<PageLoading />}>
+                    <Suspense fallback={<></>}>
                       <Routes>
                         {/* Public routes */}
                         <Route path="/" element={<LandingPage />} />
@@ -179,7 +212,7 @@ function App() {
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </Suspense>
-                    <ReflectWidgetLoader />
+                    <LazyWidgetLoader />
                   </AppProvider>
                 </AuthProvider>
               </BrowserRouter>

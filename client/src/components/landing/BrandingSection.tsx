@@ -1,6 +1,7 @@
+import { memo } from 'react'
 import { motion } from 'framer-motion'
 
-export const BrandingSection = () => {
+export const BrandingSection = memo(() => {
   return (
     <section id="cta" className="relative bg-background overflow-hidden py-12 sm:py-16 lg:py-20">
       {/* Repeated outlined REFLECT rows as main content (not background) */}
@@ -79,4 +80,4 @@ export const BrandingSection = () => {
       </div>
     </section>
   )
-}
+})
