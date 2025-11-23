@@ -26,7 +26,7 @@ export interface OrganizationMember {
   organization_id?: string
   role: 'owner' | 'admin' | 'member' | 'viewer'
   user_name?: string
-  user_email?: string
+  user_email: string
   created_at: string
   updated_at?: string
   is_pending?: boolean // True for invited but not accepted members
