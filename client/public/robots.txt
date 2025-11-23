@@ -2,18 +2,6 @@ User-agent: *
 
 Allow: /
 
-# Allow Googlebot crawling
-
-User-agent: Googlebot
-
-Allow: /
-
-# Block sensitive internal routes (optional)
-
-Disallow: /dashboard
-
-Disallow: /settings
-
 # Sitemap locations
 
 Sitemap: https://reflectfeedback.com/sitemap.xml
