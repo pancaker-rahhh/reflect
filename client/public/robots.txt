@@ -1,64 +1,23 @@
-# Reflect - User Feedback Platform
-# https://reflectfeedback.com/robots.txt
-
 User-agent: *
+
 Allow: /
-Disallow: /admin/
-Disallow: /api/
-Disallow: /app/
-Disallow: /dashboard/
-Disallow: /auth/
-Disallow: /settings/
-Disallow: /private/
-Allow: /pricing
-Allow: /features
-Allow: /login
-Allow: /signup
-Allow: /blog
-Allow: /docs
-Allow: /terms
-Allow: /privacy
-Allow: /cookies
-Crawl-delay: 1
 
-# Sitemaps
-Sitemap: https://reflectfeedback.com/sitemap.xml
-Sitemap: https://reflectfeedback.com/sitemap-pages.xml
-Sitemap: https://reflectfeedback.com/sitemap-blog.xml
+# Allow Googlebot crawling
 
-# Specific rules for different bots
 User-agent: Googlebot
+
 Allow: /
 
-User-agent: Bingbot
-Allow: /
+# Block sensitive internal routes (optional)
 
-User-agent: Slurp
-Allow: /
+Disallow: /dashboard
 
-# Limit aggressive crawlers
-User-agent: AhrefsBot
-Crawl-delay: 10
+Disallow: /settings
 
-User-agent: SemrushBot
-Crawl-delay: 10
+# Sitemap locations
 
-User-agent: DotBot
-Crawl-delay: 10
+Sitemap: https://reflectfeedback.com/sitemap.xml
 
-# Social media bots - allow for rich previews
-User-agent: Twitterbot
-Allow: /
+Sitemap: https://reflectfeedback.com/sitemap-pages.xml
 
-User-agent: facebookexternalhit
-Allow: /
-
-User-agent: LinkedInBot
-Allow: /
-
-User-agent: Slackbot
-Allow: /
-
-User-agent: Discordbot
-Allow: /
-
+Sitemap: https://reflectfeedback.com/sitemap-blog.xml
