@@ -726,7 +726,7 @@ export const ProjectSettingsPage: React.FC<ProjectSettingsPageProps> = ({ projec
             name: member.user_name || 'Unknown User', // Provide fallback
             email: member.user_email || '',
           }))}
-          existingMembers={allTeamMembers.map((m) => m.user_id)} // Existing project members by user_id
+          existingMembers={allTeamMembers.map((m) => m.user_email)} // Existing project members by user_id
         />
       )}
 

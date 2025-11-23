@@ -8,7 +8,7 @@ export const featureFlags = {
   SHOW_ORG_SETTINGS_IN_SIDEBAR: false,
   
   // Team features
-  ENABLE_TEAM_FEATURES: false,
+  ENABLE_TEAM_FEATURES: true,
   
   // Onboarding features
   SKIP_USER_TYPE_SELECTION: true,

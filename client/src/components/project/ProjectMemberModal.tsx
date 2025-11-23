@@ -27,8 +27,11 @@ export const ProjectMemberModal: React.FC<ProjectMemberModalProps> = ({
 
   if (!isOpen) return null
 
+  console.log("Organization Members:", organizationMembers);
+  console.log("Existing Members:", existingMembers);
+
   const availableMembers = organizationMembers.filter(
-    (member) => !existingMembers.includes(member.id)
+    (member) => !existingMembers.includes(member.email)
   )
 
   const filteredMembers = availableMembers.filter(
