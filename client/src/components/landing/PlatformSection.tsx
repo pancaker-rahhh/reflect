@@ -137,6 +137,7 @@ export const PlatformSection = () => {
                 <button
                   onClick={() => handlePlayVideo(feature.videoUrl)}
                   className="relative aspect-video w-full rounded-xl overflow-hidden shadow-md mb-6 cursor-pointer"
+                  aria-label={`Play video: ${feature.title}`}
                 >
                   <video
                     src={feature.thumbnail}

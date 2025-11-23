@@ -115,6 +115,7 @@ export const HeroSection = () => {
                     backfaceVisibility: 'hidden',
                     transform: 'translateZ(0)',
                   }}
+                  aria-label="Reflect widget demonstration video"
                 >
                   <source
                     src="https://cdn.reflectfeedback.com/assets/reflect-intro-1080p.mp4"

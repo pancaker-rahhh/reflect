@@ -501,6 +501,7 @@ export function WidgetCore({
           className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/20 hover:bg-white/30 transition-colors duration-200 flex items-center justify-center z-50 cursor-pointer"
           style={{ zIndex: 9999 }}
           title="Close widget"
+          aria-label="Close widget"
         >
           <svg
             className="w-4 h-4"

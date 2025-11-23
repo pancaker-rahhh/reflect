@@ -172,6 +172,8 @@ export const Navbar = () => {
               }`}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
+              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isMenuOpen}
             >
               <AnimatePresence mode="wait">
                 {isMenuOpen ? (
