@@ -2,6 +2,7 @@ import asyncio
 from typing import List, Dict, Any
 from app.core.logging import get_logger
 from app.core.settings import get_settings
+from app.services.ses_service import ses_service
 
 settings = get_settings()
 
@@ -25,28 +26,33 @@ class EmailService:
         self, to_email: str, invite_url: str, organization_name: str, role: str
     ) -> bool:
         try:
+            subject = f"You've been invited to join {organization_name}"
+            html_content = self._get_invitation_html(
+                invite_url, organization_name, role
+            )
+            
             logger.info('📧 INVITATION EMAIL')
             logger.info(f'To: {to_email}')
             logger.info(f'From: {self.from_name} <{self.from_email}>')
-            logger.info(f"Subject: You've been invited to join {organization_name}")
+            logger.info(f'Subject: {subject}')
             logger.info(f'Organization: {organization_name}')
             logger.info(f'Role: {role}')
             logger.info(f'Invitation URL: {invite_url}')
             logger.info('=' * 60)
 
-            html_content = self._get_invitation_html(
-                invite_url, organization_name, role
+            # Send via SES
+            success = await ses_service.send_email(
+                to_email=to_email,
+                subject=subject,
+                html_content=html_content
             )
-            logger.info('HTML Content (truncated):')
-            logger.info(
-                html_content[:500] + '...' if len(html_content) > 500 else html_content
-            )
-            logger.info('=' * 60)
-
-            await asyncio.sleep(0.1)
-
-            logger.info(f'✅ Email invitation successfully processed for {to_email}')
-            return True
+            
+            if success:
+                logger.info(f'✅ Email invitation successfully sent to {to_email}')
+            else:
+                logger.error(f'❌ Failed to send invitation email to {to_email}')
+            
+            return success
 
         except Exception as e:
             logger.error(f'❌ Failed to send invitation email to {to_email}: {str(e)}')
@@ -75,7 +81,26 @@ class EmailService:
     ) -> bool:
         try:
             logger.info(f'Sending {template} email to {to_email}')
-            return True
+            
+            # For now, create a simple HTML template
+            html_content = f"""
+            <html>
+            <body style="font-family: Arial, sans-serif;">
+                <h2>{subject}</h2>
+                <p>Template: {template}</p>
+                <p>Data: {data}</p>
+            </body>
+            </html>
+            """
+            
+            success = await ses_service.send_email(
+                to_email=to_email,
+                subject=subject,
+                html_content=html_content
+            )
+            
+            return success
+            
         except Exception as e:
             logger.error(f'Failed to send email to {to_email}: {str(e)}')
             return False

@@ -56,7 +56,7 @@ class ProjectSettingsUpdate(BaseModel):
 
 class ProjectMemberResponse(BaseModel):
     id: UUID
-    user_id: UUID
+    user_id: UUID | None
     project_id: UUID
     role: ProjectRole
     user_name: Optional[str] = None

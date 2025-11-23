@@ -1,27 +1,29 @@
 import asyncio
 import secrets
+from datetime import datetime, timedelta
 from typing import List, Optional
 from uuid import UUID, uuid4
-from datetime import datetime, timedelta
+
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
+
+from app.core.logging import get_logger
+from app.core.settings import get_settings
 from app.db import get_session_maker
-from app.models.organization_model import OrganizationMember
-from app.models.invitation import Invitation, PendingMember, InvitationTask
-from app.models.user_model import User
+from app.models.invitation import Invitation, InvitationTask, PendingMember
+from app.models.organization_model import OrganizationMember, ProjectMember
+from app.models.user_model import User, UserType
 from app.schemas.invitation_schema import (
+    InvitationAcceptResponse,
     InvitationEntry,
+    InvitationModel,
     InvitationResult,
     InvitationStatusResponse,
-    InvitationModel,
     InvitationValidateResponse,
-    InvitationAcceptResponse,
     NewUserData,
 )
 from app.services.email_service import email_service
-from app.core.logging import get_logger
-from app.core.settings import get_settings
 
 settings = get_settings()
 
@@ -134,6 +136,8 @@ class InvitationService:
         organization_id: Optional[UUID],
         invitation_entry: InvitationEntry,
         db: AsyncSession,
+        project_id: Optional[UUID] = None,
+        project_role: Optional[str] = None,
     ) -> InvitationResult:
         try:
             if not invitation_entry.email or not invitation_entry.email.strip():
@@ -188,6 +192,8 @@ class InvitationService:
                     email=email,
                     role=invitation_entry.role,
                     organization_id=organization_id,
+                    project_id=project_id,
+                    project_role=project_role,
                     invited_by=user_id,
                     token=token,
                     status='pending',
@@ -205,6 +211,7 @@ class InvitationService:
                         name=invitation_entry.name,
                         role=invitation_entry.role,
                         organization_id=organization_id,
+                        project_id=project_id,
                         invitation_id=invitation_id,
                         added_by=user_id,
                         created_at=datetime.utcnow(),
@@ -236,8 +243,8 @@ class InvitationService:
     ):
         organization_name = 'Your Organization'
         if organization_id:
-            from app.repositories.organization_repository import organization_repository
             from app.db import get_session_maker
+            from app.repositories.organization_repository import organization_repository
 
             session_maker = get_session_maker()
             async with session_maker() as temp_db:
@@ -428,7 +435,7 @@ class InvitationService:
             and_(Invitation.token == token, Invitation.status == 'pending')
         )
         result = await db.execute(stmt)
-        invitation = result.scalar_one_or_none()
+        invitation: Invitation | None = result.scalar_one_or_none()
 
         if not invitation:
             return None
@@ -454,23 +461,41 @@ class InvitationService:
                     invitation=invitation, user_data=user_data, db=db
                 )
 
-        if invitation.organization_id:
-            await self._add_to_organization(
-                user_id=user.id,
-                organization_id=invitation.organization_id,
-                role=invitation.role,
-                db=db,
-            )
-
-        invitation.status = 'accepted'
-        invitation.accepted_at = datetime.utcnow()
-        invitation.accepted_by = user.id
-
+        # Get pending member info before processing
         stmt = select(PendingMember).where(PendingMember.invitation_id == invitation.id)
         result = await db.execute(stmt)
         pending_member = result.scalar_one_or_none()
-        if pending_member:
-            await db.delete(pending_member)
+
+        try:
+            if invitation.organization_id:
+                await self._add_to_organization(
+                    user_id=user.id,
+                    organization_id=invitation.organization_id,
+                    role=invitation.role,
+                    db=db,
+                )
+
+            if invitation.project_id:
+                await self._add_to_project(
+                    user_id=user.id,
+                    project_id=invitation.project_id,
+                    role=invitation.project_role,
+                    db=db,
+                )
+
+            # Only mark as accepted if both operations succeeded
+            invitation.status = 'accepted'
+            invitation.accepted_at = datetime.utcnow()
+            invitation.accepted_by = user.id
+
+            # Clean up pending member
+            if pending_member:
+                await db.delete(pending_member)
+
+        except Exception as e:
+            logger.exception(f'Failed to add user {user.id} to org/project: {str(e)}')
+            # Keep invitation in pending state so user can retry
+            raise ValueError(f'Failed to complete invitation acceptance: {str(e)}')
 
         await db.commit()
 
@@ -496,29 +521,31 @@ class InvitationService:
     ) -> User:
         from app.services.supabase_service import supabase_service
 
-        supabase_user = await supabase_service.create_user(
-            email=invitation.email,
-            password=user_data.password,
-            metadata={
-                'name': user_data.name,
-                'phone': user_data.phone,
-                'avatar_url': user_data.avatar_url,
-                'invited': True,
-                'invitation_id': str(invitation.id),
-            },
-        )
+        supabase_user = await supabase_service.get_user_by_email(invitation.email)
 
-        if not supabase_user:
-            raise ValueError('Failed to create user account')
+        if supabase_user is None:
+            supabase_user = await supabase_service.create_user(
+                email=invitation.email,
+                password=user_data.password,
+                metadata={
+                    'name': user_data.name,
+                    'phone': user_data.phone,
+                    'avatar_url': user_data.avatar_url,
+                    'invited': True,
+                    'invitation_id': str(invitation.id),
+                },
+            )
+
+            if not supabase_user:
+                raise ValueError('Failed to create user account')
 
         user = User(
             id=UUID(supabase_user['id']),
             email=invitation.email.lower(),
             name=user_data.name,
-            phone=user_data.phone,
             avatar_url=user_data.avatar_url,
             onboarding_completed=True,  # Skip onboarding for invited users
-            user_type='team_member',
+            user_type=None,
             first_login_at=datetime.utcnow(),
             last_login_at=datetime.utcnow(),
             created_at=datetime.utcnow(),
@@ -554,6 +581,32 @@ class InvitationService:
             db.add(member)
             logger.info(
                 f'Added user {user_id} to organization {organization_id} with role {role}'
+            )
+
+    async def _add_to_project(
+        self, user_id: UUID, project_id: UUID, role: str, db: AsyncSession
+    ) -> None:
+        from uuid import uuid4
+
+        from app.repositories.project_repository import project_member_repository
+
+        # Check if user is already a project member
+        existing_member = await project_member_repository.get_member_by_project(
+            db, project_id, user_id
+        )
+
+        if not existing_member:
+            member = ProjectMember(
+                id=uuid4(),
+                project_id=project_id,
+                user_id=user_id,
+                role=role,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow(),
+            )
+            db.add(member)
+            logger.info(
+                f'Added user {user_id} to project {project_id} with role {role}'
             )
 
 

@@ -6,6 +6,7 @@ Uses testcontainers to spin up a PostgreSQL database for testing.
 
 # Set environment variables BEFORE importing app modules
 import os
+from typing import TypedDict
 
 from app.core.auth import get_current_token_data
 from app.main import app
@@ -85,6 +86,8 @@ def postgres_container():
 @pytest_asyncio.fixture(scope='function')
 async def sessionmaker_fixture(postgres_container):
     """Function-scoped sessionmaker to avoid event loop conflicts."""
+    from app.db import set_engine_and_session_maker
+    
     db_url = os.environ['DATABASE_URL']
     
     # Create new engine and sessionmaker for this test
@@ -103,6 +106,9 @@ async def sessionmaker_fixture(postgres_container):
         autoflush=False,
         future=True,
     )
+    
+    # Set the global session maker for services that need it
+    set_engine_and_session_maker(engine, sessionmaker)
     
     yield sessionmaker
     
@@ -225,8 +231,9 @@ def mock_auth_token(admin_user: User) -> TokenData:
 
 
 @pytest.fixture(autouse=True)
-def override_auth_dependency(mock_auth_token: TokenData, sessionmaker_fixture):
+def override_auth_dependency(mock_auth_token: TokenData, sessionmaker_fixture, admin_user: User):
     """Override the auth dependency to use mock token and database."""
+    from app.core.auth import get_current_user
     
     async def get_db_override():
         """
@@ -243,12 +250,24 @@ def override_auth_dependency(mock_auth_token: TokenData, sessionmaker_fixture):
             finally:
                 await session.close()
     
+    async def get_current_user_override():
+        """Return the admin user for all authenticated requests."""
+        return admin_user
+    
     app.dependency_overrides[get_current_token_data] = lambda: mock_auth_token
+    app.dependency_overrides[get_current_user] = get_current_user_override
     # Override get_db - the function itself, not a lambda calling it
     app.dependency_overrides[get_db] = get_db_override
     yield
     app.dependency_overrides = {}
 
+
+class TestSetup(TypedDict):
+    user: User
+    organization: Organization
+    organization_membership: OrganizationMember
+    project: Project
+    project_membership: ProjectMember
 
 @pytest.fixture
 def test_setup(
@@ -257,7 +276,7 @@ def test_setup(
     test_organization_membership: OrganizationMember,
     test_project: Project,
     test_project_membership: ProjectMember,
-) -> dict:
+) -> TestSetup:
     """
     Complete test setup with all dependencies.
     Returns a dict with all test entities for easy access.

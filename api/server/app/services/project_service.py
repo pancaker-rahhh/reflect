@@ -1,5 +1,6 @@
 from typing import Tuple, List
 from uuid import UUID
+from datetime import datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.subscription_plans import PLAN_LIMITS
@@ -265,6 +266,7 @@ class ProjectService:
         project_id: UUID,
         invite_data: ProjectMemberInviteRequest,
     ) -> ProjectMemberResponse:
+        # Get project and validate permissions
         project = await self.get_project_and_check_access(db, user_id, project_id)
         member = await organization_service.get_user_membership(
             project.organization_id, user_id, db
@@ -272,33 +274,99 @@ class ProjectService:
         if not member or member.role not in ['owner', 'admin']:
             raise ForbiddenError('Only owners and admins can invite project members')
 
+        # Check if user exists
         invited_user = await user_repository.get_by_email(db, invite_data.email)
-        if not invited_user:
-            raise NotFoundError(
-                'User not found. User must be a registered member first.'
+        
+        if invited_user:
+            # Case A & B: User exists - check project membership first
+            existing_project_member = await project_member_repository.get_member_by_project(
+                db, project_id, invited_user.id
+            )
+            if existing_project_member:
+                raise ConflictError('User is already a member of this project')
+            
+            # Check if user is in organization
+            org_membership = await organization_service.get_user_membership(
+                project.organization_id, invited_user.id, db
+            )
+            
+            if org_membership:
+                # Case B: User exists + in org - add directly to project
+                new_member = await project_member_repository.add_member(
+                    db, project_id, invited_user.id, invite_data.role
+                )
+                
+                logger.info(f'Added existing user {invited_user.id} to project {project_id}')
+                
+                return ProjectMemberResponse(
+                    id=new_member.id,
+                    user_id=new_member.user_id,
+                    project_id=new_member.project_id,
+                    role=new_member.role,
+                    created_at=new_member.created_at,
+                    updated_at=new_member.updated_at,
+                    user_name=invited_user.name,
+                    user_email=invited_user.email,
+                )
+            else:
+                # Case C: User exists but not in org - send invitation
+                return await self._send_project_invitation(
+                    db, user_id, project, invite_data, invited_user.name
+                )
+        else:
+            # Case D: User doesn't exist - send invitation
+            return await self._send_project_invitation(
+                db, user_id, project, invite_data
             )
 
-        existing_member = await project_member_repository.get_member_by_project(
-            db, project_id, invited_user.id
+    async def _send_project_invitation(
+        self,
+        db: AsyncSession,
+        inviter_id: UUID,
+        project,
+        invite_data: ProjectMemberInviteRequest,
+        invited_user_name: str = None,
+    ) -> ProjectMemberResponse:
+        """Send invitation for both organization and project membership."""
+        from app.services.invitation_service import invitation_service
+        from app.schemas.invitation_schema import InvitationEntry
+        
+        # Create invitation entry - org role is always 'member' for project invites
+        invitation_entry = InvitationEntry(
+            email=invite_data.email,
+            role='member',  # Organization role
+            name=invited_user_name
         )
-        if existing_member:
-            raise ConflictError('User is already a member of this project')
-
-        new_member = await project_member_repository.add_member(
-            db, project_id, invited_user.id, invite_data.role
+        
+        # Use existing invitation service with project_id
+        result = await invitation_service._process_single_invitation(
+            user_id=inviter_id,
+            organization_id=project.organization_id,
+            invitation_entry=invitation_entry,
+            db=db,
+            project_id=project.id,
+            project_role=invite_data.role,
         )
-
-        logger.info(f'Added user {invited_user.id} to project {project_id}')
-
+        
+        if result.status != 'sent':
+            from fastapi import HTTPException, status
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f'Failed to send invitation: {result.error}'
+            )
+        
+        logger.info(f'Sent project invitation to {invite_data.email} for project {project.id}')
+        
+        # Return placeholder response indicating invitation was sent
         return ProjectMemberResponse(
-            id=new_member.id,
-            user_id=new_member.user_id,
-            project_id=new_member.project_id,
-            role=new_member.role,
-            created_at=new_member.created_at,
-            updated_at=new_member.updated_at,
-            user_name=invited_user.name,
-            user_email=invited_user.email,
+            id=result.invitation_id,
+            user_id=None,  # Will be filled when accepted
+            project_id=project.id,
+            role=invite_data.role,
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            user_name=invited_user_name or invite_data.email.split('@')[0],
+            user_email=invite_data.email,
         )
 
     async def update_project_member(
