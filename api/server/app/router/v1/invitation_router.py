@@ -85,7 +85,7 @@ async def get_bulk_invitation_status(
             status_code=status.HTTP_404_NOT_FOUND, detail='Invitation task not found'
         )
 
-    return status
+    return invitation_status
 
 
 @router.post('/resend/{invitation_id}', status_code=status.HTTP_204_NO_CONTENT)

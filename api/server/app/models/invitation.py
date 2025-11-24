@@ -42,6 +42,7 @@ class Invitation(BaseModel):
     project_id = Column(
         UUID(as_uuid=True), ForeignKey('projects.id', ondelete='CASCADE'), nullable=True
     )
+    project_role = Column(String, nullable=True)
     invited_by = Column(
         UUID(as_uuid=True), ForeignKey('users.id', ondelete='SET NULL'), nullable=False
     )

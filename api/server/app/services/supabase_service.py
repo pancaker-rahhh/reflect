@@ -94,5 +94,47 @@ class SupabaseService:
             logger.error(f'Error creating user with email {email}: {str(e)}')
             return None
 
+    async def get_user_by_email(self, email: str) -> Optional[Dict[str, Any]]:
+        """Get a user from Supabase Auth by email address."""
+        if not self.base_url or not self.service_key:
+            logger.warning('Supabase not configured, skipping user lookup')
+            return None
+
+        url = f'{self.base_url}/auth/v1/admin/users'
+        headers = {
+            'Authorization': f'Bearer {self.service_key}',
+            'Content-Type': 'application/json',
+            'apikey': self.service_key,
+        }
+
+        try:
+            async with httpx.AsyncClient() as client:
+                # List users endpoint doesn't have direct email filter in URL,
+                # so we need to fetch and filter
+                response = await client.get(url, headers=headers)
+
+                if response.status_code == 200:
+                    data = response.json()
+                    users = data.get('users', [])
+                    
+                    # Find user with matching email
+                    for user in users:
+                        if user.get('email', '').lower() == email.lower():
+                            logger.info(f'Found user with email {email}')
+                            return user
+                    
+                    logger.info(f'No user found with email {email}')
+                    return None
+                else:
+                    logger.error(
+                        f'Failed to get users from Supabase: '
+                        f'{response.status_code} - {response.text}'
+                    )
+                    return None
+
+        except Exception as e:
+            logger.error(f'Error getting user by email {email}: {str(e)}')
+            return None
+
 
 supabase_service = SupabaseService()

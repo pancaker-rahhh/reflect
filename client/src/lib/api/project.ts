@@ -25,7 +25,7 @@ export interface ProjectMember {
   project_id: string
   role: 'admin' | 'editor' | 'viewer'
   user_name?: string
-  user_email?: string
+  user_email: string
   created_at: string
   updated_at: string
 }
