@@ -62,37 +62,64 @@ export default defineConfig({
         assetFileNames: `assets/[name].[ext]`,
         manualChunks(id) {
           // Vendor chunking for better caching and parallel loading
+          // IMPORTANT: React must be isolated to prevent circular dependencies
           if (id.includes('node_modules')) {
-            // Large UI libraries
+            // React core - MUST be isolated (react, react-dom, react/jsx-runtime)
+            if (
+              (id.includes('/react/') || id.includes('\\react\\')) &&
+              !id.includes('react-dom') &&
+              !id.includes('react-router') &&
+              !id.includes('react-hook-form') &&
+              !id.includes('react-select') &&
+              !id.includes('react-day-picker') &&
+              !id.includes('react-helmet')
+            ) {
+              return 'vendor-react'
+            }
+            if (id.includes('react-dom')) {
+              return 'vendor-react'
+            }
+            // React Router - depends on React
+            if (id.includes('react-router')) {
+              return 'vendor-react'
+            }
+            // React Helmet - depends on React
+            if (id.includes('react-helmet')) {
+              return 'vendor-react'
+            }
+            // Large UI libraries that depend on React
             if (id.includes('@radix-ui')) {
               return 'vendor-radix'
-            }
-            // React and React DOM
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'vendor-react'
             }
             // Chart libraries
             if (id.includes('recharts')) {
               return 'vendor-charts'
             }
-            // Form libraries
+            // Form libraries that depend on React
             if (id.includes('react-hook-form') || id.includes('@hookform')) {
               return 'vendor-forms'
             }
-            // Animation libraries
+            // React Select - depends on React
+            if (id.includes('react-select')) {
+              return 'vendor-forms'
+            }
+            // Animation libraries that depend on React
             if (id.includes('framer-motion')) {
               return 'vendor-animation'
             }
-            // Query libraries
+            // Query libraries that depend on React
             if (id.includes('@tanstack/react-query')) {
               return 'vendor-query'
             }
-            // Supabase
+            // Supabase - no React dependency
             if (id.includes('@supabase')) {
               return 'vendor-supabase'
             }
-            // Date libraries
-            if (id.includes('date-fns') || id.includes('react-day-picker')) {
+            // Date libraries - react-day-picker depends on React
+            if (id.includes('date-fns')) {
+              return 'vendor-date'
+            }
+            if (id.includes('react-day-picker')) {
               return 'vendor-date'
             }
             // Icon libraries - split to avoid bloat
@@ -103,7 +130,12 @@ export default defineConfig({
             if (id.includes('posthog-js')) {
               return 'vendor-analytics'
             }
-            // Other vendor code
+            // Zustand - state management (might use React)
+            if (id.includes('zustand')) {
+              return 'vendor'
+            }
+            // Other vendor code (non-React dependencies)
+            // Be careful - if any of these use React, they should be moved above
             return 'vendor'
           }
         },
