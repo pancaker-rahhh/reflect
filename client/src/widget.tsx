@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import { WidgetCore } from './components/widgets/core/WidgetCore'
-import './widget.css'
+import widgetStyles from './widget.css?inline'
 import type {
   WidgetConfiguration,
   FeedbackData,
@@ -54,6 +54,8 @@ interface WidgetConfig {
   }
 }
 
+type StyleRoot = Document | ShadowRoot
+
 declare global {
   interface Window {
     reflectConfig: ReflectConfig
@@ -61,10 +63,16 @@ declare global {
   }
 }
 
-;(function () {
+;(async function () {
   let isWidgetOpen = false
   let widgetContainer: HTMLDivElement | null = null
   let launcherContainer: HTMLDivElement | null = null
+  let widgetHost: HTMLDivElement | null = null
+  let widgetShadowRoot: ShadowRoot | null = null
+  let hasInjectedBaseStyles = false
+  let hasInjectedRuntimeStyles = false
+  const supportsShadowDom =
+    typeof HTMLElement !== 'undefined' && !!HTMLElement.prototype.attachShadow
 
   function adjustColorBrightness(color: string, amount: number): string {
     const num = parseInt(color.replace('#', ''), 16)
@@ -97,8 +105,113 @@ declare global {
     }
   }
 
-  function injectWidgetStyles() {
+  function injectWidgetStyles(target: StyleRoot) {
+    const marker = 'data-reflect-widget-inline'
+    if (target instanceof ShadowRoot) {
+      if (target.querySelector(`style[${marker}]`)) {
+        return
+      }
+      const style = document.createElement('style')
+      style.setAttribute(marker, 'true')
+      style.textContent = `
+      @keyframes reflect-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+
+      @keyframes reflect-slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(100%) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes reflect-slideDown {
+        from {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(100%) scale(0.95);
+        }
+      }
+
+      @keyframes reflect-fadeInScale {
+        from {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .reflect-widget-container {
+        animation: reflect-slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+
+      .reflect-widget-container.closing {
+        animation: reflect-slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .reflect-widget-container[style*="transform: translate(-50%, -50%)"] {
+        animation: reflect-fadeInScale 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transform-origin: center center;
+      }
+
+      .reflect-widget-container[style*="transform: translate(-50%, -50%)"].closing {
+        animation: reflect-fadeInScale 0.3s cubic-bezier(0.4, 0, 0.2, 1) reverse;
+      }
+
+      .reflect-widget-launcher {
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+      }
+
+      .reflect-widget-launcher:hover {
+        animation: none !important;
+      }
+
+      .reflect-widget-container::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .reflect-widget-container::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 3px;
+      }
+
+      .reflect-widget-container::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 3px;
+      }
+
+      .reflect-widget-container::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.5);
+      }
+
+      .reflect-widget-container {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1);
+      }
+    `
+      target.appendChild(style)
+      return
+    }
+
+    if (document.head.querySelector(`style[${marker}]`)) {
+      return
+    }
+
     const style = document.createElement('style')
+    style.setAttribute(marker, 'true')
     style.textContent = `
       @keyframes reflect-pulse {
         0%, 100% { transform: scale(1); }
@@ -198,6 +311,170 @@ declare global {
     document.head.appendChild(style)
   }
 
+  function injectScopedWidgetCss(target: StyleRoot) {
+    const marker = 'data-reflect-widget-base'
+    if (target instanceof ShadowRoot) {
+      if (target.querySelector(`style[${marker}]`)) {
+        return
+      }
+      const style = document.createElement('style')
+      style.setAttribute(marker, 'true')
+      style.textContent = widgetStyles
+      target.appendChild(style)
+      return
+    }
+
+    if (document.head.querySelector(`style[${marker}]`)) {
+      return
+    }
+
+    const style = document.createElement('style')
+    style.setAttribute(marker, 'true')
+    style.textContent = widgetStyles
+    document.head.appendChild(style)
+  }
+
+  function ensureMountRoot(): StyleRoot {
+    if (supportsShadowDom) {
+      if (!widgetHost || !widgetHost.isConnected) {
+        widgetHost = document.createElement('div')
+        widgetHost.id = 'reflect-widget-root'
+        widgetShadowRoot = widgetHost.attachShadow({ mode: 'open' })
+        document.body.appendChild(widgetHost)
+        hasInjectedBaseStyles = false
+        hasInjectedRuntimeStyles = false
+      }
+
+      const targetRoot = widgetShadowRoot!
+      if (!hasInjectedBaseStyles) {
+        injectScopedWidgetCss(targetRoot)
+        hasInjectedBaseStyles = true
+      }
+      if (!hasInjectedRuntimeStyles) {
+        injectWidgetStyles(targetRoot)
+        hasInjectedRuntimeStyles = true
+      }
+      return targetRoot
+    }
+
+    if (!hasInjectedBaseStyles) {
+      injectScopedWidgetCss(document)
+      hasInjectedBaseStyles = true
+    }
+    if (!hasInjectedRuntimeStyles) {
+      injectWidgetStyles(document)
+      hasInjectedRuntimeStyles = true
+    }
+    return document
+  }
+
+  function mountElement(element: HTMLElement) {
+    const targetRoot = ensureMountRoot()
+    if (targetRoot instanceof ShadowRoot) {
+      targetRoot.appendChild(element)
+      return
+    }
+    document.body.appendChild(element)
+  }
+
+  function resolveConfigFromSources(): ReflectConfig | null {
+    if (window.reflectConfig?.key) {
+      return window.reflectConfig
+    }
+
+    const candidates = new Set<HTMLScriptElement>()
+    const currentScript = document.currentScript
+    if (currentScript instanceof HTMLScriptElement) {
+      candidates.add(currentScript)
+    }
+
+    document
+      .querySelectorAll<HTMLScriptElement>(
+        'script[data-reflect-key], script[data-reflect-config], script[data-reflect-public-key]'
+      )
+      .forEach((script) => candidates.add(script))
+
+    for (const script of candidates) {
+      const config = extractConfigFromScript(script)
+      if (config?.key) {
+        return config
+      }
+    }
+
+    return null
+  }
+
+  function extractConfigFromScript(script: HTMLScriptElement | null): ReflectConfig | null {
+    if (!script) {
+      return null
+    }
+
+    const inlineConfigRaw = script.getAttribute('data-reflect-config')
+    let inlineConfig: Partial<ReflectConfig> = {}
+
+    if (inlineConfigRaw) {
+      try {
+        inlineConfig = JSON.parse(inlineConfigRaw)
+      } catch (error) {
+        console.warn('Reflect Widget: Unable to parse data-reflect-config JSON.', error)
+      }
+    }
+
+    const keyCandidate =
+      script.getAttribute('data-reflect-key') ||
+      script.getAttribute('data-reflect-public-key') ||
+      script.getAttribute('data-key') ||
+      script.getAttribute('data-public-key') ||
+      inlineConfig.key
+
+    if (!keyCandidate) {
+      return null
+    }
+
+    const themeCandidate =
+      (script.getAttribute('data-reflect-theme') ||
+        script.getAttribute('data-theme') ||
+        inlineConfig.theme) as ReflectConfig['theme'] | null
+
+    const positionAttr =
+      script.getAttribute('data-reflect-position') ||
+      script.getAttribute('data-position') ||
+      inlineConfig.position
+
+    const normalizedPosition =
+      typeof positionAttr === 'string' ? (normalizePosition(positionAttr) as ReflectConfig['position']) : undefined
+
+    return {
+      key: keyCandidate,
+      theme: themeCandidate || undefined,
+      position: normalizedPosition,
+    }
+  }
+
+  async function waitForConfig(maxWait = 3000, interval = 50): Promise<ReflectConfig | null> {
+    const start = Date.now()
+    if (window.reflectConfig?.key) {
+      return window.reflectConfig
+    }
+
+    return new Promise((resolve) => {
+      const attempt = () => {
+        const config = resolveConfigFromSources()
+        if (config?.key) {
+          resolve(config)
+          return
+        }
+        if (Date.now() - start >= maxWait) {
+          resolve(null)
+          return
+        }
+        setTimeout(attempt, interval)
+      }
+
+      attempt()
+    })
+  }
+
   function generateLauncherIcon(_config: WidgetConfig): string {
     // Always show chat/message icon regardless of modules or primary type
     return `
@@ -234,16 +511,18 @@ declare global {
     }
   })
 
-  if (!window.reflectConfig || !window.reflectConfig.key) {
+  const resolvedConfig = await waitForConfig()
+  if (!resolvedConfig || !resolvedConfig.key) {
     console.error(
       'Reflect Widget: Configuration object (window.reflectConfig) not found or public key is missing.'
     )
     return
   }
+  window.reflectConfig = resolvedConfig
 
-  const publicKey = window.reflectConfig.key
-  const configTheme = window.reflectConfig.theme || 'light'
-  const configPosition = window.reflectConfig.position || 'bottom-right'
+  const publicKey = resolvedConfig.key
+  const configTheme = resolvedConfig.theme || 'light'
+  const configPosition = resolvedConfig.position || 'bottom-right'
 
   // Helper function to normalize position format (convert underscores to hyphens)
   function normalizePosition(position: string): string {
@@ -257,7 +536,7 @@ declare global {
       : 'http://localhost:8000/api/v1'
   const apiUrl = `${apiBaseUrl}/public/widgets/${publicKey}`
 
-  injectWidgetStyles()
+  ensureMountRoot()
 
   // Check for embedded config first (injected by CDN deployment)
   function getEmbeddedConfig(): WidgetConfig | null {
@@ -456,7 +735,7 @@ declare global {
     }
     // Create fresh widget container
     widgetContainer = createWidgetContainer(config)
-    document.body.appendChild(widgetContainer)
+    mountElement(widgetContainer)
     showWidget()
   }
 
@@ -735,6 +1014,9 @@ declare global {
   }
 
   function renderLauncher(config: WidgetConfig) {
+    if (launcherContainer) {
+      launcherContainer.remove()
+    }
     launcherContainer = document.createElement('div')
     launcherContainer.id = 'reflect-widget-launcher'
     launcherContainer.className = 'reflect-widget-launcher'
@@ -834,11 +1116,14 @@ declare global {
 
     launcherContainer.innerHTML = config ? generateLauncherIcon(config) : ''
 
-    document.body.appendChild(launcherContainer)
+    mountElement(launcherContainer)
   }
 
   function renderFallbackLauncher() {
     // Minimal fallback widget when config fails to load
+    if (launcherContainer) {
+      launcherContainer.remove()
+    }
     launcherContainer = document.createElement('div')
     launcherContainer.id = 'reflect-widget-launcher-fallback'
     launcherContainer.className = 'reflect-widget-launcher'
@@ -888,6 +1173,6 @@ declare global {
     launcherContainer.innerHTML = '⚠️'
     launcherContainer.title = 'Widget Error - Click for details'
 
-    document.body.appendChild(launcherContainer)
+    mountElement(launcherContainer)
   }
 })()

@@ -15,7 +15,19 @@ const cssFile = resolve(distDir, 'widget.css')
 const jsFile = resolve(distDir, 'widget.js')
 
 try {
-  const cssContent = readFileSync(cssFile, 'utf8')
+  // Check if CSS file exists (it might be already inlined by Vite)
+  let cssContent = ''
+  try {
+    cssContent = readFileSync(cssFile, 'utf8')
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      console.log('✅ CSS already inlined by Vite, no post-processing needed')
+      console.log(`📦 Widget output: ${jsFile}`)
+      process.exit(0)
+    }
+    throw err
+  }
+  
   const jsContent = readFileSync(jsFile, 'utf8')
 
   // Process CSS to scope it properly to the widget container
