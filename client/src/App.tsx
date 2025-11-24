@@ -6,7 +6,7 @@ import { AppProvider } from '@/context/AppContext'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { DirectionProvider } from '@radix-ui/react-direction'
 import { PostHogProvider } from 'posthog-js/react'
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { HelmetProvider } from 'react-helmet-async'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 
@@ -124,11 +124,48 @@ const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m
 const options = {
   api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
   defaults: '2025-05-24',
+  // Disable automatic pageview capture on load
+  autocapture: false,
 } as const
+
+// Lazy PostHog Provider - only loads after page is interactive
+function LazyPostHogProvider({ children }: { children: React.ReactNode }) {
+  const [shouldLoad, setShouldLoad] = useState(false)
+
+  useEffect(() => {
+    // Defer PostHog loading until page is idle or loaded
+    if (typeof window !== 'undefined') {
+      const loadPostHog = () => setShouldLoad(true)
+
+      if ('requestIdleCallback' in window && typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(loadPostHog, { timeout: 3000 })
+      } else {
+        if (document.readyState === 'complete') {
+          setTimeout(loadPostHog, 1000)
+        } else {
+          window.addEventListener('load', () => {
+            setTimeout(loadPostHog, 1000)
+          })
+        }
+      }
+    }
+  }, [])
+
+  // Render children immediately, PostHog loads later
+  if (!shouldLoad || !import.meta.env.VITE_PUBLIC_POSTHOG_KEY) {
+    return <>{children}</>
+  }
+
+  return (
+    <PostHogProvider apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_KEY} options={options}>
+      {children}
+    </PostHogProvider>
+  )
+}
 
 function App() {
   return (
-    <PostHogProvider apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_KEY} options={options}>
+    <LazyPostHogProvider>
       <ErrorBoundary>
         <HelmetProvider>
           <DirectionProvider dir="ltr">
@@ -220,7 +257,7 @@ function App() {
           </DirectionProvider>
         </HelmetProvider>
       </ErrorBoundary>
-    </PostHogProvider>
+    </LazyPostHogProvider>
   )
 }
 
