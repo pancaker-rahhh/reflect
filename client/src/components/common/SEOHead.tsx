@@ -26,7 +26,8 @@ export const SEOHead = ({
   ogType = 'website',
 }: SEOHeadProps) => {
   const fullTitle = `${title} | Reflect - User Feedback Platform`
-  const fullDescription = description.length > 160 ? description.substring(0, 157) + '...' : description
+  const fullDescription =
+    description.length > 160 ? description.substring(0, 157) + '...' : description
   const siteUrl = 'https://reflectfeedback.com'
   const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`
 
@@ -37,7 +38,8 @@ export const SEOHead = ({
       '@context': 'https://schema.org',
       '@type': 'SoftwareApplication',
       name: 'Reflect',
-      description: 'User feedback platform for collecting bug reports, feature requests, and customer insights',
+      description:
+        'User feedback platform for collecting bug reports, feature requests, and customer insights',
       url: siteUrl,
       applicationCategory: 'BusinessApplication',
       operatingSystem: 'Web, iOS, Android',
@@ -117,7 +119,8 @@ export const SEOHead = ({
       '@type': 'WebSite',
       name: 'Reflect',
       url: siteUrl,
-      description: 'User feedback platform for collecting bug reports, feature requests, and customer insights',
+      description:
+        'User feedback platform for collecting bug reports, feature requests, and customer insights',
       potentialAction: {
         '@type': 'SearchAction',
         target: {
@@ -149,7 +152,14 @@ export const SEOHead = ({
       <meta name="description" content={fullDescription} />
       {keywords && <meta name="keywords" content={keywords} />}
       <meta name="author" content="Reflect Technologies, Inc." />
-      <meta name="robots" content={noIndex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'} />
+      <meta
+        name="robots"
+        content={
+          noIndex
+            ? 'noindex, nofollow'
+            : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+        }
+      />
       <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
       <meta name="theme-color" content="#EF4444" />
       <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
@@ -165,9 +175,7 @@ export const SEOHead = ({
       <link rel="alternate" hrefLang="en" href={canonicalUrl || siteUrl} />
       <link rel="alternate" hrefLang="x-default" href={canonicalUrl || siteUrl} />
 
-      {/* Preconnect for Performance */}
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      {/* DNS Prefetch for CDN (preconnect removed to avoid duplicate - handled in index.html) */}
       <link rel="dns-prefetch" href="https://cdn.reflectfeedback.com" />
 
       {/* Open Graph / Facebook */}
@@ -181,8 +189,12 @@ export const SEOHead = ({
       <meta property="og:url" content={canonicalUrl || siteUrl} />
       <meta property="og:site_name" content="Reflect" />
       <meta property="og:locale" content="en_US" />
-      {articlePublishedTime && <meta property="article:published_time" content={articlePublishedTime} />}
-      {articleModifiedTime && <meta property="article:modified_time" content={articleModifiedTime} />}
+      {articlePublishedTime && (
+        <meta property="article:published_time" content={articlePublishedTime} />
+      )}
+      {articleModifiedTime && (
+        <meta property="article:modified_time" content={articleModifiedTime} />
+      )}
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
@@ -202,14 +214,14 @@ export const SEOHead = ({
       <meta name="apple-mobile-web-app-title" content="Reflect" />
       <meta name="format-detection" content="telephone=no" />
       <meta name="mobile-web-app-capable" content="yes" />
-      
+
       {/* Security Headers */}
       <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
-      
+
       {/* Bing/Yahoo */}
       <meta name="yandex-verification" content="" />
       <meta name="msvalidate.01" content="" />
-      
+
       {/* Google */}
       <meta name="google-site-verification" content="" />
       <meta name="google" content="notranslate" />
