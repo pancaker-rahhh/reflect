@@ -11,6 +11,16 @@ export default defineConfig({
     },
   },
 
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@tanstack/react-query',
+    ],
+    exclude: ['@preact/compat'],
+  },
+
   server: {
     proxy: {
       '/api': {
