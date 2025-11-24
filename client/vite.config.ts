@@ -4,24 +4,44 @@ import path from 'path'
 import { resolve } from 'path'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react({
+      jsxRuntime: 'automatic',
+    }),
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    dedupe: ['react', 'react-dom'],
   },
 
   optimizeDeps: {
     include: [
       'react',
       'react-dom',
+      'react/jsx-runtime',
       'react-router-dom',
       '@tanstack/react-query',
+      'framer-motion',
+      '@radix-ui/react-accordion',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-popover',
+      '@radix-ui/react-select',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-toast',
+      '@radix-ui/react-tooltip',
     ],
-    exclude: ['@preact/compat'],
+    exclude: ['@preact/compat', 'preact'],
+    esbuildOptions: {
+      jsx: 'automatic',
+    },
   },
 
   server: {
+    strictPort: false,
+    host: 'localhost',
     proxy: {
       '/api': {
         target: 'http://localhost:8000',

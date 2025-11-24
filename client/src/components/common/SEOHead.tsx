@@ -235,8 +235,9 @@ export const SEOHead = ({
       <meta name="format-detection" content="telephone=no" />
       <meta name="mobile-web-app-capable" content="yes" />
 
-      {/* Security Headers */}
-      <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+      {import.meta.env.MODE === 'production' && (
+        <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+      )}
 
       {/* Bing/Yahoo */}
       <meta name="yandex-verification" content="" />
