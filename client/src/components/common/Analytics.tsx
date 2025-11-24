@@ -7,48 +7,54 @@ declare global {
   }
 }
 
+function load(src: string, attrs: Record<string, string> = {}) {
+  const s = document.createElement('script')
+  s.src = src
+  s.async = true
+  Object.keys(attrs).forEach((k) => s.setAttribute(k, attrs[k]))
+  document.head.appendChild(s)
+}
+
+function initAnalytics() {
+  const gaId = import.meta.env.VITE_GA_ID
+  if (!gaId) return
+
+  // Load Google Analytics 4
+  load(`https://www.googletagmanager.com/gtag/js?id=${gaId}`)
+
+  // Initialize gtag
+  window.dataLayer = window.dataLayer || []
+  function gtag(...args: any[]) {
+    window.dataLayer.push(args)
+  }
+  window.gtag = gtag
+
+  gtag('js', new Date())
+  gtag('config', gaId, {
+    page_title: document.title,
+    page_location: window.location.href,
+  })
+
+  // Track page views on route changes
+  const handleRouteChange = () => {
+    gtag('config', gaId, {
+      page_title: document.title,
+      page_location: window.location.href,
+    })
+  }
+
+  // Listen for popstate events (back/forward navigation)
+  window.addEventListener('popstate', handleRouteChange)
+}
+
 export const Analytics = () => {
   useEffect(() => {
-    // Defer Google Analytics loading until page is idle or loaded
-    const loadAnalytics = () => {
-      // Load Google Analytics 4
-      const script1 = document.createElement('script')
-      script1.async = true
-      script1.defer = true
-      script1.src = `https://www.googletagmanager.com/gtag/js?id=${import.meta.env.VITE_GA_ID}`
-      document.head.appendChild(script1)
-
-      // Initialize gtag
-      window.dataLayer = window.dataLayer || []
-      function gtag(...args: any[]) {
-        window.dataLayer.push(args)
-      }
-      window.gtag = gtag
-
-      gtag('js', new Date())
-      gtag('config', import.meta.env.VITE_GA_ID, {
-        page_title: document.title,
-        page_location: window.location.href,
-      })
-
-      // Track page views on route changes
-      const handleRouteChange = () => {
-        gtag('config', import.meta.env.VITE_GA_ID, {
-          page_title: document.title,
-          page_location: window.location.href,
-        })
-      }
-
-      // Listen for popstate events (back/forward navigation)
-      window.addEventListener('popstate', handleRouteChange)
-    }
-
-    // Use requestIdleCallback if available, otherwise use load event
+    // Defer analytics loading until idle
     if (typeof window !== 'undefined') {
       if ('requestIdleCallback' in window && typeof window.requestIdleCallback === 'function') {
-        window.requestIdleCallback(loadAnalytics, { timeout: 2000 })
+        requestIdleCallback(initAnalytics, { timeout: 3000 })
       } else {
-        window.addEventListener('load', loadAnalytics)
+        window.addEventListener('load', initAnalytics)
       }
     }
   }, [])

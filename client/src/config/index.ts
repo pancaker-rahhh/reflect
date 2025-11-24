@@ -3,20 +3,24 @@ import { localDevConfig } from './local'
 import { developmentConfig } from './development'
 import { productionConfig } from './production'
 
-function validateEnvironment(env: string | undefined): asserts env is Environment {
+function validateEnvironment(env: string | undefined): Environment {
+  // Temporary fix: Default to 'local-dev' if VITE_ENVIRONMENT is not set
   if (!env) {
-    throw new Error(
-      'VITE_ENVIRONMENT is not set. Please create a .env file with VITE_ENVIRONMENT=local-dev'
+    console.warn(
+      'VITE_ENVIRONMENT is not set. Defaulting to "local-dev". Please create a .env file with VITE_ENVIRONMENT=local-dev'
     )
+    env = 'local-dev'
   }
 
   const validEnvironments: Environment[] = ['local-dev', 'development', 'production']
-  
+
   if (!validEnvironments.includes(env as Environment)) {
     throw new Error(
       `Invalid VITE_ENVIRONMENT: "${env}". Valid values: ${validEnvironments.join(', ')}`
     )
   }
+
+  return env as Environment
 }
 
 function loadEnvironmentConfig(environment: Environment): EnvironmentConfig {
@@ -41,23 +45,24 @@ function validateConfig(config: EnvironmentConfig): void {
   for (const field of requiredFields) {
     const keys = field.split('.')
     let value: any = config
-    
+
     for (const key of keys) {
       value = value?.[key]
     }
 
     if (!value) {
-      throw new Error(
-        `Missing required field "${field}" in ${config.environment} config`
-      )
+      throw new Error(`Missing required field "${field}" in ${config.environment} config`)
     }
   }
 }
 
+let _config: EnvironmentConfig | null = null
+
 function initializeConfig(): EnvironmentConfig {
-  const environment = import.meta.env.VITE_ENVIRONMENT
-  validateEnvironment(environment)
-  
+  if (_config) return _config
+
+  const environment = validateEnvironment(import.meta.env.VITE_ENVIRONMENT)
+
   const config = loadEnvironmentConfig(environment)
   validateConfig(config)
 
@@ -66,11 +71,30 @@ function initializeConfig(): EnvironmentConfig {
     console.log('API:', config.apiBaseUrl)
     console.log('Frontend:', config.frontendUrl)
   }
-  
+
+  _config = config
   return config
 }
 
-export const config = initializeConfig()
+// Lazy initialization - only runs when first accessed
+export const config = new Proxy({} as EnvironmentConfig, {
+  get(_target, prop) {
+    const actualConfig = initializeConfig()
+    return actualConfig[prop as keyof EnvironmentConfig]
+  },
+  ownKeys() {
+    const actualConfig = initializeConfig()
+    return Object.keys(actualConfig)
+  },
+  has(_target, prop) {
+    const actualConfig = initializeConfig()
+    return prop in actualConfig
+  },
+  getOwnPropertyDescriptor(_target, prop) {
+    const actualConfig = initializeConfig()
+    return Object.getOwnPropertyDescriptor(actualConfig, prop)
+  },
+})
 
 export const isLocalDev = config.environment === 'local-dev'
 export const isDevelopment = config.environment === 'development'
@@ -83,7 +107,7 @@ export const urlBuilder = {
     if (publicSlug) return `${config.frontendUrl}/public/roadmap/${publicSlug}`
     return null
   },
-  
+
   frontend: (path: string): string => `${config.frontendUrl}${path}`,
 }
 
