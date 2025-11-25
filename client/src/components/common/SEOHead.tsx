@@ -11,6 +11,7 @@ interface SEOHeadProps {
   articlePublishedTime?: string
   articleModifiedTime?: string
   ogType?: string
+  schemaType?: 'homepage' | 'product' | 'pricing' | 'blog' | 'default'
 }
 
 export const SEOHead = ({
@@ -24,126 +25,145 @@ export const SEOHead = ({
   articlePublishedTime,
   articleModifiedTime,
   ogType = 'website',
+  schemaType = 'default',
 }: SEOHeadProps) => {
-  const fullTitle = `${title} | Reflect - User Feedback Platform`
+  // Use title as-is if it already contains "Reflect" (for homepage), otherwise append suffix
+  const fullTitle = title.includes('Reflect')
+    ? title
+    : `${title} | Reflect - User Feedback Platform`
   const fullDescription =
     description.length > 160 ? description.substring(0, 157) + '...' : description
   const siteUrl = 'https://reflectfeedback.com'
   const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`
 
+  // Generate schema based on page type
+  const generateSchema = () => {
+    if (structuredData) return structuredData
+
+    const baseSchemas: any[] = []
+
+    // Homepage schemas
+    if (schemaType === 'homepage') {
+      baseSchemas.push(
+        {
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'Reflect',
+          url: siteUrl,
+          description: 'In-app feedback tool and bug reporting widget for SaaS teams',
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: {
+              '@type': 'EntryPoint',
+              urlTemplate: `${siteUrl}/search?q={search_term_string}`,
+            },
+            'query-input': 'required name=search_term_string',
+          },
+        },
+        {
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: 'Reflect Technologies, Inc.',
+          url: siteUrl,
+          logo: `${siteUrl}/og-image.png`,
+          description: 'Leading in-app feedback and customer insights platform',
+          sameAs: [
+            'https://x.com/Reflectfeedback',
+            'https://www.instagram.com/reflect_feedback/',
+            'https://github.com/reflect',
+          ],
+          contactPoint: {
+            '@type': 'ContactPoint',
+            contactType: 'Customer Support',
+            email: 'support@reflectfeedback.com',
+            availableLanguage: ['English'],
+          },
+        }
+      )
+    }
+
+    // Product page schemas (Features, Widget, Bug Reporting, Feature Requests)
+    if (schemaType === 'product') {
+      baseSchemas.push({
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: title,
+        description: description,
+        url: canonicalUrl || siteUrl,
+        brand: {
+          '@type': 'Brand',
+          name: 'Reflect',
+        },
+        image: fullOgImage,
+        manufacturer: {
+          '@type': 'Organization',
+          name: 'Reflect Technologies, Inc.',
+        },
+        offers: {
+          '@type': 'Offer',
+          url: `${siteUrl}/pricing`,
+          priceCurrency: 'USD',
+          availability: 'https://schema.org/InStock',
+        },
+      })
+    }
+
+    // Pricing page FAQ schema
+    if (schemaType === 'pricing') {
+      // FAQ schema will be passed via structuredData prop from PricingPage
+      baseSchemas.push({
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: title,
+        description: description,
+        url: canonicalUrl || siteUrl,
+      })
+    }
+
+    // Blog schema
+    if (schemaType === 'blog') {
+      baseSchemas.push({
+        '@context': 'https://schema.org',
+        '@type': 'Blog',
+        name: 'Reflect Blog',
+        description: 'Product feedback and SaaS growth insights',
+        url: `${siteUrl}/blog`,
+        publisher: {
+          '@type': 'Organization',
+          name: 'Reflect Technologies, Inc.',
+          logo: {
+            '@type': 'ImageObject',
+            url: `${siteUrl}/og-image.png`,
+          },
+        },
+      })
+    }
+
+    // Default schemas (fallback)
+    if (schemaType === 'default' && baseSchemas.length === 0) {
+      baseSchemas.push(
+        {
+          '@context': 'https://schema.org',
+          '@type': 'WebPage',
+          name: title,
+          description: description,
+          url: canonicalUrl || siteUrl,
+        },
+        {
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: 'Reflect Technologies, Inc.',
+          url: siteUrl,
+          logo: `${siteUrl}/og-image.png`,
+        }
+      )
+    }
+
+    return baseSchemas.length > 0 ? baseSchemas : []
+  }
+
   // Enhanced structured data for SaaS platform with multiple schemas
-  const defaultStructuredData = [
-    // SoftwareApplication Schema
-    {
-      '@context': 'https://schema.org',
-      '@type': 'SoftwareApplication',
-      name: 'Reflect',
-      description:
-        'User feedback platform for collecting bug reports, feature requests, and customer insights',
-      url: siteUrl,
-      applicationCategory: 'BusinessApplication',
-      operatingSystem: 'Web, iOS, Android',
-      offers: [
-        {
-          '@type': 'Offer',
-          name: 'Free Plan',
-          price: '0',
-          priceCurrency: 'USD',
-          description: 'Free plan with essential features',
-        },
-        {
-          '@type': 'Offer',
-          name: 'Startup Plan',
-          price: '29',
-          priceCurrency: 'USD',
-          description: 'Perfect for growing teams',
-        },
-        {
-          '@type': 'Offer',
-          name: 'Business Plan',
-          price: '49',
-          priceCurrency: 'USD',
-          description: 'For established companies',
-        },
-      ],
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '4.8',
-        ratingCount: '150',
-        bestRating: '5',
-        worstRating: '1',
-      },
-      featureList: [
-        'Bug Report Collection',
-        'Feature Request Management',
-        'User Surveys (NPS, CSAT, CES)',
-        'Public Roadmaps',
-        'Analytics Dashboard',
-        'Customizable Widget',
-        'Team Collaboration',
-        'API Integration',
-      ],
-      screenshot: fullOgImage,
-      author: {
-        '@type': 'Organization',
-        name: 'Reflect Technologies, Inc.',
-        url: siteUrl,
-      },
-      datePublished: '2024-01-01',
-      dateModified: new Date().toISOString().split('T')[0],
-      inLanguage: 'en-US',
-    },
-    // Organization Schema
-    {
-      '@context': 'https://schema.org',
-      '@type': 'Organization',
-      name: 'Reflect Technologies, Inc.',
-      url: siteUrl,
-      logo: `${siteUrl}/logo.png`,
-      description: 'Leading user feedback and customer insights platform',
-      sameAs: [
-        'https://x.com/Reflectfeedback',
-        'https://www.instagram.com/reflect_feedback/',
-        'https://github.com/reflect',
-      ],
-      contactPoint: {
-        '@type': 'ContactPoint',
-        contactType: 'Customer Support',
-        email: 'support@reflectfeedback.com',
-        availableLanguage: ['English'],
-      },
-    },
-    // WebSite Schema with Search Action
-    {
-      '@context': 'https://schema.org',
-      '@type': 'WebSite',
-      name: 'Reflect',
-      url: siteUrl,
-      description:
-        'User feedback platform for collecting bug reports, feature requests, and customer insights',
-      potentialAction: {
-        '@type': 'SearchAction',
-        target: {
-          '@type': 'EntryPoint',
-          urlTemplate: `${siteUrl}/search?q={search_term_string}`,
-        },
-        'query-input': 'required name=search_term_string',
-      },
-    },
-    // BreadcrumbList Schema
-    {
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        {
-          '@type': 'ListItem',
-          position: 1,
-          name: 'Home',
-          item: siteUrl,
-        },
-      ],
-    },
-  ]
+  const defaultStructuredData = generateSchema()
 
   return (
     <Helmet>
@@ -227,7 +247,7 @@ export const SEOHead = ({
       <meta name="google" content="notranslate" />
 
       {/* Structured Data */}
-      {(structuredData || defaultStructuredData) && (
+      {(structuredData || defaultStructuredData.length > 0) && (
         <script type="application/ld+json">
           {JSON.stringify(structuredData || defaultStructuredData)}
         </script>

@@ -53,9 +53,19 @@ export const HeroSection = memo(() => {
                   backgroundClip: 'text',
                 }}
               >
-                Collect Feedback & Bug Reports Directly In Your App
+                The simplest in-app feedback tool for SaaS teams
               </motion.span>
             </motion.h1>
+
+            <motion.h2
+              className="text-xl sm:text-2xl md:text-3xl text-muted-foreground leading-relaxed max-w-3xl mx-auto font-medium px-4 sm:px-0"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+            >
+              Collect feedback, bug reports, and feature requests directly inside your product — no
+              emails, no friction.
+            </motion.h2>
 
             <motion.p
               className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto font-light px-4 sm:px-0"
@@ -63,10 +73,10 @@ export const HeroSection = memo(() => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
             >
-              Get real user feedback with voting, bug reports, and insights—all from one beautiful
-              widget.
-              <strong className="text-foreground"> See exactly what users want</strong> so you can
-              build features that get adopted.
+              Reflect is a lightweight in-app feedback tool that helps SaaS teams capture user
+              feedback, bug reports, and feature requests instantly. Add a feedback widget to your
+              product in minutes and start understanding your users without interrupting their
+              workflow.
             </motion.p>
             {/* CTA Button */}
             <motion.div

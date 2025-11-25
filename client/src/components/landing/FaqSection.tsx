@@ -1,44 +1,29 @@
 import { useState, memo } from 'react'
 import { FaqItem } from './FaqItem'
-import { LifeBuoy, Timer, BadgeCheck, Zap, Paintbrush, Smartphone, BarChart3 } from 'lucide-react'
+import { LifeBuoy, Timer, MessageSquare, Bug, Lightbulb } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const faqData = [
   {
-    question: 'How fast can I start collecting feedback?',
+    question: 'What is an in-app feedback tool?',
     answer:
-      '3 minutes from signup to live. One line of code, zero configuration, no developer needed. Your first user feedback could arrive before you finish your coffee.',
+      'It lets users send suggestions and bug reports directly inside your product. Reflect provides this with a customizable widget.',
+    icon: <MessageSquare size={24} />,
+  },
+  {
+    question: 'Can users report bugs with screenshots?',
+    answer: 'Yes. Reflect includes screenshot capture and annotation.',
+    icon: <Bug size={24} />,
+  },
+  {
+    question: 'Does Reflect support feature requests?',
+    answer: 'Yes. Users can submit and vote on features.',
+    icon: <Lightbulb size={24} />,
+  },
+  {
+    question: 'Is Reflect easy to install?',
+    answer: 'Yes. It takes less than 5 minutes with a single script.',
     icon: <Timer size={24} />,
-  },
-  {
-    question: "What's the catch with the free plan?",
-    answer:
-      "No catch. It's free forever—1 widget, 1 form, 20 responses/month, full customization. No credit card, no surprise charges. When you outgrow it, Pro is $29/month for unlimited everything.",
-    icon: <BadgeCheck size={24} />,
-  },
-  {
-    question: 'Why not just use a Google Form?',
-    answer:
-      'Google Forms take users away from your site to fill out a separate page. Reflect lives directly in your app where users already are. Plus, you get voting on feature requests and a public roadmap—not just a spreadsheet of responses.',
-    icon: <Zap size={24} />,
-  },
-  {
-    question: "Can I make it look like it's part of my app?",
-    answer:
-      "Absolutely. Match your exact brand colors, choose your position, write your own copy. On Pro, remove our badge entirely—it'll look like you built it in-house.",
-    icon: <Paintbrush size={24} />,
-  },
-  {
-    question: 'Does it work on mobile?',
-    answer:
-      'Flawlessly. Your users on iPhone, Android, tablets, desktops—everyone gets the same smooth experience.',
-    icon: <Smartphone size={24} />,
-  },
-  {
-    question: 'How do I know what users actually want?',
-    answer:
-      'See exactly which features get the most upvotes, track feedback trends over time, and spot patterns in your dashboard. Filter by week, month, or year. No more guessing—build what users are literally voting for.',
-    icon: <BarChart3 size={24} />,
   },
 ]
 
