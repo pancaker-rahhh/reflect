@@ -66,7 +66,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     id: 'pro_monthly',
     name: 'pro',
     display_name: 'Pro Monthly',
-    price: { monthly: 29, yearly: 290 },
+    price: { monthly: 9.99, yearly: 119.88 },
     currency: 'USD',
     interval: 'month',
     interval_count: 1,
@@ -96,7 +96,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     id: 'pro_yearly',
     name: 'pro',
     display_name: 'Pro Yearly',
-    price: { monthly: 24.17, yearly: 260 }, // ~2 months free
+    price: { monthly: 8.33, yearly: 99.99 }, // ~2 months free
     currency: 'USD',
     interval: 'year',
     interval_count: 1,
@@ -118,7 +118,7 @@ export const PRICING_PLANS: PricingPlan[] = [
       jira_integration: true,
       public_roadmap: true,
     },
-    description: 'For serious builders. Same power, better value. Save $88/year.',
+    description: 'For serious builders. Same power, better value. Save $19.89/year.',
     is_active: true,
     is_popular: false,
   },
