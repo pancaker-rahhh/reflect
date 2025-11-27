@@ -2,6 +2,9 @@ import { lazy, Suspense } from 'react'
 import { Navbar } from '@/components/landing/Navbar'
 import { HeroSection } from '@/components/landing/HeroSection'
 import { BeforeAfterSection } from '@/components/landing/BeforeAfterSection'
+import { SEOFeaturesSection } from '@/components/landing/SEOFeaturesSection'
+import { InternalLinksSection } from '@/components/landing/InternalLinksSection'
+import { CTASection } from '@/components/landing/CTASection'
 import { LazyVisible } from '@/components/system/LazyVisible'
 import { SEOHead } from '@/components/common/SEOHead'
 import { Analytics } from '@/components/common/Analytics'
@@ -35,16 +38,19 @@ export const LandingPage = () => {
   return (
     <>
       <SEOHead
-        title="Reflect — In-App Feedback & Bug Reporting Widget"
-        description="Collect in-app feedback, bug reports, and feature requests with Reflect. 3-minute install for React/Vue, integrations with Slack & Jira. Start free."
-        keywords="user feedback, bug tracking, feature requests, customer feedback, feedback widget, user surveys, NPS survey, CSAT survey, CES survey, product roadmap, customer insights, feedback management, user experience, SaaS feedback tool, customer feedback software, bug reporting tool, feature voting, user feedback widget, feedback analytics, customer satisfaction"
-        canonicalUrl="https://reflectfeedback.com"
-        ogImage="https://reflectfeedback.com/og-image.jpg"
+        title="Reflect – In-App Feedback Tool & Bug Reporting Widget for SaaS"
+        description="Collect user feedback, bug reports, and feature requests directly inside your app. Reflect is the fastest in-app feedback widget for SaaS teams. Try it free."
+        keywords="in-app feedback tool, feedback widget, bug reporting tool, feature request tool, user feedback tool for SaaS, customer feedback, feedback management, user experience, SaaS feedback, customer insights"
+        canonicalUrl="https://reflectfeedback.com/"
+        ogImage="https://reflectfeedback.com/og-image.png"
+        schemaType="homepage"
       />
       <Analytics />
       <main className="min-h-screen overflow-x-hidden">
         <Navbar />
         <HeroSection />
+        <SEOFeaturesSection />
+        <InternalLinksSection />
         <BeforeAfterSection />
         <LazyVisible>
           <Suspense fallback={<div className="h-96 bg-muted animate-pulse" />}>
@@ -76,6 +82,7 @@ export const LandingPage = () => {
             <BrandingSection />
           </Suspense>
         </LazyVisible>
+        <CTASection />
         <LazyVisible>
           <Suspense fallback={<div className="h-64 bg-muted animate-pulse" />}>
             <Footer />

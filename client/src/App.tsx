@@ -115,6 +115,122 @@ const ContactPage = lazy(() =>
   import('@/pages/ContactPage').then((m) => ({ default: m.ContactPage }))
 )
 const BlogPage = lazy(() => import('@/pages/BlogPage').then((m) => ({ default: m.BlogPage })))
+const FeaturesPage = lazy(() =>
+  import('@/pages/FeaturesPage').then((m) => ({ default: m.default }))
+)
+const FeedbackWidgetPage = lazy(() =>
+  import('@/pages/FeedbackWidgetPage').then((m) => ({ default: m.default }))
+)
+const BugReportingPage = lazy(() =>
+  import('@/pages/BugReportingPage').then((m) => ({ default: m.default }))
+)
+const FeatureRequestsPage = lazy(() =>
+  import('@/pages/FeatureRequestsPage').then((m) => ({ default: m.default }))
+)
+const PricingPage = lazy(() => import('@/pages/PricingPage').then((m) => ({ default: m.default })))
+// Comparison pages
+const ReflectVsCannyPage = lazy(() =>
+  import('@/pages/comparisons/ReflectVsCannyPage').then((m) => ({ default: m.default }))
+)
+const ReflectVsUserVoicePage = lazy(() =>
+  import('@/pages/comparisons/ReflectVsUserVoicePage').then((m) => ({ default: m.default }))
+)
+const ReflectVsSleekplanPage = lazy(() =>
+  import('@/pages/comparisons/ReflectVsSleekplanPage').then((m) => ({ default: m.default }))
+)
+const ReflectVsFrillPage = lazy(() =>
+  import('@/pages/comparisons/ReflectVsFrillPage').then((m) => ({ default: m.default }))
+)
+const ReflectVsNooraPage = lazy(() =>
+  import('@/pages/comparisons/ReflectVsNooraPage').then((m) => ({ default: m.default }))
+)
+const ReflectVsProductBoardPage = lazy(() =>
+  import('@/pages/comparisons/ReflectVsProductBoardPage').then((m) => ({ default: m.default }))
+)
+// Integration pages
+const ReflectSlackPage = lazy(() =>
+  import('@/pages/integrations/ReflectSlackPage').then((m) => ({ default: m.default }))
+)
+const ReflectLinearPage = lazy(() =>
+  import('@/pages/integrations/ReflectLinearPage').then((m) => ({ default: m.default }))
+)
+const ReflectGitHubPage = lazy(() =>
+  import('@/pages/integrations/ReflectGitHubPage').then((m) => ({ default: m.default }))
+)
+const ReflectNotionPage = lazy(() =>
+  import('@/pages/integrations/ReflectNotionPage').then((m) => ({ default: m.default }))
+)
+const ReflectJiraPage = lazy(() =>
+  import('@/pages/integrations/ReflectJiraPage').then((m) => ({ default: m.default }))
+)
+const ReflectTrelloPage = lazy(() =>
+  import('@/pages/integrations/ReflectTrelloPage').then((m) => ({ default: m.default }))
+)
+// Blog posts
+const CollectInAppFeedbackPost = lazy(() =>
+  import('@/pages/blog/posts/01-collect-in-app-feedback').then((m) => ({ default: m.default }))
+)
+const GetBetterBugReportsPost = lazy(() =>
+  import('@/pages/blog/posts/05-get-better-bug-reports').then((m) => ({ default: m.default }))
+)
+const FeatureRequestPrioritizationPost = lazy(() =>
+  import('@/pages/blog/posts/10-feature-request-prioritization').then((m) => ({
+    default: m.default,
+  }))
+)
+const PsychologyOfFeedbackPost = lazy(() =>
+  import('@/pages/blog/posts/02-psychology-of-feedback').then((m) => ({ default: m.default }))
+)
+const BestInAppFeedbackToolsPost = lazy(() =>
+  import('@/pages/blog/posts/03-best-in-app-feedback-tools').then((m) => ({ default: m.default }))
+)
+const InAppVsEmailFeedbackPost = lazy(() =>
+  import('@/pages/blog/posts/04-inapp-vs-email-feedback').then((m) => ({ default: m.default }))
+)
+const ScreenshotBugReportingPost = lazy(() =>
+  import('@/pages/blog/posts/06-screenshot-bug-reporting').then((m) => ({ default: m.default }))
+)
+const BugWorkflowsSaaSPost = lazy(() =>
+  import('@/pages/blog/posts/07-bug-workflows-saas').then((m) => ({ default: m.default }))
+)
+const ReportBugsInsideYourAppPost = lazy(() =>
+  import('@/pages/blog/posts/08-report-bugs-inside-your-app').then((m) => ({ default: m.default }))
+)
+const HowFeedbackWidgetsWorkPost = lazy(() =>
+  import('@/pages/blog/posts/09-how-feedback-widgets-work').then((m) => ({ default: m.default }))
+)
+const BuildPublicRoadmapPost = lazy(() =>
+  import('@/pages/blog/posts/11-build-public-roadmap').then((m) => ({ default: m.default }))
+)
+const FeatureVotingVsRequestsPost = lazy(() =>
+  import('@/pages/blog/posts/12-feature-voting-vs-requests').then((m) => ({ default: m.default }))
+)
+const WhyPMsFailPrioritizationPost = lazy(() =>
+  import('@/pages/blog/posts/13-why-pms-fail-prioritization').then((m) => ({ default: m.default }))
+)
+const CloseFeedbackLoopPost = lazy(() =>
+  import('@/pages/blog/posts/14-close-feedback-loop').then((m) => ({ default: m.default }))
+)
+const RightFeedbackQuestionsPost = lazy(() =>
+  import('@/pages/blog/posts/15-right-feedback-questions').then((m) => ({ default: m.default }))
+)
+const CustomerFeedbackForSaaSPost = lazy(() =>
+  import('@/pages/blog/posts/16-customer-feedback-for-saas').then((m) => ({ default: m.default }))
+)
+const CustomerDrivenProductPost = lazy(() =>
+  import('@/pages/blog/posts/17-customer-driven-product').then((m) => ({ default: m.default }))
+)
+const LeanFeedbackLoopPost = lazy(() =>
+  import('@/pages/blog/posts/18-lean-feedback-loop').then((m) => ({ default: m.default }))
+)
+const ValidateFeaturesInappSurveysPost = lazy(() =>
+  import('@/pages/blog/posts/19-validate-features-inapp-surveys').then((m) => ({
+    default: m.default,
+  }))
+)
+const FeedbackLoopsReduceChurnPost = lazy(() =>
+  import('@/pages/blog/posts/20-feedback-loops-reduce-churn').then((m) => ({ default: m.default }))
+)
 const DocsPage = lazy(() => import('@/pages/DocsPage').then((m) => ({ default: m.DocsPage })))
 const DocsApiPage = lazy(() =>
   import('@/pages/DocsApiPage').then((m) => ({ default: m.DocsApiPage }))
@@ -156,6 +272,137 @@ function App() {
                         <Route path="/about" element={<AboutPage />} />
                         <Route path="/contact" element={<ContactPage />} />
                         <Route path="/blog" element={<BlogPage />} />
+                        <Route path="/features" element={<FeaturesPage />} />
+                        <Route path="/feedback-widget" element={<FeedbackWidgetPage />} />
+                        <Route path="/bug-reporting" element={<BugReportingPage />} />
+                        <Route path="/feature-requests" element={<FeatureRequestsPage />} />
+                        <Route path="/pricing" element={<PricingPage />} />
+                        {/* Comparison pages */}
+                        <Route
+                          path="/comparisons/reflect-vs-canny"
+                          element={<ReflectVsCannyPage />}
+                        />
+                        <Route
+                          path="/comparisons/reflect-vs-uservoice"
+                          element={<ReflectVsUserVoicePage />}
+                        />
+                        <Route
+                          path="/comparisons/reflect-vs-sleekplan"
+                          element={<ReflectVsSleekplanPage />}
+                        />
+                        <Route
+                          path="/comparisons/reflect-vs-frill"
+                          element={<ReflectVsFrillPage />}
+                        />
+                        <Route
+                          path="/comparisons/reflect-vs-noora"
+                          element={<ReflectVsNooraPage />}
+                        />
+                        <Route
+                          path="/comparisons/reflect-vs-productboard"
+                          element={<ReflectVsProductBoardPage />}
+                        />
+                        {/* Integration pages */}
+                        <Route path="/integrations/slack" element={<ReflectSlackPage />} />
+                        <Route path="/integrations/linear" element={<ReflectLinearPage />} />
+                        <Route path="/integrations/github" element={<ReflectGitHubPage />} />
+                        <Route path="/integrations/notion" element={<ReflectNotionPage />} />
+                        <Route path="/integrations/jira" element={<ReflectJiraPage />} />
+                        <Route path="/integrations/trello" element={<ReflectTrelloPage />} />
+                        {/* Blog posts */}
+                        <Route
+                          path="/blog/posts/01-collect-in-app-feedback"
+                          element={<CollectInAppFeedbackPost />}
+                        />
+                        <Route
+                          path="/blog/posts/02-psychology-of-feedback"
+                          element={<PsychologyOfFeedbackPost />}
+                        />
+                        <Route
+                          path="/blog/posts/03-best-in-app-feedback-tools"
+                          element={<BestInAppFeedbackToolsPost />}
+                        />
+                        <Route
+                          path="/blog/posts/04-inapp-vs-email-feedback"
+                          element={<InAppVsEmailFeedbackPost />}
+                        />
+                        <Route
+                          path="/blog/posts/05-get-better-bug-reports"
+                          element={<GetBetterBugReportsPost />}
+                        />
+                        <Route
+                          path="/blog/posts/06-screenshot-bug-reporting"
+                          element={<ScreenshotBugReportingPost />}
+                        />
+                        <Route
+                          path="/blog/posts/07-bug-workflows-saas"
+                          element={<BugWorkflowsSaaSPost />}
+                        />
+                        <Route
+                          path="/blog/posts/08-report-bugs-inside-your-app"
+                          element={<ReportBugsInsideYourAppPost />}
+                        />
+                        <Route
+                          path="/blog/posts/09-how-feedback-widgets-work"
+                          element={<HowFeedbackWidgetsWorkPost />}
+                        />
+                        <Route
+                          path="/blog/posts/10-feature-request-prioritization"
+                          element={<FeatureRequestPrioritizationPost />}
+                        />
+                        <Route
+                          path="/blog/posts/11-build-public-roadmap"
+                          element={<BuildPublicRoadmapPost />}
+                        />
+                        <Route
+                          path="/blog/posts/12-feature-voting-vs-requests"
+                          element={<FeatureVotingVsRequestsPost />}
+                        />
+                        <Route
+                          path="/blog/posts/13-why-pms-fail-prioritization"
+                          element={<WhyPMsFailPrioritizationPost />}
+                        />
+                        <Route
+                          path="/blog/posts/14-close-feedback-loop"
+                          element={<CloseFeedbackLoopPost />}
+                        />
+                        <Route
+                          path="/blog/posts/15-right-feedback-questions"
+                          element={<RightFeedbackQuestionsPost />}
+                        />
+                        <Route
+                          path="/blog/posts/16-customer-feedback-for-saas"
+                          element={<CustomerFeedbackForSaaSPost />}
+                        />
+                        <Route
+                          path="/blog/posts/17-customer-driven-product"
+                          element={<CustomerDrivenProductPost />}
+                        />
+                        <Route
+                          path="/blog/posts/18-lean-feedback-loop"
+                          element={<LeanFeedbackLoopPost />}
+                        />
+                        <Route
+                          path="/blog/posts/19-validate-features-inapp-surveys"
+                          element={<ValidateFeaturesInappSurveysPost />}
+                        />
+                        <Route
+                          path="/blog/posts/20-feedback-loops-reduce-churn"
+                          element={<FeedbackLoopsReduceChurnPost />}
+                        />
+                        {/* Legacy blog routes for backwards compatibility */}
+                        <Route
+                          path="/blog/collect-in-app-feedback"
+                          element={<CollectInAppFeedbackPost />}
+                        />
+                        <Route
+                          path="/blog/get-better-bug-reports"
+                          element={<GetBetterBugReportsPost />}
+                        />
+                        <Route
+                          path="/blog/feature-request-prioritization"
+                          element={<FeatureRequestPrioritizationPost />}
+                        />
                         <Route path="/docs" element={<DocsPage />} />
                         <Route path="/docs/api" element={<DocsApiPage />} />
 

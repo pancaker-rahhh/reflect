@@ -1,11 +1,3 @@
 User-agent: *
-
 Allow: /
-
-# Sitemap locations
-
 Sitemap: https://reflectfeedback.com/sitemap.xml
-
-Sitemap: https://reflectfeedback.com/sitemap-pages.xml
-
-Sitemap: https://reflectfeedback.com/sitemap-blog.xml

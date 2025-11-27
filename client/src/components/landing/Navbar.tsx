@@ -1,8 +1,16 @@
-import { useState, useEffect, memo } from 'react'
+import { useState, useEffect, memo, lazy, Suspense } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { X, List } from 'phosphor-react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { BrandWordmark } from '@/components/common/BrandWordmark'
+
+// Lazy load icons only when mobile menu is opened
+const MobileMenuIcons = lazy(() =>
+  import('phosphor-react').then((mod) => ({
+    default: ({ isOpen }: { isOpen: boolean }) => {
+      const Icon = isOpen ? mod.X : mod.List
+      return <Icon size={24} className="transition-transform duration-200" />
+    },
+  }))
+)
 
 export const Navbar = memo(() => {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -62,187 +70,98 @@ export const Navbar = memo(() => {
   ]
 
   return (
-    <motion.header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 animate-fade-in ${
         isScrolled
           ? 'bg-background/98 backdrop-blur-2xl shadow-2xl border-b border-border/30'
           : 'bg-gradient-to-b from-background/90 via-background/60 to-transparent backdrop-blur-xl'
       }`}
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, delay: 0.2 }}
     >
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
-          <motion.button
+          <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-2"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-2 transition-transform hover:scale-105 active:scale-95"
           >
             <BrandWordmark size={20} />
-          </motion.button>
+          </button>
 
           <nav className="hidden lg:flex items-center gap-10">
-            {navLinks.map((link, index) => (
-              <motion.a
+            {navLinks.map((link) => (
+              <a
                 key={link.name}
                 href={link.href}
                 onClick={(e) => handleNavClick(e, link.targetId)}
-                className={`text-base font-medium transition-all duration-300 px-4 py-3 rounded-xl ${
+                className={`text-base font-medium transition-all duration-300 px-4 py-3 rounded-xl hover:scale-110 active:scale-95 ${
                   isScrolled
                     ? 'text-foreground hover:text-primary hover:bg-primary/8'
                     : isDocsPage
                       ? 'text-foreground hover:text-primary hover:bg-primary/8'
                       : 'text-foreground/90 hover:text-foreground hover:bg-foreground/8'
-                } relative`}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
+                } relative group`}
               >
                 {link.name}
-                <motion.div
-                  className="absolute -bottom-1 left-0 h-0.5 bg-primary"
-                  initial={{ width: 0 }}
-                  whileHover={{ width: '100%' }}
-                  transition={{ duration: 0.3 }}
-                />
-              </motion.a>
+                <span className="absolute -bottom-1 left-0 h-0.5 bg-primary w-0 group-hover:w-full transition-all duration-300" />
+              </a>
             ))}
-            <motion.button
+            <button
               onClick={handleDocs}
-              className={`text-base font-medium transition-all duration-300 px-4 py-3 rounded-xl relative ${
+              className={`text-base font-medium transition-all duration-300 px-4 py-3 rounded-xl relative hover:scale-110 active:scale-95 ${
                 isScrolled
                   ? 'text-foreground hover:text-primary hover:bg-primary/8'
                   : isDocsPage
                     ? 'text-foreground hover:text-primary hover:bg-primary/8'
                     : 'text-foreground/90 hover:text-foreground hover:bg-foreground/8'
-              }`}
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.4 + navLinks.length * 0.1 }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
+              } group`}
             >
               Docs
-              <motion.div
-                className="absolute -bottom-1 left-0 h-0.5 bg-primary"
-                initial={{ width: 0 }}
-                whileHover={{ width: '100%' }}
-                transition={{ duration: 0.3 }}
-              />
-            </motion.button>
+              <span className="absolute -bottom-1 left-0 h-0.5 bg-primary w-0 group-hover:w-full transition-all duration-300" />
+            </button>
           </nav>
 
           <div className="hidden lg:flex items-center gap-6">
-            <motion.button
+            <button
               onClick={handleLogin}
-              className="text-base font-medium text-muted-foreground hover:text-primary transition-all duration-300 px-5 py-3 rounded-2xl hover:bg-primary/8"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.8 }}
-              whileHover={{ scale: 1.05 }}
+              className="text-base font-medium text-muted-foreground hover:text-primary transition-all duration-300 px-5 py-3 rounded-2xl hover:bg-primary/8 hover:scale-105"
             >
               Log in
-            </motion.button>
-            <motion.button
+            </button>
+            <button
               onClick={handleGetStarted}
-              className="rounded-2xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all duration-300 border border-primary/20"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.9 }}
-              whileHover={{
-                scale: 1.02,
-                boxShadow: '0 15px 40px rgba(220, 38, 38, 0.3)',
-                y: -1,
-              }}
-              whileTap={{ scale: 0.95 }}
+              className="rounded-2xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 hover:shadow-2xl hover:shadow-primary/30 hover:-translate-y-0.5 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all duration-300 border border-primary/20"
             >
               Get Started
-            </motion.button>
+            </button>
           </div>
 
           <div className="lg:hidden">
-            <motion.button
+            <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`${
-                isScrolled ? 'text-foreground' : isDocsPage ? 'text-foreground' : 'text-foreground'
-              }`}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              className="text-foreground transition-transform hover:scale-110 active:scale-90"
               aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={isMenuOpen}
             >
-              <AnimatePresence mode="wait">
-                {isMenuOpen ? (
-                  <motion.div
-                    key="close"
-                    initial={{ rotate: -90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: 90, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <X size={24} />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="menu"
-                    initial={{ rotate: 90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: -90, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <List size={24} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.button>
+              <Suspense fallback={<span className="w-6 h-6 block" />}>
+                <MobileMenuIcons isOpen={isMenuOpen} />
+              </Suspense>
+            </button>
           </div>
         </div>
       </div>
 
       {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            className={`lg:hidden overflow-hidden ${
-              isScrolled ? 'bg-white/95' : isDocsPage ? 'bg-white/95' : 'bg-black/20'
-            } backdrop-blur-lg`}
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-          >
-            <motion.div
-              className="px-6 pt-2 pb-6 space-y-4"
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -20, opacity: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-            >
-              {navLinks.map((link, index) => (
-                <motion.a
-                  key={link.name}
-                  href={link.href}
-                  onClick={(e) => handleNavClick(e, link.targetId)}
-                  className={`block text-base font-semibold transition-colors ${
-                    isScrolled
-                      ? 'text-muted-foreground hover:text-primary'
-                      : isDocsPage
-                        ? 'text-muted-foreground hover:text-primary'
-                        : 'text-foreground hover:text-primary'
-                  }`}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2 + index * 0.05 }}
-                >
-                  {link.name}
-                </motion.a>
-              ))}
-              <motion.button
-                onClick={handleDocs}
+      {isMenuOpen && (
+        <div
+          className={`lg:hidden overflow-hidden transition-all duration-300 ${
+            isScrolled ? 'bg-white/95' : isDocsPage ? 'bg-white/95' : 'bg-black/20'
+          } backdrop-blur-lg animate-slide-down`}
+        >
+          <div className="px-6 pt-2 pb-6 space-y-4">
+            {navLinks.map((link) => (
+              <a
+                key={link.name}
+                href={link.href}
+                onClick={(e) => handleNavClick(e, link.targetId)}
                 className={`block text-base font-semibold transition-colors ${
                   isScrolled
                     ? 'text-muted-foreground hover:text-primary'
@@ -250,43 +169,45 @@ export const Navbar = memo(() => {
                       ? 'text-muted-foreground hover:text-primary'
                       : 'text-foreground hover:text-primary'
                 }`}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 + navLinks.length * 0.05 }}
               >
-                Docs
-              </motion.button>
-              <motion.div
-                className="border-t border-border/20 pt-4 flex flex-col space-y-4"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                <button
-                  onClick={handleLogin}
-                  className={`text-base font-semibold transition-colors ${
-                    isScrolled
+                {link.name}
+              </a>
+            ))}
+            <button
+              onClick={handleDocs}
+              className={`block text-base font-semibold transition-colors ${
+                isScrolled
+                  ? 'text-muted-foreground hover:text-primary'
+                  : isDocsPage
+                    ? 'text-muted-foreground hover:text-primary'
+                    : 'text-foreground hover:text-primary'
+              }`}
+            >
+              Docs
+            </button>
+            <div className="border-t border-border/20 pt-4 flex flex-col space-y-4">
+              <button
+                onClick={handleLogin}
+                className={`text-base font-semibold transition-colors ${
+                  isScrolled
+                    ? 'text-muted-foreground hover:text-primary'
+                    : isDocsPage
                       ? 'text-muted-foreground hover:text-primary'
-                      : isDocsPage
-                        ? 'text-muted-foreground hover:text-primary'
-                        : 'text-foreground hover:text-primary'
-                  }`}
-                >
-                  Log in
-                </button>
-                <motion.button
-                  onClick={handleGetStarted}
-                  className="rounded-2xl bg-primary px-4 py-2 text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 text-center transition-all"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  Get Started
-                </motion.button>
-              </motion.div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.header>
+                      : 'text-foreground hover:text-primary'
+                }`}
+              >
+                Log in
+              </button>
+              <button
+                onClick={handleGetStarted}
+                className="rounded-2xl bg-primary px-4 py-2 text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 text-center transition-all hover:scale-102 active:scale-98"
+              >
+                Get Started
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </header>
   )
 })

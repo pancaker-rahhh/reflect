@@ -14,7 +14,7 @@ export const Footer = memo(() => {
   return (
     <footer className="bg-background border-t border-border">
       <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-10">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-6 sm:gap-8 text-sm">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-8 gap-6 sm:gap-8 text-sm">
           {/* Column 1: Brand */}
           <div className="col-span-2 sm:col-span-3 md:col-span-1">
             <BrandWordmark />
@@ -77,11 +77,42 @@ export const Footer = memo(() => {
             <ul className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
               <li>
                 <a
-                  href="#features"
-                  onClick={(e) => handleNavClick(e, 'features')}
+                  href="/features"
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Features
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/feedback-widget"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Feedback Widget
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/bug-reporting"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Bug Reporting
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/feature-requests"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Feature Requests
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/pricing"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Pricing
                 </a>
               </li>
               <li>
@@ -91,33 +122,6 @@ export const Footer = memo(() => {
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Platform
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#interactive-modules"
-                  onClick={(e) => handleNavClick(e, 'interactive-modules')}
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Modules
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#pricing"
-                  onClick={(e) => handleNavClick(e, 'pricing')}
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Pricing
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#faq"
-                  onClick={(e) => handleNavClick(e, 'faq')}
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  FAQ
                 </a>
               </li>
             </ul>
@@ -145,6 +149,105 @@ export const Footer = memo(() => {
                   Contact
                 </a>
               </li>
+            </ul>
+          </div>
+
+          {/* Column 4: Comparisons */}
+          <div>
+            <h4 className="font-semibold text-foreground uppercase tracking-wider text-xs sm:text-sm">
+              Comparisons
+            </h4>
+            <ul className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
+              <li>
+                <a
+                  href="/comparisons/reflect-vs-canny"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  vs Canny
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/comparisons/reflect-vs-uservoice"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  vs UserVoice
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/comparisons/reflect-vs-sleekplan"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  vs Sleekplan
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/comparisons/reflect-vs-frill"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  vs Frill
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 5: Integrations */}
+          <div>
+            <h4 className="font-semibold text-foreground uppercase tracking-wider text-xs sm:text-sm">
+              Integrations
+            </h4>
+            <ul className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
+              <li>
+                <a
+                  href="/integrations/slack"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Slack
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/integrations/linear"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Linear
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/integrations/github"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  GitHub
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/integrations/jira"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Jira
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 6: Resources */}
+          <div>
+            <h4 className="font-semibold text-foreground uppercase tracking-wider text-xs sm:text-sm">
+              Resources
+            </h4>
+            <ul className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
+              <li>
+                <a
+                  href="/blog"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Blog
+                </a>
+              </li>
               <li>
                 <a
                   href="https://docs.reflectfeedback.com/"
@@ -163,23 +266,6 @@ export const Footer = memo(() => {
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Roadmap
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 4: Blog */}
-          <div>
-            <h4 className="font-semibold text-foreground uppercase tracking-wider text-xs sm:text-sm">
-              Blog
-            </h4>
-            <ul className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
-              <li>
-                <a
-                  href="/blog"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Latest Posts
                 </a>
               </li>
             </ul>
@@ -210,7 +296,7 @@ export const Footer = memo(() => {
             </ul>
           </div>
 
-          {/* Column 6: Founders */}
+          {/* Column 7: Founders */}
           <div className="col-span-2 sm:col-span-3 md:col-span-1">
             <h4 className="font-semibold text-foreground uppercase tracking-wider text-xs sm:text-sm mb-3 sm:mb-4">
               Founders
