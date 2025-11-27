@@ -1,6 +1,6 @@
 import { useState, memo } from 'react'
 import { FaqItem } from './FaqItem'
-import { LifeBuoy, Timer, MessageSquare, Bug, Lightbulb } from 'lucide-react'
+import { LifeBuoy, Timer, Bug, Lightbulb, BadgeCheck } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const faqData = [
