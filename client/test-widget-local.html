@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reflect Widget Test - Local Build</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      color: #333;
+    }
+    .info {
+      background: #f0f9ff;
+      border-left: 4px solid #0066ff;
+      padding: 16px;
+      margin: 20px 0;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Monaco', 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎯 Reflect Widget Test Page</h1>
+  
+  <div class="info">
+    <strong>Testing the locally built widget</strong>
+    <p>This page loads the widget from: <code>dist-widget/widget.js</code></p>
+    <p>Widget position: <strong>bottom_right</strong></p>
+  </div>
+
+  <h2>Sample Content</h2>
+  <p>
+    This is a test page to verify that the Reflect widget loads and displays correctly.
+    The widget should appear in the bottom-right corner of the page.
+  </p>
+
+  <p>
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor 
+    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud 
+    exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+
+  <h3>Features to Test:</h3>
+  <ul>
+    <li>Widget button appears in bottom-right corner</li>
+    <li>Click the button to open the widget</li>
+    <li>Test form submission</li>
+    <li>Check styling and responsiveness</li>
+    <li>Verify animations work smoothly</li>
+  </ul>
+
+  <!-- Reflect Widget Embed Code -->
+  <script>
+    window.reflectConfig = {
+      key: "test-widget-key",
+      position: "bottom_right"
+    };
+  </script>
+  <script async src="./dist-widget/widget.js"></script>
+</body>
+</html>
+

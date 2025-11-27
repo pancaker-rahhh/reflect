@@ -7,7 +7,6 @@ import { PRICING_PLANS, formatPrice, getFeatureList } from '@/lib/constants/pric
 export const PricingSection = memo(() => {
   const navigate = useNavigate()
 
-  // Get all 3 plans: Free, Pro Monthly, Pro Yearly
   const displayPlans = [
     PRICING_PLANS.find((plan) => plan.id === 'free'),
     PRICING_PLANS.find((plan) => plan.id === 'pro_monthly'),
@@ -71,8 +70,8 @@ export const PricingSection = memo(() => {
             transition={{ duration: 0.6, delay: 0.4 }}
             viewport={{ once: true }}
           >
-            Pick the plan that matches your ambition. Whether you're validating an idea or scaling
-            to millions, we've got you covered. Transparent pricing, no surprises.
+            Pick the plan that matches your ambition. Whether you&apos;re validating an idea or
+            scaling to millions, we&apos;ve got you covered. Transparent pricing, no surprises.
           </motion.p>
         </motion.div>
 
@@ -118,7 +117,7 @@ export const PricingSection = memo(() => {
                   viewport={{ once: true }}
                 >
                   <div className="bg-green-500 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold shadow-lg whitespace-nowrap">
-                    💰 10% Off
+                    💰 20% Off
                   </div>
                 </motion.div>
               )}
@@ -217,3 +216,5 @@ export const PricingSection = memo(() => {
     </motion.div>
   )
 })
+
+PricingSection.displayName = 'PricingSection'

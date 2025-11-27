@@ -7,8 +7,14 @@ const faqData = [
   {
     question: 'What is an in-app feedback tool?',
     answer:
-      'It lets users send suggestions and bug reports directly inside your product. Reflect provides this with a customizable widget.',
-    icon: <MessageSquare size={24} />,
+      '3 minutes from signup to live. One line of code, zero configuration, no developer needed. Your first user feedback could arrive before you finish your coffee.',
+    icon: <Timer size={24} />,
+  },
+  {
+    question: "What's the catch with the free plan?",
+    answer:
+      "No catch. It's free forever—1 widget, 1 form, 20 responses/month, full customization. No credit card, no surprise charges. When you outgrow it, Pro is $9.99/month for unlimited everything.",
+    icon: <BadgeCheck size={24} />,
   },
   {
     question: 'Can users report bugs with screenshots?',

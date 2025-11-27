@@ -150,12 +150,12 @@ export default function LifetimeOfferPage() {
               <div className="text-center md:text-left">
                 <p className="text-sm font-medium text-muted-foreground mb-2">One-time payment</p>
                 <div className="flex items-baseline gap-2 mb-4">
-                  <span className="text-6xl font-bold text-primary">$99</span>
-                  <span className="text-lg text-muted-foreground line-through">$348/year</span>
+                  <span className="text-6xl font-bold text-primary">$49.99</span>
+                  <span className="text-lg text-muted-foreground line-through">$99.99/year</span>
                 </div>
                 <p className="text-muted-foreground mb-6">
-                  Save over <strong className="text-foreground">$250/year</strong> compared to Pro
-                  Yearly
+                  Pay once, save <strong className="text-foreground">$50/year</strong> compared to
+                  Pro Yearly
                 </p>
 
                 <Button

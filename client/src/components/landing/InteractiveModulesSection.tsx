@@ -78,7 +78,7 @@ export const InteractiveModulesSection = memo(() => {
           >
             <span className="text-foreground">4 Feedback Tools</span>,{' '}
             <span className="text-primary">1 Widget</span>,{' '}
-            <span className="text-foreground">$160/Month Saved</span>
+            <span className="text-foreground">$179/Month Saved</span>
           </motion.h2>
           <motion.p
             className="mt-6 sm:mt-8 text-base sm:text-lg md:text-xl leading-7 sm:leading-8 text-muted-foreground max-w-3xl mx-auto px-4 sm:px-0"
@@ -362,7 +362,7 @@ export const InteractiveModulesSection = memo(() => {
             }}
             whileTap={{ scale: 0.98 }}
           >
-            Start Saving $160/Month Today
+            Start Saving $179/Month Today
           </motion.button>
         </motion.div>
       </div>

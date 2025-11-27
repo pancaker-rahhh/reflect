@@ -12,7 +12,7 @@ const beforeItems = [
 ]
 
 const afterItems = [
-  'One widget at $29/month - all feedback types',
+  'One widget at $9.99/month - all feedback types',
   'Every voice counts - see which ideas get 100+ votes',
   'Track NPS, CSAT, CES over time',
   'Organized bug reports with priority levels',
