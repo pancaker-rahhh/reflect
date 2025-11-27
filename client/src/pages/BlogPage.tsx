@@ -189,7 +189,7 @@ const blogPosts = [
   },
 ]
 
-export default function BlogPage() {
+export function BlogPage() {
   usePageAnalytics()
 
   return (

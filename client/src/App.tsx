@@ -5,8 +5,8 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { AppProvider } from '@/context/AppContext'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { DirectionProvider } from '@radix-ui/react-direction'
-// PostHog will be dynamically imported
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { PostHogProvider } from 'posthog-js/react'
+import { lazy, Suspense, useEffect } from 'react'
 import { HelmetProvider } from 'react-helmet-async'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 
@@ -114,7 +114,7 @@ const AboutPage = lazy(() => import('@/pages/AboutPage').then((m) => ({ default:
 const ContactPage = lazy(() =>
   import('@/pages/ContactPage').then((m) => ({ default: m.ContactPage }))
 )
-const BlogPage = lazy(() => import('@/pages/BlogPage').then((m) => ({ default: m.default })))
+const BlogPage = lazy(() => import('@/pages/BlogPage').then((m) => ({ default: m.BlogPage })))
 const FeaturesPage = lazy(() =>
   import('@/pages/FeaturesPage').then((m) => ({ default: m.default }))
 )
@@ -237,55 +237,14 @@ const DocsApiPage = lazy(() =>
 )
 const NotFound = lazy(() => import('@/pages/NotFound').then((m) => ({ default: m.NotFound })))
 
-// Lazy PostHog Provider - only loads after page is idle
-function LazyPostHogProvider({ children }: { children: React.ReactNode }) {
-  const [PostHogProvider, setPostHogProvider] = useState<React.ComponentType<any> | null>(null)
-
-  useEffect(() => {
-    const posthogKey = import.meta.env.VITE_PUBLIC_POSTHOG_KEY
-    if (!posthogKey) return
-
-    // Defer PostHog loading until idle
-    const loadPostHog = async () => {
-      // Dynamically import PostHog to avoid blocking
-      const { PostHogProvider: Provider } = await import('posthog-js/react')
-      setPostHogProvider(() => Provider)
-    }
-
-    if (typeof window !== 'undefined') {
-      if ('requestIdleCallback' in window && typeof window.requestIdleCallback === 'function') {
-        requestIdleCallback(loadPostHog, { timeout: 3000 })
-      } else {
-        window.addEventListener('load', loadPostHog)
-      }
-    }
-  }, [])
-
-  // Render children immediately, PostHog loads later
-  if (!PostHogProvider || !import.meta.env.VITE_PUBLIC_POSTHOG_KEY) {
-    return <>{children}</>
-  }
-
-  // This will only render after PostHog is loaded
-  return (
-    <PostHogProvider
-      apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_KEY}
-      options={
-        {
-          api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
-          defaults: '2025-05-24',
-          autocapture: false,
-        } as const
-      }
-    >
-      {children}
-    </PostHogProvider>
-  )
-}
+const options = {
+  api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
+  defaults: '2025-05-24',
+} as const
 
 function App() {
   return (
-    <LazyPostHogProvider>
+    <PostHogProvider apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_KEY} options={options}>
       <ErrorBoundary>
         <HelmetProvider>
           <DirectionProvider dir="ltr">
@@ -508,7 +467,7 @@ function App() {
           </DirectionProvider>
         </HelmetProvider>
       </ErrorBoundary>
-    </LazyPostHogProvider>
+    </PostHogProvider>
   )
 }
 
