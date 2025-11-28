@@ -12,7 +12,7 @@ export default function CollectInAppFeedbackPost() {
   return (
     <>
       <SEOHead
-        title="How to Collect In-App Feedback Without Annoying Users – Reflect Blog"
+        title="How to Collect In-App Feedback Without Annoying Users Reflect Blog"
         description="Learn best practices for collecting in-app feedback that users actually want to provide. Discover the right timing, placement, and messaging to maximize response rates."
         keywords="in-app feedback, collect user feedback, feedback collection, user feedback best practices"
         canonicalUrl="https://reflectfeedback.com/blog/collect-in-app-feedback"
@@ -153,7 +153,7 @@ export default function CollectInAppFeedbackPost() {
                   Collecting in-app feedback doesn't have to annoy users. By focusing on timing,
                   placement, messaging, and ease of use, you can create a feedback collection
                   experience that users actually appreciate. The key is making feedback feel
-                  natural, helpful, and valuable—not like an interruption.
+                  natural, helpful, and valuable, not like an interruption.
                 </p>
               </motion.div>
 

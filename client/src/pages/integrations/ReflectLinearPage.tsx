@@ -39,7 +39,7 @@ export default function ReflectLinearPage() {
   return (
     <>
       <SEOHead
-        title="Reflect + Linear – Send Feedback & Bug Reports to Linear"
+        title="Reflect + Linear Send Feedback & Bug Reports to Linear"
         description="Integrate Reflect with Linear to automatically convert feedback and bug reports into Linear issues. Keep your development workflow seamless."
         keywords="reflect linear integration, feedback linear, bug reports linear, linear issues"
         canonicalUrl="https://reflectfeedback.com/integrations/linear"

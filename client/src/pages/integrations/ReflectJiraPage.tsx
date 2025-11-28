@@ -35,7 +35,7 @@ export default function ReflectJiraPage() {
   return (
     <>
       <SEOHead
-        title="Reflect + Jira – Send Feedback & Bug Reports to Jira"
+        title="Reflect + Jira Send Feedback & Bug Reports to Jira"
         description="Integrate Reflect with Jira to automatically convert feedback and bug reports into Jira issues. Keep your development workflow seamless."
         keywords="reflect jira integration, feedback jira, bug reports jira"
         canonicalUrl="https://reflectfeedback.com/integrations/jira"

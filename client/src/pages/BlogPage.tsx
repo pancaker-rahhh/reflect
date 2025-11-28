@@ -195,7 +195,7 @@ export function BlogPage() {
   return (
     <>
       <SEOHead
-        title="Reflect Blog – Product Feedback & SaaS Growth"
+        title="Reflect Blog Product Feedback & SaaS Growth"
         description="Learn how great SaaS teams collect feedback, prioritize features, and build better products. Articles on in-app feedback, bug reporting, and product management."
         keywords="product feedback blog, SaaS growth, user feedback strategies, bug reporting best practices, feature prioritization"
         canonicalUrl="https://reflectfeedback.com/blog"

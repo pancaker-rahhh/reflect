@@ -12,7 +12,7 @@ export default function HowFeedbackWidgetsWorkPost() {
   return (
     <>
       <SEOHead
-        title="How Feedback Widgets Work: A Complete Guide – Reflect Blog"
+        title="How Feedback Widgets Work: A Complete Guide Reflect Blog"
         description="Learn how feedback widgets work, how to implement them, and best practices for using them to collect user feedback in your SaaS application."
         keywords="feedback widgets, how feedback widgets work, in-app feedback widgets, feedback widget implementation"
         canonicalUrl="https://reflectfeedback.com/blog/how-feedback-widgets-work"

@@ -22,7 +22,7 @@ export default function ReflectVsNooraPage() {
   return (
     <>
       <SEOHead
-        title="Reflect vs Noora – Best Alternative to Noora in 2025"
+        title="Reflect vs Noora Best Alternative to Noora in 2025"
         description="Compare Reflect vs Noora for feedback management. See why Reflect's in-app widget and bug reporting make it the best Noora alternative."
         keywords="reflect vs noora, noora alternative, feedback tool comparison"
         canonicalUrl="https://reflectfeedback.com/comparisons/reflect-vs-noora"

@@ -29,7 +29,7 @@ export default function BlogPostTemplate() {
   return (
     <>
       <SEOHead
-        title="[Blog Post Title] – Reflect Blog"
+        title="[Blog Post Title] Reflect Blog"
         description="[Meta description - 150-160 characters]"
         keywords="[relevant keywords]"
         canonicalUrl="https://reflectfeedback.com/blog/[slug]"

@@ -35,7 +35,7 @@ export default function ReflectTrelloPage() {
   return (
     <>
       <SEOHead
-        title="Reflect + Trello – Send Feedback & Bug Reports to Trello"
+        title="Reflect + Trello Send Feedback & Bug Reports to Trello"
         description="Integrate Reflect with Trello to automatically convert feedback and bug reports into Trello cards. Keep your team organized."
         keywords="reflect trello integration, feedback trello, bug reports trello"
         canonicalUrl="https://reflectfeedback.com/integrations/trello"

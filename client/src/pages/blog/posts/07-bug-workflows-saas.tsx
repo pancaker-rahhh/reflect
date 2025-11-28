@@ -12,7 +12,7 @@ export default function BugWorkflowsSaaSPost() {
   return (
     <>
       <SEOHead
-        title="Building Effective Bug Workflows for SaaS Teams – Reflect Blog"
+        title="Building Effective Bug Workflows for SaaS Teams Reflect Blog"
         description="Learn how to create efficient bug reporting workflows that help your team triage, prioritize, and fix issues faster. Discover best practices for bug management in SaaS products."
         keywords="bug workflows, bug management, bug triage, SaaS bug reporting, bug tracking workflows"
         canonicalUrl="https://reflectfeedback.com/blog/bug-workflows-saas"

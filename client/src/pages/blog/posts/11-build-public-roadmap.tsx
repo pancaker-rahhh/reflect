@@ -12,7 +12,7 @@ export default function BuildPublicRoadmapPost() {
   return (
     <>
       <SEOHead
-        title="How to Build a Public Roadmap That Builds Trust – Reflect Blog"
+        title="How to Build a Public Roadmap That Builds Trust Reflect Blog"
         description="Learn how to create a public product roadmap that builds trust, manages expectations, and keeps users engaged. Discover best practices for public roadmaps in SaaS."
         keywords="public roadmap, product roadmap, public product roadmap, roadmap transparency, SaaS roadmap"
         canonicalUrl="https://reflectfeedback.com/blog/build-public-roadmap"
@@ -130,9 +130,9 @@ export default function BuildPublicRoadmapPost() {
                   Updating Your Roadmap Regularly
                 </h2>
                 <p>
-                  A stale roadmap is worse than no roadmap at all. Update your roadmap regularly—at
-                  least monthly—to reflect current progress and priorities. When features ship, move
-                  them to a "shipped" section and celebrate the win with your users.
+                  A stale roadmap is worse than no roadmap at all. Update your roadmap regularly, at
+                  least monthly, to reflect current progress and priorities. When features ship,
+                  move them to a "shipped" section and celebrate the win with your users.
                 </p>
                 <p>
                   Regular updates show that your roadmap is a living document, not a forgotten page.

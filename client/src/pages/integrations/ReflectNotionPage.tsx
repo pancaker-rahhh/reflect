@@ -31,7 +31,7 @@ export default function ReflectNotionPage() {
   return (
     <>
       <SEOHead
-        title="Reflect + Notion – Send Feedback & Bug Reports to Notion"
+        title="Reflect + Notion Send Feedback & Bug Reports to Notion"
         description="Integrate Reflect with Notion to automatically sync feedback and bug reports to your Notion databases. Keep all your product insights in one place."
         keywords="reflect notion integration, feedback notion, bug reports notion"
         canonicalUrl="https://reflectfeedback.com/integrations/notion"

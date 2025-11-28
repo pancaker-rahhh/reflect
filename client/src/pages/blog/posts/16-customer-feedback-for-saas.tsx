@@ -12,7 +12,7 @@ export default function CustomerFeedbackForSaaSPost() {
   return (
     <>
       <SEOHead
-        title="Customer Feedback for SaaS: A Complete Guide – Reflect Blog"
+        title="Customer Feedback for SaaS: A Complete Guide Reflect Blog"
         description="Learn how to collect, analyze, and act on customer feedback in SaaS. Discover best practices for building a customer feedback system that drives product improvement."
         keywords="customer feedback SaaS, SaaS feedback, customer feedback collection, SaaS customer feedback"
         canonicalUrl="https://reflectfeedback.com/blog/customer-feedback-for-saas"

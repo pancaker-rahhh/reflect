@@ -9,7 +9,7 @@ export const AboutPage = () => {
   return (
     <>
       <Helmet>
-        <title>About Reflect — Feedback & Bug Reporting for Product Teams</title>
+        <title>About Reflect Feedback & Bug Reporting for Product Teams</title>
         <meta
           name="description"
           content="Reflect is a lightweight in-app feedback and bug reporting tool built for product and engineering teams. Learn our mission and how we help teams ship faster."
@@ -69,7 +69,7 @@ export const AboutPage = () => {
                   </p>
                   <p>
                     From bug reports to feature requests, surveys to roadmaps, we provide all the
-                    tools you need to capture, organize, and act on user feedback—all in one place.
+                    tools you need to capture, organize, and act on user feedback, all in one place.
                   </p>
                 </div>
               </motion.div>

@@ -53,7 +53,7 @@ export default function FeatureRequestsPage() {
   return (
     <>
       <SEOHead
-        title="Reflect Feature Request Tool – Prioritize What Matters"
+        title="Reflect Feature Request Tool Prioritize What Matters"
         description="Collect, organize, and prioritize feature requests. Let users vote, connect to your roadmap, and close the loop when features ship. Start free."
         keywords="feature request tool, feature voting, feature requests, product roadmap, feature prioritization, user feedback"
         canonicalUrl="https://reflectfeedback.com/feature-requests"

@@ -12,7 +12,7 @@ export default function CloseFeedbackLoopPost() {
   return (
     <>
       <SEOHead
-        title="How to Close the Feedback Loop and Build User Trust – Reflect Blog"
+        title="How to Close the Feedback Loop and Build User Trust Reflect Blog"
         description="Learn why closing the feedback loop is essential for building user trust and engagement. Discover best practices for keeping users informed about their feedback."
         keywords="close feedback loop, user feedback, feedback communication, user trust, SaaS feedback"
         canonicalUrl="https://reflectfeedback.com/blog/close-feedback-loop"
@@ -50,10 +50,10 @@ export default function CloseFeedbackLoopPost() {
                 </h2>
                 <p>
                   Closing the feedback loop means communicating back to users about what happened
-                  with their feedback. When users submit feedback—whether it's a bug report, feature
-                  request, or general suggestion—they want to know that it was received, considered,
-                  and acted upon. Closing the loop means keeping users informed throughout this
-                  process.
+                  with their feedback. When users submit feedback, whether it's a bug report,
+                  feature request, or general suggestion, they want to know that it was received,
+                  considered, and acted upon. Closing the loop means keeping users informed
+                  throughout this process.
                 </p>
                 <p>
                   Many companies collect feedback but never close the loop. Users submit feedback
@@ -80,7 +80,7 @@ export default function CloseFeedbackLoopPost() {
                 <p>
                   Third, closing the loop reduces churn. When users see that their concerns are
                   addressed and their requests are considered, they're more likely to stick around.
-                  This is especially important for feature requests—users who see their requested
+                  This is especially important for feature requests. Users who see their requested
                   features ship are less likely to churn.
                 </p>
 

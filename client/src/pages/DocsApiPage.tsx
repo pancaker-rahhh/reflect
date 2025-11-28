@@ -6,7 +6,7 @@ export const DocsApiPage = () => {
   return (
     <>
       <Helmet>
-        <title>Reflect API — Create & Retrieve Feedback Programmatically</title>
+        <title>Reflect API Create & Retrieve Feedback Programmatically</title>
         <meta
           name="description"
           content="Reflect API reference and examples. Learn authentication, endpoints, and sample requests to create feedback, attach metadata, and sync with your backend."
@@ -20,7 +20,7 @@ export const DocsApiPage = () => {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
             <div className="mx-auto max-w-4xl text-center">
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6">
-                Reflect API — Quickstart & Reference
+                Reflect API Quickstart & Reference
               </h1>
               <p className="mt-6 text-lg sm:text-xl leading-8 text-muted-foreground max-w-3xl mx-auto">
                 Integrate Reflect with your backend. Create feedback, retrieve responses, and sync

@@ -12,7 +12,7 @@ export default function PsychologyOfFeedbackPost() {
   return (
     <>
       <SEOHead
-        title="The Psychology Behind Effective User Feedback Loops – Reflect Blog"
+        title="The Psychology Behind Effective User Feedback Loops Reflect Blog"
         description="Discover the psychological principles that make feedback loops successful. Learn how to motivate users to provide constructive input and feel heard."
         keywords="feedback psychology, user feedback loops, feedback motivation, user engagement psychology"
         canonicalUrl="https://reflectfeedback.com/blog/psychology-of-feedback"
@@ -140,8 +140,8 @@ export default function PsychologyOfFeedbackPost() {
                 </h2>
                 <p>
                   Users want to feel in control of their experience. Giving users the ability to
-                  provide feedback on their terms—when they want, where they want, and how they
-                  want—increases engagement. In-app feedback tools that are always accessible but
+                  provide feedback on their terms, when they want, where they want, and how they
+                  want, increases engagement. In-app feedback tools that are always accessible but
                   never intrusive give users this sense of autonomy.
                 </p>
                 <p>

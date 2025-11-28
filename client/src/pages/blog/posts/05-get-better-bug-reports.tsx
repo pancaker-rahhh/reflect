@@ -12,7 +12,7 @@ export default function GetBetterBugReportsPost() {
   return (
     <>
       <SEOHead
-        title="How to Get Better Bug Reports from Users – Reflect Blog"
+        title="How to Get Better Bug Reports from Users Reflect Blog"
         description="Learn how to collect better bug reports with screenshots, context, and actionable details. Discover best practices for bug reporting workflows that help your team fix issues faster."
         keywords="bug reports, bug reporting, screenshot bug reports, bug tracking, bug reporting best practices"
         canonicalUrl="https://reflectfeedback.com/blog/get-better-bug-reports"

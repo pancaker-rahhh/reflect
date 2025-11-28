@@ -23,7 +23,7 @@ export default function ReflectVsProductBoardPage() {
   return (
     <>
       <SEOHead
-        title="Reflect vs Productboard – Best Alternative to Productboard in 2025"
+        title="Reflect vs Productboard Best Alternative to Productboard in 2025"
         description="Compare Reflect vs Productboard for product management. See why Reflect's in-app widget, bug reporting, and affordable pricing make it the best Productboard alternative."
         keywords="reflect vs productboard, productboard alternative, product management tool comparison"
         canonicalUrl="https://reflectfeedback.com/comparisons/reflect-vs-productboard"

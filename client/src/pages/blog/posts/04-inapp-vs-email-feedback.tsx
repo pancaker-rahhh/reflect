@@ -12,7 +12,7 @@ export default function InAppVsEmailFeedbackPost() {
   return (
     <>
       <SEOHead
-        title="In-App vs. Email Feedback: Which is Better for Your Product? – Reflect Blog"
+        title="In-App vs. Email Feedback: Which is Better for Your Product? Reflect Blog"
         description="An in-depth comparison of collecting feedback directly in-app versus through email. Explore the pros and cons of each method and determine the optimal strategy for your product."
         keywords="in-app feedback vs email, feedback collection methods, email feedback, in-app feedback advantages"
         canonicalUrl="https://reflectfeedback.com/blog/inapp-vs-email-feedback"
@@ -66,7 +66,7 @@ export default function InAppVsEmailFeedbackPost() {
                 </h2>
                 <p>
                   In-app feedback collection offers several compelling advantages. First, it
-                  captures feedback in context—when users are actively using your product and the
+                  captures feedback in context, when users are actively using your product and the
                   experience is fresh in their mind. This leads to more accurate, detailed feedback
                   that's easier for your team to act on.
                 </p>
@@ -85,7 +85,7 @@ export default function InAppVsEmailFeedbackPost() {
                 </p>
                 <p>
                   In-app feedback also provides better context capture. Tools can automatically
-                  collect browser information, console logs, user actions, and screenshots—details
+                  collect browser information, console logs, user actions, and screenshots, details
                   that users might forget or not know how to provide in an email. This automatic
                   context collection makes it much easier for your engineering team to reproduce and
                   fix issues.
@@ -140,7 +140,7 @@ export default function InAppVsEmailFeedbackPost() {
                 <p>
                   The quality of feedback is often better with in-app collection because it captures
                   context automatically. When users report bugs in-app, the tool can capture
-                  screenshots, browser information, console logs, and user actions—all without
+                  screenshots, browser information, console logs, and user actions, all without
                   requiring users to know technical details.
                 </p>
                 <p>

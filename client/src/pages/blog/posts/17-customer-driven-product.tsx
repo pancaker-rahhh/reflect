@@ -12,7 +12,7 @@ export default function CustomerDrivenProductPost() {
   return (
     <>
       <SEOHead
-        title="Building a Customer-Driven Product: A SaaS Guide – Reflect Blog"
+        title="Building a Customer-Driven Product: A SaaS Guide Reflect Blog"
         description="Learn how to build a customer-driven product by listening to users, prioritizing based on feedback, and making data-driven decisions. Discover the principles of customer-driven product development."
         keywords="customer-driven product, customer-driven development, SaaS product development, user-driven product"
         canonicalUrl="https://reflectfeedback.com/blog/customer-driven-product"
@@ -57,7 +57,7 @@ export default function CustomerDrivenProductPost() {
                 <p>
                   In customer-driven development, every feature, improvement, and bug fix is
                   informed by customer feedback. This doesn't mean building everything customers ask
-                  for—it means understanding customer needs deeply and building solutions that
+                  for. It means understanding customer needs deeply and building solutions that
                   address those needs effectively.
                 </p>
 

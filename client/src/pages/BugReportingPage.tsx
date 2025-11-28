@@ -22,7 +22,7 @@ const features = [
     icon: <FileText className="h-8 w-8" />,
     title: 'Automatic Context Collection',
     description:
-      'We automatically capture browser info, console logs, network requests, and user actions. No need to ask users for technical details—we collect it all automatically.',
+      'We automatically capture browser info, console logs, network requests, and user actions. No need to ask users for technical details. We collect it all automatically.',
   },
   {
     icon: <TrendingDown className="h-8 w-8" />,
@@ -38,7 +38,7 @@ export default function BugReportingPage() {
   return (
     <>
       <SEOHead
-        title="Reflect Bug Reporting Tool – Capture Issues Instantly"
+        title="Reflect Bug Reporting Tool Capture Issues Instantly"
         description="The fastest in-app bug reporting tool for SaaS. Screenshot capture, annotation, automatic context collection. Fix bugs faster and reduce churn. Start free."
         keywords="bug reporting tool, bug tracking, bug reporting software, in-app bug reporting, screenshot bug reports, bug tracking tool"
         canonicalUrl="https://reflectfeedback.com/bug-reporting"

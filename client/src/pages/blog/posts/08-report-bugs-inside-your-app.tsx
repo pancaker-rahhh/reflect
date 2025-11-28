@@ -12,7 +12,7 @@ export default function ReportBugsInsideYourAppPost() {
   return (
     <>
       <SEOHead
-        title="How to Let Users Report Bugs Inside Your App – Reflect Blog"
+        title="How to Let Users Report Bugs Inside Your App Reflect Blog"
         description="Learn how to implement in-app bug reporting that makes it easy for users to report issues without leaving your application. Discover best practices for in-app bug reporting."
         keywords="in-app bug reporting, report bugs in app, bug reporting widget, in-app bug reports"
         canonicalUrl="https://reflectfeedback.com/blog/report-bugs-inside-your-app"
@@ -55,7 +55,7 @@ export default function ReportBugsInsideYourAppPost() {
                   immediately when they encounter them, while the problem is fresh in their mind.
                 </p>
                 <p>
-                  Traditional bug reporting methods—like email or external forms—require users to
+                  Traditional bug reporting methods, like email or external forms, require users to
                   remember details, switch contexts, and navigate to a separate page. This friction
                   leads to fewer bug reports and lower-quality reports. In-app bug reporting
                   eliminates this friction and makes bug reporting effortless.

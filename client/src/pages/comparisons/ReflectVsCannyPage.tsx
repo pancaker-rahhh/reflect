@@ -23,7 +23,7 @@ export default function ReflectVsCannyPage() {
   return (
     <>
       <SEOHead
-        title="Reflect vs Canny – Best Alternative to Canny in 2025"
+        title="Reflect vs Canny Best Alternative to Canny in 2025"
         description="Compare Reflect vs Canny for feedback management. See why Reflect's in-app widget, screenshot bug reports, and 5-minute setup make it the best Canny alternative. Start free."
         keywords="reflect vs canny, canny alternative, feedback tool comparison, canny vs reflect, user feedback tool"
         canonicalUrl="https://reflectfeedback.com/comparisons/reflect-vs-canny"
@@ -150,8 +150,8 @@ export default function ReflectVsCannyPage() {
                     <strong className="text-foreground">In-App Feedback Collection:</strong> Unlike
                     Canny, Reflect provides a native in-app feedback widget that lets users submit
                     feedback, bug reports, and feature requests directly inside your application. No
-                    context switching, no friction—users can share their thoughts at the moment they
-                    have them.
+                    context switching, no friction. Users can share their thoughts at the moment
+                    they have them.
                   </p>
                   <p>
                     <strong className="text-foreground">Screenshot Bug Reporting:</strong> Reflect

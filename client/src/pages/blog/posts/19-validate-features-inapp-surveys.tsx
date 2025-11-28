@@ -12,7 +12,7 @@ export default function ValidateFeaturesInappSurveysPost() {
   return (
     <>
       <SEOHead
-        title="Validate Features with In-App Surveys Before Building – Reflect Blog"
+        title="Validate Features with In-App Surveys Before Building Reflect Blog"
         description="Learn how to use in-app surveys to validate features before building them. Discover best practices for feature validation that saves time and resources."
         keywords="feature validation, in-app surveys, feature validation surveys, SaaS feature validation"
         canonicalUrl="https://reflectfeedback.com/blog/validate-features-inapp-surveys"
@@ -102,8 +102,8 @@ export default function ValidateFeaturesInappSurveysPost() {
                   <li>"How often would you use [feature]?" (daily/weekly/monthly/rarely)</li>
                 </ul>
                 <p>
-                  Keep surveys short—3-5 questions maximum. Long surveys have lower completion rates
-                  and don't provide better insights.
+                  Keep surveys short, 3-5 questions maximum. Long surveys have lower completion
+                  rates and don't provide better insights.
                 </p>
 
                 <h2 className="text-3xl font-bold text-foreground mt-12 mb-4">
@@ -200,7 +200,7 @@ export default function ValidateFeaturesInappSurveysPost() {
                   Validation is only valuable if you act on the results. If validation shows strong
                   demand, prioritize the feature. If validation shows weak demand, either improve
                   the concept or deprioritize it. Don't ignore validation results and build features
-                  anyway—that defeats the purpose of validation.
+                  anyway. That defeats the purpose of validation.
                 </p>
                 <p>
                   Also, close the loop with survey respondents. Let them know when validated

@@ -22,7 +22,7 @@ export default function ReflectVsFrillPage() {
   return (
     <>
       <SEOHead
-        title="Reflect vs Frill – Best Alternative to Frill in 2025"
+        title="Reflect vs Frill Best Alternative to Frill in 2025"
         description="Compare Reflect vs Frill for feedback and roadmap management. See why Reflect's in-app widget and bug reporting make it the best Frill alternative."
         keywords="reflect vs frill, frill alternative, feedback tool comparison"
         canonicalUrl="https://reflectfeedback.com/comparisons/reflect-vs-frill"

@@ -22,7 +22,7 @@ export default function ReflectVsSleekplanPage() {
   return (
     <>
       <SEOHead
-        title="Reflect vs Sleekplan – Best Alternative to Sleekplan in 2025"
+        title="Reflect vs Sleekplan Best Alternative to Sleekplan in 2025"
         description="Compare Reflect vs Sleekplan for roadmap and feedback management. See why Reflect's in-app widget and bug reporting make it the best Sleekplan alternative."
         keywords="reflect vs sleekplan, sleekplan alternative, roadmap tool comparison"
         canonicalUrl="https://reflectfeedback.com/comparisons/reflect-vs-sleekplan"

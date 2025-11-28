@@ -63,7 +63,7 @@ export const HeroSection = memo(() => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
             >
-              Collect feedback, bug reports, and feature requests directly inside your product — no
+              Collect feedback, bug reports, and feature requests directly inside your product. No
               emails, no friction.
             </motion.h2>
 

@@ -38,7 +38,7 @@ export default function FeedbackWidgetPage() {
   return (
     <>
       <SEOHead
-        title="Reflect Feedback Widget – Collect In-App User Feedback"
+        title="Reflect Feedback Widget Collect In-App User Feedback"
         description="A beautiful, lightweight feedback widget for your app. Install in minutes, customize to match your brand, and start collecting user feedback instantly. Free plan available."
         keywords="feedback widget, in-app feedback widget, user feedback widget, feedback collection widget, SaaS feedback widget"
         canonicalUrl="https://reflectfeedback.com/feedback-widget"

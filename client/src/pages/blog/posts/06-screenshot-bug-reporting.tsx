@@ -12,7 +12,7 @@ export default function ScreenshotBugReportingPost() {
   return (
     <>
       <SEOHead
-        title="Screenshot Bug Reporting: A Game Changer for SaaS Teams – Reflect Blog"
+        title="Screenshot Bug Reporting: A Game Changer for SaaS Teams Reflect Blog"
         description="Explore how integrated screenshot capture and annotation in bug reporting can revolutionize your development workflow and accelerate issue resolution."
         keywords="screenshot bug reporting, bug reports with screenshots, annotated screenshots, bug reporting tools"
         canonicalUrl="https://reflectfeedback.com/blog/screenshot-bug-reporting"

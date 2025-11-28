@@ -13,7 +13,7 @@ const faqData = [
   {
     question: "What's the catch with the free plan?",
     answer:
-      "No catch. It's free forever—1 widget, 1 form, 20 responses/month, full customization. No credit card, no surprise charges. When you outgrow it, Pro is $9.99/month for unlimited everything.",
+      "No catch. It's free forever: 1 widget, 1 form, 20 responses/month, full customization. No credit card, no surprise charges. When you outgrow it, Pro is $9.99/month for unlimited everything.",
     icon: <BadgeCheck size={24} />,
   },
   {

@@ -12,7 +12,7 @@ export default function FeatureVotingVsRequestsPost() {
   return (
     <>
       <SEOHead
-        title="Feature Voting vs. Feature Requests: What's the Difference? – Reflect Blog"
+        title="Feature Voting vs. Feature Requests: What's the Difference? Reflect Blog"
         description="Understand the difference between feature voting and feature requests, and learn when to use each approach to prioritize product development effectively."
         keywords="feature voting, feature requests, feature prioritization, product development, SaaS features"
         canonicalUrl="https://reflectfeedback.com/blog/feature-voting-vs-requests"
@@ -112,8 +112,8 @@ export default function FeatureVotingVsRequestsPost() {
                   <li>Build a backlog of potential features</li>
                 </ul>
                 <p>
-                  Feature requests are the starting point—they capture user needs and ideas. Without
-                  feature requests, you wouldn't know what users want, and you'd be building
+                  Feature requests are the starting point. They capture user needs and ideas.
+                  Without feature requests, you wouldn't know what users want, and you'd be building
                   features based on assumptions rather than actual demand.
                 </p>
 

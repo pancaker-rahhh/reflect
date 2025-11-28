@@ -23,7 +23,7 @@ export default function ReflectVsUserVoicePage() {
   return (
     <>
       <SEOHead
-        title="Reflect vs UserVoice – Best Alternative to UserVoice in 2025"
+        title="Reflect vs UserVoice Best Alternative to UserVoice in 2025"
         description="Compare Reflect vs UserVoice for feedback management. See why Reflect's modern in-app widget, screenshot bug reports, and affordable pricing make it the best UserVoice alternative."
         keywords="reflect vs uservoice, uservoice alternative, feedback tool comparison, uservoice vs reflect"
         canonicalUrl="https://reflectfeedback.com/comparisons/reflect-vs-uservoice"

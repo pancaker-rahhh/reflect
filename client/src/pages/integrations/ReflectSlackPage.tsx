@@ -39,7 +39,7 @@ export default function ReflectSlackPage() {
   return (
     <>
       <SEOHead
-        title="Reflect + Slack – Send Feedback & Bug Reports to Slack"
+        title="Reflect + Slack Send Feedback & Bug Reports to Slack"
         description="Integrate Reflect with Slack to receive feedback, bug reports, and feature requests directly in your Slack channels. Set up in minutes and never miss important user feedback."
         keywords="reflect slack integration, feedback slack, bug reports slack, slack notifications"
         canonicalUrl="https://reflectfeedback.com/integrations/slack"

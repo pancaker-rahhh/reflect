@@ -12,7 +12,7 @@ export default function LeanFeedbackLoopPost() {
   return (
     <>
       <SEOHead
-        title="Building a Lean Feedback Loop for Faster Product Iteration – Reflect Blog"
+        title="Building a Lean Feedback Loop for Faster Product Iteration Reflect Blog"
         description="Learn how to build a lean feedback loop that helps you iterate faster and build better products. Discover principles and practices for efficient feedback collection and action."
         keywords="lean feedback loop, product iteration, feedback loops, agile feedback, SaaS iteration"
         canonicalUrl="https://reflectfeedback.com/blog/lean-feedback-loop"
@@ -138,7 +138,7 @@ export default function LeanFeedbackLoopPost() {
                 </h2>
                 <p>
                   Lean feedback loops require rapid decision-making. Don't let feedback sit in
-                  queues for weeks. Review feedback regularly—daily or weekly—and make quick
+                  queues for weeks. Review feedback regularly, daily or weekly, and make quick
                   decisions about what to act on. Use clear prioritization criteria to make
                   decisions objectively and quickly.
                 </p>

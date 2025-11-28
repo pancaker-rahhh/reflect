@@ -50,7 +50,7 @@ export default function FeaturesPage() {
   return (
     <>
       <SEOHead
-        title="Reflect Features – In-App Feedback Tool for SaaS"
+        title="Reflect Features In-App Feedback Tool for SaaS"
         description="Powerful in-app feedback tools for SaaS teams. Real-time feedback collection, bug reports with screenshots, feature voting, customizable widgets, and analytics. Start free."
         keywords="in-app feedback tool, feedback features, bug reporting, feature requests, feedback widget, SaaS feedback, customer feedback tools"
         canonicalUrl="https://reflectfeedback.com/features"
@@ -73,7 +73,7 @@ export default function FeaturesPage() {
                 Powerful In-App Feedback Tools for SaaS Teams
               </h1>
               <p className="mt-6 text-lg sm:text-xl leading-8 text-muted-foreground max-w-3xl mx-auto">
-                Everything you need to collect, organize, and act on user feedback—all in one
+                Everything you need to collect, organize, and act on user feedback, all in one
                 lightweight platform. No bloat, no complexity, just powerful tools that work.
               </p>
             </motion.div>

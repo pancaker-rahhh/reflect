@@ -12,7 +12,7 @@ export default function FeedbackLoopsReduceChurnPost() {
   return (
     <>
       <SEOHead
-        title="How Feedback Loops Reduce Churn in SaaS – Reflect Blog"
+        title="How Feedback Loops Reduce Churn in SaaS Reflect Blog"
         description="Learn how effective feedback loops can reduce customer churn by building trust, addressing concerns, and showing users that their input matters. Discover the connection between feedback and retention."
         keywords="reduce churn, feedback loops, customer retention, SaaS churn, feedback and churn"
         canonicalUrl="https://reflectfeedback.com/blog/feedback-loops-reduce-churn"

@@ -35,7 +35,7 @@ export default function ReflectGitHubPage() {
   return (
     <>
       <SEOHead
-        title="Reflect + GitHub – Send Feedback & Bug Reports to GitHub"
+        title="Reflect + GitHub Send Feedback & Bug Reports to GitHub"
         description="Integrate Reflect with GitHub to automatically convert feedback and bug reports into GitHub issues. Keep your development workflow seamless."
         keywords="reflect github integration, feedback github, bug reports github"
         canonicalUrl="https://reflectfeedback.com/integrations/github"

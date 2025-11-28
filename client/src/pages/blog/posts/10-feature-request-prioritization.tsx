@@ -12,7 +12,7 @@ export default function FeatureRequestPrioritizationPost() {
   return (
     <>
       <SEOHead
-        title="Feature Request Prioritization: A Data-Driven Approach – Reflect Blog"
+        title="Feature Request Prioritization: A Data-Driven Approach Reflect Blog"
         description="Learn how to prioritize feature requests using voting, analytics, and user segmentation. Stop guessing what features to build and start making data-driven decisions."
         keywords="feature request prioritization, feature voting, product roadmap, feature requests"
         canonicalUrl="https://reflectfeedback.com/blog/feature-request-prioritization"
@@ -52,7 +52,7 @@ export default function FeatureRequestPrioritizationPost() {
                   Every product team faces the same challenge: too many feature requests and not
                   enough time to build them all. Without a clear prioritization framework, teams
                   often build features based on the loudest voice, the latest request, or gut
-                  feeling—not what users actually need.
+                  feeling, not what users actually need.
                 </p>
                 <p>
                   The solution is to use data to drive prioritization decisions. By collecting user

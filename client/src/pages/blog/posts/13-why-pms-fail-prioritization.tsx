@@ -12,7 +12,7 @@ export default function WhyPMsFailPrioritizationPost() {
   return (
     <>
       <SEOHead
-        title="Why Product Managers Fail at Feature Prioritization – Reflect Blog"
+        title="Why Product Managers Fail at Feature Prioritization Reflect Blog"
         description="Discover the common mistakes product managers make when prioritizing features and learn how to use data-driven approaches to make better decisions."
         keywords="feature prioritization, product management, product roadmap, feature requests, product manager mistakes"
         canonicalUrl="https://reflectfeedback.com/blog/why-pms-fail-prioritization"
@@ -181,10 +181,10 @@ export default function WhyPMsFailPrioritizationPost() {
                 <h2 className="text-3xl font-bold text-foreground mt-12 mb-4">Conclusion</h2>
                 <p>
                   Feature prioritization is hard, but it doesn't have to be a failure. By avoiding
-                  common mistakes—prioritizing based on loud voices, ignoring feedback, lacking
+                  common mistakes: prioritizing based on loud voices, ignoring feedback, lacking
                   frameworks, not segmenting users, focusing only on new features, and not closing
-                  the loop—product managers can make better decisions. Use data-driven approaches to
-                  prioritize features that users actually want and that drive business value.
+                  the loop, product managers can make better decisions. Use data-driven approaches
+                  to prioritize features that users actually want and that drive business value.
                 </p>
               </motion.div>
 

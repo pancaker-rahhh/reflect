@@ -12,7 +12,7 @@ export default function RightFeedbackQuestionsPost() {
   return (
     <>
       <SEOHead
-        title="Asking the Right Feedback Questions: A Guide for SaaS Teams – Reflect Blog"
+        title="Asking the Right Feedback Questions: A Guide for SaaS Teams Reflect Blog"
         description="Learn how to ask the right questions when collecting user feedback. Discover which questions yield actionable insights and which ones to avoid."
         keywords="feedback questions, user feedback, feedback collection, SaaS feedback, feedback surveys"
         canonicalUrl="https://reflectfeedback.com/blog/right-feedback-questions"
@@ -137,7 +137,7 @@ export default function RightFeedbackQuestionsPost() {
                   Contextual Questions
                 </h2>
                 <p>
-                  The best feedback questions are contextual—they're asked at the right time and
+                  The best feedback questions are contextual. They're asked at the right time and
                   place. For example, when users are using a specific feature, ask about that
                   feature. When they encounter a bug, ask about the bug. Context makes questions
                   more relevant and easier to answer.

@@ -75,7 +75,7 @@ export default function PricingPage() {
   return (
     <>
       <SEOHead
-        title="Reflect Pricing – Simple, Predictable Plans"
+        title="Reflect Pricing Simple, Predictable Plans"
         description="Simple, transparent pricing for in-app feedback tools. Free plan available. No setup fees, no hidden costs. Start collecting feedback today."
         keywords="feedback tool pricing, SaaS pricing, feedback widget pricing, bug reporting tool pricing"
         canonicalUrl="https://reflectfeedback.com/pricing"
