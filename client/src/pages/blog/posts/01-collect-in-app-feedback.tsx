@@ -9,6 +9,26 @@ import { ArrowRight } from 'lucide-react'
 export default function CollectInAppFeedbackPost() {
   usePageAnalytics()
 
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: 'How to Collect In-App Feedback Without Annoying Users',
+    description:
+      'Learn best practices for collecting in-app feedback that users actually want to provide. Discover the right timing, placement, and messaging to maximize response rates.',
+    datePublished: '2024-11-20',
+    dateModified: '2024-11-20',
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': 'https://reflectfeedback.com/blog/collect-in-app-feedback',
+    },
+    author: {
+      '@type': 'Person',
+      name: 'Reflect Team',
+    },
+    image: ['https://reflectfeedback.com/og-image.png'],
+    url: 'https://reflectfeedback.com/blog/collect-in-app-feedback',
+  }
+
   return (
     <>
       <SEOHead
@@ -18,6 +38,8 @@ export default function CollectInAppFeedbackPost() {
         canonicalUrl="https://reflectfeedback.com/blog/collect-in-app-feedback"
         ogImage="https://reflectfeedback.com/og-image.png"
         schemaType="blog"
+        ogType="article"
+        structuredData={articleSchema}
       />
       <Navbar />
       <div className="min-h-screen bg-background pt-20">

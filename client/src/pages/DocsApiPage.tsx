@@ -1,17 +1,16 @@
-import { Helmet } from 'react-helmet-async'
 import { Navbar } from '@/components/landing/Navbar'
 import { Footer } from '@/components/landing/Footer'
+import { SEOHead } from '@/components/common/SEOHead'
 
 export const DocsApiPage = () => {
   return (
     <>
-      <Helmet>
-        <title>Reflect API Create & Retrieve Feedback Programmatically</title>
-        <meta
-          name="description"
-          content="Reflect API reference and examples. Learn authentication, endpoints, and sample requests to create feedback, attach metadata, and sync with your backend."
-        />
-      </Helmet>
+      <SEOHead
+        title="Reflect API Create & Retrieve Feedback Programmatically"
+        description="Reflect API reference and examples. Learn authentication, endpoints, and sample requests to create feedback, attach metadata, and sync with your backend."
+        canonicalUrl="https://reflectfeedback.com/docs/api"
+        ogImage="https://reflectfeedback.com/og-image.png"
+      />
 
       <Navbar />
       <div className="min-h-screen bg-background pt-20">

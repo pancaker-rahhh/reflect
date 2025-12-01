@@ -9,6 +9,26 @@ import { ArrowRight } from 'lucide-react'
 export default function PsychologyOfFeedbackPost() {
   usePageAnalytics()
 
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: 'The Psychology Behind Effective User Feedback Loops',
+    description:
+      'Discover the psychological principles that make feedback loops successful. Learn how to motivate users to provide constructive input and feel heard.',
+    datePublished: '2024-11-18',
+    dateModified: '2024-11-18',
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': 'https://reflectfeedback.com/blog/psychology-of-feedback',
+    },
+    author: {
+      '@type': 'Person',
+      name: 'Reflect Team',
+    },
+    image: ['https://reflectfeedback.com/og-image.png'],
+    url: 'https://reflectfeedback.com/blog/psychology-of-feedback',
+  }
+
   return (
     <>
       <SEOHead
@@ -18,6 +38,8 @@ export default function PsychologyOfFeedbackPost() {
         canonicalUrl="https://reflectfeedback.com/blog/psychology-of-feedback"
         ogImage="https://reflectfeedback.com/og-image.png"
         schemaType="blog"
+        ogType="article"
+        structuredData={articleSchema}
       />
       <Navbar />
       <div className="min-h-screen bg-background pt-20">

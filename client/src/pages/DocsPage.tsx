@@ -1,17 +1,16 @@
-import { Helmet } from 'react-helmet-async'
 import { Navbar } from '@/components/landing/Navbar'
 import { Footer } from '@/components/landing/Footer'
+import { SEOHead } from '@/components/common/SEOHead'
 
 export const DocsPage = () => {
   return (
     <>
-      <Helmet>
-        <title>Reflect Docs Install, Integrations & Usage</title>
-        <meta
-          name="description"
-          content="Developer docs for Reflect: install the feedback widget, integrate with Slack/Jira, and use the API. Step-by-step guides for React, Vue and plain JS."
-        />
-      </Helmet>
+      <SEOHead
+        title="Reflect Docs Install, Integrations & Usage"
+        description="Developer docs for Reflect: install the feedback widget, integrate with Slack/Jira, and use the API. Step-by-step guides for React, Vue and plain JS."
+        canonicalUrl="https://reflectfeedback.com/docs"
+        ogImage="https://reflectfeedback.com/og-image.png"
+      />
 
       <Navbar />
       <div className="min-h-screen bg-background pt-20">

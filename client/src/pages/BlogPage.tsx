@@ -15,6 +15,7 @@ const blogPosts = [
     readTime: '8 min read',
     category: 'UX Design',
     slug: '01-collect-in-app-feedback',
+    canonicalPath: 'collect-in-app-feedback',
   },
   {
     title: 'The Psychology Behind Effective User Feedback Loops',
@@ -24,6 +25,7 @@ const blogPosts = [
     readTime: '10 min read',
     category: 'Psychology',
     slug: '02-psychology-of-feedback',
+    canonicalPath: 'psychology-of-feedback',
   },
   {
     title: 'Top 5 In-App Feedback Tools for SaaS in 2025',
@@ -33,6 +35,7 @@ const blogPosts = [
     readTime: '12 min read',
     category: 'Guides',
     slug: '03-best-in-app-feedback-tools',
+    canonicalPath: 'best-in-app-feedback-tools',
   },
   {
     title: 'In-App vs. Email Feedback: Which is Better for Your Product?',
@@ -42,6 +45,7 @@ const blogPosts = [
     readTime: '7 min read',
     category: 'Product',
     slug: '04-inapp-vs-email-feedback',
+    canonicalPath: 'inapp-vs-email-feedback',
   },
   {
     title: 'How to Get Better Bug Reports from Users',
@@ -51,6 +55,7 @@ const blogPosts = [
     readTime: '9 min read',
     category: 'Engineering',
     slug: '05-get-better-bug-reports',
+    canonicalPath: 'get-better-bug-reports',
   },
   {
     title: 'Screenshot Bug Reporting: A Game Changer for SaaS Teams',
@@ -60,6 +65,7 @@ const blogPosts = [
     readTime: '8 min read',
     category: 'Engineering',
     slug: '06-screenshot-bug-reporting',
+    canonicalPath: 'screenshot-bug-reporting',
   },
   {
     title: 'Building Effective Bug Workflows for SaaS Teams',
@@ -69,6 +75,7 @@ const blogPosts = [
     readTime: '10 min read',
     category: 'Engineering',
     slug: '07-bug-workflows-saas',
+    canonicalPath: 'bug-workflows-saas',
   },
   {
     title: 'How to Let Users Report Bugs Inside Your App',
@@ -78,6 +85,7 @@ const blogPosts = [
     readTime: '8 min read',
     category: 'Engineering',
     slug: '08-report-bugs-inside-your-app',
+    canonicalPath: 'report-bugs-inside-your-app',
   },
   {
     title: 'How Feedback Widgets Work: A Complete Guide',
@@ -87,6 +95,7 @@ const blogPosts = [
     readTime: '9 min read',
     category: 'Guides',
     slug: '09-how-feedback-widgets-work',
+    canonicalPath: 'how-feedback-widgets-work',
   },
   {
     title: 'Feature Request Prioritization: A Data-Driven Approach',
@@ -96,6 +105,7 @@ const blogPosts = [
     readTime: '11 min read',
     category: 'Product',
     slug: '10-feature-request-prioritization',
+    canonicalPath: 'feature-request-prioritization',
   },
   {
     title: 'How to Build a Public Roadmap That Builds Trust',
@@ -105,6 +115,7 @@ const blogPosts = [
     readTime: '9 min read',
     category: 'Product',
     slug: '11-build-public-roadmap',
+    canonicalPath: 'build-public-roadmap',
   },
   {
     title: "Feature Voting vs. Feature Requests: What's the Difference?",
@@ -114,6 +125,7 @@ const blogPosts = [
     readTime: '8 min read',
     category: 'Product',
     slug: '12-feature-voting-vs-requests',
+    canonicalPath: 'feature-voting-vs-requests',
   },
   {
     title: 'Why Product Managers Fail at Feature Prioritization',
@@ -123,6 +135,7 @@ const blogPosts = [
     readTime: '10 min read',
     category: 'Product',
     slug: '13-why-pms-fail-prioritization',
+    canonicalPath: 'why-pms-fail-prioritization',
   },
   {
     title: 'How to Close the Feedback Loop and Build User Trust',
@@ -132,6 +145,7 @@ const blogPosts = [
     readTime: '9 min read',
     category: 'Growth',
     slug: '14-close-feedback-loop',
+    canonicalPath: 'close-feedback-loop',
   },
   {
     title: 'Asking the Right Feedback Questions: A Guide for SaaS Teams',
@@ -141,6 +155,7 @@ const blogPosts = [
     readTime: '8 min read',
     category: 'UX Design',
     slug: '15-right-feedback-questions',
+    canonicalPath: 'right-feedback-questions',
   },
   {
     title: 'Customer Feedback for SaaS: A Complete Guide',
@@ -150,6 +165,7 @@ const blogPosts = [
     readTime: '11 min read',
     category: 'Guides',
     slug: '16-customer-feedback-for-saas',
+    canonicalPath: 'customer-feedback-for-saas',
   },
   {
     title: 'Building a Customer-Driven Product: A SaaS Guide',
@@ -159,6 +175,7 @@ const blogPosts = [
     readTime: '10 min read',
     category: 'Product',
     slug: '17-customer-driven-product',
+    canonicalPath: 'customer-driven-product',
   },
   {
     title: 'Building a Lean Feedback Loop for Faster Product Iteration',
@@ -168,6 +185,7 @@ const blogPosts = [
     readTime: '9 min read',
     category: 'Product',
     slug: '18-lean-feedback-loop',
+    canonicalPath: 'lean-feedback-loop',
   },
   {
     title: 'Validate Features with In-App Surveys Before Building',
@@ -177,6 +195,7 @@ const blogPosts = [
     readTime: '8 min read',
     category: 'Product',
     slug: '19-validate-features-inapp-surveys',
+    canonicalPath: 'validate-features-inapp-surveys',
   },
   {
     title: 'How Feedback Loops Reduce Churn in SaaS',
@@ -186,21 +205,39 @@ const blogPosts = [
     readTime: '10 min read',
     category: 'Growth',
     slug: '20-feedback-loops-reduce-churn',
+    canonicalPath: 'feedback-loops-reduce-churn',
   },
 ]
 
 export function BlogPage() {
   usePageAnalytics()
 
+  const siteUrl = 'https://reflectfeedback.com'
+
+  const blogItemListSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Reflect Blog – In-App Feedback & SaaS Product Growth',
+    url: `${siteUrl}/blog`,
+    itemListElement: blogPosts.map((post, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: `${siteUrl}/blog/${post.canonicalPath}`,
+      name: post.title,
+      description: post.excerpt,
+    })),
+  }
+
   return (
     <>
       <SEOHead
-        title="Reflect Blog Product Feedback & SaaS Growth"
-        description="Learn how great SaaS teams collect feedback, prioritize features, and build better products. Articles on in-app feedback, bug reporting, and product management."
+        title="Reflect Blog – In-App Feedback & SaaS Product Growth"
+        description="Deep-dive articles on in-app feedback, SaaS UX, product-led growth, and customer research. Learn how great SaaS teams collect feedback, prioritize features, and ship better products."
         keywords="product feedback blog, SaaS growth, user feedback strategies, bug reporting best practices, feature prioritization"
         canonicalUrl="https://reflectfeedback.com/blog"
         ogImage="https://reflectfeedback.com/og-image.png"
         schemaType="blog"
+        structuredData={blogItemListSchema}
       />
       <Navbar />
       <div className="min-h-screen bg-background pt-20">
