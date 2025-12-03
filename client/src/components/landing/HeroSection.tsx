@@ -75,7 +75,8 @@ export const HeroSection = memo(() => {
               Reflect is a lightweight in-app feedback tool that helps SaaS teams capture user
               feedback, bug reports, and feature requests instantly. Add a feedback widget to your
               product in minutes and start understanding your users without interrupting their
-              workflow.
+              workflow. Reflect works as a complete customer feedback platform, helping SaaS teams
+              centralize product insights.
             </motion.p>
             {/* CTA Button */}
             <motion.div

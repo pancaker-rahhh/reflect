@@ -6,7 +6,7 @@ const features = [
   {
     title: 'In-App Feedback Tool',
     description:
-      'Reflect makes it easy to collect feedback from users directly inside your application. With one simple widget, customers can submit suggestions, report issues, or share ideas without leaving your product.',
+      'Reflect makes it easy to collect feedback from users directly inside your application. With one simple widget, customers can submit suggestions, report issues, or share ideas without leaving your product. It doubles as a lightweight product feedback management system that captures ideas across the entire user journey.',
     icon: <MessageSquare className="h-8 w-8" />,
   },
   {
