@@ -53,7 +53,7 @@ export const HeroSection = memo(() => {
                   backgroundClip: 'text',
                 }}
               >
-                The simplest in-app feedback tool for SaaS teams
+                The Simplest In-App Feedback Tool for SaaS Teams
               </motion.span>
             </motion.h1>
 
@@ -63,8 +63,7 @@ export const HeroSection = memo(() => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
             >
-              Collect feedback, bug reports, and feature requests directly inside your product. No
-              emails, no friction.
+              Collect All Feedback Directly Inside Your App
             </motion.h2>
 
             <motion.p

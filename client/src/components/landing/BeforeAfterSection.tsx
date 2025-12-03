@@ -57,25 +57,16 @@ export const BeforeAfterSection = memo(() => {
             variants={itemVariants}
             transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            Stop Guessing, Start{' '}
-            <motion.span
-              className="text-primary"
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5, duration: 0.8 }}
-              viewport={{ once: true }}
-            >
-              listening
-            </motion.span>
+            Replace Four Tools with One $9.99 Widget
           </motion.h2>
           <motion.p
             className="mt-6 sm:mt-8 text-base sm:text-lg md:text-xl leading-7 sm:leading-8 text-muted-foreground max-w-3xl mx-auto px-4 sm:px-0"
             variants={itemVariants}
             transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            Most teams are flying blind - scattered tools for reviews, bugs, surveys, and feature
-            requests. Missing insights, losing customers, making decisions based on gut feeling.
-            What if you could see everything in one place, backed by real data?
+            Most teams juggle Typeform, Hotjar, UserVoice, and Jira just to stay afloat. Reflect
+            captures reviews, bugs, surveys, and feature ideas in one lightweight widget so you can
+            act on real data instead of gut feel.
           </motion.p>
         </motion.div>
 

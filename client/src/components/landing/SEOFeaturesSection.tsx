@@ -48,6 +48,21 @@ export const SEOFeaturesSection = memo(() => {
       viewport={{ once: true }}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <motion.div
+          className="max-w-3xl mx-auto text-center mb-12 sm:mb-16"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+            Submit Bugs with Screenshots and Context
+          </h2>
+          <p className="text-lg text-muted-foreground">
+            Give every report the evidence your engineers need—annotated screenshots, device
+            details, and priority levels delivered straight from the widget into your dashboard.
+          </p>
+        </motion.div>
         {/* Feature Cards */}
         <div className="grid grid-cols-1 gap-8 sm:gap-10 md:grid-cols-2 lg:grid-cols-2 mb-16 sm:mb-20">
           {features.map((feature, index) => (
@@ -81,7 +96,7 @@ export const SEOFeaturesSection = memo(() => {
           viewport={{ once: true }}
         >
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-6 sm:mb-8 text-center">
-            Why SaaS Teams Use Reflect
+            Why SaaS Teams Choose Reflect
           </h2>
           <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {benefits.map((benefit, index) => (

@@ -110,7 +110,7 @@ export const PlatformSection = memo(() => {
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}
             >
-              Every Tool You Need to <span className="text-primary">Close the Loop</span>
+              Track NPS, CSAT, and CES in One Dashboard
             </motion.h2>
             <motion.p
               className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-muted-foreground max-w-3xl mx-auto px-4 sm:px-0"
@@ -119,8 +119,9 @@ export const PlatformSection = memo(() => {
               transition={{ duration: 0.6, delay: 0.3 }}
               viewport={{ once: true }}
             >
-              Watch how teams collect, organize, analyze, and act on feedback. All without leaving
-              their workflow. Click any demo to see the full feature in action.
+              Watch live demos of survey responses, feature votes, roadmap updates, and annotated
+              bug reports all syncing into the same analytics hub. Every click shows how the widget
+              turns raw feedback into trends you can act on instantly.
             </motion.p>
           </motion.div>
 

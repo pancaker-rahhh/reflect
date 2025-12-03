@@ -20,10 +20,11 @@ export const CTASection = memo(() => {
           viewport={{ once: true }}
         >
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 sm:mb-6">
-            Add Reflect to your app in 5 minutes
+            Custom-Branded Widget That Installs in Minutes
           </h2>
           <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-8 sm:mb-10 max-w-2xl mx-auto">
-            No complicated setup. Lightweight script, no bloat.
+            Drop in one snippet, match your colors, and start capturing structured feedback without
+            touching the rest of your stack.
           </p>
           <motion.button
             onClick={() => (window.location.href = '/login')}

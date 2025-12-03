@@ -76,9 +76,7 @@ export const InteractiveModulesSection = memo(() => {
             transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: true }}
           >
-            <span className="text-foreground">4 Feedback Tools</span>,{' '}
-            <span className="text-primary">1 Widget</span>,{' '}
-            <span className="text-foreground">$179/Month Saved</span>
+            Let Users Vote on Features They Want Most
           </motion.h2>
           <motion.p
             className="mt-6 sm:mt-8 text-base sm:text-lg md:text-xl leading-7 sm:leading-8 text-muted-foreground max-w-3xl mx-auto px-4 sm:px-0"
@@ -87,17 +85,9 @@ export const InteractiveModulesSection = memo(() => {
             transition={{ duration: 0.6, delay: 0.3 }}
             viewport={{ once: true }}
           >
-            <motion.span
-              className="font-semibold text-primary"
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 0.5 }}
-              viewport={{ once: true }}
-            >
-              Toggle any module on/off
-            </motion.span>{' '}
-            and watch your widget adapt instantly. One code snippet powers all feedback types. The
-            only widget that grows with your business.
+            Toggle reviews, surveys, bug reports, and feature requests on or off to shape the widget
+            in seconds. Product teams get an instant queue of the most-voted ideas—no more guessing
+            which roadmap item wins.
           </motion.p>
         </motion.div>
 
