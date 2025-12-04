@@ -4,17 +4,84 @@ import { Footer } from '@/components/landing/Footer'
 import { SEOHead } from '@/components/common/SEOHead'
 import { usePageAnalytics } from '@/hooks/usePageAnalytics'
 import { Link } from 'react-router-dom'
-import { Check, X, ArrowRight } from 'lucide-react'
+import { Check, X } from 'lucide-react'
+import TLDRBox from '@/components/common/TLDRBox'
+import ComparisonTable from '@/components/common/ComparisonTable'
+import MigrationCTA from '@/components/common/MigrationCTA'
 
 const comparisonData = [
-  { feature: 'In-App Widget', reflect: true, frill: false },
-  { feature: 'Screenshot Bug Reports', reflect: true, frill: false },
-  { feature: 'Free Plan', reflect: true, frill: false },
-  { feature: 'Feature Voting', reflect: true, frill: true },
-  { feature: 'Public Roadmap', reflect: true, frill: true },
-  { feature: 'Lightweight', reflect: true, frill: false },
-  { feature: '5-Minute Setup', reflect: true, frill: false },
+  { label: 'Core product', reflect: 'In-app widget', competitor: 'Hosted portal' },
+  { label: 'Feature voting', reflect: 'Yes — in-widget', competitor: 'Yes — portal' },
+  { label: 'Bug reporting', reflect: 'Screenshots + logs', competitor: 'No' },
+  { label: 'Integrations', reflect: 'Jira, GitHub, Slack', competitor: 'Basic' },
+  { label: 'Pricing model', reflect: 'Developer-friendly', competitor: 'Per-seat' },
+  {
+    label: 'In-App Widget',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
+  {
+    label: 'Screenshot Bug Reports',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
+  {
+    label: 'Free Plan',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
+  {
+    label: 'Feature Voting',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <Check className="h-5 w-5 text-green-500" />,
+  },
+  {
+    label: 'Public Roadmap',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <Check className="h-5 w-5 text-green-500" />,
+  },
+  {
+    label: 'Lightweight',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
+  {
+    label: '5-Minute Setup',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
 ]
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Is Reflect a good Frill alternative?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes — Reflect is a solid alternative for teams seeking in-app capture plus advanced bug reporting.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Will Reflect keep my roadmap public?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Reflect supports public roadmaps; you can control which items are public.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How do I import data from Frill?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Export Frill data and use the migration CSV tooling to map and import into Reflect.',
+      },
+    },
+  ],
+}
 
 export default function ReflectVsFrillPage() {
   usePageAnalytics()
@@ -22,12 +89,17 @@ export default function ReflectVsFrillPage() {
   return (
     <>
       <SEOHead
-        title="Reflect vs Frill Best Alternative to Frill in 2025"
-        description="Compare Reflect vs Frill for feedback and roadmap management. See why Reflect's in-app widget and bug reporting make it the best Frill alternative."
+        title="Reflect vs Frill — Best Alternative for In-App Feedback"
+        description="Compare Reflect and Frill on in-app feedback, public roadmaps, pricing, and developer experience. Reflect focuses on bug reporting plus feedback in one tool."
         keywords="reflect vs frill, frill alternative, feedback tool comparison"
         canonicalUrl="https://reflectfeedback.com/comparisons/reflect-vs-frill"
         ogImage="https://reflectfeedback.com/og-image.png"
         schemaType="default"
+        structuredData={faqSchema}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       <Navbar />
       <div className="min-h-screen bg-background pt-20">
@@ -39,13 +111,17 @@ export default function ReflectVsFrillPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
+              <TLDRBox>
+                <p>
+                  Frill focuses on public roadmaps and lightweight feedback portals; Reflect
+                  combines in-app feedback, bug reporting, and voting — making it the better choice
+                  for engineering-led teams needing context-rich reports.
+                </p>
+              </TLDRBox>
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6">
-                Reflect vs Frill: Best Alternative to Frill in 2025
+                Reflect vs Frill — Which Feedback Tool Should You Choose?
               </h1>
-              <p className="text-lg sm:text-xl leading-8 text-muted-foreground">
-                Compare Reflect's comprehensive feedback platform with Frill's feature request tool.
-                See why Reflect offers more with in-app feedback and bug reporting.
-              </p>
+              <MigrationCTA competitor="Frill" />
             </motion.div>
           </div>
         </section>
@@ -91,44 +167,7 @@ export default function ReflectVsFrillPage() {
                   Feature Comparison
                 </h2>
                 <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-lg">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-muted">
-                        <tr>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                            Feature
-                          </th>
-                          <th className="px-6 py-4 text-center text-sm font-semibold text-foreground">
-                            Reflect
-                          </th>
-                          <th className="px-6 py-4 text-center text-sm font-semibold text-foreground">
-                            Frill
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {comparisonData.map((row, index) => (
-                          <tr key={index} className="hover:bg-muted/50 transition-colors">
-                            <td className="px-6 py-4 text-sm text-foreground">{row.feature}</td>
-                            <td className="px-6 py-4 text-center">
-                              {row.reflect ? (
-                                <Check className="h-5 w-5 text-green-500 mx-auto" />
-                              ) : (
-                                <X className="h-5 w-5 text-red-500 mx-auto" />
-                              )}
-                            </td>
-                            <td className="px-6 py-4 text-center">
-                              {row.frill ? (
-                                <Check className="h-5 w-5 text-green-500 mx-auto" />
-                              ) : (
-                                <X className="h-5 w-5 text-red-500 mx-auto" />
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <ComparisonTable rows={comparisonData} competitorName="Frill" />
                 </div>
               </motion.div>
 
@@ -233,7 +272,55 @@ export default function ReflectVsFrillPage() {
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.8 }}
+                viewport={{ once: true }}
+              >
+                <section aria-label="FAQ">
+                  <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">FAQ</h2>
+                  <div className="space-y-4">
+                    <details className="bg-card rounded-xl p-6 border border-border">
+                      <summary className="text-lg font-semibold text-foreground cursor-pointer">
+                        Is Reflect a good Frill alternative?
+                      </summary>
+                      <div className="mt-4 text-muted-foreground">
+                        Yes — Reflect is a solid alternative for teams seeking in-app capture plus
+                        advanced bug reporting.
+                      </div>
+                    </details>
+                    <details className="bg-card rounded-xl p-6 border border-border">
+                      <summary className="text-lg font-semibold text-foreground cursor-pointer">
+                        Will Reflect keep my roadmap public?
+                      </summary>
+                      <div className="mt-4 text-muted-foreground">
+                        Reflect supports public roadmaps; you can control which items are public.
+                      </div>
+                    </details>
+                    <details className="bg-card rounded-xl p-6 border border-border">
+                      <summary className="text-lg font-semibold text-foreground cursor-pointer">
+                        How do I import data from Frill?
+                      </summary>
+                      <div className="mt-4 text-muted-foreground">
+                        Export Frill data and use the migration CSV tooling to map and import into
+                        Reflect.
+                      </div>
+                    </details>
+                  </div>
+                </section>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 1.0 }}
+                viewport={{ once: true }}
+              >
+                <MigrationCTA competitor="Frill" />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 1.2 }}
                 viewport={{ once: true }}
                 className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-8 border border-primary/20 text-center"
               >
@@ -249,7 +336,6 @@ export default function ReflectVsFrillPage() {
                     className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 shadow-xl hover:shadow-2xl"
                   >
                     Get Started Free
-                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                   <Link
                     to="/features"

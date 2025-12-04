@@ -7,8 +7,8 @@ export const DocsApiPage = () => {
   return (
     <>
       <SEOHead
-        title="Reflect API Reference - Programmatic Feedback Management | Reflect"
-        description="Complete Reflect API documentation for developers. REST API endpoints for creating feedback, retrieving responses, managing widgets, and syncing data. Authentication, examples, and integration guides included."
+        title="Reflect Documentation — Install & API Guide"
+        description="Developer docs for Reflect: widget installation, API reference, and integration examples."
         keywords="Reflect API, feedback widget API, in-app feedback API, SaaS feedback API, REST API documentation, feedback management API, programmatic feedback"
         canonicalUrl="https://reflectfeedback.com/docs/api"
         ogImage="https://reflectfeedback.com/og-image.png"

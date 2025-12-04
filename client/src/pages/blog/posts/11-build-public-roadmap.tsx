@@ -37,6 +37,17 @@ export default function BuildPublicRoadmapPost() {
                   expectations, and keeps users engaged. Discover best practices for public roadmaps
                   in SaaS.
                 </p>
+                <p className="text-base text-muted-foreground mb-8">
+                  Looking for a roadmap tool? Compare Reflect with alternatives like{' '}
+                  <Link to="/comparisons/reflect-vs-canny" className="text-primary hover:underline">
+                    Canny
+                  </Link>{' '}
+                  or{' '}
+                  <Link to="/comparisons/reflect-vs-frill" className="text-primary hover:underline">
+                    Frill
+                  </Link>
+                  .
+                </p>
               </motion.div>
 
               <motion.div

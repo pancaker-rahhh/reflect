@@ -37,6 +37,20 @@ export default function FeatureRequestPrioritizationPost() {
                   segmentation. Stop guessing what features to build and start making data-driven
                   decisions.
                 </p>
+                <p className="text-base text-muted-foreground mb-8">
+                  Need a feature request tool? See how Reflect compares to{' '}
+                  <Link to="/comparisons/reflect-vs-canny" className="text-primary hover:underline">
+                    Canny
+                  </Link>{' '}
+                  and{' '}
+                  <Link
+                    to="/comparisons/reflect-vs-uservoice"
+                    className="text-primary hover:underline"
+                  >
+                    UserVoice
+                  </Link>
+                  .
+                </p>
               </motion.div>
 
               <motion.div

@@ -1,6 +1,7 @@
 import { useState, memo } from 'react'
 import { Bug, ChartBar, FileText, Lightbulb, GitMerge, Play, X, Palette } from 'phosphor-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import VideoLazy from '@/components/common/VideoLazy'
 
 const features = [
   {
@@ -140,11 +141,10 @@ export const PlatformSection = memo(() => {
                   className="relative aspect-video w-full rounded-xl overflow-hidden shadow-md mb-6 cursor-pointer"
                   aria-label={`Play video: ${feature.title}`}
                 >
-                  <video
+                  <VideoLazy
                     src={feature.thumbnail}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     preload="none"
-                    loading="lazy"
                     muted
                     playsInline
                     title={feature.title}

@@ -97,8 +97,8 @@ export default function PricingPage() {
   return (
     <>
       <SEOHead
-        title="SaaS Feedback Platform Pricing - Affordable Plans for Teams | Reflect"
-        description="Transparent pricing for in-app feedback tools. Free plan available. Plans from $9.99/month for bug reporting, feature voting, NPS surveys, and feedback widgets. No setup fees."
+        title="Feedback Tool Pricing — Plans for Teams | Reflect"
+        description="Transparent pricing for Reflect — free and team plans for in-app feedback, bug reporting, and feature voting. No setup fees. Compare plans and features."
         keywords="SaaS feedback platform pricing, in-app feedback tool pricing, feedback widget pricing, bug reporting tool pricing, feature request tool pricing, NPS survey pricing"
         canonicalUrl="https://reflectfeedback.com/pricing"
         ogImage="https://reflectfeedback.com/og-image.png"

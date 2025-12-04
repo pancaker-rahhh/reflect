@@ -4,18 +4,89 @@ import { Footer } from '@/components/landing/Footer'
 import { SEOHead } from '@/components/common/SEOHead'
 import { usePageAnalytics } from '@/hooks/usePageAnalytics'
 import { Link } from 'react-router-dom'
-import { Check, X, ArrowRight } from 'lucide-react'
+import { Check, X } from 'lucide-react'
+import TLDRBox from '@/components/common/TLDRBox'
+import ComparisonTable from '@/components/common/ComparisonTable'
+import MigrationCTA from '@/components/common/MigrationCTA'
 
 const comparisonData = [
-  { feature: 'In-App Widget', reflect: true, uservoice: false },
-  { feature: 'Screenshot Bug Reports', reflect: true, uservoice: false },
-  { feature: '5-Minute Setup', reflect: true, uservoice: false },
-  { feature: 'Free Plan', reflect: true, uservoice: false },
-  { feature: 'Feature Voting', reflect: true, uservoice: true },
-  { feature: 'Public Roadmap', reflect: true, uservoice: true },
-  { feature: 'Lightweight (<50KB)', reflect: true, uservoice: false },
-  { feature: 'Modern UI/UX', reflect: true, uservoice: false },
+  { label: 'Core product', reflect: 'In-app widget', competitor: 'Hosted portal' },
+  { label: 'Feature voting', reflect: 'Yes — in-widget', competitor: 'Yes — portal' },
+  { label: 'Bug reporting', reflect: 'Screenshots + logs', competitor: 'Basic' },
+  { label: 'Integrations', reflect: 'Jira, GitHub, Slack', competitor: 'Jira, GitHub, Zendesk' },
+  { label: 'Pricing model', reflect: 'Developer-friendly', competitor: 'Enterprise/seat' },
+  {
+    label: 'In-App Widget',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
+  {
+    label: 'Screenshot Bug Reports',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
+  {
+    label: '5-Minute Setup',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
+  {
+    label: 'Free Plan',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
+  {
+    label: 'Feature Voting',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <Check className="h-5 w-5 text-green-500" />,
+  },
+  {
+    label: 'Public Roadmap',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <Check className="h-5 w-5 text-green-500" />,
+  },
+  {
+    label: 'Lightweight (<50KB)',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
+  {
+    label: 'Modern UI/UX',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
 ]
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Can Reflect replace UserVoice?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes — Reflect is a strong alternative for teams who want in-app feedback and richer bug context with a developer-first integration.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How quickly can my team move feedback from UserVoice to Reflect?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Migration usually takes a few days depending on dataset size; see the migration guide for step-by-step instructions.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Does Reflect support SSO and enterprise security?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes — Reflect supports SSO and enterprise security features; contact sales for enterprise plans.',
+      },
+    },
+  ],
+}
 
 export default function ReflectVsUserVoicePage() {
   usePageAnalytics()
@@ -23,12 +94,17 @@ export default function ReflectVsUserVoicePage() {
   return (
     <>
       <SEOHead
-        title="Reflect vs UserVoice Best Alternative to UserVoice in 2025"
-        description="Compare Reflect vs UserVoice for feedback management. See why Reflect's modern in-app widget, screenshot bug reports, and affordable pricing make it the best UserVoice alternative."
+        title="Reflect vs UserVoice — Better User Feedback for SaaS"
+        description="Compare Reflect and UserVoice by features, pricing, and ease of use. Reflect is focused on in-app capture and fast developer workflows."
         keywords="reflect vs uservoice, uservoice alternative, feedback tool comparison, uservoice vs reflect"
         canonicalUrl="https://reflectfeedback.com/comparisons/reflect-vs-uservoice"
         ogImage="https://reflectfeedback.com/og-image.png"
         schemaType="default"
+        structuredData={faqSchema}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       <Navbar />
       <div className="min-h-screen bg-background pt-20">
@@ -40,14 +116,17 @@ export default function ReflectVsUserVoicePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
+              <TLDRBox>
+                <p>
+                  UserVoice is feature-rich for enterprise community portals; Reflect is better for
+                  product teams who want in-app feedback, richer bug context, and a simpler
+                  developer-first integration.
+                </p>
+              </TLDRBox>
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6">
-                Reflect vs UserVoice: Best Alternative to UserVoice in 2025
+                Reflect vs UserVoice — Which Feedback Tool Fits Your Team?
               </h1>
-              <p className="text-lg sm:text-xl leading-8 text-muted-foreground">
-                Looking for a UserVoice alternative? Compare Reflect's modern in-app feedback
-                widget, screenshot bug reporting, and affordable pricing against UserVoice's
-                enterprise-focused platform.
-              </p>
+              <MigrationCTA competitor="UserVoice" />
             </motion.div>
           </div>
         </section>
@@ -96,44 +175,7 @@ export default function ReflectVsUserVoicePage() {
                   Feature Comparison
                 </h2>
                 <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-lg">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-muted">
-                        <tr>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                            Feature
-                          </th>
-                          <th className="px-6 py-4 text-center text-sm font-semibold text-foreground">
-                            Reflect
-                          </th>
-                          <th className="px-6 py-4 text-center text-sm font-semibold text-foreground">
-                            UserVoice
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {comparisonData.map((row, index) => (
-                          <tr key={index} className="hover:bg-muted/50 transition-colors">
-                            <td className="px-6 py-4 text-sm text-foreground">{row.feature}</td>
-                            <td className="px-6 py-4 text-center">
-                              {row.reflect ? (
-                                <Check className="h-5 w-5 text-green-500 mx-auto" />
-                              ) : (
-                                <X className="h-5 w-5 text-red-500 mx-auto" />
-                              )}
-                            </td>
-                            <td className="px-6 py-4 text-center">
-                              {row.uservoice ? (
-                                <Check className="h-5 w-5 text-green-500 mx-auto" />
-                              ) : (
-                                <X className="h-5 w-5 text-red-500 mx-auto" />
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <ComparisonTable rows={comparisonData} competitorName="UserVoice" />
                 </div>
               </motion.div>
 
@@ -235,25 +277,53 @@ export default function ReflectVsUserVoicePage() {
                 transition={{ duration: 0.6, delay: 0.8 }}
                 viewport={{ once: true }}
               >
-                <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
-                  Migration Steps to Reflect
-                </h2>
-                <div className="prose prose-lg max-w-none text-muted-foreground space-y-4">
-                  <p>Migrating from UserVoice to Reflect is straightforward:</p>
-                  <ol className="list-decimal list-inside space-y-3 ml-4">
-                    <li>Export your UserVoice data using their export feature</li>
-                    <li>Sign up for Reflect and create your project</li>
-                    <li>Import your top feature requests and feedback</li>
-                    <li>Install Reflect's widget in your application</li>
-                    <li>Update your public roadmap and notify users</li>
-                  </ol>
-                </div>
+                <section aria-label="FAQ">
+                  <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">FAQ</h2>
+                  <div className="space-y-4">
+                    <details className="bg-card rounded-xl p-6 border border-border">
+                      <summary className="text-lg font-semibold text-foreground cursor-pointer">
+                        Can Reflect replace UserVoice?
+                      </summary>
+                      <div className="mt-4 text-muted-foreground">
+                        Yes — Reflect is a strong alternative for teams who want in-app feedback and
+                        richer bug context with a developer-first integration.
+                      </div>
+                    </details>
+                    <details className="bg-card rounded-xl p-6 border border-border">
+                      <summary className="text-lg font-semibold text-foreground cursor-pointer">
+                        How quickly can my team move feedback from UserVoice to Reflect?
+                      </summary>
+                      <div className="mt-4 text-muted-foreground">
+                        Migration usually takes a few days depending on dataset size; see the
+                        migration guide for step-by-step instructions.
+                      </div>
+                    </details>
+                    <details className="bg-card rounded-xl p-6 border border-border">
+                      <summary className="text-lg font-semibold text-foreground cursor-pointer">
+                        Does Reflect support SSO and enterprise security?
+                      </summary>
+                      <div className="mt-4 text-muted-foreground">
+                        Yes — Reflect supports SSO and enterprise security features; contact sales
+                        for enterprise plans.
+                      </div>
+                    </details>
+                  </div>
+                </section>
               </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 1.0 }}
+                viewport={{ once: true }}
+              >
+                <MigrationCTA competitor="UserVoice" />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 1.2 }}
                 viewport={{ once: true }}
                 className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-8 border border-primary/20 text-center"
               >
@@ -269,7 +339,6 @@ export default function ReflectVsUserVoicePage() {
                     className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 shadow-xl hover:shadow-2xl"
                   >
                     Get Started Free
-                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                   <Link
                     to="/features"

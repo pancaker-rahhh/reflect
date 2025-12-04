@@ -32,8 +32,9 @@ export const HeroSection = memo(() => {
             <div className="mx-auto mb-2">
               <NotBackedBadge className="mx-auto px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm shadow-2xl ring-2 ring-primary/20 bg-white text-foreground border border-border/8" />
             </div>
+            {/* SEO: Primary H1 for homepage */}
             <motion.h1
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] tracking-tight px-4 sm:px-0"
+              className="site-hero__title text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] tracking-tight px-4 sm:px-0"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
@@ -53,7 +54,7 @@ export const HeroSection = memo(() => {
                   backgroundClip: 'text',
                 }}
               >
-                The Simplest In-App Feedback Tool for SaaS Teams
+                In-App Feedback Tool for SaaS Teams
               </motion.span>
             </motion.h1>
 

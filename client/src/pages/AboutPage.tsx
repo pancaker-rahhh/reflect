@@ -1,20 +1,20 @@
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { Navbar } from '@/components/landing/Navbar'
 import { Footer } from '@/components/landing/Footer'
+import { SEOHead } from '@/components/common/SEOHead'
 import { founders } from '@/components/landing/data/founders'
 import { teamMembers } from '@/components/landing/data/team-members'
 
 export const AboutPage = () => {
   return (
     <>
-      <Helmet>
-        <title>About Reflect Feedback & Bug Reporting for Product Teams</title>
-        <meta
-          name="description"
-          content="Reflect is a lightweight in-app feedback and bug reporting tool built for product and engineering teams. Learn our mission and how we help teams ship faster."
-        />
-      </Helmet>
+      <SEOHead
+        title="About Reflect — Our Story & Values"
+        description="Learn about Reflect — building lightweight in-app feedback tools for product teams. Our mission, values, and team."
+        canonicalUrl="https://reflectfeedback.com/about"
+        ogImage="https://reflectfeedback.com/og-image.png"
+        schemaType="default"
+      />
 
       <Navbar />
       <div className="min-h-screen bg-background pt-20">

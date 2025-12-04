@@ -260,6 +260,32 @@ export function BlogPage() {
                 successful SaaS teams use in-app feedback tools to build better products.
               </p>
               <p className="mt-4 text-base text-muted-foreground max-w-2xl mx-auto">
+                Looking for alternatives to Canny, UserVoice, Sleekplan or Frill? See our comparison
+                guides:{' '}
+                <Link to="/comparisons/reflect-vs-canny" className="text-primary hover:underline">
+                  Reflect vs Canny
+                </Link>
+                ,{' '}
+                <Link
+                  to="/comparisons/reflect-vs-uservoice"
+                  className="text-primary hover:underline"
+                >
+                  Reflect vs UserVoice
+                </Link>
+                ,{' '}
+                <Link
+                  to="/comparisons/reflect-vs-sleekplan"
+                  className="text-primary hover:underline"
+                >
+                  Reflect vs Sleekplan
+                </Link>
+                ,{' '}
+                <Link to="/comparisons/reflect-vs-frill" className="text-primary hover:underline">
+                  Reflect vs Frill
+                </Link>
+                .
+              </p>
+              <p className="mt-4 text-base text-muted-foreground max-w-2xl mx-auto">
                 Explore our{' '}
                 <Link to="/features" className="text-primary hover:underline">
                   feedback platform features
