@@ -4,17 +4,84 @@ import { Footer } from '@/components/landing/Footer'
 import { SEOHead } from '@/components/common/SEOHead'
 import { usePageAnalytics } from '@/hooks/usePageAnalytics'
 import { Link } from 'react-router-dom'
-import { Check, X, ArrowRight } from 'lucide-react'
+import { Check, X } from 'lucide-react'
+import TLDRBox from '@/components/common/TLDRBox'
+import ComparisonTable from '@/components/common/ComparisonTable'
+import MigrationCTA from '@/components/common/MigrationCTA'
 
 const comparisonData = [
-  { feature: 'In-App Widget', reflect: true, sleekplan: false },
-  { feature: 'Screenshot Bug Reports', reflect: true, sleekplan: false },
-  { feature: 'Free Plan', reflect: true, sleekplan: false },
-  { feature: 'Feature Voting', reflect: true, sleekplan: true },
-  { feature: 'Public Roadmap', reflect: true, sleekplan: true },
-  { feature: 'Lightweight', reflect: true, sleekplan: false },
-  { feature: '5-Minute Setup', reflect: true, sleekplan: false },
+  { label: 'Core product', reflect: 'In-app widget', competitor: 'Hosted portal' },
+  { label: 'Feature voting', reflect: 'Yes — in-widget', competitor: 'Yes — portal' },
+  { label: 'Bug reporting', reflect: 'Screenshots + logs', competitor: 'No' },
+  { label: 'Integrations', reflect: 'Jira, GitHub, Slack', competitor: 'Basic' },
+  { label: 'Pricing model', reflect: 'Developer-friendly', competitor: 'Per-seat' },
+  {
+    label: 'In-App Widget',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
+  {
+    label: 'Screenshot Bug Reports',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
+  {
+    label: 'Free Plan',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
+  {
+    label: 'Feature Voting',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <Check className="h-5 w-5 text-green-500" />,
+  },
+  {
+    label: 'Public Roadmap',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <Check className="h-5 w-5 text-green-500" />,
+  },
+  {
+    label: 'Lightweight',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
+  {
+    label: '5-Minute Setup',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
 ]
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Can Reflect provide the same simple portal as Sleekplan?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Reflect can provide a public roadmap and portal-style pages while keeping focus on in-app capture.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Does Reflect support privacy controls for EU customers?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes — Reflect supports privacy options suitable for EU customers; contact us for data residency requirements.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How do I migrate from Sleekplan?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Follow the migration guide: export from Sleekplan, map fields to Reflect CSV, import posts then votes/comments.',
+      },
+    },
+  ],
+}
 
 export default function ReflectVsSleekplanPage() {
   usePageAnalytics()
@@ -22,12 +89,17 @@ export default function ReflectVsSleekplanPage() {
   return (
     <>
       <SEOHead
-        title="Reflect vs Sleekplan Best Alternative to Sleekplan in 2025"
-        description="Compare Reflect vs Sleekplan for roadmap and feedback management. See why Reflect's in-app widget and bug reporting make it the best Sleekplan alternative."
+        title="Reflect vs Sleekplan — Which Feedback Tool Is Best?"
+        description="Compare Reflect and Sleekplan on widget performance, feature voting, roadmap, privacy, and pricing. Reflect offers advanced bug reporting and fast in-app capture."
         keywords="reflect vs sleekplan, sleekplan alternative, roadmap tool comparison"
         canonicalUrl="https://reflectfeedback.com/comparisons/reflect-vs-sleekplan"
         ogImage="https://reflectfeedback.com/og-image.png"
         schemaType="default"
+        structuredData={faqSchema}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       <Navbar />
       <div className="min-h-screen bg-background pt-20">
@@ -39,13 +111,17 @@ export default function ReflectVsSleekplanPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
+              <TLDRBox>
+                <p>
+                  Sleekplan offers a simple feedback portal and roadmap; Reflect adds richer in-app
+                  bug reporting, automatic context capture, and a developer-friendly integration
+                  that's better for product teams.
+                </p>
+              </TLDRBox>
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6">
-                Reflect vs Sleekplan: Best Alternative to Sleekplan in 2025
+                Reflect vs Sleekplan — Feature & Pricing Comparison
               </h1>
-              <p className="text-lg sm:text-xl leading-8 text-muted-foreground">
-                Compare Reflect's comprehensive feedback platform with Sleekplan's roadmap-focused
-                tool. See why Reflect offers more value with in-app feedback and bug reporting.
-              </p>
+              <MigrationCTA competitor="Sleekplan" />
             </motion.div>
           </div>
         </section>
@@ -92,44 +168,7 @@ export default function ReflectVsSleekplanPage() {
                   Feature Comparison
                 </h2>
                 <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-lg">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-muted">
-                        <tr>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                            Feature
-                          </th>
-                          <th className="px-6 py-4 text-center text-sm font-semibold text-foreground">
-                            Reflect
-                          </th>
-                          <th className="px-6 py-4 text-center text-sm font-semibold text-foreground">
-                            Sleekplan
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {comparisonData.map((row, index) => (
-                          <tr key={index} className="hover:bg-muted/50 transition-colors">
-                            <td className="px-6 py-4 text-sm text-foreground">{row.feature}</td>
-                            <td className="px-6 py-4 text-center">
-                              {row.reflect ? (
-                                <Check className="h-5 w-5 text-green-500 mx-auto" />
-                              ) : (
-                                <X className="h-5 w-5 text-red-500 mx-auto" />
-                              )}
-                            </td>
-                            <td className="px-6 py-4 text-center">
-                              {row.sleekplan ? (
-                                <Check className="h-5 w-5 text-green-500 mx-auto" />
-                              ) : (
-                                <X className="h-5 w-5 text-red-500 mx-auto" />
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <ComparisonTable rows={comparisonData} competitorName="Sleekplan" />
                 </div>
               </motion.div>
 
@@ -235,7 +274,56 @@ export default function ReflectVsSleekplanPage() {
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.8 }}
+                viewport={{ once: true }}
+              >
+                <section aria-label="FAQ">
+                  <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">FAQ</h2>
+                  <div className="space-y-4">
+                    <details className="bg-card rounded-xl p-6 border border-border">
+                      <summary className="text-lg font-semibold text-foreground cursor-pointer">
+                        Can Reflect provide the same simple portal as Sleekplan?
+                      </summary>
+                      <div className="mt-4 text-muted-foreground">
+                        Reflect can provide a public roadmap and portal-style pages while keeping
+                        focus on in-app capture.
+                      </div>
+                    </details>
+                    <details className="bg-card rounded-xl p-6 border border-border">
+                      <summary className="text-lg font-semibold text-foreground cursor-pointer">
+                        Does Reflect support privacy controls for EU customers?
+                      </summary>
+                      <div className="mt-4 text-muted-foreground">
+                        Yes — Reflect supports privacy options suitable for EU customers; contact us
+                        for data residency requirements.
+                      </div>
+                    </details>
+                    <details className="bg-card rounded-xl p-6 border border-border">
+                      <summary className="text-lg font-semibold text-foreground cursor-pointer">
+                        How do I migrate from Sleekplan?
+                      </summary>
+                      <div className="mt-4 text-muted-foreground">
+                        Follow the migration guide: export from Sleekplan, map fields to Reflect
+                        CSV, import posts then votes/comments.
+                      </div>
+                    </details>
+                  </div>
+                </section>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 1.0 }}
+                viewport={{ once: true }}
+              >
+                <MigrationCTA competitor="Sleekplan" />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 1.2 }}
                 viewport={{ once: true }}
                 className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-8 border border-primary/20 text-center"
               >
@@ -251,7 +339,6 @@ export default function ReflectVsSleekplanPage() {
                     className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 shadow-xl hover:shadow-2xl"
                   >
                     Get Started Free
-                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                   <Link
                     to="/features"

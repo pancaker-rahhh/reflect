@@ -3,19 +3,89 @@ import { Navbar } from '@/components/landing/Navbar'
 import { Footer } from '@/components/landing/Footer'
 import { SEOHead } from '@/components/common/SEOHead'
 import { usePageAnalytics } from '@/hooks/usePageAnalytics'
-import { Link } from 'react-router-dom'
-import { Check, X, ArrowRight } from 'lucide-react'
+import { Check, X } from 'lucide-react'
+import TLDRBox from '@/components/common/TLDRBox'
+import ComparisonTable from '@/components/common/ComparisonTable'
+import MigrationCTA from '@/components/common/MigrationCTA'
 
 const comparisonData = [
-  { feature: 'In-App Widget', reflect: true, canny: false },
-  { feature: 'Screenshot Bug Reports', reflect: true, canny: false },
-  { feature: '5-Minute Setup', reflect: true, canny: false },
-  { feature: 'Free Plan Available', reflect: true, canny: false },
-  { feature: 'Feature Voting', reflect: true, canny: true },
-  { feature: 'Public Roadmap', reflect: true, canny: true },
-  { feature: 'Lightweight (<50KB)', reflect: true, canny: false },
-  { feature: 'Custom Branding', reflect: true, canny: true },
+  { label: 'Core product', reflect: 'In-app widget', competitor: 'Hosted portal' },
+  { label: 'Feature voting', reflect: 'Yes — in-widget', competitor: 'Yes — portal' },
+  { label: 'Bug reporting', reflect: 'Screenshots + logs', competitor: 'Basic' },
+  { label: 'Integrations', reflect: 'Jira, GitHub, Slack', competitor: 'Jira, GitHub' },
+  { label: 'Pricing model', reflect: 'Developer-friendly', competitor: 'Enterprise/seat' },
+  {
+    label: 'In-App Widget',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
+  {
+    label: 'Screenshot Bug Reports',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
+  {
+    label: '5-Minute Setup',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
+  {
+    label: 'Free Plan Available',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
+  {
+    label: 'Feature Voting',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <Check className="h-5 w-5 text-green-500" />,
+  },
+  {
+    label: 'Public Roadmap',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <Check className="h-5 w-5 text-green-500" />,
+  },
+  {
+    label: 'Lightweight (<50KB)',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <X className="h-5 w-5 text-red-500" />,
+  },
+  {
+    label: 'Custom Branding',
+    reflect: <Check className="h-5 w-5 text-green-500" />,
+    competitor: <Check className="h-5 w-5 text-green-500" />,
+  },
 ]
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Is Reflect a good alternative to Canny?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes — Reflect is a strong alternative for teams who want an in-app feedback widget, bug reporting with logs and screenshots, and simpler pricing. For enterprise roadmap features, Canny can be stronger.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Can I migrate my Canny data to Reflect?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes — read our migration guide or request a migration plan to map posts, votes, and comments.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How does Reflect pricing compare to Canny?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'See our pricing page for a detailed comparison and example scenarios.',
+      },
+    },
+  ],
+}
 
 export default function ReflectVsCannyPage() {
   usePageAnalytics()
@@ -23,12 +93,17 @@ export default function ReflectVsCannyPage() {
   return (
     <>
       <SEOHead
-        title="Reflect vs Canny Best Alternative to Canny in 2025"
-        description="Compare Reflect vs Canny for feedback management. See why Reflect's in-app widget, screenshot bug reports, and 5-minute setup make it the best Canny alternative. Start free."
+        title="Reflect vs Canny — Best Canny Alternative for SaaS"
+        description="Looking for a Canny alternative? See how Reflect compares on pricing, in-app widget, voting, integrations, and migration. Fast install, lightweight widget."
         keywords="reflect vs canny, canny alternative, feedback tool comparison, canny vs reflect, user feedback tool"
         canonicalUrl="https://reflectfeedback.com/comparisons/reflect-vs-canny"
         ogImage="https://reflectfeedback.com/og-image.png"
         schemaType="default"
+        structuredData={faqSchema}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       <Navbar />
       <div className="min-h-screen bg-background pt-20">
@@ -40,14 +115,17 @@ export default function ReflectVsCannyPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
+              <TLDRBox>
+                <p>
+                  Reflect is ideal if you want a lightweight in-app feedback widget with deep bug
+                  context and simpler pricing. Canny is better for enterprise community portals and
+                  advanced roadmap features.
+                </p>
+              </TLDRBox>
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6">
-                Reflect vs Canny: Best Alternative to Canny in 2025
+                Reflect vs Canny — Which Is the Better Feature Request Tool?
               </h1>
-              <p className="text-lg sm:text-xl leading-8 text-muted-foreground">
-                Looking for a Canny alternative? Compare Reflect's in-app feedback widget,
-                screenshot bug reporting, and lightning-fast setup against Canny's feature request
-                management.
-              </p>
+              <MigrationCTA competitor="Canny" />
             </motion.div>
           </div>
         </section>
@@ -95,44 +173,7 @@ export default function ReflectVsCannyPage() {
                   Feature Comparison
                 </h2>
                 <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-lg">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-muted">
-                        <tr>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                            Feature
-                          </th>
-                          <th className="px-6 py-4 text-center text-sm font-semibold text-foreground">
-                            Reflect
-                          </th>
-                          <th className="px-6 py-4 text-center text-sm font-semibold text-foreground">
-                            Canny
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {comparisonData.map((row, index) => (
-                          <tr key={index} className="hover:bg-muted/50 transition-colors">
-                            <td className="px-6 py-4 text-sm text-foreground">{row.feature}</td>
-                            <td className="px-6 py-4 text-center">
-                              {row.reflect ? (
-                                <Check className="h-5 w-5 text-green-500 mx-auto" />
-                              ) : (
-                                <X className="h-5 w-5 text-red-500 mx-auto" />
-                              )}
-                            </td>
-                            <td className="px-6 py-4 text-center">
-                              {row.canny ? (
-                                <Check className="h-5 w-5 text-green-500 mx-auto" />
-                              ) : (
-                                <X className="h-5 w-5 text-red-500 mx-auto" />
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <ComparisonTable rows={comparisonData} competitorName="Canny" />
                 </div>
               </motion.div>
 
@@ -294,38 +335,50 @@ export default function ReflectVsCannyPage() {
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.8 }}
+                viewport={{ once: true }}
+              >
+                <section aria-label="FAQ">
+                  <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">FAQ</h2>
+                  <div className="space-y-4">
+                    <details className="bg-card rounded-xl p-6 border border-border">
+                      <summary className="text-lg font-semibold text-foreground cursor-pointer">
+                        Is Reflect a good alternative to Canny?
+                      </summary>
+                      <div className="mt-4 text-muted-foreground">
+                        Yes — Reflect is a strong alternative for teams who want an in-app feedback
+                        widget, bug reporting with logs and screenshots, and simpler pricing. For
+                        enterprise roadmap features, Canny can be stronger.
+                      </div>
+                    </details>
+                    <details className="bg-card rounded-xl p-6 border border-border">
+                      <summary className="text-lg font-semibold text-foreground cursor-pointer">
+                        Can I migrate my Canny data to Reflect?
+                      </summary>
+                      <div className="mt-4 text-muted-foreground">
+                        Yes — read our migration guide or request a migration plan to map posts,
+                        votes, and comments.
+                      </div>
+                    </details>
+                    <details className="bg-card rounded-xl p-6 border border-border">
+                      <summary className="text-lg font-semibold text-foreground cursor-pointer">
+                        How does Reflect pricing compare to Canny?
+                      </summary>
+                      <div className="mt-4 text-muted-foreground">
+                        See our pricing page for a detailed comparison and example scenarios.
+                      </div>
+                    </details>
+                  </div>
+                </section>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 1.0 }}
                 viewport={{ once: true }}
-                className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-8 border border-primary/20 text-center"
               >
-                <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-                  Ready to Switch from Canny?
-                </h2>
-                <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-                  Experience the power of in-app feedback collection, screenshot bug reports, and
-                  lightning-fast setup. Start free today.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link
-                    to="/login"
-                    className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 shadow-xl hover:shadow-2xl"
-                  >
-                    Get Started Free
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                  <Link
-                    to="/features"
-                    className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold rounded-xl bg-background text-foreground hover:bg-muted transition-all duration-300 border-2 border-border hover:border-primary"
-                  >
-                    View Features
-                  </Link>
-                  <Link
-                    to="/pricing"
-                    className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold rounded-xl bg-background text-foreground hover:bg-muted transition-all duration-300 border-2 border-border hover:border-primary"
-                  >
-                    See Pricing
-                  </Link>
-                </div>
+                <MigrationCTA competitor="Canny" />
               </motion.div>
             </div>
           </div>

@@ -36,6 +36,24 @@ export default function FeatureVotingVsRequestsPost() {
                   Understand the difference between feature voting and feature requests, and learn
                   when to use each approach to prioritize product development effectively.
                 </p>
+                <p className="text-base text-muted-foreground mb-8">
+                  Comparing feature request tools? Check out our comparisons with{' '}
+                  <Link to="/comparisons/reflect-vs-canny" className="text-primary hover:underline">
+                    Canny
+                  </Link>
+                  ,{' '}
+                  <Link
+                    to="/comparisons/reflect-vs-sleekplan"
+                    className="text-primary hover:underline"
+                  >
+                    Sleekplan
+                  </Link>
+                  , and{' '}
+                  <Link to="/comparisons/reflect-vs-frill" className="text-primary hover:underline">
+                    Frill
+                  </Link>
+                  .
+                </p>
               </motion.div>
 
               <motion.div

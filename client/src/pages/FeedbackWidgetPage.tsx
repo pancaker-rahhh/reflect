@@ -39,8 +39,8 @@ export default function FeedbackWidgetPage() {
   return (
     <>
       <SEOHead
-        title="Feedback Widget for SaaS – Lightweight, Customizable & Fast | Reflect"
-        description="Add a beautiful, lightweight feedback widget to your SaaS in minutes. Collect feedback, bug reports, and ideas directly inside your app using a fast, customizable widget script - no dependencies, no performance impact."
+        title="Feedback Widget for SaaS — Fast & Customizable | Reflect"
+        description="Install Reflect's lightweight, customizable feedback widget to collect bug reports and feature requests inside your app — quick install, no performance impact."
         keywords="feedback widget, in-app feedback widget, user feedback widget, feedback collection widget, SaaS feedback widget"
         canonicalUrl="https://reflectfeedback.com/feedback-widget"
         ogImage="https://reflectfeedback.com/og-image.png"

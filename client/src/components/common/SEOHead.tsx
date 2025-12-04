@@ -12,6 +12,7 @@ interface SEOHeadProps {
   articleModifiedTime?: string
   ogType?: string
   schemaType?: 'homepage' | 'product' | 'pricing' | 'blog' | 'default'
+  breadcrumbs?: Array<{ name: string; url: string }>
 }
 
 export const SEOHead = ({
@@ -172,7 +173,7 @@ export const SEOHead = ({
     return {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
-      itemListElement: breadcrumbs.map((crumb, index) => ({
+      itemListElement: breadcrumbs.map((crumb: { name: string; url: string }, index: number) => ({
         '@type': 'ListItem',
         position: index + 1,
         name: crumb.name,

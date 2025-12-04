@@ -54,8 +54,8 @@ export default function FeatureRequestsPage() {
   return (
     <>
       <SEOHead
-        title="Feature Request Voting Tool for SaaS - Prioritize User Ideas | Reflect"
-        description="Collect and prioritize feature requests with voting. Let users submit ideas, vote on favorites, and connect requests to your public roadmap. Built for SaaS product teams."
+        title="Feature Request Tool & Voting Widget for SaaS | Reflect"
+        description="Collect and prioritize feature requests with Reflect's in-app voting widget and public roadmap. Replace Canny — capture ideas, vote, and close the loop."
         keywords="feature request tool, feature voting, feature request voting, product roadmap tool, feature prioritization, SaaS feature requests, user feedback voting"
         canonicalUrl="https://reflectfeedback.com/feature-requests"
         ogImage="https://reflectfeedback.com/og-image.png"

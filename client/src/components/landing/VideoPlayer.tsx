@@ -1,3 +1,5 @@
+import VideoLazy from '@/components/common/VideoLazy'
+
 interface VideoPlayerProps {
   src: string
   poster?: string
@@ -16,13 +18,13 @@ export default function VideoPlayer({
   muted = false,
 }: VideoPlayerProps) {
   return (
-    <video
+    <VideoLazy
+      src={src}
       autoPlay={autoPlay}
       loop={loop}
       muted={muted}
       playsInline
       preload="metadata"
-      loading="lazy"
       className="w-full h-full object-cover"
       poster={poster}
       title={ariaLabel || 'Video content'}
@@ -35,6 +37,6 @@ export default function VideoPlayer({
     >
       <source src={src} type="video/mp4" />
       Your browser does not support the video tag.
-    </video>
+    </VideoLazy>
   )
 }
