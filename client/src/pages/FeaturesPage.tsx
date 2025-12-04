@@ -4,6 +4,7 @@ import { Footer } from '@/components/landing/Footer'
 import { SEOHead } from '@/components/common/SEOHead'
 import { MessageSquare, Bug, Lightbulb, Zap, BarChart3, Shield } from 'lucide-react'
 import { usePageAnalytics } from '@/hooks/usePageAnalytics'
+import { Link } from 'react-router-dom'
 
 const features = [
   {
@@ -51,11 +52,15 @@ export default function FeaturesPage() {
     <>
       <SEOHead
         title="SaaS Feedback Platform – Full In-App Feedback, Bug Reports & Feature Voting | Reflect"
-        description="See everything Reflect can do: in-app feedback collection, bug reports with screenshots, feature voting, analytics, NPS/CSAT/CES tracking, customization, and enterprise-grade security—all in one lightweight SaaS feedback platform."
+        description="See everything Reflect can do: in-app feedback collection, bug reports with screenshots, feature voting, analytics, NPS/CSAT/CES tracking, customization, and enterprise-grade security - all in one lightweight SaaS feedback platform."
         keywords="in-app feedback tool, feedback features, bug reporting, feature requests, feedback widget, SaaS feedback, customer feedback tools"
         canonicalUrl="https://reflectfeedback.com/features"
         ogImage="https://reflectfeedback.com/og-image.png"
         schemaType="product"
+        breadcrumbs={[
+          { name: 'Home', url: 'https://reflectfeedback.com/' },
+          { name: 'Features', url: 'https://reflectfeedback.com/features' },
+        ]}
       />
       <Navbar />
       <div className="min-h-screen bg-background pt-20">

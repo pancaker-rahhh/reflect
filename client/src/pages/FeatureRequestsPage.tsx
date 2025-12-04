@@ -4,6 +4,7 @@ import { Footer } from '@/components/landing/Footer'
 import { SEOHead } from '@/components/common/SEOHead'
 import { ThumbsUp, List, CheckCircle2, MessageSquare, TrendingUp, Users } from 'lucide-react'
 import { usePageAnalytics } from '@/hooks/usePageAnalytics'
+import { Link } from 'react-router-dom'
 
 const features = [
   {
@@ -53,12 +54,16 @@ export default function FeatureRequestsPage() {
   return (
     <>
       <SEOHead
-        title="Reflect Feature Request Tool Prioritize What Matters"
-        description="Collect, organize, and prioritize feature requests. Let users vote, connect to your roadmap, and close the loop when features ship. Start free."
-        keywords="feature request tool, feature voting, feature requests, product roadmap, feature prioritization, user feedback"
+        title="Feature Request Voting Tool for SaaS - Prioritize User Ideas | Reflect"
+        description="Collect and prioritize feature requests with voting. Let users submit ideas, vote on favorites, and connect requests to your public roadmap. Built for SaaS product teams."
+        keywords="feature request tool, feature voting, feature request voting, product roadmap tool, feature prioritization, SaaS feature requests, user feedback voting"
         canonicalUrl="https://reflectfeedback.com/feature-requests"
         ogImage="https://reflectfeedback.com/og-image.png"
         schemaType="product"
+        breadcrumbs={[
+          { name: 'Home', url: 'https://reflectfeedback.com/' },
+          { name: 'Feature Requests', url: 'https://reflectfeedback.com/feature-requests' },
+        ]}
       />
       <Navbar />
       <div className="min-h-screen bg-background pt-20">
@@ -73,11 +78,13 @@ export default function FeatureRequestsPage() {
               transition={{ duration: 0.6 }}
             >
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6">
-                Collect, Organize, and Prioritize Feature Requests
+                Feature Request Voting Tool for SaaS Teams
               </h1>
               <p className="mt-6 text-lg sm:text-xl leading-8 text-muted-foreground max-w-3xl mx-auto">
                 Let users vote on the features they want most. Connect requests to your roadmap and
                 close the loop when features ship. Build what your customers actually need.
+                Reflect's feature request management system helps product teams prioritize based on
+                real user demand.
               </p>
             </motion.div>
           </div>
@@ -123,11 +130,20 @@ export default function FeatureRequestsPage() {
                 className="text-center mb-12"
               >
                 <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
-                  Why Feature Requests Matter
+                  Why Feature Request Voting Matters for SaaS Teams
                 </h2>
                 <p className="text-lg text-muted-foreground">
                   When users can submit and vote on features, you build better products and stronger
-                  relationships with your customers.
+                  relationships with your customers. Feature request voting transforms user feedback
+                  into actionable product insights. Learn more about our{' '}
+                  <Link to="/bug-reporting" className="text-primary hover:underline">
+                    bug reporting
+                  </Link>{' '}
+                  and{' '}
+                  <Link to="/features" className="text-primary hover:underline">
+                    complete feature set
+                  </Link>
+                  .
                 </p>
               </motion.div>
 

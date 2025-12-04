@@ -217,7 +217,7 @@ export function BlogPage() {
   const blogItemListSchema = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: 'Reflect Blog – In-App Feedback & SaaS Product Growth',
+    name: 'Reflect Blog - In-App Feedback & SaaS Product Growth',
     url: `${siteUrl}/blog`,
     itemListElement: blogPosts.map((post, index) => ({
       '@type': 'ListItem',
@@ -231,9 +231,9 @@ export function BlogPage() {
   return (
     <>
       <SEOHead
-        title="Reflect Blog – In-App Feedback & SaaS Product Growth"
-        description="Deep-dive articles on in-app feedback, SaaS UX, product-led growth, and customer research. Learn how great SaaS teams collect feedback, prioritize features, and ship better products."
-        keywords="product feedback blog, SaaS growth, user feedback strategies, bug reporting best practices, feature prioritization"
+        title="SaaS Feedback & Product Growth Blog - In-App Feedback Insights | Reflect"
+        description="Expert articles on in-app feedback tools, SaaS UX, product-led growth, bug reporting workflows, feature prioritization, and customer feedback strategies. Learn from real SaaS teams."
+        keywords="SaaS feedback blog, in-app feedback strategies, product feedback articles, bug reporting best practices, feature prioritization guides, SaaS product growth, user feedback insights"
         canonicalUrl="https://reflectfeedback.com/blog"
         ogImage="https://reflectfeedback.com/og-image.png"
         schemaType="blog"
@@ -252,11 +252,23 @@ export function BlogPage() {
               transition={{ duration: 0.6 }}
             >
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6">
-                Learn How Great SaaS Teams Collect Feedback
+                SaaS Feedback & Product Growth Insights
               </h1>
               <p className="mt-6 text-lg sm:text-xl leading-8 text-muted-foreground max-w-3xl mx-auto">
                 Practical articles about user feedback strategies, in-app UX, bug reporting best
-                practices, and how product teams prioritize features using feedback.
+                practices, and how product teams prioritize features using feedback. Learn how
+                successful SaaS teams use in-app feedback tools to build better products.
+              </p>
+              <p className="mt-4 text-base text-muted-foreground max-w-2xl mx-auto">
+                Explore our{' '}
+                <Link to="/features" className="text-primary hover:underline">
+                  feedback platform features
+                </Link>{' '}
+                or learn about our{' '}
+                <Link to="/bug-reporting" className="text-primary hover:underline">
+                  bug reporting tools
+                </Link>{' '}
+                to see how Reflect helps SaaS teams collect better feedback.
               </p>
             </motion.div>
           </div>

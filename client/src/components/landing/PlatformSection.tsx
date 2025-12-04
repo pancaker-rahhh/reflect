@@ -144,8 +144,11 @@ export const PlatformSection = memo(() => {
                     src={feature.thumbnail}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     preload="none"
+                    loading="lazy"
                     muted
                     playsInline
+                    title={feature.title}
+                    aria-label={`Video thumbnail for ${feature.title}`}
                   />
                   <div className="absolute inset-0 bg-black/30 flex items-center justify-center transition-opacity duration-300">
                     <div className="h-14 w-14 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-foreground transition-all duration-300 group-hover:scale-110">

@@ -22,8 +22,10 @@ export default function VideoPlayer({
       muted={muted}
       playsInline
       preload="metadata"
+      loading="lazy"
       className="w-full h-full object-cover"
       poster={poster}
+      title={ariaLabel || 'Video content'}
       style={{
         willChange: 'transform',
         backfaceVisibility: 'hidden',

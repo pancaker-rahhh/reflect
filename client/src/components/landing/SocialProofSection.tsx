@@ -96,8 +96,12 @@ export const SocialProofSection = memo(() => {
               <div className="flex items-center">
                 <img 
                   src={testimonial.avatar} 
-                  alt={testimonial.author}
+                  alt={`${testimonial.author}, ${testimonial.role} at ${testimonial.company}`}
                   className="w-12 h-12 rounded-full mr-4"
+                  loading="lazy"
+                  decoding="async"
+                  width={48}
+                  height={48}
                 />
                 <div>
                   <div className="font-semibold text-foreground">{testimonial.author}</div>

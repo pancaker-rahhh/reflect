@@ -57,8 +57,10 @@ export const VideoSection = () => {
           >
             <motion.img
               src="https://placehold.co/1920x1080/1a202c/dc2626?text=Reflect+Demo"
-              alt="Video placeholder"
+              alt="Reflect feedback widget demo video placeholder"
               className="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
               initial={{ scale: 1.1 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.8, delay: 0.6 }}

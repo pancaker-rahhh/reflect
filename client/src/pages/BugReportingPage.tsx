@@ -45,6 +45,10 @@ export default function BugReportingPage() {
         canonicalUrl="https://reflectfeedback.com/bug-reporting"
         ogImage="https://reflectfeedback.com/og-image.png"
         schemaType="product"
+        breadcrumbs={[
+          { name: 'Home', url: 'https://reflectfeedback.com/' },
+          { name: 'Bug Reporting', url: 'https://reflectfeedback.com/bug-reporting' },
+        ]}
       />
       <Navbar />
       <div className="min-h-screen bg-background pt-20">

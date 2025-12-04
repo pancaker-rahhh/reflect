@@ -236,17 +236,25 @@ export function Sidebar() {
             <div className="flex justify-center">
               <img
                 src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`}
-                alt="User avatar"
+                alt={`${userEmail} avatar`}
                 className="h-8 w-8 rounded-full"
                 title={userEmail}
+                loading="lazy"
+                decoding="async"
+                width={32}
+                height={32}
               />
             </div>
           ) : (
             <div className="flex items-center gap-3">
               <img
                 src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`}
-                alt="User avatar"
+                alt={`${userEmail} avatar`}
                 className="h-8 w-8 rounded-full"
+                loading="lazy"
+                decoding="async"
+                width={32}
+                height={32}
               />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{userEmail}</p>

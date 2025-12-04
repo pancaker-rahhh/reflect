@@ -40,11 +40,15 @@ export default function FeedbackWidgetPage() {
     <>
       <SEOHead
         title="Feedback Widget for SaaS – Lightweight, Customizable & Fast | Reflect"
-        description="Add a beautiful, lightweight feedback widget to your SaaS in minutes. Collect feedback, bug reports, and ideas directly inside your app using a fast, customizable widget script—no dependencies, no performance impact."
+        description="Add a beautiful, lightweight feedback widget to your SaaS in minutes. Collect feedback, bug reports, and ideas directly inside your app using a fast, customizable widget script - no dependencies, no performance impact."
         keywords="feedback widget, in-app feedback widget, user feedback widget, feedback collection widget, SaaS feedback widget"
         canonicalUrl="https://reflectfeedback.com/feedback-widget"
         ogImage="https://reflectfeedback.com/og-image.png"
         schemaType="product"
+        breadcrumbs={[
+          { name: 'Home', url: 'https://reflectfeedback.com/' },
+          { name: 'Feedback Widget', url: 'https://reflectfeedback.com/feedback-widget' },
+        ]}
       />
       <Navbar />
       <div className="min-h-screen bg-background pt-20">

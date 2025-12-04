@@ -26,13 +26,17 @@ export const SEOHead = ({
   articleModifiedTime,
   ogType = 'website',
   schemaType = 'default',
+  breadcrumbs,
 }: SEOHeadProps) => {
   // Use title as-is if it already contains "Reflect" (for homepage), otherwise append suffix
-  const fullTitle = title.includes('Reflect')
-    ? title
-    : `${title} | Reflect - User Feedback Platform`
+  // Enforce title length ≤ 60 chars for SEO best practices
+  let fullTitle = title.includes('Reflect') ? title : `${title} | Reflect`
+  if (fullTitle.length > 60) {
+    fullTitle = fullTitle.substring(0, 57) + '...'
+  }
+  // Enforce description length ≤ 155 chars for SEO best practices
   const fullDescription =
-    description.length > 160 ? description.substring(0, 157) + '...' : description
+    description.length > 155 ? description.substring(0, 152) + '...' : description
   const siteUrl = 'https://reflectfeedback.com'
   const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`
 
@@ -162,8 +166,31 @@ export const SEOHead = ({
     return baseSchemas.length > 0 ? baseSchemas : []
   }
 
+  // Generate breadcrumb schema if provided
+  const generateBreadcrumbSchema = () => {
+    if (!breadcrumbs || breadcrumbs.length === 0) return null
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: breadcrumbs.map((crumb, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: crumb.name,
+        item: crumb.url,
+      })),
+    }
+  }
+
   // Enhanced structured data for SaaS platform with multiple schemas
   const defaultStructuredData = generateSchema()
+  const breadcrumbSchema = generateBreadcrumbSchema()
+
+  // Combine all schemas
+  const allStructuredData = [
+    ...(Array.isArray(defaultStructuredData) ? defaultStructuredData : [defaultStructuredData]),
+    ...(breadcrumbSchema ? [breadcrumbSchema] : []),
+    ...(structuredData ? (Array.isArray(structuredData) ? structuredData : [structuredData]) : []),
+  ].filter(Boolean)
 
   return (
     <Helmet>
@@ -248,9 +275,11 @@ export const SEOHead = ({
       <meta name="google" content="notranslate" />
 
       {/* Structured Data */}
-      {(structuredData || defaultStructuredData.length > 0) && (
+      {allStructuredData.length > 0 && (
         <script type="application/ld+json">
-          {JSON.stringify(structuredData || defaultStructuredData)}
+          {JSON.stringify(
+            allStructuredData.length === 1 ? allStructuredData[0] : allStructuredData
+          )}
         </script>
       )}
     </Helmet>

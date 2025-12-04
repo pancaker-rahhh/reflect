@@ -5,6 +5,7 @@ import { SEOHead } from '@/components/common/SEOHead'
 import { PricingSection } from '@/components/landing/PricingSection'
 import { Zap, Shield, HeadphonesIcon } from 'lucide-react'
 import { usePageAnalytics } from '@/hooks/usePageAnalytics'
+import { Link } from 'react-router-dom'
 
 const faqs = [
   {
@@ -72,16 +73,41 @@ export default function PricingPage() {
     })),
   }
 
+  const productSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: 'Reflect - In-App Feedback Platform',
+    description:
+      'Complete SaaS feedback platform with in-app feedback widgets, bug reporting, feature request voting, and NPS/CSAT/CES surveys',
+    brand: {
+      '@type': 'Brand',
+      name: 'Reflect',
+    },
+    offers: {
+      '@type': 'AggregateOffer',
+      offerCount: '3',
+      lowPrice: '0',
+      highPrice: '99',
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock',
+      url: 'https://reflectfeedback.com/pricing',
+    },
+  }
+
   return (
     <>
       <SEOHead
-        title="Reflect Pricing Simple, Predictable Plans"
-        description="Simple, transparent pricing for in-app feedback tools. Free plan available. No setup fees, no hidden costs. Start collecting feedback today."
-        keywords="feedback tool pricing, SaaS pricing, feedback widget pricing, bug reporting tool pricing"
+        title="SaaS Feedback Platform Pricing - Affordable Plans for Teams | Reflect"
+        description="Transparent pricing for in-app feedback tools. Free plan available. Plans from $9.99/month for bug reporting, feature voting, NPS surveys, and feedback widgets. No setup fees."
+        keywords="SaaS feedback platform pricing, in-app feedback tool pricing, feedback widget pricing, bug reporting tool pricing, feature request tool pricing, NPS survey pricing"
         canonicalUrl="https://reflectfeedback.com/pricing"
         ogImage="https://reflectfeedback.com/og-image.png"
         schemaType="pricing"
-        structuredData={faqSchema}
+        structuredData={[faqSchema, productSchema]}
+        breadcrumbs={[
+          { name: 'Home', url: 'https://reflectfeedback.com/' },
+          { name: 'Pricing', url: 'https://reflectfeedback.com/pricing' },
+        ]}
       />
       <Navbar />
       <div className="min-h-screen bg-background pt-20">
@@ -96,11 +122,12 @@ export default function PricingPage() {
               transition={{ duration: 0.6 }}
             >
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6">
-                Simple, Transparent Pricing
+                Simple, Transparent Pricing for SaaS Feedback Tools
               </h1>
               <p className="mt-6 text-lg sm:text-xl leading-8 text-muted-foreground max-w-3xl mx-auto">
                 No setup fees, no hidden costs, no surprises. Choose the plan that works for your
-                team. Start free, upgrade when you're ready.
+                team. Start free, upgrade when you're ready. Reflect offers affordable pricing for
+                in-app feedback collection, bug reporting, and feature request management.
               </p>
             </motion.div>
           </div>
@@ -123,6 +150,19 @@ export default function PricingPage() {
                 <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
                   Everything You Need to Get Started
                 </h2>
+                <p className="text-lg text-muted-foreground mb-8">
+                  All plans include access to our complete SaaS feedback platform with in-app
+                  feedback widgets, bug reporting tools, and feature request voting. Learn more
+                  about our{' '}
+                  <Link to="/features" className="text-primary hover:underline">
+                    features
+                  </Link>{' '}
+                  and{' '}
+                  <Link to="/feedback-widget" className="text-primary hover:underline">
+                    feedback widget
+                  </Link>{' '}
+                  capabilities.
+                </p>
               </motion.div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

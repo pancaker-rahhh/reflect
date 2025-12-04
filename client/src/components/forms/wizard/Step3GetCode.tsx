@@ -30,6 +30,8 @@ export function Step3GetCode({
   width="100%"
   height="600"
   frameborder="0"
+  loading="lazy"
+  title="${formName} feedback form"
   style="border: none; border-radius: 8px;"
 ></iframe>`
 

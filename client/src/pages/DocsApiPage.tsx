@@ -1,15 +1,23 @@
 import { Navbar } from '@/components/landing/Navbar'
 import { Footer } from '@/components/landing/Footer'
 import { SEOHead } from '@/components/common/SEOHead'
+import { Link } from 'react-router-dom'
 
 export const DocsApiPage = () => {
   return (
     <>
       <SEOHead
-        title="Reflect API Create & Retrieve Feedback Programmatically"
-        description="Reflect API reference and examples. Learn authentication, endpoints, and sample requests to create feedback, attach metadata, and sync with your backend."
+        title="Reflect API Reference - Programmatic Feedback Management | Reflect"
+        description="Complete Reflect API documentation for developers. REST API endpoints for creating feedback, retrieving responses, managing widgets, and syncing data. Authentication, examples, and integration guides included."
+        keywords="Reflect API, feedback widget API, in-app feedback API, SaaS feedback API, REST API documentation, feedback management API, programmatic feedback"
         canonicalUrl="https://reflectfeedback.com/docs/api"
         ogImage="https://reflectfeedback.com/og-image.png"
+        schemaType="default"
+        breadcrumbs={[
+          { name: 'Home', url: 'https://reflectfeedback.com/' },
+          { name: 'Documentation', url: 'https://reflectfeedback.com/docs' },
+          { name: 'API Reference', url: 'https://reflectfeedback.com/docs/api' },
+        ]}
       />
 
       <Navbar />
@@ -19,11 +27,23 @@ export const DocsApiPage = () => {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
             <div className="mx-auto max-w-4xl text-center">
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6">
-                Reflect API Quickstart & Reference
+                Reflect API Reference for Developers
               </h1>
               <p className="mt-6 text-lg sm:text-xl leading-8 text-muted-foreground max-w-3xl mx-auto">
                 Integrate Reflect with your backend. Create feedback, retrieve responses, and sync
-                data programmatically.
+                data programmatically. Our REST API enables seamless integration with your SaaS
+                application for automated feedback management.
+              </p>
+              <p className="mt-4 text-base text-muted-foreground max-w-2xl mx-auto">
+                Need help getting started? Check our{' '}
+                <Link to="/docs" className="text-primary hover:underline">
+                  main documentation
+                </Link>{' '}
+                for widget installation, or explore our{' '}
+                <Link to="/features" className="text-primary hover:underline">
+                  feature capabilities
+                </Link>
+                .
               </p>
               <div className="mt-8">
                 <a

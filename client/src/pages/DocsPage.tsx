@@ -1,15 +1,22 @@
 import { Navbar } from '@/components/landing/Navbar'
 import { Footer } from '@/components/landing/Footer'
 import { SEOHead } from '@/components/common/SEOHead'
+import { Link } from 'react-router-dom'
 
 export const DocsPage = () => {
   return (
     <>
       <SEOHead
-        title="Reflect Docs Install, Integrations & Usage"
-        description="Developer docs for Reflect: install the feedback widget, integrate with Slack/Jira, and use the API. Step-by-step guides for React, Vue and plain JS."
+        title="Reflect Documentation - Install Feedback Widget & API Guide | Reflect"
+        description="Complete developer documentation for Reflect's in-app feedback widget. Installation guides, API reference, integrations with Slack, Jira, Linear, and code examples for React, Vue, and plain JavaScript."
+        keywords="Reflect API documentation, feedback widget installation, in-app feedback widget docs, Reflect integrations, feedback widget API, SaaS feedback widget setup"
         canonicalUrl="https://reflectfeedback.com/docs"
         ogImage="https://reflectfeedback.com/og-image.png"
+        schemaType="default"
+        breadcrumbs={[
+          { name: 'Home', url: 'https://reflectfeedback.com/' },
+          { name: 'Documentation', url: 'https://reflectfeedback.com/docs' },
+        ]}
       />
 
       <Navbar />
@@ -19,11 +26,23 @@ export const DocsPage = () => {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
             <div className="mx-auto max-w-4xl text-center">
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6">
-                Reflect Documentation
+                Reflect Developer Documentation
               </h1>
               <p className="mt-6 text-lg sm:text-xl leading-8 text-muted-foreground max-w-3xl mx-auto">
                 Get started with Reflect's feedback widget. Install, integrate, and start collecting
-                user feedback in minutes.
+                user feedback in minutes. Our documentation covers everything from widget
+                installation to API integration for SaaS development teams.
+              </p>
+              <p className="mt-4 text-base text-muted-foreground max-w-2xl mx-auto">
+                Explore our{' '}
+                <Link to="/docs/api" className="text-primary hover:underline">
+                  API documentation
+                </Link>{' '}
+                for programmatic access, or learn about our{' '}
+                <Link to="/features" className="text-primary hover:underline">
+                  complete feature set
+                </Link>{' '}
+                for in-app feedback collection.
               </p>
               <div className="mt-8">
                 <a
