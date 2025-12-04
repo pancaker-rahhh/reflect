@@ -4,6 +4,7 @@ import { Footer } from '@/components/landing/Footer'
 import { SEOHead } from '@/components/common/SEOHead'
 import { Code, Palette, Zap, Smartphone } from 'lucide-react'
 import { usePageAnalytics } from '@/hooks/usePageAnalytics'
+import { Link } from 'react-router-dom'
 
 const benefits = [
   {
@@ -28,7 +29,7 @@ const benefits = [
     icon: <Smartphone className="h-6 w-6" />,
     title: 'Mobile Optimized',
     description:
-      'Works flawlessly on all devices. Responsive design that adapts to any screen size.',
+      'Works flawlessly on all devices. Responsive design that adapts to any screen size. Mobile-optimized in-app feedback widget for seamless user experience.',
   },
 ]
 
@@ -38,8 +39,8 @@ export default function FeedbackWidgetPage() {
   return (
     <>
       <SEOHead
-        title="Reflect Feedback Widget Collect In-App User Feedback"
-        description="A beautiful, lightweight feedback widget for your app. Install in minutes, customize to match your brand, and start collecting user feedback instantly. Free plan available."
+        title="Feedback Widget for SaaS – Lightweight, Customizable & Fast | Reflect"
+        description="Add a beautiful, lightweight feedback widget to your SaaS in minutes. Collect feedback, bug reports, and ideas directly inside your app using a fast, customizable widget script—no dependencies, no performance impact."
         keywords="feedback widget, in-app feedback widget, user feedback widget, feedback collection widget, SaaS feedback widget"
         canonicalUrl="https://reflectfeedback.com/feedback-widget"
         ogImage="https://reflectfeedback.com/og-image.png"
@@ -58,12 +59,13 @@ export default function FeedbackWidgetPage() {
               transition={{ duration: 0.6 }}
             >
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6">
-                A Beautiful, Lightweight Feedback Widget for Your App
+                A Beautiful, Lightweight In-App Feedback Widget for Your SaaS
               </h1>
               <p className="mt-6 text-lg sm:text-xl leading-8 text-muted-foreground max-w-3xl mx-auto">
                 Install our feedback widget in minutes and start collecting user feedback directly
                 inside your application. No bloat, no performance impact, just a simple widget that
-                works.
+                works. Reflect's embeddable feedback widget script works seamlessly inside modern
+                SaaS apps.
               </p>
             </motion.div>
           </div>
@@ -81,11 +83,12 @@ export default function FeedbackWidgetPage() {
                 className="mb-12"
               >
                 <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
-                  Installation Script
+                  Install the Feedback Widget in Minutes
                 </h2>
                 <p className="text-lg text-muted-foreground mb-6">
                   Add Reflect to your app with a single script tag. No complicated setup, no
-                  dependencies, no build process required.
+                  dependencies, no build process required. Built for SaaS teams and product managers
+                  who need instant feedback collection.
                 </p>
                 <div className="bg-muted rounded-xl p-6 border border-border">
                   <pre className="text-sm overflow-x-auto">
@@ -108,18 +111,27 @@ export default function FeedbackWidgetPage() {
                 className="mb-12"
               >
                 <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
-                  Custom Fields & Theming
+                  Full Customization for Branding and Fields
                 </h2>
                 <p className="text-lg text-muted-foreground mb-6">
                   Customize every aspect of your feedback widget to match your brand and collect the
-                  information you need.
+                  information you need. Create a fully custom-branded feedback widget that matches
+                  your product UI.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-card rounded-xl p-6 border border-border">
                     <h3 className="text-xl font-bold text-foreground mb-3">Custom Fields</h3>
                     <p className="text-muted-foreground">
                       Add custom fields for name, email, category, priority, and more. Collect
-                      exactly the information your team needs.
+                      exactly the information your team needs. Perfect for collecting{' '}
+                      <Link to="/bug-reporting" className="text-primary hover:underline">
+                        bug reports
+                      </Link>{' '}
+                      and{' '}
+                      <Link to="/feature-requests" className="text-primary hover:underline">
+                        feature voting
+                      </Link>{' '}
+                      directly inside your app.
                     </p>
                   </div>
                   <div className="bg-card rounded-xl p-6 border border-border">
@@ -138,10 +150,13 @@ export default function FeedbackWidgetPage() {
                 transition={{ duration: 0.6, delay: 0.4 }}
                 viewport={{ once: true }}
               >
-                <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">UX Benefits</h2>
+                <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
+                  Lightweight, Fast & Performance-Safe
+                </h2>
                 <p className="text-lg text-muted-foreground mb-8">
                   Our feedback widget is designed to provide the best user experience while
-                  collecting valuable feedback.
+                  collecting valuable feedback. Designed for product teams who need a reliable
+                  feedback widget without performance tradeoffs.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {benefits.map((benefit, index) => (
@@ -162,6 +177,39 @@ export default function FeedbackWidgetPage() {
                   ))}
                 </div>
               </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                viewport={{ once: true }}
+                className="mt-12"
+              >
+                <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
+                  Mobile-Optimized In-App Feedback Widget
+                </h2>
+                <p className="text-lg text-muted-foreground">
+                  Our feedback widget works flawlessly on all devices with responsive design that
+                  adapts to any screen size, ensuring a seamless experience for mobile users.
+                </p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.7 }}
+                viewport={{ once: true }}
+                className="mt-12"
+              >
+                <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
+                  Built for SaaS Teams and Product Managers
+                </h2>
+                <p className="text-lg text-muted-foreground">
+                  Reflect's feedback widget is designed specifically for SaaS teams and product
+                  managers who need reliable, fast feedback collection without performance tradeoffs
+                  or complex setup.
+                </p>
+              </motion.div>
             </div>
           </div>
         </section>
@@ -178,10 +226,11 @@ export default function FeedbackWidgetPage() {
               className="text-center max-w-4xl mx-auto"
             >
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-                Add Reflect to Your App in 5 Minutes
+                Why Reflect's Feedback Widget Is Better
               </h2>
               <p className="text-lg text-muted-foreground mb-8">
-                No complicated setup. Lightweight script, no bloat.
+                No complicated setup. Lightweight script, no bloat. A powerful alternative to Canny
+                and Sleekplan, built for fast SaaS teams.
               </p>
               <motion.a
                 href="/login"

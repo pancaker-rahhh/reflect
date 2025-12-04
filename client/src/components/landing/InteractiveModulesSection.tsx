@@ -86,8 +86,8 @@ export const InteractiveModulesSection = memo(() => {
             viewport={{ once: true }}
           >
             Toggle reviews, surveys, bug reports, and feature requests on or off to shape the widget
-            in seconds. Product teams get an instant queue of the most-voted ideas—no more guessing
-            which roadmap item wins.
+            in seconds. Product teams get an instant queue of the most-voted ideas - no more
+            guessing which roadmap item wins.
           </motion.p>
         </motion.div>
 

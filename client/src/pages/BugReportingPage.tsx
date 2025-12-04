@@ -4,6 +4,7 @@ import { Footer } from '@/components/landing/Footer'
 import { SEOHead } from '@/components/common/SEOHead'
 import { Camera, Edit3, FileText, TrendingDown, Clock, Users } from 'lucide-react'
 import { usePageAnalytics } from '@/hooks/usePageAnalytics'
+import { Link } from 'react-router-dom'
 
 const features = [
   {
@@ -22,7 +23,7 @@ const features = [
     icon: <FileText className="h-8 w-8" />,
     title: 'Automatic Context Collection',
     description:
-      'We automatically capture browser info, console logs, network requests, and user actions. No need to ask users for technical details. We collect it all automatically.',
+      'We automatically capture browser info, console logs, network requests, and user actions. No need to ask users for technical details. We collect it all automatically. Engineering teams automatically receive console logs, network requests, and reproduction steps.',
   },
   {
     icon: <TrendingDown className="h-8 w-8" />,
@@ -38,9 +39,9 @@ export default function BugReportingPage() {
   return (
     <>
       <SEOHead
-        title="Reflect Bug Reporting Tool Capture Issues Instantly"
-        description="The fastest in-app bug reporting tool for SaaS. Screenshot capture, annotation, automatic context collection. Fix bugs faster and reduce churn. Start free."
-        keywords="bug reporting tool, bug tracking, bug reporting software, in-app bug reporting, screenshot bug reports, bug tracking tool"
+        title="In-App Bug Reporting Tool for SaaS – Screenshots, Logs & Automatic Context | Reflect"
+        description="Collect better bug reports inside your SaaS product. Reflect captures screenshots, console logs, network requests, user actions, and annotations automatically - so engineering teams fix issues faster and reduce churn."
+        keywords="in-app bug reporting, bug reporting widget, screenshot bug reports, automatic console logs, network request capture, reflect vs marker.io, SaaS bug reporting tool"
         canonicalUrl="https://reflectfeedback.com/bug-reporting"
         ogImage="https://reflectfeedback.com/og-image.png"
         schemaType="product"
@@ -58,11 +59,13 @@ export default function BugReportingPage() {
               transition={{ duration: 0.6 }}
             >
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6">
-                The Fastest In-App Bug Reporting Tool for SaaS
+                The Fastest In-App Bug Reporting Tool for SaaS Teams
               </h1>
               <p className="mt-6 text-lg sm:text-xl leading-8 text-muted-foreground max-w-3xl mx-auto">
                 Capture bugs with screenshots, annotations, and automatic context collection. Give
                 your team everything they need to fix issues faster and reduce customer churn.
+                Reflect's in-app bug reporting widget works seamlessly in modern SaaS apps and
+                captures everything engineers need.
               </p>
             </motion.div>
           </div>
@@ -72,13 +75,50 @@ export default function BugReportingPage() {
         <section className="py-12 sm:py-16 lg:py-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-7xl">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+                className="text-center mb-12"
+              >
+                <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
+                  In-App Bug Reporting for SaaS Teams
+                </h2>
+                <p className="text-lg text-muted-foreground">
+                  Reflect is a better alternative to Marker.io and Hotjar for capturing detailed bug
+                  reports inside your product.
+                </p>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                viewport={{ once: true }}
+                className="mb-12"
+              >
+                <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6 text-center">
+                  Capture Bugs with Screenshots and Annotations
+                </h2>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                viewport={{ once: true }}
+                className="mb-12"
+              >
+                <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6 text-center">
+                  Automatic Console Logs, Network Data & User Actions
+                </h2>
+              </motion.div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
                 {features.map((feature, index) => (
                   <motion.div
                     key={feature.title}
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    transition={{ duration: 0.6, delay: 0.4 + index * 0.1 }}
                     viewport={{ once: true }}
                     className="bg-card rounded-2xl p-6 sm:p-8 border border-border shadow-lg hover:shadow-xl transition-shadow duration-300"
                   >
@@ -112,12 +152,13 @@ export default function BugReportingPage() {
                 className="text-center mb-12"
               >
                 <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
-                  How Bug Reporting Reduces Churn
+                  Fix Bugs Faster and Reduce Churn
                 </h2>
                 <p className="text-lg text-muted-foreground">
                   When users encounter bugs, they need a fast, easy way to report them. The easier
                   it is to report issues, the more likely users will stick around instead of
-                  switching to a competitor.
+                  switching to a competitor. This bug reporting widget reduces debugging time for
+                  SaaS teams and improves customer satisfaction.
                 </p>
               </motion.div>
 
@@ -189,10 +230,27 @@ export default function BugReportingPage() {
               className="text-center max-w-4xl mx-auto"
             >
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-                Start Capturing Better Bug Reports Today
+                Why Reflect's Bug Reporting Widget Is Better
               </h2>
               <p className="text-lg text-muted-foreground mb-8">
-                Join teams using Reflect to fix bugs faster and keep customers happy.
+                Join teams using Reflect to fix bugs faster and keep customers happy. Learn more
+                about our{' '}
+                <Link to="/feedback-widget" className="text-primary hover:underline">
+                  feedback widget
+                </Link>
+                ,{' '}
+                <Link to="/feature-requests" className="text-primary hover:underline">
+                  feature requests
+                </Link>
+                ,{' '}
+                <Link to="/pricing" className="text-primary hover:underline">
+                  pricing
+                </Link>
+                , and see how we compare to{' '}
+                <Link to="/comparisons/reflect-vs-canny" className="text-primary hover:underline">
+                  Canny
+                </Link>
+                .
               </p>
               <motion.a
                 href="/login"

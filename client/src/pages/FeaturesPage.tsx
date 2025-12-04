@@ -34,7 +34,7 @@ const features = [
     icon: <BarChart3 className="h-8 w-8" />,
     title: 'Analytics & Insights',
     description:
-      'Track feedback trends over time, filter by date ranges, and spot patterns in your dashboard. Understand what features matter most, identify common pain points, and make data-driven product decisions.',
+      'Track feedback trends over time, filter by date ranges, and spot patterns in your dashboard. Understand what features matter most, identify common pain points, and make data-driven product decisions. This includes NPS, CSAT, and CES tracking to help SaaS teams understand satisfaction over time.',
   },
   {
     icon: <Shield className="h-8 w-8" />,
@@ -50,8 +50,8 @@ export default function FeaturesPage() {
   return (
     <>
       <SEOHead
-        title="Reflect Features In-App Feedback Tool for SaaS"
-        description="Powerful in-app feedback tools for SaaS teams. Real-time feedback collection, bug reports with screenshots, feature voting, customizable widgets, and analytics. Start free."
+        title="SaaS Feedback Platform – Full In-App Feedback, Bug Reports & Feature Voting | Reflect"
+        description="See everything Reflect can do: in-app feedback collection, bug reports with screenshots, feature voting, analytics, NPS/CSAT/CES tracking, customization, and enterprise-grade security—all in one lightweight SaaS feedback platform."
         keywords="in-app feedback tool, feedback features, bug reporting, feature requests, feedback widget, SaaS feedback, customer feedback tools"
         canonicalUrl="https://reflectfeedback.com/features"
         ogImage="https://reflectfeedback.com/og-image.png"
@@ -70,11 +70,13 @@ export default function FeaturesPage() {
               transition={{ duration: 0.6 }}
             >
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6">
-                Powerful In-App Feedback Tools for SaaS Teams
+                The Complete SaaS Feedback Platform
               </h1>
               <p className="mt-6 text-lg sm:text-xl leading-8 text-muted-foreground max-w-3xl mx-auto">
                 Everything you need to collect, organize, and act on user feedback, all in one
                 lightweight platform. No bloat, no complexity, just powerful tools that work.
+                Reflect works as both a SaaS feedback platform and a customer feedback management
+                system, helping product teams centralize user insights.
               </p>
             </motion.div>
           </div>
@@ -124,7 +126,7 @@ export default function FeaturesPage() {
               className="text-center max-w-4xl mx-auto"
             >
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-                Ready to Start Collecting Better Feedback?
+                Why Reflect Is the Complete SaaS Feedback Platform
               </h2>
               <p className="text-lg text-muted-foreground mb-8">
                 Join thousands of SaaS teams using Reflect to build better products.

@@ -59,7 +59,7 @@ export const SEOFeaturesSection = memo(() => {
             Submit Bugs with Screenshots and Context
           </h2>
           <p className="text-lg text-muted-foreground">
-            Give every report the evidence your engineers need—annotated screenshots, device
+            Give every report the evidence your engineers need - annotated screenshots, device
             details, and priority levels delivered straight from the widget into your dashboard.
           </p>
         </motion.div>

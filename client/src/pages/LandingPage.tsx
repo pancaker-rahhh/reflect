@@ -39,7 +39,7 @@ export const LandingPage = () => {
     <>
       <SEOHead
         title="In-App Feedback Tool for SaaS Teams | Reflect"
-        description="Add Reflect’s in-app feedback tool in minutes. Capture feature requests, bug reports with screenshots, and NPS/CSAT/CES scores in a single custom-branded widget—an affordable alternative to Canny and UserVoice."
+        description="Add Reflect's in-app feedback tool in minutes. Capture feature requests, bug reports with screenshots, and NPS/CSAT/CES scores in a single custom-branded widget - an affordable alternative to Canny and UserVoice."
         keywords="in-app feedback tool, feedback widget, bug reporting tool, feature request tool, user feedback tool for SaaS, customer feedback, feedback management, user experience, SaaS feedback, customer insights"
         canonicalUrl="https://reflectfeedback.com/"
         ogImage="https://reflectfeedback.com/og-image.png"
