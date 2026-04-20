@@ -108,7 +108,7 @@ export const HeroSection = memo(() => {
                     scale: 1.02,
                     boxShadow: '0 30px 60px -12px rgba(220, 38, 38, 0.3)',
                   }}
-                  transition={{ duration: 0.3 }}
+                  transition={{ duration: 0.15 }}
                   style={{
                     willChange: 'transform',
                     backfaceVisibility: 'hidden',
