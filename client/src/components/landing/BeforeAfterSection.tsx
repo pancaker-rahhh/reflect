@@ -3,7 +3,7 @@ import { XCircle, CheckCircle } from 'phosphor-react'
 import { motion } from 'framer-motion'
 
 const beforeItems = [
-  'Spending $189/month on 4 different tools (Typeform, Hotjar, UserVoice, Jira)',
+  'Spending $189/month on 4 different tools',
   'The loudest voice wins - not the majority',
   'No idea what your NPS actually is - never measured it',
   'Bugs reported via Slack DMs, emails, everywhere',
@@ -27,8 +27,8 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
+      staggerChildren: 0.06,
+      delayChildren: 0.1,
     },
   },
 }
@@ -55,26 +55,18 @@ export const BeforeAfterSection = memo(() => {
           <motion.h2
             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-tight"
             variants={itemVariants}
-            transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            Replace Four Tools with One $9.99 Widget
+            Replace four tools with{' '}
+            <em className="font-serif italic font-normal">one widget.</em>
           </motion.h2>
-          <motion.p
-            className="mt-6 sm:mt-8 text-base sm:text-lg md:text-xl leading-7 sm:leading-8 text-muted-foreground max-w-3xl mx-auto px-4 sm:px-0"
-            variants={itemVariants}
-            transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-          >
-            Most teams juggle Typeform, Hotjar, UserVoice, and Jira just to stay afloat. Reflect
-            captures reviews, bugs, surveys, and feature ideas in one lightweight widget so you can
-            act on real data instead of gut feel.
-          </motion.p>
         </motion.div>
 
         <motion.div
           className="mt-12 sm:mt-16 lg:mt-20 grid grid-cols-1 gap-8 sm:gap-10 rounded-2xl sm:rounded-3xl lg:grid-cols-2 lg:gap-12 bg-gradient-to-br from-slate-50 to-white p-4 sm:p-6 lg:p-8 shadow-2xl border border-slate-200/50"
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
           viewport={{ once: true }}
         >
           {/* Before Column */}
@@ -82,14 +74,14 @@ export const BeforeAfterSection = memo(() => {
             className="p-4 sm:p-6 lg:p-8"
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
             viewport={{ once: true }}
           >
             <motion.h3
               className="text-2xl sm:text-3xl font-bold text-foreground mb-6 sm:mb-8 tracking-tight"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
+              transition={{ delay: 0.2 }}
               viewport={{ once: true }}
             >
               Before...
@@ -98,41 +90,14 @@ export const BeforeAfterSection = memo(() => {
               {beforeItems.map((item, index) => (
                 <motion.div
                   key={index}
-                  className={`bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-lg border border-red-200/50 flex items-start sm:items-center gap-3 sm:gap-4 hover:shadow-xl hover:border-red-300/50 transition-all duration-300 ${
-                    index % 2 === 0
-                      ? 'sm:-rotate-1 sm:hover:rotate-0'
-                      : 'sm:rotate-1 sm:hover:rotate-0'
-                  }`}
-                  initial={{ opacity: 0, x: -30, rotate: index % 2 === 0 ? -10 : 10 }}
-                  whileInView={{
-                    opacity: 1,
-                    x: 0,
-                    rotate: index % 2 === 0 ? -1 : 1,
-                  }}
-                  transition={{
-                    duration: 0.8,
-                    delay: 0.7 + index * 0.1,
-                    ease: 'easeOut',
-                  }}
-                  whileHover={{
-                    scale: 1.02,
-                    rotate: 0,
-                    transition: { duration: 0.2 },
-                  }}
+                  className="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-lg border border-red-200/50 flex items-start sm:items-center gap-3 sm:gap-4 hover:shadow-xl hover:border-red-300/50 transition-all duration-150"
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.06 }}
                   viewport={{ once: true }}
                 >
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    whileInView={{ scale: 1 }}
-                    transition={{ delay: 0.8 + index * 0.1, type: 'spring', stiffness: 200 }}
-                    viewport={{ once: true }}
-                    className="flex-shrink-0 mt-0.5 sm:mt-0"
-                  >
-                    <XCircle className="h-6 w-6 sm:h-7 sm:w-7 text-destructive" />
-                  </motion.div>
-                  <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-                    {item}
-                  </p>
+                  <XCircle className="h-6 w-6 sm:h-7 sm:w-7 text-destructive flex-shrink-0 mt-0.5 sm:mt-0" />
+                  <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">{item}</p>
                 </motion.div>
               ))}
             </div>
@@ -143,14 +108,14 @@ export const BeforeAfterSection = memo(() => {
             className="relative rounded-2xl p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200/50 shadow-2xl hover:shadow-3xl transition-shadow duration-300"
             initial={{ opacity: 0, x: 50, scale: 0.9 }}
             whileInView={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
             viewport={{ once: true }}
           >
             <motion.div
               className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 bg-destructive text-destructive-foreground font-bold py-1.5 px-3 sm:py-2 sm:px-4 rounded-full text-xs sm:text-sm shadow-lg"
               initial={{ opacity: 0, scale: 0, rotate: -45 }}
               whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
-              transition={{ delay: 0.8, type: 'spring', stiffness: 200 }}
+              transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
               viewport={{ once: true }}
             >
               RECOMMENDED
@@ -159,7 +124,7 @@ export const BeforeAfterSection = memo(() => {
               className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 sm:mb-8 lg:mb-10 tracking-tight text-foreground"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
+              transition={{ delay: 0.2 }}
               viewport={{ once: true }}
             >
               With Reflect
@@ -168,7 +133,7 @@ export const BeforeAfterSection = memo(() => {
               className="bg-white/60 p-6 sm:p-8 lg:p-10 rounded-xl sm:rounded-2xl backdrop-blur-sm border border-green-200/30"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 }}
+              transition={{ delay: 0.2 }}
               viewport={{ once: true }}
             >
               <ul className="grid grid-cols-1 md:grid-cols-1 gap-6 sm:gap-8">
@@ -179,25 +144,15 @@ export const BeforeAfterSection = memo(() => {
                     initial={{ opacity: 0, x: 30 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     transition={{
-                      duration: 0.8,
-                      delay: 0.8 + index * 0.1,
+                      duration: 0.4,
+                      delay: index * 0.06,
                       ease: 'easeOut',
                     }}
                     viewport={{ once: true }}
                   >
-                    <motion.div
-                      initial={{ scale: 0, rotate: -180 }}
-                      whileInView={{ scale: 1, rotate: 0 }}
-                      transition={{
-                        delay: 0.9 + index * 0.1,
-                        type: 'spring',
-                        stiffness: 200,
-                      }}
-                      viewport={{ once: true }}
-                      className="flex-shrink-0 mt-0.5 sm:mt-1"
-                    >
+                    <div className="flex-shrink-0 mt-0.5 sm:mt-1">
                       <CheckCircle className="h-6 w-6 sm:h-7 sm:w-7 text-green-500" />
-                    </motion.div>
+                    </div>
                     <p className="text-base sm:text-lg text-muted-foreground leading-relaxed font-medium">
                       {item}
                     </p>
@@ -212,7 +167,7 @@ export const BeforeAfterSection = memo(() => {
           className="text-center mt-12 sm:mt-16 lg:mt-20 px-4 sm:px-0"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
           viewport={{ once: true }}
         >
           <motion.button
@@ -224,7 +179,7 @@ export const BeforeAfterSection = memo(() => {
             }}
             whileTap={{ scale: 0.98 }}
           >
-            See Your Feedback Transform In 3 Minutes
+            See it in action
           </motion.button>
         </motion.div>
       </div>
