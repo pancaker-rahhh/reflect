@@ -18,9 +18,6 @@ const InteractiveModulesSection = lazy(() =>
     default: m.InteractiveModulesSection,
   }))
 )
-const SocialProofSection = lazy(() =>
-  import('@/components/landing/SocialProofSection').then((m) => ({ default: m.SocialProofSection }))
-)
 const PricingSection = lazy(() =>
   import('@/components/landing/PricingSection').then((m) => ({ default: m.PricingSection }))
 )
