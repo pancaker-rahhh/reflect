@@ -9,8 +9,8 @@ export const AboutPage = () => {
   return (
     <>
       <SEOHead
-        title="About Reflect — Our Story & Values"
-        description="Learn about Reflect — building lightweight in-app feedback tools for product teams. Our mission, values, and team."
+        title="About Reflect - Our Story & Values"
+        description="Learn about Reflect - building lightweight in-app feedback tools for product teams. Our mission, values, and team."
         canonicalUrl="https://reflectfeedback.com/about"
         ogImage="https://reflectfeedback.com/og-image.png"
         schemaType="default"

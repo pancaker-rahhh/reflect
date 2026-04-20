@@ -63,7 +63,7 @@ export const HeroSection = memo(() => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.25 }}
             >
-              Capture bugs, ideas, and NPS — <em className="font-serif italic font-normal">instantly.</em>
+              Capture bugs, ideas, and NPS - <em className="font-serif italic font-normal">instantly.</em>
             </motion.h2>
             {/* CTA Button */}
             <motion.div

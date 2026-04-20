@@ -11,7 +11,7 @@ import MigrationCTA from '@/components/common/MigrationCTA'
 
 const comparisonData = [
   { label: 'Core product', reflect: 'In-app widget', competitor: 'Hosted portal' },
-  { label: 'Feature voting', reflect: 'Yes — in-widget', competitor: 'Yes — portal' },
+  { label: 'Feature voting', reflect: 'Yes - in-widget', competitor: 'Yes - portal' },
   { label: 'Bug reporting', reflect: 'Screenshots + logs', competitor: 'No' },
   { label: 'Integrations', reflect: 'Jira, GitHub, Slack', competitor: 'Basic' },
   { label: 'Pricing model', reflect: 'Developer-friendly', competitor: 'Per-seat' },
@@ -69,7 +69,7 @@ const faqSchema = {
       name: 'Does Reflect support privacy controls for EU customers?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes — Reflect supports privacy options suitable for EU customers; contact us for data residency requirements.',
+        text: 'Yes - Reflect supports privacy options suitable for EU customers; contact us for data residency requirements.',
       },
     },
     {
@@ -89,7 +89,7 @@ export default function ReflectVsSleekplanPage() {
   return (
     <>
       <SEOHead
-        title="Reflect vs Sleekplan — Which Feedback Tool Is Best?"
+        title="Reflect vs Sleekplan - Which Feedback Tool Is Best?"
         description="Compare Reflect and Sleekplan on widget performance, feature voting, roadmap, privacy, and pricing. Reflect offers advanced bug reporting and fast in-app capture."
         keywords="reflect vs sleekplan, sleekplan alternative, roadmap tool comparison"
         canonicalUrl="https://reflectfeedback.com/comparisons/reflect-vs-sleekplan"
@@ -119,7 +119,7 @@ export default function ReflectVsSleekplanPage() {
                 </p>
               </TLDRBox>
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6">
-                Reflect vs Sleekplan — Feature & Pricing Comparison
+                Reflect vs Sleekplan - Feature & Pricing Comparison
               </h1>
               <MigrationCTA competitor="Sleekplan" />
             </motion.div>
@@ -294,7 +294,7 @@ export default function ReflectVsSleekplanPage() {
                         Does Reflect support privacy controls for EU customers?
                       </summary>
                       <div className="mt-4 text-muted-foreground">
-                        Yes — Reflect supports privacy options suitable for EU customers; contact us
+                        Yes - Reflect supports privacy options suitable for EU customers; contact us
                         for data residency requirements.
                       </div>
                     </details>

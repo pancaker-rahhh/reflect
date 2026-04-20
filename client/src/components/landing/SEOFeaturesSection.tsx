@@ -5,12 +5,12 @@ import { MessageSquare, Bug, Lightbulb, Layout, CheckCircle2 } from 'lucide-reac
 const features = [
   {
     title: 'In-App Feedback Tool',
-    description: 'Collect feedback, ideas, and requests — without leaving your app.',
+    description: 'Collect feedback, ideas, and requests - without leaving your app.',
     icon: <MessageSquare className="h-8 w-8" />,
   },
   {
     title: 'Bug Reporting Tool',
-    description: 'Screenshots, annotations, and device details — sent directly to your dashboard.',
+    description: 'Screenshots, annotations, and device details - sent directly to your dashboard.',
     icon: <Bug className="h-8 w-8" />,
   },
   {

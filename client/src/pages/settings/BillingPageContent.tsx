@@ -505,7 +505,7 @@ export function BillingPageContent() {
                   className="flex items-center justify-between px-3 py-2 text-sm"
                 >
                   <div className="flex flex-col">
-                    <span className="font-medium">{p.payment_id ?? '—'}</span>
+                    <span className="font-medium">{p.payment_id ?? '-'}</span>
                     <span className="text-xs text-muted-foreground">
                       {p.created_at ? new Date(p.created_at).toLocaleString() : 'Unknown date'}
                     </span>

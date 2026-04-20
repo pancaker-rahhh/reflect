@@ -7,13 +7,13 @@ const faqData = [
   {
     question: 'What is an in-app feedback tool?',
     answer:
-      '3 minutes from signup to live. One line of code — no developer needed.',
+      '3 minutes from signup to live. One line of code - no developer needed.',
     icon: <Timer size={24} />,
   },
   {
     question: "What's the catch with the free plan?",
     answer:
-      "No catch — it's free forever: 1 widget, 20 responses/month, full customization. When you need more, Pro is $9.99/month.",
+      "No catch - it's free forever: 1 widget, 20 responses/month, full customization. When you need more, Pro is $9.99/month.",
     icon: <BadgeCheck size={24} />,
   },
   {

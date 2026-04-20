@@ -97,8 +97,8 @@ export default function PricingPage() {
   return (
     <>
       <SEOHead
-        title="Feedback Tool Pricing — Plans for Teams | Reflect"
-        description="Transparent pricing for Reflect — free and team plans for in-app feedback, bug reporting, and feature voting. No setup fees. Compare plans and features."
+        title="Feedback Tool Pricing - Plans for Teams | Reflect"
+        description="Transparent pricing for Reflect - free and team plans for in-app feedback, bug reporting, and feature voting. No setup fees. Compare plans and features."
         keywords="SaaS feedback platform pricing, in-app feedback tool pricing, feedback widget pricing, bug reporting tool pricing, feature request tool pricing, NPS survey pricing"
         canonicalUrl="https://reflectfeedback.com/pricing"
         ogImage="https://reflectfeedback.com/og-image.png"

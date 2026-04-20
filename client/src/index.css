@@ -479,7 +479,7 @@
 
 @layer base {
   :root {
-    /* Tints — reusable color accents for cards, states, and highlights */
+    /* Tints - reusable color accents for cards, states, and highlights */
     --tint-primary: 152 62% 52%;  /* Supabase green */
     --tint-secondary: 217 25% 16%;
     --tint-info: 213 100% 70%;    /* blue tone */

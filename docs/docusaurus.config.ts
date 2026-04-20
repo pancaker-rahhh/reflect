@@ -5,7 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: 'Reflect Docs — Install, Integrations & Usage',
+  title: 'Reflect Docs - Install, Integrations & Usage',
   tagline: 'Developer docs for Reflect: install the feedback widget, integrate with Slack/Jira, and use the API. Step-by-step guides for React, Vue and plain JS.',
   favicon: 'https://cdn.reflectfeedback.com/assets/logo-bg-removed.svg',
 

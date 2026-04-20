@@ -11,7 +11,7 @@ import MigrationCTA from '@/components/common/MigrationCTA'
 
 const comparisonData = [
   { label: 'Core product', reflect: 'In-app widget', competitor: 'Hosted portal' },
-  { label: 'Feature voting', reflect: 'Yes — in-widget', competitor: 'Yes — portal' },
+  { label: 'Feature voting', reflect: 'Yes - in-widget', competitor: 'Yes - portal' },
   { label: 'Bug reporting', reflect: 'Screenshots + logs', competitor: 'Basic' },
   { label: 'Integrations', reflect: 'Jira, GitHub, Slack', competitor: 'Jira, GitHub, Zendesk' },
   { label: 'Pricing model', reflect: 'Developer-friendly', competitor: 'Enterprise/seat' },
@@ -66,7 +66,7 @@ const faqSchema = {
       name: 'Can Reflect replace UserVoice?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes — Reflect is a strong alternative for teams who want in-app feedback and richer bug context with a developer-first integration.',
+        text: 'Yes - Reflect is a strong alternative for teams who want in-app feedback and richer bug context with a developer-first integration.',
       },
     },
     {
@@ -82,7 +82,7 @@ const faqSchema = {
       name: 'Does Reflect support SSO and enterprise security?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes — Reflect supports SSO and enterprise security features; contact sales for enterprise plans.',
+        text: 'Yes - Reflect supports SSO and enterprise security features; contact sales for enterprise plans.',
       },
     },
   ],
@@ -94,7 +94,7 @@ export default function ReflectVsUserVoicePage() {
   return (
     <>
       <SEOHead
-        title="Reflect vs UserVoice — Better User Feedback for SaaS"
+        title="Reflect vs UserVoice - Better User Feedback for SaaS"
         description="Compare Reflect and UserVoice by features, pricing, and ease of use. Reflect is focused on in-app capture and fast developer workflows."
         keywords="reflect vs uservoice, uservoice alternative, feedback tool comparison, uservoice vs reflect"
         canonicalUrl="https://reflectfeedback.com/comparisons/reflect-vs-uservoice"
@@ -124,7 +124,7 @@ export default function ReflectVsUserVoicePage() {
                 </p>
               </TLDRBox>
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6">
-                Reflect vs UserVoice — Which Feedback Tool Fits Your Team?
+                Reflect vs UserVoice - Which Feedback Tool Fits Your Team?
               </h1>
               <MigrationCTA competitor="UserVoice" />
             </motion.div>
@@ -285,7 +285,7 @@ export default function ReflectVsUserVoicePage() {
                         Can Reflect replace UserVoice?
                       </summary>
                       <div className="mt-4 text-muted-foreground">
-                        Yes — Reflect is a strong alternative for teams who want in-app feedback and
+                        Yes - Reflect is a strong alternative for teams who want in-app feedback and
                         richer bug context with a developer-first integration.
                       </div>
                     </details>
@@ -303,7 +303,7 @@ export default function ReflectVsUserVoicePage() {
                         Does Reflect support SSO and enterprise security?
                       </summary>
                       <div className="mt-4 text-muted-foreground">
-                        Yes — Reflect supports SSO and enterprise security features; contact sales
+                        Yes - Reflect supports SSO and enterprise security features; contact sales
                         for enterprise plans.
                       </div>
                     </details>

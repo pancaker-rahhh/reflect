@@ -11,7 +11,7 @@ export default function MigrateFromCannyToReflect() {
   const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
-    headline: 'How to Migrate from Canny to Reflect — Complete Guide',
+    headline: 'How to Migrate from Canny to Reflect - Complete Guide',
     description:
       'Step-by-step guide to export data from Canny and import into Reflect with a migration checklist and CSV examples.',
     datePublished: '2025-12-04',
@@ -31,7 +31,7 @@ export default function MigrateFromCannyToReflect() {
   return (
     <>
       <SEOHead
-        title="How to Migrate from Canny to Reflect — Complete Guide | Reflect Blog"
+        title="How to Migrate from Canny to Reflect - Complete Guide | Reflect Blog"
         description="Step-by-step guide to export data from Canny and import into Reflect with a migration checklist and CSV examples."
         keywords="migrate from canny, canny to reflect migration, feedback tool migration, canny alternative"
         canonicalUrl="https://reflectfeedback.com/blog/migrate-from-canny-to-reflect"
@@ -51,10 +51,10 @@ export default function MigrateFromCannyToReflect() {
                 transition={{ duration: 0.6 }}
               >
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-6">
-                  How to Migrate from Canny to Reflect — Complete Guide
+                  How to Migrate from Canny to Reflect - Complete Guide
                 </h1>
                 <p className="text-lg text-muted-foreground mb-8">
-                  <strong>TL;DR</strong> — Export posts and votes from Canny, map fields to the
+                  <strong>TL;DR</strong> - Export posts and votes from Canny, map fields to the
                   Reflect CSV, import posts then votes/comments, and run the migration checklist.
                 </p>
               </motion.div>
@@ -71,7 +71,7 @@ export default function MigrateFromCannyToReflect() {
                 </p>
 
                 <h2 className="text-3xl font-bold text-foreground mt-12 mb-4">
-                  Step 1 — Export your data from Canny
+                  Step 1 - Export your data from Canny
                 </h2>
                 <ol>
                   <li>Admin → Export → select Posts and Votes (download JSON/CSV)</li>
@@ -79,7 +79,7 @@ export default function MigrateFromCannyToReflect() {
                 </ol>
 
                 <h2 className="text-3xl font-bold text-foreground mt-12 mb-4">
-                  Step 2 — Map fields
+                  Step 2 - Map fields
                 </h2>
                 <pre className="bg-muted p-4 rounded-lg overflow-x-auto">
                   <code>
@@ -88,7 +88,7 @@ export default function MigrateFromCannyToReflect() {
                 </pre>
 
                 <h2 className="text-3xl font-bold text-foreground mt-12 mb-4">
-                  Step 3 — Import into Reflect
+                  Step 3 - Import into Reflect
                 </h2>
                 <p>
                   Use the migration CSV import tool: import posts first, then import votes based on
@@ -109,7 +109,7 @@ export default function MigrateFromCannyToReflect() {
                   <Link to="/contact" className="text-primary hover:underline">
                     Request a migration plan
                   </Link>{' '}
-                  — we can assist with mapping and import.
+                  - we can assist with mapping and import.
                 </p>
               </motion.div>
             </div>

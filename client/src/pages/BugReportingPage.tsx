@@ -39,8 +39,8 @@ export default function BugReportingPage() {
   return (
     <>
       <SEOHead
-        title="In-App Bug Reporting Tool — Screenshots & Logs | Reflect"
-        description="Capture better bug reports inside your app — screenshots, console logs, network data and user actions to help engineering fix issues faster."
+        title="In-App Bug Reporting Tool - Screenshots & Logs | Reflect"
+        description="Capture better bug reports inside your app - screenshots, console logs, network data and user actions to help engineering fix issues faster."
         keywords="in-app bug reporting, bug reporting widget, screenshot bug reports, automatic console logs, network request capture, reflect vs marker.io, SaaS bug reporting tool"
         canonicalUrl="https://reflectfeedback.com/bug-reporting"
         ogImage="https://reflectfeedback.com/og-image.png"

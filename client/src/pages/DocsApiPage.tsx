@@ -7,7 +7,7 @@ export const DocsApiPage = () => {
   return (
     <>
       <SEOHead
-        title="Reflect Documentation — Install & API Guide"
+        title="Reflect Documentation - Install & API Guide"
         description="Developer docs for Reflect: widget installation, API reference, and integration examples."
         keywords="Reflect API, feedback widget API, in-app feedback API, SaaS feedback API, REST API documentation, feedback management API, programmatic feedback"
         canonicalUrl="https://reflectfeedback.com/docs/api"

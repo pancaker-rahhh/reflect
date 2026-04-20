@@ -50,7 +50,7 @@ export default function FeaturesPage() {
   return (
     <>
       <SEOHead
-        title="SaaS Feedback Platform — Features | Reflect"
+        title="SaaS Feedback Platform - Features | Reflect"
         description="See Reflect's features: in-app feedback widget, bug reporting with screenshots, feature voting, analytics, and public roadmap tools built for SaaS teams."
         keywords="in-app feedback tool, feedback features, bug reporting, feature requests, feedback widget, SaaS feedback, customer feedback tools"
         canonicalUrl="https://reflectfeedback.com/features"

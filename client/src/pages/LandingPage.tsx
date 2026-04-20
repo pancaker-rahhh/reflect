@@ -36,7 +36,7 @@ export const LandingPage = () => {
     <>
       <SEOHead
         title="In-App Feedback Tool for SaaS Teams | Reflect"
-        description="Add Reflect — lightweight in-app feedback, bug reporting, and feature voting for SaaS. Collect feedback inside your product and prioritize features fast."
+        description="Add Reflect - lightweight in-app feedback, bug reporting, and feature voting for SaaS. Collect feedback inside your product and prioritize features fast."
         keywords="in-app feedback tool, feedback widget, bug reporting tool, feature request tool, user feedback tool for SaaS, customer feedback, feedback management, user experience, SaaS feedback, customer insights"
         canonicalUrl="https://reflectfeedback.com/"
         ogImage="https://reflectfeedback.com/og-image.png"

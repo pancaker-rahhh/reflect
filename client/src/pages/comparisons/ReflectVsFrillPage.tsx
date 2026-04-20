@@ -11,7 +11,7 @@ import MigrationCTA from '@/components/common/MigrationCTA'
 
 const comparisonData = [
   { label: 'Core product', reflect: 'In-app widget', competitor: 'Hosted portal' },
-  { label: 'Feature voting', reflect: 'Yes — in-widget', competitor: 'Yes — portal' },
+  { label: 'Feature voting', reflect: 'Yes - in-widget', competitor: 'Yes - portal' },
   { label: 'Bug reporting', reflect: 'Screenshots + logs', competitor: 'No' },
   { label: 'Integrations', reflect: 'Jira, GitHub, Slack', competitor: 'Basic' },
   { label: 'Pricing model', reflect: 'Developer-friendly', competitor: 'Per-seat' },
@@ -61,7 +61,7 @@ const faqSchema = {
       name: 'Is Reflect a good Frill alternative?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes — Reflect is a solid alternative for teams seeking in-app capture plus advanced bug reporting.',
+        text: 'Yes - Reflect is a solid alternative for teams seeking in-app capture plus advanced bug reporting.',
       },
     },
     {
@@ -89,7 +89,7 @@ export default function ReflectVsFrillPage() {
   return (
     <>
       <SEOHead
-        title="Reflect vs Frill — Best Alternative for In-App Feedback"
+        title="Reflect vs Frill - Best Alternative for In-App Feedback"
         description="Compare Reflect and Frill on in-app feedback, public roadmaps, pricing, and developer experience. Reflect focuses on bug reporting plus feedback in one tool."
         keywords="reflect vs frill, frill alternative, feedback tool comparison"
         canonicalUrl="https://reflectfeedback.com/comparisons/reflect-vs-frill"
@@ -114,12 +114,12 @@ export default function ReflectVsFrillPage() {
               <TLDRBox>
                 <p>
                   Frill focuses on public roadmaps and lightweight feedback portals; Reflect
-                  combines in-app feedback, bug reporting, and voting — making it the better choice
+                  combines in-app feedback, bug reporting, and voting - making it the better choice
                   for engineering-led teams needing context-rich reports.
                 </p>
               </TLDRBox>
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6">
-                Reflect vs Frill — Which Feedback Tool Should You Choose?
+                Reflect vs Frill - Which Feedback Tool Should You Choose?
               </h1>
               <MigrationCTA competitor="Frill" />
             </motion.div>
@@ -283,7 +283,7 @@ export default function ReflectVsFrillPage() {
                         Is Reflect a good Frill alternative?
                       </summary>
                       <div className="mt-4 text-muted-foreground">
-                        Yes — Reflect is a solid alternative for teams seeking in-app capture plus
+                        Yes - Reflect is a solid alternative for teams seeking in-app capture plus
                         advanced bug reporting.
                       </div>
                     </details>

@@ -10,7 +10,7 @@ import MigrationCTA from '@/components/common/MigrationCTA'
 
 const comparisonData = [
   { label: 'Core product', reflect: 'In-app widget', competitor: 'Hosted portal' },
-  { label: 'Feature voting', reflect: 'Yes — in-widget', competitor: 'Yes — portal' },
+  { label: 'Feature voting', reflect: 'Yes - in-widget', competitor: 'Yes - portal' },
   { label: 'Bug reporting', reflect: 'Screenshots + logs', competitor: 'Basic' },
   { label: 'Integrations', reflect: 'Jira, GitHub, Slack', competitor: 'Jira, GitHub' },
   { label: 'Pricing model', reflect: 'Developer-friendly', competitor: 'Enterprise/seat' },
@@ -65,7 +65,7 @@ const faqSchema = {
       name: 'Is Reflect a good alternative to Canny?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes — Reflect is a strong alternative for teams who want an in-app feedback widget, bug reporting with logs and screenshots, and simpler pricing. For enterprise roadmap features, Canny can be stronger.',
+        text: 'Yes - Reflect is a strong alternative for teams who want an in-app feedback widget, bug reporting with logs and screenshots, and simpler pricing. For enterprise roadmap features, Canny can be stronger.',
       },
     },
     {
@@ -73,7 +73,7 @@ const faqSchema = {
       name: 'Can I migrate my Canny data to Reflect?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes — read our migration guide or request a migration plan to map posts, votes, and comments.',
+        text: 'Yes - read our migration guide or request a migration plan to map posts, votes, and comments.',
       },
     },
     {
@@ -93,7 +93,7 @@ export default function ReflectVsCannyPage() {
   return (
     <>
       <SEOHead
-        title="Reflect vs Canny — Best Canny Alternative for SaaS"
+        title="Reflect vs Canny - Best Canny Alternative for SaaS"
         description="Looking for a Canny alternative? See how Reflect compares on pricing, in-app widget, voting, integrations, and migration. Fast install, lightweight widget."
         keywords="reflect vs canny, canny alternative, feedback tool comparison, canny vs reflect, user feedback tool"
         canonicalUrl="https://reflectfeedback.com/comparisons/reflect-vs-canny"
@@ -123,7 +123,7 @@ export default function ReflectVsCannyPage() {
                 </p>
               </TLDRBox>
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6">
-                Reflect vs Canny — Which Is the Better Feature Request Tool?
+                Reflect vs Canny - Which Is the Better Feature Request Tool?
               </h1>
               <MigrationCTA competitor="Canny" />
             </motion.div>
@@ -346,7 +346,7 @@ export default function ReflectVsCannyPage() {
                         Is Reflect a good alternative to Canny?
                       </summary>
                       <div className="mt-4 text-muted-foreground">
-                        Yes — Reflect is a strong alternative for teams who want an in-app feedback
+                        Yes - Reflect is a strong alternative for teams who want an in-app feedback
                         widget, bug reporting with logs and screenshots, and simpler pricing. For
                         enterprise roadmap features, Canny can be stronger.
                       </div>
@@ -356,7 +356,7 @@ export default function ReflectVsCannyPage() {
                         Can I migrate my Canny data to Reflect?
                       </summary>
                       <div className="mt-4 text-muted-foreground">
-                        Yes — read our migration guide or request a migration plan to map posts,
+                        Yes - read our migration guide or request a migration plan to map posts,
                         votes, and comments.
                       </div>
                     </details>
