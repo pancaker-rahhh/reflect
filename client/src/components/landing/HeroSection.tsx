@@ -2,6 +2,9 @@ import { lazy, Suspense, memo } from 'react'
 import { motion } from 'framer-motion'
 import NotBackedBadge from '@/components/common/NotBackedBadge'
 import { LazyVisible } from '@/components/system/LazyVisible'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+
+const MAINTENANCE_MSG = 'Server is under maintenance until Tuesday, Apr 22 at 8 PM'
 
 // Lazy load video component
 const VideoPlayer = lazy(() => import('./VideoPlayer'))
@@ -86,13 +89,23 @@ export const HeroSection = memo(() => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.7 }}
             >
-              <button
-                onClick={() => (window.location.href = '/login')}
-                className="inline-block rounded-2xl bg-primary px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all border border-primary/20 w-full sm:w-auto"
-                style={{ boxShadow: '0 8px 32px rgba(220,38,38,0.18)' }}
-              >
-                Start Building What Users Want
-              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span tabIndex={0} className="cursor-not-allowed w-full sm:w-auto">
+                    <button
+                      disabled
+                      aria-disabled="true"
+                      className="inline-block rounded-2xl bg-primary px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-primary-foreground shadow-xl opacity-50 pointer-events-none transition-all border border-primary/20 w-full sm:w-auto"
+                      style={{ boxShadow: '0 8px 32px rgba(220,38,38,0.18)' }}
+                    >
+                      Start Building What Users Want
+                    </button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="bg-foreground text-background max-w-[220px] text-center">
+                  {MAINTENANCE_MSG}
+                </TooltipContent>
+              </Tooltip>
             </motion.div>
           </motion.div>
 

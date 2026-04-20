@@ -1,6 +1,9 @@
 import { useState, useEffect, memo, lazy, Suspense } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { BrandWordmark } from '@/components/common/BrandWordmark'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+
+const MAINTENANCE_MSG = 'Server is under maintenance until Tuesday, Apr 22 at 8 PM'
 
 // Lazy load icons only when mobile menu is opened
 const MobileMenuIcons = lazy(() =>
@@ -120,18 +123,38 @@ export const Navbar = memo(() => {
           </nav>
 
           <div className="hidden lg:flex items-center gap-6">
-            <button
-              onClick={handleLogin}
-              className="text-base font-medium text-muted-foreground hover:text-primary transition-all duration-300 px-5 py-3 rounded-2xl hover:bg-primary/8 hover:scale-105"
-            >
-              Log in
-            </button>
-            <button
-              onClick={handleGetStarted}
-              className="rounded-2xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 hover:shadow-2xl hover:shadow-primary/30 hover:-translate-y-0.5 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all duration-300 border border-primary/20"
-            >
-              Get Started
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span tabIndex={0} className="cursor-not-allowed">
+                  <button
+                    disabled
+                    aria-disabled="true"
+                    className="text-base font-medium text-muted-foreground transition-all duration-300 px-5 py-3 rounded-2xl opacity-50 pointer-events-none"
+                  >
+                    Log in
+                  </button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-foreground text-background max-w-[220px] text-center">
+                {MAINTENANCE_MSG}
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span tabIndex={0} className="cursor-not-allowed">
+                  <button
+                    disabled
+                    aria-disabled="true"
+                    className="rounded-2xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-xl opacity-50 pointer-events-none transition-all duration-300 border border-primary/20"
+                  >
+                    Get Started
+                  </button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-foreground text-background max-w-[220px] text-center">
+                {MAINTENANCE_MSG}
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           <div className="lg:hidden">
@@ -186,24 +209,38 @@ export const Navbar = memo(() => {
               Docs
             </button>
             <div className="border-t border-border/20 pt-4 flex flex-col space-y-4">
-              <button
-                onClick={handleLogin}
-                className={`text-base font-semibold transition-colors ${
-                  isScrolled
-                    ? 'text-muted-foreground hover:text-primary'
-                    : isDocsPage
-                      ? 'text-muted-foreground hover:text-primary'
-                      : 'text-foreground hover:text-primary'
-                }`}
-              >
-                Log in
-              </button>
-              <button
-                onClick={handleGetStarted}
-                className="rounded-2xl bg-primary px-4 py-2 text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 text-center transition-all hover:scale-102 active:scale-98"
-              >
-                Get Started
-              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span tabIndex={0} className="cursor-not-allowed">
+                    <button
+                      disabled
+                      aria-disabled="true"
+                      className="text-base font-semibold text-muted-foreground opacity-50 pointer-events-none"
+                    >
+                      Log in
+                    </button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="bg-foreground text-background max-w-[220px] text-center">
+                  {MAINTENANCE_MSG}
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span tabIndex={0} className="cursor-not-allowed">
+                    <button
+                      disabled
+                      aria-disabled="true"
+                      className="rounded-2xl bg-primary px-4 py-2 text-base font-semibold text-primary-foreground shadow-sm opacity-50 pointer-events-none text-center"
+                    >
+                      Get Started
+                    </button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="bg-foreground text-background max-w-[220px] text-center">
+                  {MAINTENANCE_MSG}
+                </TooltipContent>
+              </Tooltip>
             </div>
           </div>
         </div>
