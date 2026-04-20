@@ -16,7 +16,7 @@ export const HeroSection = memo(() => {
       className="relative isolate overflow-hidden min-h-screen bg-gradient-to-br from-surface-1 via-surface-2 to-surface-3"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 1.2 }}
+      transition={{ duration: 0.5 }}
     >
       {/* Clean Background */}
       <motion.div className="absolute inset-0 bg-gradient-to-br from-background via-background to-background/95" />
@@ -29,7 +29,7 @@ export const HeroSection = memo(() => {
             className="space-y-4 sm:space-y-6"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
           >
             {/* Badge: centered directly above headline */}
             <div className="mx-auto mb-2">
@@ -37,17 +37,13 @@ export const HeroSection = memo(() => {
             </div>
             {/* SEO: Primary H1 for homepage */}
             <motion.h1
-              className="site-hero__title text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] tracking-tight px-4 sm:px-0"
+              className="site-hero__title text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-[1.05] tracking-tight px-4 sm:px-0"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
             >
-              <motion.span
+              <span
                 className="inline-block"
-                animate={{
-                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-                }}
-                transition={{ duration: 3, repeat: Infinity }}
                 style={{
                   background:
                     'linear-gradient(45deg, hsl(var(--foreground)), hsl(var(--primary)), hsl(var(--accent)), hsl(var(--foreground)))',
@@ -58,36 +54,23 @@ export const HeroSection = memo(() => {
                 }}
               >
                 In-App Feedback Tool for SaaS Teams
-              </motion.span>
+              </span>
             </motion.h1>
 
             <motion.h2
               className="text-xl sm:text-2xl md:text-3xl text-muted-foreground leading-relaxed max-w-3xl mx-auto font-medium px-4 sm:px-0"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
+              transition={{ duration: 0.4, delay: 0.25 }}
             >
-              Collect All Feedback Directly Inside Your App
+              Capture bugs, ideas, and NPS — <em className="font-serif italic font-normal">instantly.</em>
             </motion.h2>
-
-            <motion.p
-              className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto font-light px-4 sm:px-0"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-            >
-              Reflect is a lightweight in-app feedback tool that helps SaaS teams capture user
-              feedback, bug reports, and feature requests instantly. Add a feedback widget to your
-              product in minutes and start understanding your users without interrupting their
-              workflow. Reflect works as a complete customer feedback platform, helping SaaS teams
-              centralize product insights.
-            </motion.p>
             {/* CTA Button */}
             <motion.div
               className="mt-6 sm:mt-8 flex justify-center px-4 sm:px-0"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.7 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
             >
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -98,7 +81,7 @@ export const HeroSection = memo(() => {
                       className="inline-block rounded-2xl bg-primary px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-primary-foreground shadow-xl opacity-50 pointer-events-none transition-all border border-primary/20 w-full sm:w-auto"
                       style={{ boxShadow: '0 8px 32px rgba(220,38,38,0.18)' }}
                     >
-                      Start Building What Users Want
+                      Start for free
                     </button>
                   </span>
                 </TooltipTrigger>
@@ -115,7 +98,7 @@ export const HeroSection = memo(() => {
               className="w-full max-w-4xl mx-auto px-4 sm:px-0"
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.8 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
             >
               <div className="relative">
                 {/* Video Container with nice blending */}
@@ -154,7 +137,7 @@ export const HeroSection = memo(() => {
                     className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ duration: 0.6, delay: 1.0 }}
+                    transition={{ duration: 0.4, delay: 0.3 }}
                   />
                 </motion.div>
               </div>
