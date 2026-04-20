@@ -60,3 +60,4 @@ CLAUDE.md
 super-service-account-key.json
 prod-cicd-service-account-key.json
 dev-cicd-service-account-key.json
+.worktrees/
