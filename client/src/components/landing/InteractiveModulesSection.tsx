@@ -58,7 +58,7 @@ export const InteractiveModulesSection = memo(() => {
       className="bg-surface-2 py-12 sm:py-16 lg:py-20"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
-      transition={{ duration: 0.8 }}
+      transition={{ duration: 0.4 }}
       viewport={{ once: true }}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -66,36 +66,26 @@ export const InteractiveModulesSection = memo(() => {
           className="mx-auto max-w-3xl text-center"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.4 }}
           viewport={{ once: true }}
         >
           <motion.h2
             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-tight"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
             viewport={{ once: true }}
           >
-            Let Users Vote on Features They Want Most
+            Build the exact widget{' '}
+            <em className="font-serif italic font-normal">they want.</em>
           </motion.h2>
-          <motion.p
-            className="mt-6 sm:mt-8 text-base sm:text-lg md:text-xl leading-7 sm:leading-8 text-muted-foreground max-w-3xl mx-auto px-4 sm:px-0"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            viewport={{ once: true }}
-          >
-            Toggle reviews, surveys, bug reports, and feature requests on or off to shape the widget
-            in seconds. Product teams get an instant queue of the most-voted ideas - no more
-            guessing which roadmap item wins.
-          </motion.p>
         </motion.div>
 
         <motion.div
           className="mx-auto mt-12 sm:mt-16 max-w-6xl rounded-2xl sm:rounded-3xl bg-background p-4 sm:p-6 lg:p-8 shadow-2xl border-2 border-border/30"
           initial={{ opacity: 0, y: 50, scale: 0.95 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
           viewport={{ once: true }}
         >
           <div className="grid grid-cols-1 gap-8 sm:gap-12 lg:grid-cols-2 lg:gap-16 items-start lg:items-center">
@@ -104,14 +94,14 @@ export const InteractiveModulesSection = memo(() => {
               className="space-y-3 sm:space-y-4 bg-muted/30 rounded-xl sm:rounded-2xl p-4 sm:p-6"
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
               viewport={{ once: true }}
             >
               <motion.h3
                 className="text-xl sm:text-2xl font-bold text-foreground px-2 mb-4 sm:mb-6 tracking-tight"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
+                transition={{ delay: 0.2 }}
                 viewport={{ once: true }}
               >
                 Module Controls
@@ -123,8 +113,8 @@ export const InteractiveModulesSection = memo(() => {
                   initial={{ opacity: 0, x: -30 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{
-                    duration: 0.5,
-                    delay: 0.8 + index * 0.1,
+                    duration: 0.4,
+                    delay: index * 0.06,
                     ease: 'easeOut',
                   }}
                   whileHover={{
@@ -186,7 +176,7 @@ export const InteractiveModulesSection = memo(() => {
                 className="pt-4 px-4"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.2 }}
+                transition={{ delay: 0.3 }}
                 viewport={{ once: true }}
               >
                 <motion.div
@@ -213,7 +203,7 @@ export const InteractiveModulesSection = memo(() => {
               className="lg:sticky lg:top-28 h-[450px] sm:h-[500px] bg-slate-100 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-xl border-2 border-border/20"
               initial={{ opacity: 0, x: 50, scale: 0.9 }}
               whileInView={{ opacity: 1, x: 0, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
               viewport={{ once: true }}
             >
               <motion.div
@@ -222,25 +212,21 @@ export const InteractiveModulesSection = memo(() => {
                   scale: 1.02,
                   boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
                 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.15 }}
               >
                 {/* Header */}
                 <motion.div
                   className="bg-primary p-4 sm:p-6 text-primary-foreground rounded-t-xl sm:rounded-t-2xl flex-shrink-0"
                   initial={{ opacity: 0, y: -20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8 }}
+                  transition={{ delay: 0.3 }}
                   viewport={{ once: true }}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                      <motion.div
-                        animate={{ rotate: [0, 10, -10, 0] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="flex-shrink-0"
-                      >
+                      <div className="flex-shrink-0">
                         <ChatCircle className="w-5 h-5 sm:w-6 sm:h-6" />
-                      </motion.div>
+                      </div>
                       <h4 className="text-base sm:text-lg lg:text-xl font-bold truncate">
                         How can we help you today?
                       </h4>
@@ -340,7 +326,7 @@ export const InteractiveModulesSection = memo(() => {
           className="text-center mt-12 sm:mt-16 lg:mt-20 px-4 sm:px-0"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
           viewport={{ once: true }}
         >
           <motion.button
@@ -352,7 +338,7 @@ export const InteractiveModulesSection = memo(() => {
             }}
             whileTap={{ scale: 0.98 }}
           >
-            Start Saving $179/Month Today
+            Try it free
           </motion.button>
         </motion.div>
       </div>
