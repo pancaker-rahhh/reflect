@@ -5,26 +5,22 @@ import { MessageSquare, Bug, Lightbulb, Layout, CheckCircle2 } from 'lucide-reac
 const features = [
   {
     title: 'In-App Feedback Tool',
-    description:
-      'Reflect makes it easy to collect feedback from users directly inside your application. With one simple widget, customers can submit suggestions, report issues, or share ideas without leaving your product. It doubles as a lightweight product feedback management system that captures ideas across the entire user journey.',
+    description: 'Collect feedback, ideas, and requests — without leaving your app.',
     icon: <MessageSquare className="h-8 w-8" />,
   },
   {
     title: 'Bug Reporting Tool',
-    description:
-      'Users can capture screenshots, annotate issues, and send detailed bug reports instantly. Reflect gives your team clearer visibility so you can fix problems faster and reduce churn.',
+    description: 'Screenshots, annotations, and device details — sent directly to your dashboard.',
     icon: <Bug className="h-8 w-8" />,
   },
   {
     title: 'Feature Request Tool',
-    description:
-      'Let users vote, submit, and prioritize the features they want most. Reflect organizes requests for you automatically so your team can build what customers actually need.',
+    description: 'Let users vote on features. Build what they actually want.',
     icon: <Lightbulb className="h-8 w-8" />,
   },
   {
     title: 'Feedback Widget',
-    description:
-      'Our feedback widget installs in minutes and blends seamlessly into your UI. Customize its design, fields, and categories to match your brand.',
+    description: 'Installs in minutes. Matches your brand. Zero friction for users.',
     icon: <Layout className="h-8 w-8" />,
   },
 ]
@@ -44,7 +40,7 @@ export const SEOFeaturesSection = memo(() => {
       className="bg-background py-12 sm:py-16 lg:py-20"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
-      transition={{ duration: 0.8 }}
+      transition={{ duration: 0.4 }}
       viewport={{ once: true }}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -52,16 +48,13 @@ export const SEOFeaturesSection = memo(() => {
           className="max-w-3xl mx-auto text-center mb-12 sm:mb-16"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.4 }}
           viewport={{ once: true }}
         >
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-            Submit Bugs with Screenshots and Context
+            One widget.{' '}
+            <em className="font-serif italic font-normal">Four tools.</em>
           </h2>
-          <p className="text-lg text-muted-foreground">
-            Give every report the evidence your engineers need - annotated screenshots, device
-            details, and priority levels delivered straight from the widget into your dashboard.
-          </p>
         </motion.div>
         {/* Feature Cards */}
         <div className="grid grid-cols-1 gap-8 sm:gap-10 md:grid-cols-2 lg:grid-cols-2 mb-16 sm:mb-20">
@@ -71,7 +64,7 @@ export const SEOFeaturesSection = memo(() => {
               className="bg-card rounded-2xl p-6 sm:p-8 border border-border shadow-lg hover:shadow-xl transition-shadow duration-300"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
+              transition={{ duration: 0.4, delay: index * 0.06 }}
               viewport={{ once: true }}
             >
               <div className="flex items-start gap-4">
@@ -92,7 +85,7 @@ export const SEOFeaturesSection = memo(() => {
           className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 border border-primary/20"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
           viewport={{ once: true }}
         >
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-6 sm:mb-8 text-center">
@@ -105,7 +98,7 @@ export const SEOFeaturesSection = memo(() => {
                 className="flex items-start gap-3"
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
+                transition={{ duration: 0.4, delay: 0.1 + index * 0.06 }}
                 viewport={{ once: true }}
               >
                 <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0 mt-0.5" />
