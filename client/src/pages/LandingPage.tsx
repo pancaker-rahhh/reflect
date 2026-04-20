@@ -27,9 +27,6 @@ const PricingSection = lazy(() =>
 const FaqSection = lazy(() =>
   import('@/components/landing/FaqSection').then((m) => ({ default: m.FaqSection }))
 )
-const BrandingSection = lazy(() =>
-  import('@/components/landing/BrandingSection').then((m) => ({ default: m.BrandingSection }))
-)
 const Footer = lazy(() =>
   import('@/components/landing/Footer').then((m) => ({ default: m.Footer }))
 )
@@ -75,11 +72,6 @@ export const LandingPage = () => {
         <LazyVisible>
           <Suspense fallback={<div className="h-96 bg-muted animate-pulse" />}>
             <FaqSection />
-          </Suspense>
-        </LazyVisible>
-        <LazyVisible>
-          <Suspense fallback={<div className="h-32 bg-muted animate-pulse" />}>
-            <BrandingSection />
           </Suspense>
         </LazyVisible>
         <CTASection />
