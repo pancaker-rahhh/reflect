@@ -322,7 +322,7 @@ export const InteractiveModulesSection = memo(() => {
           </div>
         </motion.div>
 
-        <motion.div
+        {/* <motion.div
           className="text-center mt-12 sm:mt-16 lg:mt-20 px-4 sm:px-0"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -339,8 +339,8 @@ export const InteractiveModulesSection = memo(() => {
             whileTap={{ scale: 0.98 }}
           >
             Try it free
-          </motion.button>
-        </motion.div>
+          </motion.button> 
+        </motion.div> */}
       </div>
     </motion.div>
   )

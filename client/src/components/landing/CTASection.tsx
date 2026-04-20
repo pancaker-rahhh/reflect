@@ -26,7 +26,7 @@ export const CTASection = memo(() => {
           <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-8 sm:mb-10 max-w-2xl mx-auto">
             Free forever. No credit card. One snippet.
           </p>
-          <motion.button
+          {/* <motion.button
             onClick={() => (window.location.href = '/login')}
             className="inline-flex items-center gap-3 rounded-2xl bg-primary px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all border border-primary/20"
             whileHover={{
@@ -37,7 +37,7 @@ export const CTASection = memo(() => {
           >
             Get started for free
             <ArrowRight className="h-5 w-5" />
-          </motion.button>
+          </motion.button> */}
         </motion.div>
       </div>
     </motion.section>

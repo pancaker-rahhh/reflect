@@ -59,11 +59,11 @@ export const LandingPage = () => {
             <InteractiveModulesSection />
           </Suspense>
         </LazyVisible>
-        <LazyVisible>
+        {/* <LazyVisible>
           <Suspense fallback={<div className="h-96 bg-muted animate-pulse" />}>
             <SocialProofSection />
           </Suspense>
-        </LazyVisible>
+        </LazyVisible> */}
         <LazyVisible>
           <Suspense fallback={<div className="h-96 bg-muted animate-pulse" />}>
             <PricingSection />
