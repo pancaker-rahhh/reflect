@@ -56,7 +56,8 @@ export default {
         'soft-sm': '0 1px 2px rgba(0,0,0,0.15)',
       },
       fontFamily: {
-        'sans': ['Stolzl', 'ui-sans-serif', 'system-ui', 'sans-serif', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'],
+        'sans': ['DM Sans', 'ui-sans-serif', 'system-ui', 'sans-serif', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'],
+        'serif': ['Playfair Display', 'Georgia', 'serif'],
       },
       keyframes: {
         "accordion-down": {
