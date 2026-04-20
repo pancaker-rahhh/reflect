@@ -50,16 +50,6 @@ export const Navbar = memo(() => {
     setIsMenuOpen(false)
   }
 
-  const handleLogin = (e: React.MouseEvent) => {
-    e.preventDefault()
-    navigate('/login')
-  }
-
-  const handleGetStarted = (e: React.MouseEvent) => {
-    e.preventDefault()
-    navigate('/login')
-  }
-
   const handleDocs = (e: React.MouseEvent) => {
     e.preventDefault()
     window.location.href = 'https://docs.reflectfeedback.com'
