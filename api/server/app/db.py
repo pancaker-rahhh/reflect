@@ -1,4 +1,5 @@
 from typing import AsyncGenerator, Optional
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine, create_async_engine, async_sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from app.core.settings import get_settings
@@ -25,7 +26,24 @@ def create_engine_and_session_maker(database_url: str | None = None) -> tuple[As
     """
     if database_url is None:
         database_url = str(settings.DATABASE_URL)
-    
+
+    # Normalize to asyncpg scheme (psycopg2 is sync-only)
+    if database_url.startswith("postgresql://"):
+        database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    elif database_url.startswith("postgresql+psycopg2://"):
+        database_url = database_url.replace("postgresql+psycopg2://", "postgresql+asyncpg://", 1)
+
+    # asyncpg does not accept ssl/sslmode as URL query params — strip them and
+    # pass SSL via connect_args instead (which is how the asyncpg dialect expects it)
+    parsed = urlparse(database_url)
+    params = parse_qs(parsed.query, keep_blank_values=True)
+    ssl_requested = "ssl" in params or "sslmode" in params
+    params.pop("ssl", None)
+    params.pop("sslmode", None)
+    database_url = urlunparse(parsed._replace(query=urlencode(params, doseq=True)))
+
+    connect_args = {"ssl": True} if ssl_requested else {}
+
     engine = create_async_engine(
         database_url,
         echo=settings.LOG_SQL,
@@ -34,6 +52,7 @@ def create_engine_and_session_maker(database_url: str | None = None) -> tuple[As
         pool_pre_ping=True,
         pool_recycle=3600,
         future=True,
+        connect_args=connect_args,
     )
     
     session_maker = async_sessionmaker(
