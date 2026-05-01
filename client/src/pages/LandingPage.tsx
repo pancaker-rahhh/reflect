@@ -18,6 +18,9 @@ const InteractiveModulesSection = lazy(() =>
     default: m.InteractiveModulesSection,
   }))
 )
+const SocialProofSection = lazy(() =>
+  import('@/components/landing/SocialProofSection').then((m) => ({ default: m.SocialProofSection }))
+)
 const PricingSection = lazy(() =>
   import('@/components/landing/PricingSection').then((m) => ({ default: m.PricingSection }))
 )
@@ -56,11 +59,11 @@ export const LandingPage = () => {
             <InteractiveModulesSection />
           </Suspense>
         </LazyVisible>
-        {/* <LazyVisible>
+        <LazyVisible>
           <Suspense fallback={<div className="h-96 bg-muted animate-pulse" />}>
             <SocialProofSection />
           </Suspense>
-        </LazyVisible> */}
+        </LazyVisible>
         <LazyVisible>
           <Suspense fallback={<div className="h-96 bg-muted animate-pulse" />}>
             <PricingSection />

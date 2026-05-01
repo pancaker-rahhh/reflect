@@ -163,7 +163,7 @@ export const BeforeAfterSection = memo(() => {
           </motion.div>
         </motion.div>
 
-        {/* <motion.div
+        <motion.div
           className="text-center mt-12 sm:mt-16 lg:mt-20 px-4 sm:px-0"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -181,7 +181,7 @@ export const BeforeAfterSection = memo(() => {
           >
             See it in action
           </motion.button>
-        </motion.div> */}
+        </motion.div>
       </div>
     </motion.div>
   )
