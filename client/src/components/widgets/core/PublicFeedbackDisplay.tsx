@@ -67,7 +67,7 @@ export function PublicFeedbackDisplay({
 
       const apiBaseUrl =
         process.env.NODE_ENV === 'production'
-          ? 'https://api.reflectfeedback.com/api/v1'
+          ? 'https://reflect-production-9b79.up.railway.app/api/v1'
           : 'http://localhost:8000/api/v1'
       let endpoint = ''
 
@@ -118,7 +118,7 @@ export function PublicFeedbackDisplay({
     try {
       const apiBaseUrl =
         process.env.NODE_ENV === 'production'
-          ? 'https://api.reflectfeedback.com/api/v1'
+          ? 'https://reflect-production-9b79.up.railway.app/api/v1'
           : 'http://localhost:8000/api/v1'
 
       const itemType = feedbackType === 'FEATURE_REQUEST' ? 'feature_request' : 'general_feedback'

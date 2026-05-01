@@ -532,7 +532,7 @@ declare global {
   // Use production API in production builds, localhost for development
   const apiBaseUrl =
     process.env.NODE_ENV === 'production'
-      ? 'https://api.reflectfeedback.com/api/v1'
+      ? 'https://reflect-production-9b79.up.railway.app/api/v1'
       : 'http://localhost:8000/api/v1'
   const apiUrl = `${apiBaseUrl}/public/widgets/${publicKey}`
 

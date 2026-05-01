@@ -3,7 +3,7 @@ import type { EnvironmentConfig } from './types'
 export const productionConfig: EnvironmentConfig = {
   environment: 'production',
   
-  apiBaseUrl: 'https://api.reflectfeedback.com/api/v1',
+  apiBaseUrl: 'https://reflect-production-9b79.up.railway.app/api/v1',
   frontendUrl: 'https://reflectfeedback.com',
   
   supabase: {
