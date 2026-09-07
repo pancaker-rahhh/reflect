@@ -1,6 +1,9 @@
 import { memo } from 'react'
 import { XCircle, CheckCircle } from 'phosphor-react'
 import { motion } from 'framer-motion'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+
+const SUNSET_MSG = 'Reflect has been sunset and is no longer accepting new sign-ups.'
 
 const beforeItems = [
   'Spending $189/month on 4 different tools',
@@ -170,17 +173,22 @@ export const BeforeAfterSection = memo(() => {
           transition={{ duration: 0.4, delay: 0.2 }}
           viewport={{ once: true }}
         >
-          <motion.button
-            onClick={() => (window.location.href = '/login')}
-            className="inline-block rounded-2xl bg-destructive px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg lg:text-xl font-semibold text-destructive-foreground shadow-xl hover:bg-destructive/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destructive transition-all duration-300 border border-destructive/20 w-full sm:w-auto"
-            whileHover={{
-              scale: 1.02,
-              boxShadow: '0 25px 50px rgba(220, 38, 38, 0.4)',
-            }}
-            whileTap={{ scale: 0.98 }}
-          >
-            See it in action
-          </motion.button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span tabIndex={0} className="inline-block cursor-not-allowed w-full sm:w-auto">
+                <button
+                  disabled
+                  aria-disabled="true"
+                  className="inline-block rounded-2xl bg-destructive px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg lg:text-xl font-semibold text-destructive-foreground shadow-xl opacity-50 pointer-events-none transition-all duration-300 border border-destructive/20 w-full sm:w-auto"
+                >
+                  See it in action
+                </button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent className="bg-foreground text-background max-w-[220px] text-center">
+              {SUNSET_MSG}
+            </TooltipContent>
+          </Tooltip>
         </motion.div>
       </div>
     </motion.div>

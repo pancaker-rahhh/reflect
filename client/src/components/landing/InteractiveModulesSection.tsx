@@ -1,6 +1,9 @@
 import { useState, memo } from 'react'
 import { Star, FileText, Bug, Lightbulb, ChatCircle, Lightning, X } from 'phosphor-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+
+const SUNSET_MSG = 'Reflect has been sunset and is no longer accepting new sign-ups.'
 
 // Define the structure for a module
 interface Module {
@@ -329,17 +332,22 @@ export const InteractiveModulesSection = memo(() => {
           transition={{ duration: 0.4, delay: 0.2 }}
           viewport={{ once: true }}
         >
-          <motion.button
-            onClick={() => (window.location.href = '/login')}
-            className="inline-block rounded-2xl bg-primary px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all border border-primary/20 w-full sm:w-auto"
-            whileHover={{
-              scale: 1.02,
-              boxShadow: '0 25px 50px rgba(220, 38, 38, 0.4)',
-            }}
-            whileTap={{ scale: 0.98 }}
-          >
-            Try it free
-          </motion.button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span tabIndex={0} className="inline-block cursor-not-allowed w-full sm:w-auto">
+                <button
+                  disabled
+                  aria-disabled="true"
+                  className="inline-block rounded-2xl bg-primary px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-primary-foreground shadow-xl opacity-50 pointer-events-none transition-all border border-primary/20 w-full sm:w-auto"
+                >
+                  Try it free
+                </button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent className="bg-foreground text-background max-w-[220px] text-center">
+              {SUNSET_MSG}
+            </TooltipContent>
+          </Tooltip>
         </motion.div>
       </div>
     </motion.div>

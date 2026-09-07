@@ -1,6 +1,9 @@
 import { useState, useEffect, memo, lazy, Suspense } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { BrandWordmark } from '@/components/common/BrandWordmark'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+
+const SUNSET_MSG = 'Reflect has been sunset and is no longer accepting new sign-ups.'
 
 // Lazy load icons only when mobile menu is opened
 const MobileMenuIcons = lazy(() =>
@@ -110,18 +113,38 @@ export const Navbar = memo(() => {
           </nav>
 
           <div className="hidden lg:flex items-center gap-6">
-            <button
-              onClick={() => navigate('/login')}
-              className="text-base font-medium text-muted-foreground hover:text-foreground transition-all duration-300 px-5 py-3 rounded-2xl"
-            >
-              Log in
-            </button>
-            <button
-              onClick={() => navigate('/login')}
-              className="rounded-2xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-xl hover:bg-primary/90 transition-all duration-300 border border-primary/20"
-            >
-              Get Started
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span tabIndex={0} className="cursor-not-allowed">
+                  <button
+                    disabled
+                    aria-disabled="true"
+                    className="text-base font-medium text-muted-foreground transition-all duration-300 px-5 py-3 rounded-2xl opacity-50 pointer-events-none"
+                  >
+                    Log in
+                  </button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-foreground text-background max-w-[220px] text-center">
+                {SUNSET_MSG}
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span tabIndex={0} className="cursor-not-allowed">
+                  <button
+                    disabled
+                    aria-disabled="true"
+                    className="rounded-2xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-xl opacity-50 pointer-events-none transition-all duration-300 border border-primary/20"
+                  >
+                    Get Started
+                  </button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-foreground text-background max-w-[220px] text-center">
+                {SUNSET_MSG}
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           <div className="lg:hidden">
@@ -176,18 +199,38 @@ export const Navbar = memo(() => {
               Docs
             </button>
             <div className="border-t border-border/20 pt-4 flex flex-col space-y-4">
-              <button
-                onClick={() => navigate('/login')}
-                className="text-base font-semibold text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Log in
-              </button>
-              <button
-                onClick={() => navigate('/login')}
-                className="rounded-2xl bg-primary px-4 py-2 text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-all text-center"
-              >
-                Get Started
-              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span tabIndex={0} className="cursor-not-allowed">
+                    <button
+                      disabled
+                      aria-disabled="true"
+                      className="text-base font-semibold text-muted-foreground opacity-50 pointer-events-none"
+                    >
+                      Log in
+                    </button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="bg-foreground text-background max-w-[220px] text-center">
+                  {SUNSET_MSG}
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span tabIndex={0} className="cursor-not-allowed">
+                    <button
+                      disabled
+                      aria-disabled="true"
+                      className="rounded-2xl bg-primary px-4 py-2 text-base font-semibold text-primary-foreground shadow-sm opacity-50 pointer-events-none text-center"
+                    >
+                      Get Started
+                    </button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="bg-foreground text-background max-w-[220px] text-center">
+                  {SUNSET_MSG}
+                </TooltipContent>
+              </Tooltip>
             </div>
           </div>
         </div>

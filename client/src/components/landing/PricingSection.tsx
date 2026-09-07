@@ -1,13 +1,13 @@
 import { memo } from 'react'
 import { Check } from 'phosphor-react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
 import { Zap, Tag } from 'lucide-react'
 import { PRICING_PLANS, formatPrice, getFeatureList } from '@/lib/constants/pricing'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+
+const SUNSET_MSG = 'Reflect has been sunset and is no longer accepting new sign-ups.'
 
 export const PricingSection = memo(() => {
-  const navigate = useNavigate()
-
   const displayPlans = [
     PRICING_PLANS.find((plan) => plan.id === 'free'),
     PRICING_PLANS.find((plan) => plan.id === 'pro_monthly'),
@@ -24,10 +24,6 @@ export const PricingSection = memo(() => {
       buttonText: 'Get started',
       primary: plan!.is_popular || false,
     }))
-
-  const handleGetStarted = () => {
-    navigate('/login')
-  }
 
   return (
     <motion.div
@@ -65,6 +61,15 @@ export const PricingSection = memo(() => {
             Simple pricing.{' '}
             <em className="font-serif italic font-normal">No surprises.</em>
           </motion.h2>
+          <motion.p
+            className="mt-4 text-sm sm:text-base text-muted-foreground"
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            viewport={{ once: true }}
+          >
+            Kept here for reference — Reflect is no longer accepting new sign-ups.
+          </motion.p>
         </motion.div>
 
         <div className="isolate mx-auto mt-8 sm:mt-12 grid max-w-6xl grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -152,21 +157,30 @@ export const PricingSection = memo(() => {
                 </span>
               </motion.p>
 
-              <motion.button
-                onClick={handleGetStarted}
-                className={`mt-8 sm:mt-10 block w-full rounded-xl sm:rounded-2xl px-5 sm:px-6 py-3 sm:py-4 text-center text-base sm:text-lg font-semibold leading-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 transition-all ${
-                  plan.primary || plan.id === 'pro_yearly'
-                    ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline-primary'
-                    : 'bg-background text-primary ring-1 ring-inset ring-border hover:bg-muted hover:text-primary'
-                }`}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                whileTap={{ scale: 0.98 }}
-                viewport={{ once: true }}
-              >
-                {plan.buttonText}
-              </motion.button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span tabIndex={0} className="mt-8 sm:mt-10 block cursor-not-allowed">
+                    <motion.button
+                      disabled
+                      aria-disabled="true"
+                      className={`block w-full rounded-xl sm:rounded-2xl px-5 sm:px-6 py-3 sm:py-4 text-center text-base sm:text-lg font-semibold leading-6 opacity-50 pointer-events-none transition-all ${
+                        plan.primary || plan.id === 'pro_yearly'
+                          ? 'bg-primary text-primary-foreground shadow-sm'
+                          : 'bg-background text-primary ring-1 ring-inset ring-border'
+                      }`}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 0.5, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      viewport={{ once: true }}
+                    >
+                      {plan.buttonText}
+                    </motion.button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="bg-foreground text-background max-w-[220px] text-center">
+                  {SUNSET_MSG}
+                </TooltipContent>
+              </Tooltip>
 
               <ul
                 role="list"
